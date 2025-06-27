@@ -90,6 +90,10 @@ const BulkRmPanel = ({ onClose }) => {
     });
 
     try {
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+
       const res = await axios.post("/rms/add-many-rm", formData);
 
       if (res.status === 200 || res.status === 201) {

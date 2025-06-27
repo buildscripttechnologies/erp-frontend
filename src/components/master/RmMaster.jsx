@@ -17,6 +17,9 @@ import EditRawMaterialModal from "./EditRawMaterialModal";
 import AddBulkRawMaterials from "./BulkRmPanel.jsx";
 import BulkRmPanel from "./BulkRmPanel.jsx";
 import Toggle from "react-toggle";
+import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
+
+const baseurl = "http://localhost:5000";
 
 const RmMaster = () => {
   const [rawMaterials, setRawMaterials] = useState([]);
@@ -25,6 +28,15 @@ const RmMaster = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showBulkPanel, setShowBulkPanel] = useState(false);
+  const [openAttachments, setOpenAttachments] = useState(null);
+  const [exportScope, setExportScope] = useState("current");
+  const [exportFormat, setExportFormat] = useState("excel");
+  const [showExportOptions, setShowExportOptions] = useState(false);
+
+  const toggleExportOptions = () => {
+    setShowExportOptions((prev) => !prev);
+  };
+
   const [pagination, setPagination] = useState({
     totalResults: 0,
     totalPages: 1,
@@ -169,6 +181,58 @@ const RmMaster = () => {
     }
   };
 
+  const data = filteredData.map((e) => ({
+    skuCode: e.skuCode,
+    itemName: e.itemName,
+    description: e.description,
+    hsnOrSac: e.hsnOrSac,
+    type: e.type,
+    location: e.location,
+    moq: e.moq,
+    gst: e.gst,
+    stockQty: e.stockQty,
+    baseQty: e.baseQty,
+    pkgQty: e.pkgQty,
+    purchaseUOM: e.purchaseUOM,
+    stockUOM: e.stockUOM,
+    qualityInspectionNeeded: e.qualityInspectionNeeded
+      ? "Required"
+      : "Not Required",
+    attachments: e.attachments
+      .map((att) => `${baseurl}${att.fileUrl}`)
+      .join(", "),
+  }));
+
+  const handleExport = () => {
+    let exportData = [];
+
+    if (exportScope === "current") {
+      exportData = data; // This should be your paginated data state
+    } else if (exportScope === "filtered") {
+      exportData = data; // This should be your search-filtered data
+    } else {
+      // Fetch full data from backend
+      axios
+        .get("/rms/rm")
+        .then((res) => {
+          exportData = res.data.data;
+          generateExportFile(exportData);
+        })
+        .catch((err) => toast.error("Failed to export data"));
+      return;
+    }
+
+    generateExportFile(exportData);
+  };
+
+  const generateExportFile = (data) => {
+    if (exportFormat === "excel") {
+      exportToExcel(data);
+    } else {
+      exportToPDF(data);
+    }
+  };
+
   const TableHeaders = [
     { label: "#", className: "" },
     { lable: "Created At", className: "" },
@@ -204,14 +268,50 @@ const RmMaster = () => {
           </h2>
 
           <div className="flex gap-2 flex-wrap">
+            {showExportOptions && (
+              <div className="flex gap-2 items-center">
+                <select
+                  value={exportScope}
+                  onChange={(e) => setExportScope(e.target.value)}
+                  className="border border-[#d8b76a] px-3 py-2 rounded text-sm text-[#292926] cursor-pointer"
+                >
+                  <option value="current">This Page</option>
+                  <option value="filtered">Filtered Data</option>
+                  <option value="all">All Data</option>
+                </select>
+
+                <select
+                  value={exportFormat}
+                  onChange={(e) => setExportFormat(e.target.value)}
+                  className="border border-[#d8b76a] px-3 py-2 rounded text-sm text-[#292926] cursor-pointer"
+                >
+                  <option value="excel">Excel</option>
+                  <option value="pdf">PDF</option>
+                </select>
+
+                <button
+                  onClick={handleExport}
+                  className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded transition cursor-pointer"
+                >
+                  Export
+                </button>
+              </div>
+            )}
+            <button
+              onClick={toggleExportOptions}
+              className="bg-[#d8b76a] cursor-pointer hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded flex justify-center items-center whitespace-nowrap transition"
+            >
+              <FiDownload className="mr-2" /> Export
+            </button>
+
             <button
               onClick={handleSampleDownload}
-              className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded transition"
+              className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded transition cursor-pointer"
             >
               <FiDownload /> Sample Excel
             </button>
 
-            <label className="flex items-center gap-2 bg-[#d8b76a]/20 px-4 py-2 rounded cursor-pointer text-[#292926] font-semibold">
+            <label className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 px-4 py-2 rounded cursor-pointer text-[#292926] font-semibold ">
               <FiUploadCloud />
               <span>Upload Excel</span>
               <input
@@ -223,7 +323,7 @@ const RmMaster = () => {
             </label>
             <button
               onClick={handleFileUpload}
-              className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded transition"
+              className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded transition cursor-pointer"
             >
               Submit
             </button>
@@ -346,19 +446,19 @@ const RmMaster = () => {
                       <td className="px-4 py-2">{rm.stockQty}</td>
                       <td className="px-4 py-2">{rm.stockUOM || "-"}</td>
                       <td className="px-4 py-2">
-                        {rm.attachments != "" ? (
-                          <a
-                            href={rm.attachments}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
+                        {Array.isArray(rm.attachments) &&
+                        rm.attachments.length > 0 ? (
+                          <button
+                            onClick={() => setOpenAttachments(rm.attachments)}
+                            className="cursor-pointer hover:text-[#d8b76a] hover:underline text-sm"
                           >
-                            View Attachment
-                          </a>
+                            View Attachments
+                          </button>
                         ) : (
                           "-"
                         )}
                       </td>
+
                       <td className="px-4 py-2">
                         <Toggle
                           checked={rm.status === "Active"}
@@ -439,6 +539,51 @@ const RmMaster = () => {
         </button>
       </div>
       {showBulkPanel && <BulkRmPanel onClose={() => setShowBulkPanel(false)} />}
+      {openAttachments && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-md mx-auto p-4 rounded-lg shadow-lg">
+            <div className="flex justify-between items-center border-b border-[#d8b76a] pb-2 mb-4">
+              <h2 className="text-lg font-semibold text-[#d8b76a]">
+                Attachments
+              </h2>
+              <button
+                onClick={() => setOpenAttachments(null)}
+                className="text-[#d8b76a] font-bold hover:text-red-600 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <ul className="space-y-2 max-h-[300px] overflow-y-auto">
+              {openAttachments.map((file, idx) => (
+                <li
+                  key={idx}
+                  className="flex justify-between items-center text-[#292926] text-sm border border-[#d8b76a] px-3 py-2 rounded hover:bg-gray-100"
+                >
+                  <span className="truncate w-1/2 ">{file.fileName}</span>
+                  <div className="flex gap-3">
+                    <a
+                      href={baseurl + file.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#d8b76a] hover:text-blue-600 font-semibold hover:underline"
+                    >
+                      Open
+                    </a>
+                    <a
+                      href={baseurl + file.fileUrl}
+                      download={file.fileName}
+                      className="text-[#d8b76a] hover:text-green-600 font-semibold hover:underline"
+                    >
+                      Download
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </Dashboard>
   );
 };
