@@ -3,32 +3,41 @@ import AuthLayout from "../layouts/AuthLayout";
 import axios from "../utils/axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { ClipLoader } from "react-spinners";
+import { useAuth } from "../context/AuthContext";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const res = await axios.post("/auth/login", { email, password });
-      // console.log("Login response:", res.data);
 
-      if (res.data.token) {
-        localStorage.setItem("token", res.data.token);
+      const { token, status } = res.data;
+
+      if (status === 403) {
+        toast.error("Please verify your email for 2FA.");
+        navigate("/verify-otp");
+        return;
       }
 
-      if (res.data.status === 403) {
-        toast.error("Please verify your email for 2FA.");
-        navigate("/verify-otp"); // <- redirect here
-      } else if (res.data.status === 200) {
-        navigate("/");
+      if (status === 200 && token) {
+        login(token);
         toast.success("Login successful!");
+        navigate("/dashboard");
       } else {
-        toast.error("Login failed. Please check your credentials.");
+        toast.error(message || "Login failed. Please check your credentials.");
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,10 +66,18 @@ const Login = () => {
         />
 
         <button
+          disabled={loading}
           type="submit"
-          className="w-full bg-[#d8b76a] text-xl text-[#292927] font-bold hover:text-[#292927] py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer transition duration-200"
+          className="w-full bg-[#d8b76a] text-xl text-[#292926] font-bold hover:text-[#292926] py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer transition duration-200"
         >
-          Login
+          {loading ? (
+            <>
+              <span className="mr-2">Logging in...</span>
+              <ClipLoader size={20} color="#292926" />
+            </>
+          ) : (
+            "Login"
+          )}
         </button>
         <p className="text-center text-xl mt-4">
           Don't have an account?{" "}

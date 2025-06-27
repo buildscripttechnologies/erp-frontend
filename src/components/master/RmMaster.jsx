@@ -13,21 +13,50 @@ import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import { Tooltip } from "react-tooltip";
 import TableSkeleton from "../TableSkeleton";
+import EditRawMaterialModal from "./EditRawMaterialModal";
+import AddBulkRawMaterials from "./BulkRmPanel.jsx";
+import BulkRmPanel from "./BulkRmPanel.jsx";
+import Toggle from "react-toggle";
 
 const RmMaster = () => {
   const [rawMaterials, setRawMaterials] = useState([]);
+  const [editData, setEditData] = useState(null);
   const [search, setSearch] = useState("");
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showBulkPanel, setShowBulkPanel] = useState(false);
+  const [pagination, setPagination] = useState({
+    totalResults: 0,
+    totalPages: 1,
+    currentPage: 1,
+    limit: 20,
+  });
 
-  const fetchRawMaterials = async () => {
+  const fetchRawMaterials = async (page = 1) => {
     try {
-      const res = await axios.get("/rms/rm");
+      setLoading(true);
+      const res = await axios.get("/rms/rm", {
+        params: {
+          page,
+          limit: 20, // or dynamic
+          search, // if you have search
+        },
+      });
+
       setRawMaterials(res.data.rawMaterials || []);
+      setPagination({
+        currentPage: res.data.currentPage,
+        totalPages: res.data.totalPages,
+        totalResults: res.data.totalResults,
+        limit: res.data.limit,
+      });
+      setLoading(false);
     } catch (err) {
-      toast.error("Failed to fetch raw materials");
+      toast.error("Failed to load data");
+      setLoading(false);
     }
   };
+
   // console.log("Raw Materials:", rawMaterials);
 
   const handleSampleDownload = async () => {
@@ -78,11 +107,67 @@ const RmMaster = () => {
     );
   });
 
-  useEffect(async () => {
-    setLoading(true);
-    await fetchRawMaterials();
-    setLoading(false);
-  }, []);
+  useEffect(() => {
+    fetchRawMaterials(pagination.currentPage);
+  }, [pagination.currentPage]);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this raw material?"))
+      return;
+    try {
+      const res = await axios.delete(`/rms/delete-rm/${id}`);
+      if (res.status == 200) {
+        toast.success("Raw material deleted successfully");
+        fetchRawMaterials(); // reload list
+      } else {
+        toast.error("Failed to delete raw material");
+      }
+    } catch (err) {
+      toast.error("Failed to delete raw material");
+    }
+  };
+
+  const handleToggleQualityInspection = async (id, currentValue) => {
+    const newValue = currentValue == true ? false : true;
+
+    try {
+      const res = await axios.patch(`/rms/update-rm/${id}`, {
+        qualityInspectionNeeded: newValue,
+      });
+
+      if (res.status === 200) {
+        toast.success("Quality Inspection status updated");
+        fetchRawMaterials(); // refresh the table
+      } else {
+        toast.error("Update failed");
+      }
+    } catch (err) {
+      toast.error("Failed to update inspection status");
+    }
+  };
+
+  const handleToggleStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
+    try {
+      const res = await axios.patch(`/rms/update-rm/${id}`, {
+        status: newStatus,
+      });
+      if (res.status === 200) {
+        toast.success(`Raw material status updated to ${newStatus}`);
+        fetchRawMaterials(); // refresh the table
+      } else {
+        toast.error("Failed to update status");
+      }
+    } catch (err) {
+      toast.error("Failed to update status");
+    }
+  };
+
+  const goToPage = (page) => {
+    if (page >= 1 && page <= pagination.totalPages) {
+      setPagination((prev) => ({ ...prev, currentPage: page }));
+    }
+  };
 
   const TableHeaders = [
     { label: "#", className: "" },
@@ -157,7 +242,10 @@ const RmMaster = () => {
             />
             <FiSearch className="absolute left-3 top-3 text-[#d8b76a]" />
           </div>
-          <button className="w-full sm:w-40 justify-center bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded flex items-center gap-2 cursor-pointer transition duration-200">
+          <button
+            onClick={() => setShowBulkPanel(true)}
+            className="w-full sm:w-40 justify-center bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded flex items-center gap-2 cursor-pointer transition duration-200"
+          >
             <FiPlus /> Add R.M.
           </button>
         </div>
@@ -206,12 +294,31 @@ const RmMaster = () => {
                       key={rm._id}
                       className="border-b border-[#d8b76a] hover:bg-gray-50"
                     >
-                      <td className="px-4 py-2">{i + 1}</td>
                       <td className="px-4 py-2">
-                        {new Date(rm.createdAt).toLocaleString()}
+                        {Number(pagination.currentPage - 1) *
+                          Number(pagination.limit) +
+                          i +
+                          1}
                       </td>
-                      <td className="px-4 py-2">
-                        {new Date(rm.updatedAt).toLocaleString()}
+                      <td className="px-2 py-2">
+                        {new Date(rm.createdAt).toLocaleString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}
+                      </td>
+                      <td className="px-2 py-2">
+                        {new Date(rm.updatedAt).toLocaleString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}
                       </td>
                       <td className="px-4 py-2">{rm.skuCode}</td>
                       <td className="px-4 py-2">{rm.itemName}</td>
@@ -219,18 +326,17 @@ const RmMaster = () => {
                       <td className="px-4 py-2">{rm.hsnOrSac}</td>
                       <td className="px-4 py-2">{rm.type}</td>
                       <td className="px-4 py-2">
-                        <span
-                          className={`px-2 py-1 text-xs rounded font-semibold whitespace-nowrap ${
-                            rm.qualityInspectionNeeded
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-600"
-                          }`}
-                        >
-                          {rm.qualityInspectionNeeded
-                            ? "Required"
-                            : "Not Required"}
-                        </span>
+                        <Toggle
+                          checked={rm.qualityInspectionNeeded}
+                          onChange={() =>
+                            handleToggleQualityInspection(
+                              rm.id,
+                              rm.qualityInspectionNeeded
+                            )
+                          }
+                        />
                       </td>
+
                       <td className="px-4 py-2">{rm.location || "-"}</td>
                       <td className="px-4 py-2">{rm.baseQty}</td>
                       <td className="px-4 py-2">{rm.pkgQty}</td>
@@ -254,29 +360,31 @@ const RmMaster = () => {
                         )}
                       </td>
                       <td className="px-4 py-2">
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-semibold ${
-                            rm.status === "Active"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-600"
-                          }`}
-                        >
-                          {rm.status}
-                        </span>
+                        <Toggle
+                          checked={rm.status === "Active"}
+                          onChange={() => handleToggleStatus(rm.id, rm.status)}
+                        />
                       </td>
-                      <td className="px-4 py-2">{rm.createdBy || "-"}</td>
+                      <td className="px-4 py-2">{rm.createdByName || "-"}</td>
                       <td className="px-4 py-2">
                         <div className="flex items-center gap-2 text-xl text-[#d39c25]">
                           <FiEdit
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Edit"
-                            // onClick={() => handleEdit(u)}
+                            onClick={() => setEditData(rm)}
                             className="hover:text-blue-500 cursor-pointer"
                           />
+                          {editData && (
+                            <EditRawMaterialModal
+                              rawMaterial={editData}
+                              onClose={() => setEditData(null)}
+                              onUpdated={fetchRawMaterials}
+                            />
+                          )}
                           <FiTrash2
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Delete"
-                            // onClick={() => handleDelete(u.id)}
+                            onClick={() => handleDelete(rm.id)}
                             className="hover:text-red-500 cursor-pointer"
                           />
                           <Tooltip
@@ -299,6 +407,38 @@ const RmMaster = () => {
           </table>
         </div>
       </div>
+      <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
+        <button
+          onClick={() => goToPage(pagination.currentPage - 1)}
+          disabled={pagination.currentPage <= 1}
+          className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer "
+        >
+          Prev
+        </button>
+
+        {[...Array(pagination.totalPages).keys()].map((_, i) => (
+          <button
+            key={i + 1}
+            onClick={() => goToPage(i + 1)}
+            className={`px-5 py-2 rounded text-base cursor-pointer ${
+              pagination.currentPage === i + 1
+                ? "bg-[#d8b76a] text-white font-semibold"
+                : "bg-[#d8b76a]/20"
+            }`}
+          >
+            {i + 1}
+          </button>
+        ))}
+
+        <button
+          onClick={() => goToPage(pagination.currentPage + 1)}
+          disabled={pagination.currentPage >= pagination.totalPages}
+          className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        >
+          Next
+        </button>
+      </div>
+      {showBulkPanel && <BulkRmPanel onClose={() => setShowBulkPanel(false)} />}
     </Dashboard>
   );
 };

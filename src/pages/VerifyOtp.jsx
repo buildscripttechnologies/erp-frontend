@@ -3,6 +3,7 @@ import AuthLayout from "../layouts/AuthLayout";
 import axios from "../utils/axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { ClipLoader } from "react-spinners";
 
 const VerifyOtp = () => {
   const [otp, setOtp] = useState("");
@@ -10,6 +11,7 @@ const VerifyOtp = () => {
   const [purpose, setPurpose] = useState("signup");
   const [resending, setResending] = useState(false);
   const [timer, setTimer] = useState(0);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,9 +23,12 @@ const VerifyOtp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const res = await axios.post("/otp/verify", { email, otp, purpose });
+
       if (res.data.token) localStorage.setItem("token", res.data.token);
+
       if (res.data.status === 200) {
         toast.success("OTP verified successfully!");
         navigate("/dashboard");
@@ -32,6 +37,8 @@ const VerifyOtp = () => {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "OTP verification failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,10 +100,18 @@ const VerifyOtp = () => {
         </select>
 
         <button
+          disabled={loading}
           type="submit"
           className="w-full bg-[#d8b76a] text-xl text-[#292927] font-bold hover:text-[#292927] py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer transition duration-200"
         >
-          Verify OTP
+          {loading ? (
+            <>
+              <span className="mr-2">Verifying...</span>
+              <ClipLoader size={20} color="#292926"  />
+            </>
+          ) : (
+            "Verify OTP"
+          )}
         </button>
       </form>
     </AuthLayout>

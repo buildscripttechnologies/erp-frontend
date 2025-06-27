@@ -21,10 +21,12 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext";
 
 export function Sidebar({ isOpen, setIsOpen }) {
   const [isMasterOpen, setIsMasterOpen] = useState(false);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const masterSubmenu = [
     { label: "Users", icon: FaUserCog, path: "/master-users" },
@@ -37,15 +39,15 @@ export function Sidebar({ isOpen, setIsOpen }) {
     { label: "Customer Master", icon: FaUserFriends },
   ];
 
-  const handleLogout = () => {
-    try {
-      localStorage.removeItem("token", "");
-      navigate(`/login`);
-      toast.success("Logged Out Successfully.");
-    } catch (error) {
-      toast.error("Error Logging Out.");
-    }
-  };
+  // const handleLogout = () => {
+  //   try {
+  //     localStorage.removeItem("token", "");
+  //     navigate(`/login`);
+  //     toast.success("Logged Out Successfully.");
+  //   } catch (error) {
+  //     toast.error("Error Logging Out.");
+  //   }
+  // };
 
   return (
     <aside
@@ -115,8 +117,8 @@ export function Sidebar({ isOpen, setIsOpen }) {
 
         {/* Logout */}
         <button
-          onClick={handleLogout}
-          className="flex items-center border-t border-[#d8b76a] text-2xl gap-3 text-[#d8b76a] hover:bg-gray-100 p-2 mt-4"
+          onClick={logout}
+          className="flex items-center border-t border-[#d8b76a] text-2xl gap-3 text-[#d8b76a] hover:bg-gray-100 p-2 mt-4 cursor-pointer "
         >
           <FiLogOut /> Logout
         </button>

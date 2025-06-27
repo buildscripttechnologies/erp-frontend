@@ -1,6 +1,6 @@
 // src/App.jsx
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -11,10 +11,12 @@ import Dashboard from "./pages/Dashboard";
 import Dash from "./components/Dash";
 import MasterUsers from "./components/master/MasterUsers";
 import RmMaster from "./components/master/RmMaster";
+import "react-toggle/style.css";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
 const App = () => {
-  const isAuthenticated = !!localStorage.getItem("token");
-
+  const { isAuthenticated, authChecked } = useAuth();
+  if (!authChecked) return <div>Loading...</div>;
   return (
     <BrowserRouter>
       <Routes>
@@ -39,6 +41,7 @@ const App = () => {
           path="/dashboard"
           element={isAuthenticated ? <Dash /> : <Navigate to="/login" />}
         />
+        <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
     </BrowserRouter>
   );

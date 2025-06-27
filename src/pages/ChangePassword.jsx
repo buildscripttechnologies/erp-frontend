@@ -5,16 +5,20 @@ import AuthLayout from "../layouts/AuthLayout";
 import axios from "../utils/axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { ClipLoader } from "react-spinners";
 
 const ChangePassword = () => {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [resending, setResending] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await axios.post("/auth/change-password", {
         email,
@@ -28,6 +32,8 @@ const ChangePassword = () => {
         err.response?.data?.message ||
           "Failed to change password. Please try again."
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -88,10 +94,18 @@ const ChangePassword = () => {
         />
 
         <button
+          disabled={loading}
           type="submit"
           className="w-full bg-[#d8b76a] text-xl text-[#292927] font-bold hover:text-[#292927] py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer transition duration-200"
         >
-          Change Password
+          {loading ? (
+            <>
+              <span className="mr-2">Changing Password...</span>
+              <ClipLoader size={20} color="#292926" />
+            </>
+          ) : (
+            "Change Password"
+          )}
         </button>
       </form>
     </AuthLayout>

@@ -5,19 +5,28 @@ import AuthLayout from "../layouts/AuthLayout";
 import axios from "../utils/axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { ClipLoader } from "react-spinners";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      await axios.post("/auth/reset-password", { email });
-      toast.success("OTP has been sent to your email");
-      navigate("/change-password");
+      const res = await axios.post("/auth/reset-password", { email });
+      if (res.status === 200) {
+        toast.success("OTP has been sent to your email");
+        navigate("/change-password");
+      } else {
+        toast.error("Failed to send OTP. Please try again."); // <-- Add error handling for failed OTP
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,10 +45,21 @@ const ResetPassword = () => {
           required
         />
         <button
+          disabled={loading}
           type="submit"
           className="w-full bg-[#d8b76a] text-xl text-[#292927] font-bold hover:text-[#292927] py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer transition duration-200"
         >
-          Send OTP
+          {loading ? (
+            <>
+              <span className="mr-2">Sending OTP...</span>
+              <ClipLoader
+                size={20}
+                color="#292926"
+              />
+            </>
+          ) : (
+            "Send OTP"
+          )}
         </button>
       </form>
     </AuthLayout>

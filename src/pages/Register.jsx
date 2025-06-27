@@ -3,10 +3,12 @@ import AuthLayout from "../layouts/AuthLayout";
 import axios from "../utils/axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { ClipLoader } from "react-spinners";
 
 const Register = () => {
   const navigate = useNavigate();
   const [userTypes, setUserTypes] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -18,8 +20,14 @@ const Register = () => {
   });
   const FetchUserTypes = async () => {
     try {
-      const res = await axios.get("/users/user-types");
-      setUserTypes(res.data.userTypes);
+      const res = await axios.get("/roles/all-roles");
+      console.log(res.data);
+
+      if (res.status === 200 || res.status === 201) {
+        setUserTypes(res.data.roles);
+      } else {
+        toast.error("Failed to fetch user types");
+      }
     } catch (error) {}
   };
   useEffect(() => {
@@ -28,14 +36,20 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // <-- Add loading state if needed
     try {
-      await axios.post("/auth/register", formData);
-      toast.success(
-        "Registered. OTP sent. Please check your email for the OTP."
-      );
-      navigate("/verify-otp");
+      const res = await axios.post("/auth/register", formData);
+
+      if (res.status === 200 || res.status === 201) {
+        toast.success("Registered. OTP sent. Please check your email.");
+        navigate("/verify-otp");
+      } else {
+        toast.error(res.data?.message || "Something went wrong.");
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false); // <-- Always reset loading
     }
   };
 
@@ -100,12 +114,12 @@ const Register = () => {
           onChange={(e) =>
             setFormData({ ...formData, userType: e.target.value })
           }
-          className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-3 focus:border-[#b38a37] focus:outline-none transition duration-200"
+          className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-3 focus:border-[#b38a37] focus:outline-none transition duration-200 cursor-pointer"
         >
           <option>Select User Type</option>
           {userTypes.map((role) => (
-            <option key={role} value={role}>
-              {role}
+            <option key={role.name} value={role.name}>
+              {role.name}
             </option>
           ))}
         </select>
@@ -122,10 +136,18 @@ const Register = () => {
         /> */}
 
         <button
+          disabled={loading}
           type="submit"
           className="w-full bg-[#d8b76a] text-xl text-[#292927] font-bold hover:text-[#292927] py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer transition duration-200"
         >
-          Register
+          {loading ? (
+            <>
+              <span className="mr-2">Registering User...</span>
+              <ClipLoader size={20} color="#292926" />
+            </>
+          ) : (
+            "Register"
+          )}
         </button>
         <p className="text-center text-xl mt-4">
           Already have an account?{" "}
