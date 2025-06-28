@@ -21,7 +21,7 @@ const Register = () => {
   const FetchUserTypes = async () => {
     try {
       const res = await axios.get("/roles/all-roles");
-      console.log(res.data);
+      // console.log(res.data);
 
       if (res.status === 200 || res.status === 201) {
         setUserTypes(res.data.roles);
@@ -42,7 +42,12 @@ const Register = () => {
 
       if (res.status === 200 || res.status === 201) {
         toast.success("Registered. OTP sent. Please check your email.");
-        navigate("/verify-otp");
+        navigate("/verify-otp", {
+          state: {
+            email: formData.email,
+            purpose: "signup",
+          },
+        });
       } else {
         toast.error(res.data?.message || "Something went wrong.");
       }
@@ -117,11 +122,13 @@ const Register = () => {
           className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-3 focus:border-[#b38a37] focus:outline-none transition duration-200 cursor-pointer"
         >
           <option>Select User Type</option>
-          {userTypes.map((role) => (
-            <option key={role.name} value={role.name}>
-              {role.name}
-            </option>
-          ))}
+          {userTypes
+            .filter((role) => role.name !== "Admin")
+            .map((role) => (
+              <option key={role.name} value={role.name}>
+                {role.name}
+              </option>
+            ))}
         </select>
 
         {/* <input

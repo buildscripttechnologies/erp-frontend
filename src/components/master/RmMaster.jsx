@@ -18,8 +18,9 @@ import AddBulkRawMaterials from "./BulkRmPanel.jsx";
 import BulkRmPanel from "./BulkRmPanel.jsx";
 import Toggle from "react-toggle";
 import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
+import AttachmentsModal from "../AttachmentsModal.jsx";
 
-const baseurl = "http://localhost:5000";
+export const baseurl = "http://localhost:5000";
 
 const RmMaster = () => {
   const [rawMaterials, setRawMaterials] = useState([]);
@@ -41,7 +42,7 @@ const RmMaster = () => {
     totalResults: 0,
     totalPages: 1,
     currentPage: 1,
-    limit: 20,
+    limit: 10,
   });
 
   const fetchRawMaterials = async (page = 1) => {
@@ -50,7 +51,7 @@ const RmMaster = () => {
       const res = await axios.get("/rms/rm", {
         params: {
           page,
-          limit: 20, // or dynamic
+          limit: pagination.limit, // or dynamic
           search, // if you have search
         },
       });
@@ -121,7 +122,7 @@ const RmMaster = () => {
 
   useEffect(() => {
     fetchRawMaterials(pagination.currentPage);
-  }, [pagination.currentPage]);
+  }, [pagination.currentPage, showBulkPanel]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this raw material?"))
@@ -140,7 +141,7 @@ const RmMaster = () => {
   };
 
   const handleToggleQualityInspection = async (id, currentValue) => {
-    const newValue = currentValue == true ? false : true;
+    const newValue = !currentValue;
 
     try {
       const res = await axios.patch(`/rms/update-rm/${id}`, {
@@ -149,12 +150,22 @@ const RmMaster = () => {
 
       if (res.status === 200) {
         toast.success("Quality Inspection status updated");
-        fetchRawMaterials(); // refresh the table
+
+        // ✅ Optimistically update the item locally in state
+        setRawMaterials((prev) =>
+          prev.map((rm) =>
+            rm.id === id ? { ...rm, qualityInspectionNeeded: newValue } : rm
+          )
+        );
       } else {
         toast.error("Update failed");
       }
     } catch (err) {
-      toast.error("Failed to update inspection status");
+      if (err.status == 403) {
+        toast.error("You Dont Have Permissions For This");
+      } else {
+        toast.error("Failed to Update Q.I. Status");
+      }
     }
   };
 
@@ -164,9 +175,14 @@ const RmMaster = () => {
       const res = await axios.patch(`/rms/update-rm/${id}`, {
         status: newStatus,
       });
+
       if (res.status === 200) {
         toast.success(`Raw material status updated to ${newStatus}`);
-        fetchRawMaterials(); // refresh the table
+
+        // ✅ Update local state without refetch
+        setRawMaterials((prev) =>
+          prev.map((rm) => (rm.id === id ? { ...rm, status: newStatus } : rm))
+        );
       } else {
         toast.error("Failed to update status");
       }
@@ -181,41 +197,47 @@ const RmMaster = () => {
     }
   };
 
-  const data = filteredData.map((e) => ({
-    skuCode: e.skuCode,
-    itemName: e.itemName,
-    description: e.description,
-    hsnOrSac: e.hsnOrSac,
-    type: e.type,
-    location: e.location,
-    moq: e.moq,
-    gst: e.gst,
-    stockQty: e.stockQty,
-    baseQty: e.baseQty,
-    pkgQty: e.pkgQty,
-    purchaseUOM: e.purchaseUOM,
-    stockUOM: e.stockUOM,
-    qualityInspectionNeeded: e.qualityInspectionNeeded
-      ? "Required"
-      : "Not Required",
-    attachments: e.attachments
-      .map((att) => `${baseurl}${att.fileUrl}`)
-      .join(", "),
-  }));
+  const data = (data) => {
+    return data.map((e) => ({
+      skuCode: e.skuCode,
+      itemName: e.itemName,
+      description: e.description,
+      hsnOrSac: e.hsnOrSac,
+      type: e.type,
+      location: e.location,
+      moq: e.moq,
+      gst: e.gst,
+      stockQty: e.stockQty,
+      baseQty: e.baseQty,
+      pkgQty: e.pkgQty,
+      purchaseUOM: e.purchaseUOM,
+      stockUOM: e.stockUOM,
+      qualityInspectionNeeded: e.qualityInspectionNeeded
+        ? "Required"
+        : "Not Required",
+      attachments: e.attachments
+        .map((att) => `${baseurl}${att.fileUrl}`)
+        .join(", "),
+    }));
+  };
 
   const handleExport = () => {
     let exportData = [];
 
     if (exportScope === "current") {
-      exportData = data; // This should be your paginated data state
+      exportData = data(filteredData); // This should be your paginated data state
     } else if (exportScope === "filtered") {
-      exportData = data; // This should be your search-filtered data
+      exportData = data(filteredData); // This should be your search-filtered data
     } else {
       // Fetch full data from backend
       axios
-        .get("/rms/rm")
+        .get("/rms/rm", {
+          params: {
+            limit: pagination.totalResults,
+          },
+        })
         .then((res) => {
-          exportData = res.data.data;
+          exportData = data(res.data.rawMaterials);
           generateExportFile(exportData);
         })
         .catch((err) => toast.error("Failed to export data"));
@@ -444,21 +466,28 @@ const RmMaster = () => {
                       <td className="px-4 py-2">{rm.purchaseUOM || "-"}</td>
                       <td className="px-4 py-2">{rm.gst}%</td>
                       <td className="px-4 py-2">{rm.stockQty}</td>
-                      <td className="px-4 py-2">{rm.stockUOM || "-"}</td>
-                      <td className="px-4 py-2">
+                      <td className="px-4 py-2 ">{rm.stockUOM || "-"}</td>
+
+                      <td className="text-center items-center justify-center">
                         {Array.isArray(rm.attachments) &&
                         rm.attachments.length > 0 ? (
                           <button
                             onClick={() => setOpenAttachments(rm.attachments)}
-                            className="cursor-pointer hover:text-[#d8b76a] hover:underline text-sm"
+                            className="cursor-pointer hover:text-[#d8b76a] hover:underline text-center items-center justify-center"
                           >
                             View Attachments
                           </button>
                         ) : (
                           "-"
                         )}
-                      </td>
 
+                        {openAttachments && (
+                          <AttachmentsModal
+                            attachments={openAttachments}
+                            onClose={() => setOpenAttachments(null)}
+                          />
+                        )}
+                      </td>
                       <td className="px-4 py-2">
                         <Toggle
                           checked={rm.status === "Active"}
@@ -539,7 +568,7 @@ const RmMaster = () => {
         </button>
       </div>
       {showBulkPanel && <BulkRmPanel onClose={() => setShowBulkPanel(false)} />}
-      {openAttachments && (
+      {/* {openAttachments && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-md mx-auto p-4 rounded-lg shadow-lg">
             <div className="flex justify-between items-center border-b border-[#d8b76a] pb-2 mb-4">
@@ -583,7 +612,7 @@ const RmMaster = () => {
             </ul>
           </div>
         </div>
-      )}
+      )} */}
     </Dashboard>
   );
 };

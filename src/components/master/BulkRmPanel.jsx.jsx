@@ -195,7 +195,15 @@ const BulkRmPanel = ({ onClose }) => {
                     }
                   />
                 </td>
-                <td className="p-2">RM</td>
+                <td className="p-2">
+                  <select
+                    name=""
+                    id=""
+                    className="px-2 py-1 w-32 border border-[#d8b76a] rounded focus:border-2 focus:border-[#b38a37] focus:outline-none transition duration-200 "
+                  >
+                    <option>RM</option>
+                  </select>
+                </td>
                 <td className="p-2">
                   <select
                     className="px-2 py-1 w-32 border border-[#d8b76a] rounded focus:border-2 focus:border-[#b38a37] focus:outline-none transition duration-200 "
@@ -299,6 +307,7 @@ const BulkRmPanel = ({ onClose }) => {
                 </td>
                 <td className="p-2">
                   <input
+                    className=" text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-1 file:px-4 file:rounded file:border-0 file:text-sm  file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
                     type="file"
                     multiple
                     onChange={(e) => handleFileChange(i, e.target.files)}

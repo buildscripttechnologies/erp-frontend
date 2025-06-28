@@ -23,7 +23,12 @@ const Login = () => {
 
       if (status === 403) {
         toast.error("Please verify your email for 2FA.");
-        navigate("/verify-otp");
+        navigate("/verify-otp", {
+          state: {
+            email: email,
+            purpose: "2FA",
+          },
+        });
         return;
       }
 

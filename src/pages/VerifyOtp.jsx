@@ -1,18 +1,35 @@
 import React, { useState, useEffect } from "react";
 import AuthLayout from "../layouts/AuthLayout";
 import axios from "../utils/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ClipLoader } from "react-spinners";
 
 const VerifyOtp = () => {
   const [otp, setOtp] = useState("");
   const [email, setEmail] = useState("");
-  const [purpose, setPurpose] = useState("signup");
+  const [purpose, setPurpose] = useState("");
   const [resending, setResending] = useState(false);
   const [timer, setTimer] = useState(0);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state) {
+      console.log("State : ", location.state);
+
+      setEmail(location.state.email || "");
+      setPurpose(location.state.purpose || "");
+    }
+  }, [location.state]);
+
+  // useEffect(() => {
+  //   if (!location.state?.email) {
+  //     toast.error("Invalid access");
+  //     navigate("/"); // or redirect to login/signup
+  //   }
+  // }, [location]);
 
   useEffect(() => {
     if (timer > 0) {
@@ -93,7 +110,7 @@ const VerifyOtp = () => {
         <select
           value={purpose}
           onChange={(e) => setPurpose(e.target.value)}
-          className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-2 focus:border-[#b38a37] focus:outline-none transition duration-200"
+          className="hidden w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-2 focus:border-[#b38a37] focus:outline-none transition duration-200"
         >
           <option value="signup">Signup</option>
           <option value="2fa">2FA</option>
@@ -107,7 +124,7 @@ const VerifyOtp = () => {
           {loading ? (
             <>
               <span className="mr-2">Verifying...</span>
-              <ClipLoader size={20} color="#292926"  />
+              <ClipLoader size={20} color="#292926" />
             </>
           ) : (
             "Verify OTP"

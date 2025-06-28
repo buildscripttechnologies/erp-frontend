@@ -1,9 +1,9 @@
 // src/pages/ChangePassword.jsx
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AuthLayout from "../layouts/AuthLayout";
 import axios from "../utils/axios";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ClipLoader } from "react-spinners";
 
@@ -15,6 +15,15 @@ const ChangePassword = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state) {
+      console.log("State : ", location.state);
+
+      setEmail(location.state.email || "");
+    }
+  }, [location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,7 +87,7 @@ const ChangePassword = () => {
             type="button"
             onClick={handleResendOtp}
             disabled={resending}
-            className="px-4 py-2 text-sm font-semibold text-[#292927] border border-[#d8b76a] bg-white rounded hover:bg-[#f7f3ea] transition duration-200 disabled:opacity-50"
+            className="px-4 py-2 text-sm font-semibold whitespace-nowrap cursor-pointer text-[#292927] border border-[#d8b76a] bg-white rounded hover:bg-[#f7f3ea] transition duration-200 disabled:opacity-50"
           >
             {resending ? "Sending..." : "Resend OTP"}
           </button>

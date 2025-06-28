@@ -17,6 +17,8 @@ import toast from "react-hot-toast";
 import { Tooltip } from "react-tooltip";
 import TableSkeleton from "../TableSkeleton";
 import RoleSkeleton from "../RoleSkeleton";
+import AccessDeniedNotice from "../AccessDeniedNotice";
+import Toggle from "react-toggle";
 
 export default function MasterUsers() {
   const navigate = useNavigate();
@@ -29,6 +31,9 @@ export default function MasterUsers() {
   const [editMode, setEditMode] = useState(false);
   const [editUserId, setEditUserId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [access, setAccess] = useState(false);
+
+  const [userTypesLoaded, setUserTypesLoaded] = useState(false);
 
   const [pagination, setPagination] = useState({
     totalResults: 0,
@@ -62,6 +67,7 @@ export default function MasterUsers() {
       if (res.data.status === 200) {
         setUsers(res.data.users);
         setPagination(res.data.pagination);
+        setAccess(true);
         setLoading(false);
       } else {
         toast.error("Failed to fetch users.");
@@ -79,13 +85,24 @@ export default function MasterUsers() {
       } else {
         toast.error(err.message);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
-    FetchUserTypes();
-  }, [filterRole, currentPage]);
+    const loadUserTypes = async () => {
+      await FetchUserTypes();
+      setUserTypesLoaded(true);
+    };
+    loadUserTypes();
+  }, []);
+
+  useEffect(() => {
+    if (userTypesLoaded) {
+      fetchUsers();
+    }
+  }, [userTypesLoaded, filterRole, currentPage]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -143,17 +160,53 @@ export default function MasterUsers() {
   };
 
   const handleToggleStatus = async (user) => {
+    const newStatus = user.status === "Active" ? "Inactive" : "Active";
+
     try {
-      const newStatus = user.status === "Active" ? "Inactive" : "Active";
-      await axios.patch(`/users/update-user/${user.id}`, {
+      const res = await axios.patch(`/users/update-user/${user.id}`, {
         status: newStatus,
       });
-      toast.success(
-        `User ${newStatus === "Active" ? "activated" : "deactivated"}.`
-      );
-      fetchUsers();
+
+      if (res.status === 200) {
+        toast.success(
+          `User ${newStatus === "Active" ? "activated" : "deactivated"}.`
+        );
+
+        // ✅ Optimistically update user list locally
+        setUsers((prev) =>
+          prev.map((u) => (u.id === user.id ? { ...u, status: newStatus } : u))
+        );
+      } else {
+        toast.error("Status update failed.");
+      }
     } catch (err) {
       toast.error("Status update failed.");
+    }
+  };
+
+  const toggleVerification = async (user) => {
+    const newVerification = user.isVerified ? false : true;
+    try {
+      const res = await axios.patch(`/users/update-user/${user.id}`, {
+        isVerified: newVerification,
+      });
+
+      if (res.status === 200) {
+        toast.success(
+          `User ${newVerification === true ? "Verified" : "Not Verified"}.`
+        );
+
+        // ✅ Optimistically update user list locally
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === user.id ? { ...u, isVerified: newVerification } : u
+          )
+        );
+      } else {
+        toast.error("Verification Update Failed.");
+      }
+    } catch (err) {
+      toast.error("Verification Update Failed.");
     }
   };
 
@@ -205,292 +258,309 @@ export default function MasterUsers() {
 
   return (
     <Dashboard>
-      {/* Add User Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-[#292927]/50 z-50 flex justify-center items-center">
-          <div className="bg-white rounded-lg shadow-lg w-[90%] max-w-md p-6 relative">
-            <button
-              className="absolute top-2 right-3 text-2xl text-gray-500 hover:text-[#d8b76a] font-bold"
-              onClick={() => setShowForm(false)}
-            >
-              ×
-            </button>
-            <h3 className="text-lg font-bold text-[#d8b76a] mb-4">
-              Add New User
-            </h3>
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              {["fullName", "username", "email", "password", "mobile"].map(
-                (field) => (
-                  <input
-                    key={field}
-                    type={
-                      field === "email"
-                        ? "email"
-                        : field === "password"
-                        ? "password"
-                        : "text"
-                    }
-                    placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                    value={formData[field]}
-                    onChange={(e) =>
-                      setFormData({ ...formData, [field]: e.target.value })
-                    }
-                    className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none"
-                    required={!editMode || field !== "password"}
-                  />
-                )
-              )}
-              <select
-                value={formData.userType}
-                onChange={(e) =>
-                  setFormData({ ...formData, userType: e.target.value })
-                }
-                className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none"
-                required
-              >
-                <option value="">Select User Type</option>
-                {roles
-                  .filter((r) => r !== "All")
-                  .map((role) => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  ))}
-              </select>
-              <button
-                type="submit"
-                className="w-full bg-[#d8b76a] hover:bg-[#c3a14f] text-white font-semibold py-2 rounded"
-              >
-                {editMode ? "Update User" : "Register User"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Header and Actions */}
-      <div className="relative p-4 sm:p-6 max-w-[92vw] mx-auto overflow-x-hidden">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
-            All Users{" "}
-            <span className="text-sm text-black">
-              ({pagination.totalResults})
-            </span>
-          </h2>
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-[#d8b76a] text-[#292926] font-semibold px-4 py-2 rounded  items-center gap-2 hover:bg-[#d8b76a]/80  transition cursor-pointer hidden sm:flex"
-          >
-            <FiUserPlus /> Add User
-          </button>
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-wrap gap-3 mb-4">
-          <div className="relative w-full sm:max-w-80">
-            <input
-              type="text"
-              placeholder="Search users..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-[#292926]  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-            />
-            <FiSearch className="absolute left-3 top-3 text-[#d8b76a]" />
-          </div>
-          {loading ? (
-            <RoleSkeleton />
-          ) : (
-            <>
-              {roles.map((role) => (
+      {access ? (
+        <>
+          {/* Add User Modal */}
+          {showForm && (
+            <div className="fixed inset-0 bg-[#292927]/50 z-50 flex justify-center items-center">
+              <div className="bg-white rounded-lg shadow-lg w-[90%] max-w-md p-6 relative">
                 <button
-                  key={role}
-                  onClick={() => {
-                    setFilterRole(role);
-                    setCurrentPage(1);
-                  }}
-                  className={`px-4 py-1.5 rounded text-base ${
-                    role === filterRole
-                      ? "bg-[#d8b76a] text-white font-semibold"
-                      : "bg-[#d8b76a]/20 text-[#292926]"
-                  } hover:bg-[#d8b76a] transition cursor-pointer hidden sm:inline-block`}
+                  className="absolute top-2 right-3 text-2xl text-gray-500 hover:text-[#d8b76a] font-bold cursor-pointer"
+                  onClick={() => setShowForm(false)}
                 >
-                  {role}
+                  ×
                 </button>
-              ))}
-            </>
+                <h3 className="text-lg font-bold text-[#d8b76a] mb-4">
+                  Add New User
+                </h3>
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                  {["fullName", "username", "email", "password", "mobile"].map(
+                    (field) => (
+                      <input
+                        key={field}
+                        type={
+                          field === "email"
+                            ? "email"
+                            : field === "password"
+                            ? "password"
+                            : "text"
+                        }
+                        placeholder={
+                          field.charAt(0).toUpperCase() + field.slice(1)
+                        }
+                        value={formData[field]}
+                        onChange={(e) =>
+                          setFormData({ ...formData, [field]: e.target.value })
+                        }
+                        className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none"
+                        required={!editMode || field !== "password"}
+                      />
+                    )
+                  )}
+                  <select
+                    value={formData.userType}
+                    onChange={(e) =>
+                      setFormData({ ...formData, userType: e.target.value })
+                    }
+                    className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none cursor-pointer"
+                    required
+                  >
+                    <option value="">Select User Type</option>
+                    {roles
+                      .filter((r) => r !== "All")
+                      .map((role) => (
+                        <option key={role} value={role}>
+                          {role}
+                        </option>
+                      ))}
+                  </select>
+                  <button
+                    type="submit"
+                    className="w-full bg-[#d8b76a] hover:bg-[#c3a14f] text-white font-semibold py-2 rounded"
+                  >
+                    {editMode ? "Update User" : "Register User"}
+                  </button>
+                </form>
+              </div>
+            </div>
           )}
 
-          <div className="flex overflow-scroll sm:overflow-hidden sm:flex-wrap gap-2 sm:hidden">
-            {loading ? (
-              <RoleSkeleton />
-            ) : (
-              <>
-                {roles.map((role) => (
-                  <button
-                    key={role}
-                    onClick={() => {
-                      setFilterRole(role);
-                      setCurrentPage(1);
-                    }}
-                    className={`px-4 py-1.5 rounded text-base ${
-                      role === filterRole
-                        ? "bg-[#d8b76a] text-white font-semibold"
-                        : "bg-[#d8b76a]/20 text-[#292926]"
-                    } hover:bg-[#d8b76a] transition cursor-pointer`}
-                  >
-                    {role}
-                  </button>
-                ))}
-              </>
-            )}
-          </div>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-[#d8b76a] text-[#292926] w-full text-center justify-center font-semibold px-4 py-2 rounded flex items-center gap-2 hover:bg-[#d8b76a]/80  transition cursor-pointer mb-4 sm:hidden"
-        >
-          <FiUserPlus /> Add User
-        </button>
+          {/* Header and Actions */}
+          <div className="relative p-4 sm:p-6 max-w-[92vw] mx-auto overflow-x-hidden">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
+                All Users{" "}
+                <span className="text-sm text-black">
+                  ({pagination.totalResults})
+                </span>
+              </h2>
+              <button
+                onClick={() => setShowForm(true)}
+                className="bg-[#d8b76a] text-[#292926] font-semibold px-4 py-2 rounded  items-center gap-2 hover:bg-[#d8b76a]/80  transition cursor-pointer hidden sm:flex"
+              >
+                <FiUserPlus /> Add User
+              </button>
+            </div>
 
-        {/* Table */}
-        <div className="bg-white rounded shadow overflow-x-auto">
-          <table className="min-w-full text-sm sm:text-base">
-            <thead className="bg-[#d8b76a] text-[#292927] text-left">
-              <tr>
-                <th className="py-2 px-4">#</th>
-                <th className="py-2 px-4">Name</th>
-                <th className="py-2 px-4 hidden md:table-cell">Mobile</th>
-                <th className="py-2 px-4 hidden lg:table-cell">Email</th>
-                <th className="py-2 px-4 hidden lg:table-cell">IsVerified</th>
-                <th className="py-2 px-4">Role</th>
-                <th className="py-2 px-4 hidden xl:table-cell">Username</th>
-                <th className="py-2 px-4">Status</th>
-                <th className="py-2 px-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <TableSkeleton rows={5} columns={userTableHeaders} />
+            {/* Filters */}
+            <div className="flex flex-wrap gap-3 mb-4">
+              <div className="relative w-full sm:max-w-80">
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 text-[#292926]  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                />
+                <FiSearch className="absolute left-3 top-3 text-[#d8b76a]" />
+              </div>
+              {!userTypesLoaded ? (
+                <RoleSkeleton />
               ) : (
                 <>
-                  {filteredUsers.map((u, i) => (
-                    <tr
-                      key={u.id}
-                      className="border-b border-[#d8b76a] hover:bg-gray-50"
+                  {roles.map((role) => (
+                    <button
+                      key={role}
+                      onClick={() => {
+                        setFilterRole(role);
+                        setCurrentPage(1);
+                      }}
+                      className={`px-4 py-1.5 rounded text-base ${
+                        role === filterRole
+                          ? "bg-[#d8b76a] text-white font-semibold"
+                          : "bg-[#d8b76a]/20 text-[#292926]"
+                      } hover:bg-[#d8b76a] transition cursor-pointer hidden sm:inline-block`}
                     >
-                      <td className="px-4 py-2">{i + 1}</td>
-                      <td className="px-4 py-2">{u.fullName}</td>
-                      <td className="px-4 py-2 hidden md:table-cell">
-                        {u.mobile}
-                      </td>
-                      <td className="px-4 py-2 hidden lg:table-cell">
-                        {u.email}
-                      </td>
-                      <td className="px-4 py-2 hidden lg:table-cell">
-                        <span
-                          className={`px-2 py-1 text-xs rounded font-semibold whitespace-nowrap ${
-                            u.isVerified
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-600"
-                          }`}
-                        >
-                          {u.isVerified ? "Verified" : "Not Verified"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2">{u.userType}</td>
-                      <td className="px-4 py-2 hidden xl:table-cell">
-                        {u.username}
-                      </td>
-                      <td className="px-4 py-2">
-                        <span
-                          className={`px-2 py-1 text-xs rounded font-semibold ${
-                            u.status === "Active"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-600"
-                          }`}
-                        >
-                          {u.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 flex gap-2 text-xl text-[#d39c25]">
-                        <FiEdit
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Edit User"
-                          onClick={() => handleEdit(u)}
-                          className="hover:text-blue-500 cursor-pointer"
-                        />
-                        <FiTrash2
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Delete User"
-                          onClick={() => handleDelete(u.id)}
-                          className="hover:text-red-500 cursor-pointer"
-                        />
-
-                        {u.status === "Active" ? (
-                          <FiUserCheck
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Deactivate User"
-                            onClick={() => handleToggleStatus(u)}
-                            className="text-[#d39c25] hover:text-green-700 cursor-pointer"
-                          />
-                        ) : (
-                          <FiUserX
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Activate User"
-                            onClick={() => handleToggleStatus(u)}
-                            className="text-[#d39c25] hover:text-red-700 cursor-pointer"
-                          />
-                        )}
-                        <Tooltip
-                          id="statusTip"
-                          place="top"
-                          style={{
-                            backgroundColor: "#292926",
-                            color: "#d8b76a",
-                            fontSize: "12px",
-                            fontWeight: "bold",
-                          }}
-                        />
-                      </td>
-                    </tr>
+                      {role}
+                    </button>
                   ))}
                 </>
               )}
-            </tbody>
-          </table>
-        </div>
 
-        {/* Pagination */}
-        <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
-          <button
-            onClick={() => goToPage(currentPage - 1)}
-            disabled={currentPage <= 1}
-            className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50"
-          >
-            Prev
-          </button>
-          {[...Array(pagination.totalPages).keys()].map((_, i) => (
+              <div className="flex overflow-scroll sm:overflow-hidden sm:flex-wrap gap-2 sm:hidden">
+                {!userTypesLoaded ? (
+                  <RoleSkeleton />
+                ) : (
+                  <>
+                    {roles.map((role) => (
+                      <button
+                        key={role}
+                        onClick={() => {
+                          setFilterRole(role);
+                          setCurrentPage(1);
+                        }}
+                        className={`px-4 py-1.5 rounded text-base ${
+                          role === filterRole
+                            ? "bg-[#d8b76a] text-white font-semibold"
+                            : "bg-[#d8b76a]/20 text-[#292926]"
+                        } hover:bg-[#d8b76a] transition cursor-pointer`}
+                      >
+                        {role}
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            </div>
             <button
-              key={i + 1}
-              onClick={() => goToPage(i + 1)}
-              className={`px-5 py-2 rounded text-base ${
-                pagination.currentPage === i + 1
-                  ? "bg-[#d8b76a] text-white font-semibold"
-                  : "bg-[#d8b76a]/20"
-              }`}
+              onClick={() => setShowForm(true)}
+              className="bg-[#d8b76a] text-[#292926] w-full text-center justify-center font-semibold px-4 py-2 rounded flex items-center gap-2 hover:bg-[#d8b76a]/80  transition cursor-pointer mb-4 sm:hidden"
             >
-              {i + 1}
+              <FiUserPlus /> Add User
             </button>
-          ))}
-          <button
-            onClick={() => goToPage(currentPage + 1)}
-            disabled={currentPage >= pagination.totalPages}
-            className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+
+            {/* Table */}
+            <div className="bg-white rounded shadow overflow-x-auto">
+              <table className="min-w-full text-sm sm:text-base">
+                <thead className="bg-[#d8b76a] text-[#292927] text-left">
+                  <tr>
+                    <th className="py-2 px-4">#</th>
+                    <th className="py-2 px-4">Name</th>
+                    <th className="py-2 px-4 hidden md:table-cell">Mobile</th>
+                    <th className="py-2 px-4 hidden lg:table-cell">Email</th>
+                    <th className="py-2 px-4 hidden lg:table-cell">
+                      IsVerified
+                    </th>
+                    <th className="py-2 px-4">Role</th>
+                    <th className="py-2 px-4 hidden xl:table-cell">Username</th>
+                    <th className="py-2 px-4">Status</th>
+                    <th className="py-2 px-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <TableSkeleton rows={5} columns={userTableHeaders} />
+                  ) : (
+                    <>
+                      {filteredUsers.map((u, i) => (
+                        <tr
+                          key={u.id}
+                          className="border-b border-[#d8b76a] hover:bg-gray-50"
+                        >
+                          <td className="px-4 py-2">{i + 1}</td>
+                          <td className="px-4 py-2">{u.fullName}</td>
+                          <td className="px-4 py-2 hidden md:table-cell">
+                            {u.mobile}
+                          </td>
+                          <td className="px-4 py-2 hidden lg:table-cell">
+                            {u.email}
+                          </td>
+                          <td
+                            // data-tooltip-id="statusTip"
+                            // data-tooltip-content={
+                            //   u.isVerified ? "Set Verified" : "Set Not Verified"
+                            // }
+                            className="px-4 py-2 hidden lg:table-cell "
+                          >
+                            <Toggle
+                              checked={u.isVerified}
+                              onChange={() => toggleVerification(u)}
+                              className="text-xs"
+                            />
+                          </td>
+
+                          <td className="px-4 py-2">{u.userType}</td>
+                          <td className="px-4 py-2 hidden xl:table-cell">
+                            {u.username}
+                          </td>
+                          <td
+                            // data-tooltip-id="statusTip"
+                            // data-tooltip-content={
+                            //   u.status == "Active"
+                            //     ? "Deactivate User"
+                            //     : "Activate User"
+                            // }
+                            className="px-4 py-2"
+                          >
+                            <Toggle
+                              checked={u.status == "Active"}
+                              onClick={() => handleToggleStatus(u)}
+                              className="text-xs"
+                            />
+                          </td>
+                          <td className="px-4 py-2 flex gap-2 text-xl text-[#d39c25]">
+                            <FiEdit
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Edit User"
+                              onClick={() => handleEdit(u)}
+                              className="hover:text-blue-500 cursor-pointer"
+                            />
+                            <FiTrash2
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Delete User"
+                              onClick={() => handleDelete(u.id)}
+                              className="hover:text-red-500 cursor-pointer"
+                            />
+
+                            {/* {u.status === "Active" ? (
+                              <FiUserCheck
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Deactivate User"
+                                onClick={() => handleToggleStatus(u)}
+                                className="text-[#d39c25] hover:text-green-700 cursor-pointer"
+                              />
+                            ) : (
+                              <FiUserX
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Activate User"
+                                onClick={() => handleToggleStatus(u)}
+                                className="text-[#d39c25] hover:text-red-700 cursor-pointer"
+                              />
+                            )} */}
+                            <Tooltip
+                              id="statusTip"
+                              place="top"
+                              style={{
+                                backgroundColor: "#292926",
+                                color: "#d8b76a",
+                                fontSize: "12px",
+                                fontWeight: "bold",
+                              }}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50"
+              >
+                Prev
+              </button>
+              {[...Array(pagination.totalPages).keys()].map((_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => goToPage(i + 1)}
+                  className={`px-5 py-2 rounded text-base ${
+                    pagination.currentPage === i + 1
+                      ? "bg-[#d8b76a] text-white font-semibold"
+                      : "bg-[#d8b76a]/20"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage >= pagination.totalPages}
+                className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </>
+      ) : (
+        <AccessDeniedNotice userType="Admin" />
+      )}
     </Dashboard>
   );
 }

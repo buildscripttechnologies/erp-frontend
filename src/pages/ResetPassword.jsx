@@ -19,7 +19,11 @@ const ResetPassword = () => {
       const res = await axios.post("/auth/reset-password", { email });
       if (res.status === 200) {
         toast.success("OTP has been sent to your email");
-        navigate("/change-password");
+        navigate("/change-password", {
+          state: {
+            email: email,
+          },
+        });
       } else {
         toast.error("Failed to send OTP. Please try again."); // <-- Add error handling for failed OTP
       }
@@ -52,10 +56,7 @@ const ResetPassword = () => {
           {loading ? (
             <>
               <span className="mr-2">Sending OTP...</span>
-              <ClipLoader
-                size={20}
-                color="#292926"
-              />
+              <ClipLoader size={20} color="#292926" />
             </>
           ) : (
             "Send OTP"

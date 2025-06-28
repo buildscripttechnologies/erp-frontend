@@ -75,7 +75,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
 
   return (
     <div className="fixed inset-0  backdrop-blur-xs   flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-[92vw] sm:max-w-3xl rounded-lg p-6  border overflow-y-auto max-h-[90vh] scrollbar-hide">
+      <div className="bg-white w-full max-w-[92vw] sm:max-w-3xl rounded-lg p-6  border overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
         <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">
           Edit Raw Material
         </h2>
@@ -200,7 +200,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
             <select
               value={formData.purchaseUOM}
               onChange={(e) => handleChange("purchaseUOM", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] cursor-pointer"
             >
               <option value="">Select</option>
               {uoms.map((u) => (
@@ -239,7 +239,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
             <select
               value={formData.stockUOM}
               onChange={(e) => handleChange("stockUOM", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] cursor-pointer "
             >
               <option value="">Select</option>
               {uoms.map((u) => (
@@ -274,7 +274,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
                       onClick={() =>
                         setDeletedAttachments((prev) => [...prev, att._id])
                       }
-                      className="text-red-600 hover:underline text-sm"
+                      className="text-red-600 hover:underline text-sm cursor-pointer"
                     >
                       Delete
                     </button>
@@ -292,7 +292,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
               type="file"
               multiple
               onChange={(e) => setNewAttachments(Array.from(e.target.files))}
-              className="block w-full text-sm text-gray-600"
+              className="block w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
             />
           </div>
 
@@ -301,14 +301,14 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded"
+              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded cursor-pointer font-semibold "
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded"
+              className="px-6 py-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded cursor-pointer"
             >
               {loading ? "Updating..." : "Update"}
             </button>
