@@ -2,7 +2,6 @@ import * as XLSX from "xlsx";
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { baseurl } from "../components/master/RmMaster";
 
 export const exportToExcel = (data) => {
   const worksheet = XLSX.utils.json_to_sheet(data);

@@ -1,15 +1,44 @@
 import React from "react";
-import { baseurl } from "./master/RmMaster";
 import { FiDownload, FiExternalLink } from "react-icons/fi";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const AttachmentsModal = ({ attachments = [], onClose }) => {
   const isImage = (filename) =>
     /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(filename);
 
+  const getMimeType = (filename) => {
+    if (filename.endsWith(".pdf")) return "application/pdf";
+    if (filename.endsWith(".png")) return "image/png";
+    if (filename.endsWith(".jpg") || filename.endsWith(".jpeg"))
+      return "image/jpeg";
+    return "application/octet-stream"; // fallback
+  };
+
+  const handlePreview = async (att) => {
+    try {
+      const response = await axios.get(att.fileUrl, {
+        responseType: "blob",
+      });
+
+      const mimeType = getMimeType(att.fileName); // ✅ use filename
+      const blob = new Blob([response.data], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+
+      if (mimeType === "application/pdf" || mimeType.startsWith("image/")) {
+        window.open(url, "_blank");
+      } else {
+        toast.error("Preview not supported for this file type");
+      }
+    } catch (err) {
+      console.error("Preview error", err);
+      toast.error("Failed to preview file");
+    }
+  };
+
   const handleDownload = async (att) => {
     try {
-      const response = await axios.get(baseurl + att.fileUrl, {
+      const response = await axios.get(att.fileUrl, {
         responseType: "blob",
       });
 
@@ -54,7 +83,7 @@ const AttachmentsModal = ({ attachments = [], onClose }) => {
                 <div className="flex items-center gap-2">
                   {isImage(att.fileName) ? (
                     <img
-                      src={baseurl + att.fileUrl}
+                      src={att.fileUrl}
                       alt={att.fileName}
                       className="w-12 h-12 object-cover rounded border border-gray-300"
                     />
@@ -66,7 +95,7 @@ const AttachmentsModal = ({ attachments = [], onClose }) => {
 
                   {/* Filename */}
                   <a
-                    href={baseurl + att.fileUrl}
+                    href={att.fileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-blue-600 hover:underline truncate"
@@ -79,7 +108,7 @@ const AttachmentsModal = ({ attachments = [], onClose }) => {
                 <div className="flex gap-4 ">
                   {/* Open in new tab */}
                   <a
-                    href={baseurl + att.fileUrl}
+                    onClick={() => handlePreview(att)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[#292926] hover:text-[#d8b76a] transition"

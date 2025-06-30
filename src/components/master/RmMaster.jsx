@@ -20,7 +20,7 @@ import Toggle from "react-toggle";
 import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
 import AttachmentsModal from "../AttachmentsModal.jsx";
 
-export const baseurl = "http://localhost:5000";
+// export const baseurl = "http://localhost:5000";
 
 const RmMaster = () => {
   const [rawMaterials, setRawMaterials] = useState([]);
@@ -215,9 +215,7 @@ const RmMaster = () => {
       qualityInspectionNeeded: e.qualityInspectionNeeded
         ? "Required"
         : "Not Required",
-      attachments: e.attachments
-        .map((att) => `${baseurl}${att.fileUrl}`)
-        .join(", "),
+      attachments: e.attachments.map((att) => `${att.fileUrl}`).join(", "),
     }));
   };
 
@@ -592,7 +590,7 @@ const RmMaster = () => {
                   <span className="truncate w-1/2 ">{file.fileName}</span>
                   <div className="flex gap-3">
                     <a
-                      href={baseurl + file.fileUrl}
+                      href={ file.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[#d8b76a] hover:text-blue-600 font-semibold hover:underline"
@@ -600,7 +598,7 @@ const RmMaster = () => {
                       Open
                     </a>
                     <a
-                      href={baseurl + file.fileUrl}
+                      href={ file.fileUrl}
                       download={file.fileName}
                       className="text-[#d8b76a] hover:text-green-600 font-semibold hover:underline"
                     >

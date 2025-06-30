@@ -13,6 +13,7 @@ import MasterUsers from "./components/master/MasterUsers";
 import RmMaster from "./components/master/RmMaster";
 import "react-toggle/style.css";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import UomMaster from "./components/master/UomMaster";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -36,6 +37,10 @@ const App = () => {
         <Route
           path="/rm-master"
           element={isAuthenticated ? <RmMaster /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/uom-master"
+          element={isAuthenticated ? <UomMaster /> : <Navigate to="/login" />}
         />
         <Route
           path="/dashboard"

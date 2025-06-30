@@ -31,7 +31,7 @@ export function Sidebar({ isOpen, setIsOpen }) {
   const masterSubmenu = [
     { label: "Users", icon: FaUserCog, path: "/master-users" },
     { label: "R. M. Master", icon: FaCubes, path: "/rm-master" },
-    { label: "UOM Master", icon: FaBalanceScale },
+    { label: "UOM Master", icon: FaBalanceScale, path: "/uom-master" },
     { label: "SFG Master", icon: FaLayerGroup },
     { label: "Location Master", icon: FaMapMarkerAlt },
     { label: "FG Master", icon: FaCube },
