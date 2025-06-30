@@ -64,9 +64,10 @@ export const exportToPDF = (rawMaterials) => {
     },
     columnStyles: {
       0: { cellWidth: 20 }, // SKU
-      1: { cellWidth: 30 }, // Item Name
+      1: { cellWidth: 20 }, // Item Name
       2: { cellWidth: 30 }, // Description
-      14: { cellWidth: 80 }, // Attachments
+      5: { cellWidth: 20 }, // Location
+      // 14: { cellWidth: 80 }, // Attachments
     },
     startY: 20,
     theme: "grid",

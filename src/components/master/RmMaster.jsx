@@ -528,6 +528,16 @@ const RmMaster = () => {
                       </td>
                     </tr>
                   ))}
+                  {filteredData.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan="4"
+                        className="text-center py-4 text-gray-500 w-full"
+                      >
+                        No RMs found.
+                      </td>
+                    </tr>
+                  )}
                 </>
               )}
             </tbody>

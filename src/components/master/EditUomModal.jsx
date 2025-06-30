@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
+import { ClipLoader } from "react-spinners";
 
 const EditUomModal = ({ uom, onClose, onUpdated }) => {
   const [formData, setFormData] = useState({
@@ -17,7 +18,7 @@ const EditUomModal = ({ uom, onClose, onUpdated }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.put(`/uoms/update-uom/${uom._id}`, formData);
+      await axios.patch(`/uoms/update-uom/${uom._id}`, formData);
       toast.success("UOM updated successfully");
       onUpdated();
       onClose();
@@ -30,7 +31,7 @@ const EditUomModal = ({ uom, onClose, onUpdated }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/10">
-      <div className="bg-white w-full max-w-md p-6 rounded-lg border border-[#d8b76a] shadow-lg">
+      <div className="bg-white w-[92vw] max-w-md p-6 rounded-lg border border-[#d8b76a] shadow-lg">
         <h2 className="text-xl font-bold text-[#d8b76a] mb-4">Edit UOM</h2>
         <form
           onSubmit={handleSubmit}
@@ -60,16 +61,23 @@ const EditUomModal = ({ uom, onClose, onUpdated }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-[#292926] rounded font-semibold"
+              className="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-[#292926] rounded font-semibold cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] rounded font-semibold"
+              className="px-6 py-2 bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] flex justify-center items-center rounded font-semibold cursor-pointer"
             >
-              {loading ? "Saving..." : "Update"}
+              {loading ? (
+                <>
+                  <span className="mr-2">Updating...</span>
+                  <ClipLoader size={20} color="#292926" />
+                </>
+              ) : (
+                "Update"
+              )}
             </button>
           </div>
         </form>

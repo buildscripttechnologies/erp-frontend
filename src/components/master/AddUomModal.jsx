@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "../../utils/axios";
 import { FiMinus, FiPlus } from "react-icons/fi";
+import { ClipLoader } from "react-spinners";
 
 const AddUomModal = ({ onClose, onAdded }) => {
   const [formList, setFormList] = useState([
@@ -42,8 +43,8 @@ const AddUomModal = ({ onClose, onAdded }) => {
   };
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-3xl rounded-lg p-6 border border-[#d8b76a] overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
+    <div className="fixed  inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white w-[92vw] max-w-3xl rounded-lg p-6 border border-[#d8b76a] overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
         <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">Add UOMs</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -74,7 +75,7 @@ const AddUomModal = ({ onClose, onAdded }) => {
                   <button
                     type="button"
                     onClick={() => removeRow(index)}
-                    className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded"
+                    className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded cursor-pointer"
                   >
                     <FiMinus />
                   </button>
@@ -83,7 +84,7 @@ const AddUomModal = ({ onClose, onAdded }) => {
                   <button
                     type="button"
                     onClick={addRow}
-                    className="bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] px-3 py-2 rounded"
+                    className="bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] px-3 py-2 rounded cursor-pointer"
                   >
                     <FiPlus />
                   </button>
@@ -96,16 +97,23 @@ const AddUomModal = ({ onClose, onAdded }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded"
+              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded"
+              className="px-6 py-2 bg-[#d8b76a] flex justify-center items-center hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded cursor-pointer"
             >
-              {loading ? "Saving..." : "Save UOMs"}
+              {loading ? (
+                <>
+                  <span className="mr-2">Saving...</span>
+                  <ClipLoader size={20} color="#292926" />
+                </>
+              ) : (
+                "Save UOMs"
+              )}
             </button>
           </div>
         </form>

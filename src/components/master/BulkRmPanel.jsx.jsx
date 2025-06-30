@@ -4,10 +4,12 @@ import { RiResetRightLine } from "react-icons/ri";
 
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
+import { ClipLoader } from "react-spinners";
 
 const BulkRmPanel = ({ onClose }) => {
   const [rows, setRows] = useState([]);
   const [uoms, setUoms] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const fetchUoms = async () => {
     try {
@@ -67,7 +69,7 @@ const BulkRmPanel = ({ onClose }) => {
 
   const handleSubmit = async () => {
     if (rows.length === 0) return toast.error("Please add at least one row.");
-
+    setLoading(true);
     const formData = new FormData();
     formData.append(
       "rawMaterials",
@@ -98,14 +100,19 @@ const BulkRmPanel = ({ onClose }) => {
 
       if (res.status === 200 || res.status === 201) {
         toast.success("Raw materials added successfully");
+        setLoading(false);
         setRows([]);
         fetchUoms(); // Optional: Refresh if UOMs can change
         onClose?.(); // Close the panel
       } else {
         toast.error(res.data?.message || "Failed to add materials");
+        setLoading(false);
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to add materials");
+      setLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -337,7 +344,14 @@ const BulkRmPanel = ({ onClose }) => {
           onClick={handleSubmit}
           className="bg-[#d8b76a]  hover:bg-[#d8b76a]/80 text-[#292926] cursor-pointer font-semibold px-6 py-2 rounded duration-100"
         >
-          Save
+          {loading ? (
+            <>
+              <span className="mr-2">Saving RM...</span>
+              <ClipLoader size={20} color="#292926" />
+            </>
+          ) : (
+            "Save"
+          )}
         </button>
       </div>
     </div>
