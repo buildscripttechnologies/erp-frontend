@@ -95,7 +95,7 @@ const AttachmentsModal = ({ attachments = [], onClose }) => {
 
                   {/* Filename */}
                   <a
-                    href={att.fileUrl}
+                    onClick={() => handlePreview(att)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-blue-600 hover:underline truncate"
