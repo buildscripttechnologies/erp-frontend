@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        gre: "#292927",
-        golden: "#d6b46b", // custom color
+        secondary: "#292927",
+        primary: "#d6b46b",
       },
       spacing: {
         72: "18rem",
