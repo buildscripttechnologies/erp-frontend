@@ -13,7 +13,7 @@ import UomMaster from "./components/master/UomMaster";
 import "react-toggle/style.css";
 import SfgMaster from "./components/master/SfgMaster";
 import LocationMaster from "./components/master/LocationMaster";
-import FgMaster from "./components/master/FgMaster";
+import FgMaster from "./components/master/fgmaster";
 import VendorMaster from "./components/master/VendorMaster";
 
 const App = () => {
