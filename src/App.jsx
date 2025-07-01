@@ -14,6 +14,7 @@ import RmMaster from "./components/master/RmMaster";
 import "react-toggle/style.css";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import UomMaster from "./components/master/UomMaster";
+import "react-toggle/style.css";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();

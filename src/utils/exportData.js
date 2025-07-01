@@ -46,7 +46,8 @@ export const exportToPDF = (rawMaterials) => {
     e.pkgQty,
     e.purchaseUOM,
     e.stockUOM,
-    e.qualityInspectionNeeded,
+    (e.qualityInspectionNeeded =
+      e.qualityInspectionNeeded == "Required" ? "Yes" : "No"),
   ]);
 
   autoTable(doc, {
@@ -69,7 +70,7 @@ export const exportToPDF = (rawMaterials) => {
       5: { cellWidth: 20 }, // Location
       // 14: { cellWidth: 80 }, // Attachments
     },
-    startY: 20,
+    startY: 15,
     theme: "grid",
     // ensures table isn't forced to page width
   });

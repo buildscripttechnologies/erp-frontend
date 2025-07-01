@@ -11,19 +11,12 @@ export function OrderPieChart() {
   return (
     <div className="relative bg-white shadow-md drop-shadow-sm rounded-lg p-5 mt-4">
       <div>
-        <h3 className="font-semibold text-[#d8b76a] text-xl mb-2">
+        <h3 className="font-semibold text-[#d8b76a] text-lg mb-2">
           Order Values
         </h3>
-        <ResponsiveContainer width="100%" height={250}>
+        <ResponsiveContainer width="100%" height={180}>
           <PieChart>
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              label
-            >
+            <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%">
               {data.map((entry, index) => (
                 <Cell
                   key={`slice-${index}`}

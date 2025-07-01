@@ -6,7 +6,7 @@ export default function RoleSkeleton({ count = 5 }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="h-10 w-20 bg-[#d8b76a]/40 rounded animate-pulse"
+          className="w-20 bg-[#d8b76a]/40 rounded animate-pulse"
         ></div>
       ))}
     </div>

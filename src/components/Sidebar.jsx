@@ -51,15 +51,17 @@ export function Sidebar({ isOpen, setIsOpen }) {
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-40 h-full w-64 bg-white shadow-md transform ${
+      className={`fixed  top-0 left-0 z-40 h-full w-42 sm:w-50 bg-white shadow-md transform ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       } transition-transform duration-300 ease-in-out overflow-y-auto`}
     >
       <div className="flex justify-between items-center p-4 border-b border-[#d8b76a]">
-        <h2 className="text-3xl font-bold text-[#d8b76a]">SmartFlow360</h2>
+        <h2 className="sm:text-2xl text-lg font-bold text-[#d8b76a] ">
+          SmartFlow360
+        </h2>
       </div>
 
-      <nav className="flex flex-col p-4 space-y-1 text-base font-semibold text-gray-800">
+      <nav className="flex flex-col px-3 pt-1 text-base font-semibold text-gray-800">
         {/* Top level items */}
         {[
           { icon: FiHome, label: "Dashboard", path: "/dashboard" },
@@ -75,7 +77,7 @@ export function Sidebar({ isOpen, setIsOpen }) {
           <a
             key={label}
             onClick={() => navigate(path)}
-            className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded cursor-pointer"
+            className="flex items-center gap-3 p-1 hover:bg-gray-100 rounded cursor-pointer text-sm"
           >
             <Icon className="text-[#d8b76a]" />
             {label}
@@ -85,7 +87,7 @@ export function Sidebar({ isOpen, setIsOpen }) {
         {/* Master collapsible section */}
         <div>
           <button
-            className="flex items-center justify-between w-full p-2 hover:bg-gray-100 rounded border border-[#d8b76a] text-[#292926] cursor-pointer"
+            className="flex items-center justify-between w-full p-1 text-sm hover:bg-gray-100 rounded border border-[#d8b76a] text-[#292926] cursor-pointer"
             onClick={() => setIsMasterOpen((prev) => !prev)}
           >
             <span className="flex items-center gap-3 ">
@@ -100,12 +102,12 @@ export function Sidebar({ isOpen, setIsOpen }) {
               isMasterOpen ? "max-h-[500px]" : "max-h-0"
             }`}
           >
-            <div className="ml-6 mt-2 space-y-1">
+            <div className="ml-4 mt-1 ">
               {masterSubmenu.map(({ label, icon: Icon, path }) => (
                 <a
                   key={label}
                   onClick={() => navigate(path)}
-                  className="flex items-center gap-2 p-2 rounded hover:bg-gray-100 text-[#292926] cursor-pointer"
+                  className="flex items-center gap-2 p-1 text-sm rounded hover:bg-gray-100 text-[#292926] cursor-pointer"
                 >
                   <Icon className="text-[#d8b76a]" />
                   {label}
@@ -118,11 +120,15 @@ export function Sidebar({ isOpen, setIsOpen }) {
         {/* Logout */}
         <button
           onClick={logout}
-          className="flex items-center border-t border-[#d8b76a] text-2xl gap-3 text-[#d8b76a] hover:bg-gray-100 p-2 mt-4 cursor-pointer "
+          className="flex items-center border-t border-[#d8b76a] text-lg gap-3 text-[#d8b76a] hover:bg-gray-100 p-2 mt-4 cursor-pointer "
         >
           <FiLogOut /> Logout
         </button>
       </nav>
+
+      {/* <div className="  w-full flex relative">
+        <img className="w-45 mx-auto " src="/public/images/logo.png" alt="" />
+      </div> */}
     </aside>
   );
 }

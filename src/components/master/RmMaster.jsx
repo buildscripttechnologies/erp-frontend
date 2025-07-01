@@ -19,6 +19,7 @@ import BulkRmPanel from "./BulkRmPanel.jsx";
 import Toggle from "react-toggle";
 import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
 import AttachmentsModal from "../AttachmentsModal.jsx";
+import ScrollLock from "../ScrollLock.js";
 
 // export const baseurl = "http://localhost:5000";
 
@@ -34,6 +35,8 @@ const RmMaster = () => {
   const [exportFormat, setExportFormat] = useState("excel");
   const [showExportOptions, setShowExportOptions] = useState(false);
 
+  ScrollLock(editData != null || showBulkPanel || openAttachments!=null);
+
   const toggleExportOptions = () => {
     setShowExportOptions((prev) => !prev);
   };
@@ -42,7 +45,7 @@ const RmMaster = () => {
     totalResults: 0,
     totalPages: 1,
     currentPage: 1,
-    limit: 10,
+    limit: 20,
   });
 
   const fetchRawMaterials = async (page = 1) => {
@@ -279,7 +282,9 @@ const RmMaster = () => {
 
   return (
     <Dashboard>
-      <div className="relative p-4 sm:p-6 max-w-[92vw] mx-auto overflow-x-hidden">
+      <div
+        className={` p-2 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden mt-4 `}
+      >
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
@@ -293,7 +298,7 @@ const RmMaster = () => {
                 <select
                   value={exportScope}
                   onChange={(e) => setExportScope(e.target.value)}
-                  className="border border-[#d8b76a] px-3 py-2 rounded text-sm text-[#292926] cursor-pointer"
+                  className="border border-[#d8b76a] px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
                 >
                   <option value="current">This Page</option>
                   <option value="filtered">Filtered Data</option>
@@ -303,7 +308,7 @@ const RmMaster = () => {
                 <select
                   value={exportFormat}
                   onChange={(e) => setExportFormat(e.target.value)}
-                  className="border border-[#d8b76a] px-3 py-2 rounded text-sm text-[#292926] cursor-pointer"
+                  className="border border-[#d8b76a] px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
                 >
                   <option value="excel">Excel</option>
                   <option value="pdf">PDF</option>
@@ -311,7 +316,7 @@ const RmMaster = () => {
 
                 <button
                   onClick={handleExport}
-                  className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded transition cursor-pointer"
+                  className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
                 >
                   Export
                 </button>
@@ -319,19 +324,19 @@ const RmMaster = () => {
             )}
             <button
               onClick={toggleExportOptions}
-              className="bg-[#d8b76a] cursor-pointer hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded flex justify-center items-center whitespace-nowrap transition"
+              className="bg-[#d8b76a] cursor-pointer hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded flex justify-center items-center whitespace-nowrap transition"
             >
               <FiDownload className="mr-2" /> Export
             </button>
 
             <button
               onClick={handleSampleDownload}
-              className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded transition cursor-pointer"
+              className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
             >
               <FiDownload /> Sample Excel
             </button>
 
-            <label className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 px-4 py-2 rounded cursor-pointer text-[#292926] font-semibold ">
+            <label className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 px-4 py-1.5 rounded cursor-pointer text-[#292926] font-semibold ">
               <FiUploadCloud />
               <span>Upload Excel</span>
               <input
@@ -343,7 +348,7 @@ const RmMaster = () => {
             </label>
             <button
               onClick={handleFileUpload}
-              className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded transition cursor-pointer"
+              className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
             >
               Submit
             </button>
@@ -351,28 +356,28 @@ const RmMaster = () => {
         </div>
 
         {/* Search */}
-        <div className="flex flex-col w-full sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col w-auto sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div className="relative w-full sm:w-1/3">
             <input
               type="text"
               placeholder="Search raw materials..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full sm:w-80 pl-10 pr-4 py-2 text-[#292926] border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+              className="w-full sm:w-80 pl-10 pr-4 py-1 text-[#292926] border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
             />
-            <FiSearch className="absolute left-3 top-3 text-[#d8b76a]" />
+            <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
           </div>
           <button
             onClick={() => setShowBulkPanel(true)}
-            className="w-full sm:w-40 justify-center bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded flex items-center gap-2 cursor-pointer transition duration-200"
+            className="w-full sm:w-40 justify-center bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer transition duration-200"
           >
             <FiPlus /> Add R.M.
           </button>
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto bg-white rounded shadow">
-          <table className="min-w-full text-sm sm:text-base">
+        <div className="overflow-x-auto max-w-[98vw] rounded border border-[#d8b76a] shadow-sm">
+          <table className="min-w-full text-xs sm:text-sm">
             <thead className="bg-[#d8b76a] text-[#292926] text-left">
               <tr>
                 {[
@@ -398,7 +403,10 @@ const RmMaster = () => {
                   "Created By",
                   "Action",
                 ].map((th) => (
-                  <th key={th} className="py-2 px-4 whitespace-nowrap">
+                  <th
+                    key={th}
+                    className="py-1.5 px-2 text-xs sm:text-sm whitespace-nowrap"
+                  >
                     {th}
                   </th>
                 ))}
@@ -412,15 +420,15 @@ const RmMaster = () => {
                   {filteredData.map((rm, i) => (
                     <tr
                       key={rm._id}
-                      className="border-b border-[#d8b76a] hover:bg-gray-50"
+                      className="border-b text-xs sm:text-sm whitespace-nowrap border-[#d8b76a] hover:bg-gray-50"
                     >
-                      <td className="px-4 py-2">
+                      <td className="px-2 py-1">
                         {Number(pagination.currentPage - 1) *
                           Number(pagination.limit) +
                           i +
                           1}
                       </td>
-                      <td className="px-2 py-2">
+                      <td className="px-2 py-1">
                         {new Date(rm.createdAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -430,7 +438,7 @@ const RmMaster = () => {
                           hour12: true,
                         })}
                       </td>
-                      <td className="px-2 py-2">
+                      <td className="px-2 py-1">
                         {new Date(rm.updatedAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -440,12 +448,12 @@ const RmMaster = () => {
                           hour12: true,
                         })}
                       </td>
-                      <td className="px-4 py-2">{rm.skuCode}</td>
-                      <td className="px-4 py-2">{rm.itemName}</td>
-                      <td className="px-4 py-2">{rm.description || "-"}</td>
-                      <td className="px-4 py-2">{rm.hsnOrSac}</td>
-                      <td className="px-4 py-2">{rm.type}</td>
-                      <td className="px-4 py-2">
+                      <td className="px-2 py-1">{rm.skuCode}</td>
+                      <td className="px-2 py-1">{rm.itemName}</td>
+                      <td className="px-2 py-1">{rm.description || "-"}</td>
+                      <td className="px-2 py-1">{rm.hsnOrSac}</td>
+                      <td className="px-2 py-1">{rm.type}</td>
+                      <td className="px-2 ">
                         <Toggle
                           checked={rm.qualityInspectionNeeded}
                           onChange={() =>
@@ -457,14 +465,14 @@ const RmMaster = () => {
                         />
                       </td>
 
-                      <td className="px-4 py-2">{rm.location || "-"}</td>
-                      <td className="px-4 py-2">{rm.baseQty}</td>
-                      <td className="px-4 py-2">{rm.pkgQty}</td>
-                      <td className="px-4 py-2">{rm.moq}</td>
-                      <td className="px-4 py-2">{rm.purchaseUOM || "-"}</td>
-                      <td className="px-4 py-2">{rm.gst}%</td>
-                      <td className="px-4 py-2">{rm.stockQty}</td>
-                      <td className="px-4 py-2 ">{rm.stockUOM || "-"}</td>
+                      <td className="px-2 py-1">{rm.location || "-"}</td>
+                      <td className="px-2 py-1">{rm.baseQty}</td>
+                      <td className="px-2 py-1">{rm.pkgQty}</td>
+                      <td className="px-2 py-1">{rm.moq}</td>
+                      <td className="px-2 py-1">{rm.purchaseUOM || "-"}</td>
+                      <td className="px-2 py-1">{rm.gst}%</td>
+                      <td className="px-2 py-1">{rm.stockQty}</td>
+                      <td className="px-2 py-1 ">{rm.stockUOM || "-"}</td>
 
                       <td className="text-center items-center justify-center">
                         {Array.isArray(rm.attachments) &&
@@ -486,15 +494,15 @@ const RmMaster = () => {
                           />
                         )}
                       </td>
-                      <td className="px-4 py-2">
+                      <td className="px-2 ">
                         <Toggle
                           checked={rm.status === "Active"}
                           onChange={() => handleToggleStatus(rm.id, rm.status)}
                         />
                       </td>
-                      <td className="px-4 py-2">{rm.createdByName || "-"}</td>
-                      <td className="px-4 py-2">
-                        <div className="flex items-center gap-2 text-xl text-[#d39c25]">
+                      <td className="px-2 py-1">{rm.createdByName || "-"}</td>
+                      <td className="px-2 py-1">
+                        <div className="flex items-center gap-2 text-base text-[#d39c25]">
                           <FiEdit
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Edit"
@@ -543,84 +551,41 @@ const RmMaster = () => {
             </tbody>
           </table>
         </div>
-      </div>
-      <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
-        <button
-          onClick={() => goToPage(pagination.currentPage - 1)}
-          disabled={pagination.currentPage <= 1}
-          className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer "
-        >
-          Prev
-        </button>
-
-        {[...Array(pagination.totalPages).keys()].map((_, i) => (
+        <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
           <button
-            key={i + 1}
-            onClick={() => goToPage(i + 1)}
-            className={`px-5 py-2 rounded text-base cursor-pointer ${
-              pagination.currentPage === i + 1
-                ? "bg-[#d8b76a] text-white font-semibold"
-                : "bg-[#d8b76a]/20"
-            }`}
+            onClick={() => goToPage(pagination.currentPage - 1)}
+            disabled={pagination.currentPage <= 1}
+            className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer "
           >
-            {i + 1}
+            Prev
           </button>
-        ))}
 
-        <button
-          onClick={() => goToPage(pagination.currentPage + 1)}
-          disabled={pagination.currentPage >= pagination.totalPages}
-          className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-        >
-          Next
-        </button>
-      </div>
-      {showBulkPanel && <BulkRmPanel onClose={() => setShowBulkPanel(false)} />}
-      {/* {openAttachments && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-md mx-auto p-4 rounded-lg shadow-lg">
-            <div className="flex justify-between items-center border-b border-[#d8b76a] pb-2 mb-4">
-              <h2 className="text-lg font-semibold text-[#d8b76a]">
-                Attachments
-              </h2>
-              <button
-                onClick={() => setOpenAttachments(null)}
-                className="text-[#d8b76a] font-bold hover:text-red-600 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
+          {[...Array(pagination.totalPages).keys()].map((_, i) => (
+            <button
+              key={i + 1}
+              onClick={() => goToPage(i + 1)}
+              className={`px-5 py-2 rounded text-base cursor-pointer ${
+                pagination.currentPage === i + 1
+                  ? "bg-[#d8b76a] text-white font-semibold"
+                  : "bg-[#d8b76a]/20"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
 
-            <ul className="space-y-2 max-h-[300px] overflow-y-auto">
-              {openAttachments.map((file, idx) => (
-                <li
-                  key={idx}
-                  className="flex justify-between items-center text-[#292926] text-sm border border-[#d8b76a] px-3 py-2 rounded hover:bg-gray-100"
-                >
-                  <span className="truncate w-1/2 ">{file.fileName}</span>
-                  <div className="flex gap-3">
-                    <a
-                      href={ file.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#d8b76a] hover:text-blue-600 font-semibold hover:underline"
-                    >
-                      Open
-                    </a>
-                    <a
-                      href={ file.fileUrl}
-                      download={file.fileName}
-                      className="text-[#d8b76a] hover:text-green-600 font-semibold hover:underline"
-                    >
-                      Download
-                    </a>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <button
+            onClick={() => goToPage(pagination.currentPage + 1)}
+            disabled={pagination.currentPage >= pagination.totalPages}
+            className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            Next
+          </button>
         </div>
-      )} */}
+        {showBulkPanel && (
+          <BulkRmPanel onClose={() => setShowBulkPanel(false)} />
+        )}
+      </div>
     </Dashboard>
   );
 };

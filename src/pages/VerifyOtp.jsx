@@ -80,11 +80,12 @@ const VerifyOtp = () => {
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
+          disabled
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
-          className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-2 focus:border-[#b38a37] focus:outline-none transition duration-200"
+          className="w-full p-2 text-md text-[#272723] cursor-not-allowed font-bold border border-[#d8b76a] rounded focus:border-2 focus:border-[#b38a37] focus:outline-none transition duration-200"
           required
         />
 
