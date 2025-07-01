@@ -74,7 +74,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
   };
 
   return (
-    <div className="fixed inset-0  backdrop-blur-xs   flex items-center justify-center z-50">
+    <div className="fixed inset-0  backdrop-blur-xs  flex items-center justify-center z-50">
       <div className="bg-white w-full max-w-[92vw] sm:max-w-3xl rounded-lg p-6  border overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
         <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">
           Edit Raw Material

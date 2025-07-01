@@ -52,6 +52,33 @@ export default function MasterUsers() {
     userGroup: "UserGrp",
   });
 
+  useEffect(() => {
+    if (showForm) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [showForm]);
+
+  const handleFormClose = () => {
+    setFormData({
+      fullName: "",
+      username: "",
+      email: "",
+      mobile: "",
+      password: "",
+      userType: "",
+      userGroup: "UserGrp",
+    });
+    setEditMode(false);
+
+    setShowForm(false);
+  };
+
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -262,11 +289,11 @@ export default function MasterUsers() {
       <>
         {/* Add User Modal */}
         {showForm && (
-          <div className="fixed inset-0 bg-[#292927]/50 z-50 flex justify-center items-center">
-            <div className="bg-white rounded-lg shadow-lg w-[90%] max-w-md p-6 relative">
+          <div className="fixed inset-0  backdrop-blur-md  flex items-center justify-center z-50 ">
+            <div className="bg-white border border-[#d8b76a] rounded-lg shadow-lg w-[90%] max-w-md p-6 relative">
               <button
                 className="absolute top-2 right-3 text-2xl text-gray-500 hover:text-[#d8b76a] font-bold cursor-pointer"
-                onClick={() => setShowForm(false)}
+                onClick={() => handleFormClose()}
               >
                 ×
               </button>
@@ -326,7 +353,10 @@ export default function MasterUsers() {
         )}
 
         {/* Header and Actions */}
-        <div className="relative p-4 sm:p-6 max-w-[92vw] mx-auto overflow-x-hidden">
+        <div
+          className={`relative p-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden mt-4
+          ${editMode || showForm ? "scroll-events-none" : ""} `}
+        >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
             <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
               All Users{" "}
@@ -336,7 +366,7 @@ export default function MasterUsers() {
             </h2>
             <button
               onClick={() => setShowForm(true)}
-              className="bg-[#d8b76a] text-[#292926] font-semibold px-4 py-2 rounded  items-center gap-2 hover:bg-[#d8b76a]/80  transition cursor-pointer hidden sm:flex"
+              className="bg-[#d8b76a] text-[#292926] font-semibold px-3 py-1 rounded  items-center gap-2 hover:bg-[#d8b76a]/80  transition cursor-pointer hidden sm:flex"
             >
               <FiUserPlus /> Add User
             </button>
@@ -350,9 +380,9 @@ export default function MasterUsers() {
                 placeholder="Search users..."
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-[#292926]  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="w-full pl-10 pr-4 py-1 text-[#292926]  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
               />
-              <FiSearch className="absolute left-3 top-3 text-[#d8b76a]" />
+              <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
             </div>
             {!userTypesLoaded ? (
               <RoleSkeleton />
@@ -365,7 +395,7 @@ export default function MasterUsers() {
                       setFilterRole(role);
                       setCurrentPage(1);
                     }}
-                    className={`px-4 py-1.5 rounded text-base ${
+                    className={`px-3 py-1 rounded text-sm ${
                       role === filterRole
                         ? "bg-[#d8b76a] text-white font-semibold"
                         : "bg-[#d8b76a]/20 text-[#292926]"
@@ -389,7 +419,7 @@ export default function MasterUsers() {
                         setFilterRole(role);
                         setCurrentPage(1);
                       }}
-                      className={`px-4 py-1.5 rounded text-base ${
+                      className={`px-3 py-1 rounded text-sm whitespace-nowrap ${
                         role === filterRole
                           ? "bg-[#d8b76a] text-white font-semibold"
                           : "bg-[#d8b76a]/20 text-[#292926]"
@@ -404,25 +434,27 @@ export default function MasterUsers() {
           </div>
           <button
             onClick={() => setShowForm(true)}
-            className="bg-[#d8b76a] text-[#292926] w-full text-center justify-center font-semibold px-4 py-2 rounded flex items-center gap-2 hover:bg-[#d8b76a]/80  transition cursor-pointer mb-4 sm:hidden"
+            className="bg-[#d8b76a] text-[#292926] w-full text-center justify-center font-semibold px-3 py-1 rounded flex items-center gap-2 hover:bg-[#d8b76a]/80  transition cursor-pointer mb-4 sm:hidden"
           >
             <FiUserPlus /> Add User
           </button>
 
           {/* Table */}
-          <div className="bg-white rounded shadow overflow-x-auto">
-            <table className="min-w-full text-sm sm:text-base">
+          <div className="bg-white rounded border border-[#d8b76a]  overflow-x-auto">
+            <table className="min-w-full text-xs sm:text-sm">
               <thead className="bg-[#d8b76a] text-[#292927] text-left">
                 <tr>
-                  <th className="py-2 px-4">#</th>
-                  <th className="py-2 px-4">Name</th>
-                  <th className="py-2 px-4 hidden md:table-cell">Mobile</th>
-                  <th className="py-2 px-4 hidden lg:table-cell">Email</th>
-                  <th className="py-2 px-4 hidden lg:table-cell">IsVerified</th>
-                  <th className="py-2 px-4">Role</th>
-                  <th className="py-2 px-4 hidden xl:table-cell">Username</th>
-                  <th className="py-2 px-4">Status</th>
-                  <th className="py-2 px-4">Actions</th>
+                  <th className="py-1.5 px-2">#</th>
+                  <th className="py-1.5 px-2">Name</th>
+                  <th className="py-1.5 px-2 hidden md:table-cell">Mobile</th>
+                  <th className="py-1.5 px-2 hidden lg:table-cell">Email</th>
+                  <th className="py-1.5 px-2 hidden lg:table-cell">
+                    IsVerified
+                  </th>
+                  <th className="py-1.5 px-2">Role</th>
+                  <th className="py-1.5 px-2 hidden xl:table-cell">Username</th>
+                  <th className="py-1.5 px-2">Status</th>
+                  <th className="py-1.5 px-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -435,12 +467,12 @@ export default function MasterUsers() {
                         key={u.id}
                         className="border-b border-[#d8b76a] hover:bg-gray-50"
                       >
-                        <td className="px-4 py-2">{i + 1}</td>
-                        <td className="px-4 py-2">{u.fullName}</td>
-                        <td className="px-4 py-2 hidden md:table-cell">
+                        <td className="py-1 px-2">{i + 1}</td>
+                        <td className="py-1 px-2">{u.fullName}</td>
+                        <td className="py-1 px-2 hidden md:table-cell">
                           {u.mobile}
                         </td>
-                        <td className="px-4 py-2 hidden lg:table-cell">
+                        <td className="py-1 px-2 hidden lg:table-cell">
                           {u.email}
                         </td>
                         <td
@@ -448,17 +480,16 @@ export default function MasterUsers() {
                           // data-tooltip-content={
                           //   u.isVerified ? "Set Verified" : "Set Not Verified"
                           // }
-                          className="px-4 py-2 hidden lg:table-cell "
+                          className="pt-1 px-2 hidden lg:table-cell "
                         >
                           <Toggle
                             checked={u.isVerified}
                             onChange={() => toggleVerification(u)}
-                            className="text-xs"
                           />
                         </td>
 
-                        <td className="px-4 py-2">{u.userType}</td>
-                        <td className="px-4 py-2 hidden xl:table-cell">
+                        <td className="py-1 px-2">{u.userType}</td>
+                        <td className="py-1 px-2 hidden xl:table-cell">
                           {u.username}
                         </td>
                         <td
@@ -468,15 +499,14 @@ export default function MasterUsers() {
                           //     ? "Deactivate User"
                           //     : "Activate User"
                           // }
-                          className="px-4 py-2"
+                          className="pt-1 px-2"
                         >
                           <Toggle
                             checked={u.status == "Active"}
                             onClick={() => handleToggleStatus(u)}
-                            className="text-xs"
                           />
                         </td>
-                        <td className="px-4 py-2 flex gap-2 text-xl text-[#d39c25]">
+                        <td className="pt-1.5 px-2 flex gap-2 text-lg items-center  text-[#d39c25]">
                           <FiEdit
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Edit User"

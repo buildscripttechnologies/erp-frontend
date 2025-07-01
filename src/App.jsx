@@ -10,6 +10,7 @@ import RmMaster from "./components/master/RmMaster";
 import "react-toggle/style.css";
 import { useAuth } from "./context/AuthContext";
 import UomMaster from "./components/master/UomMaster";
+import "react-toggle/style.css";
 import SfgMaster from "./components/master/SfgMaster";
 import LocationMaster from "./components/master/LocationMaster";
 import FgMaster from "./components/master/FgMaster";

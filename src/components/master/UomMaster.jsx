@@ -6,6 +6,8 @@ import Dashboard from "../../pages/Dashboard";
 import AddUomModal from "./AddUomModal";
 import EditUomModal from "./EditUomModal";
 import TableSkeleton from "../TableSkeleton";
+import ScrollLock from "../ScrollLock";
+import Toggle from "react-toggle";
 
 const UomMaster = () => {
   const [uoms, setUoms] = useState([]);
@@ -20,11 +22,13 @@ const UomMaster = () => {
     limit: 10,
   });
 
+  ScrollLock(formOpen || editUom != null);
+
   const fetchUOMs = async (page = 1) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/uoms/all-uoms?page=${page}&limit=${pagination.limit}`
+        `/uoms/all-uoms?page=${page}&limit=${pagination.limit}&status="all"`
       );
       setUoms(res.data.data || []);
       setPagination({
@@ -52,6 +56,30 @@ const UomMaster = () => {
       fetchUOMs();
     } catch {
       toast.error("Delete failed");
+    }
+  };
+
+  const handleToggleStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === true ? false : true;
+    try {
+      const res = await axios.patch(`/uoms/update-uom/${id}`, {
+        status: newStatus,
+      });
+
+      if (res.data.status == 200) {
+        toast.success(`UOM status updated`);
+
+        // ✅ Update local state without refetch
+        setUoms((prev) =>
+          prev.map((uom) =>
+            uom._id === id ? { ...uom, status: newStatus } : uom
+          )
+        );
+      } else {
+        toast.error("Failed to update status");
+      }
+    } catch (err) {
+      toast.error("Failed to update status");
     }
   };
 
@@ -83,26 +111,27 @@ const UomMaster = () => {
 
   return (
     <Dashboard>
-      <div className="relative p-4 sm:p-6 max-w-[92vw] mx-auto overflow-x-hidden">
+      <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
         <h2 className="text-xl sm:text-2xl font-bold mb-4">
-          UOM Master <span className="text-gray-500">({uoms.length})</span>
+          Units of Measure{" "}
+          <span className="text-gray-500">({uoms.length})</span>
         </h2>
 
         <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
           <div className="relative w-full sm:w-80">
-            <FiSearch className="absolute left-3 top-3 text-[#d8b76a]" />
+            <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
             <input
               type="text"
-              placeholder="Search UOM..."
+              placeholder="Search Unit of Measure"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+              className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
             />
           </div>
 
           <button
             onClick={() => setFormOpen(!formOpen)}
-            className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-2 rounded flex items-center gap-2 transition duration-200"
+            className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
           >
             <FiPlus />
             {formOpen ? "Close Form" : "Add UOM"}
@@ -114,16 +143,23 @@ const UomMaster = () => {
         )}
 
         <div className="overflow-x-auto rounded border border-[#d8b76a] shadow-sm">
-          <table className="min-w-full text-sm">
-            <thead className="bg-[#d8b76a] text-[#292926] text-left whitespace-nowrap">
+          <table className="min-w-full text-xs sm:text-sm">
+            <thead className="bg-[#d8b76a] text-xs sm:text-sm text-[#292926] text-left whitespace-nowrap">
               <tr>
-                <th className="px-4 py-2 ">#</th>
-                <th className="px-4 py-2  hidden md:table-cell">Created At</th>
-                <th className="px-4 py-2  hidden md:table-cell">Updated At</th>
-                <th className="px-4 py-2 ">UOM</th>
-                <th className="px-4 py-2 ">Description</th>
-                <th className="px-4 py-2  hidden md:table-cell">Created By</th>
-                <th className="px-4 py-2">Actions</th>
+                <th className="px-2 py-1.5 ">#</th>
+                <th className="px-2 py-1.5  hidden md:table-cell">
+                  Created At
+                </th>
+                <th className="px-2 py-1.5  hidden md:table-cell">
+                  Updated At
+                </th>
+                <th className="px-2 py-1.5 ">UOM</th>
+                <th className="px-2 py-1.5 ">Description</th>
+                <th className="px-2 py-1.5 ">Status</th>
+                <th className="px-2 py-1.5  hidden md:table-cell">
+                  Created By
+                </th>
+                <th className="px-2 py-1.5">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -134,10 +170,10 @@ const UomMaster = () => {
                   {filteredUoms.map((uom, index) => (
                     <tr
                       key={uom._id}
-                      className="border-t border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
+                      className="border-t text-xs sm:text-sm border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
                     >
-                      <td className="px-4 py-2">{index + 1}</td>
-                      <td className="px-4 py-2 hidden md:table-cell">
+                      <td className="px-2 py-1">{index + 1}</td>
+                      <td className="px-2 py-1 hidden md:table-cell">
                         {new Date(uom.createdAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -147,7 +183,7 @@ const UomMaster = () => {
                           hour12: true,
                         })}
                       </td>
-                      <td className="px-4 py-2 hidden md:table-cell">
+                      <td className="px-2 py-1 hidden md:table-cell">
                         {new Date(uom.updatedAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -157,14 +193,22 @@ const UomMaster = () => {
                           hour12: true,
                         })}
                       </td>
-                      <td className="px-4 py-2">{uom.unitName}</td>
-                      <td className="px-4 py-2">
+                      <td className="px-2 py-1">{uom.unitName}</td>
+                      <td className="px-2 py-1">
                         {uom.unitDescription || "-"}
                       </td>
-                      <td className="px-4 py-2 hidden md:table-cell">
+                      <td className="px-2 ">
+                        <Toggle
+                          checked={uom.status}
+                          onChange={() =>
+                            handleToggleStatus(uom._id, uom.status)
+                          }
+                        />
+                      </td>
+                      <td className="px-2 py-1 hidden md:table-cell">
                         {uom.createdBy?.fullName || "-"}
                       </td>
-                      <td className="px-4 py-2 flex gap-3">
+                      <td className="px-2 py-1 flex gap-3 text-lg">
                         <FiEdit
                           className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
                           onClick={() => setEditUom(uom)}
@@ -199,37 +243,37 @@ const UomMaster = () => {
             onUpdated={fetchUOMs}
           />
         )}
-      </div>
-      <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
-        <button
-          onClick={() => goToPage(pagination.currentPage - 1)}
-          disabled={pagination.currentPage <= 1}
-          className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-        >
-          Prev
-        </button>
-
-        {[...Array(pagination.totalPages).keys()].map((_, i) => (
+        <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
           <button
-            key={i + 1}
-            onClick={() => goToPage(i + 1)}
-            className={`px-5 py-2 rounded text-base cursor-pointer ${
-              pagination.currentPage === i + 1
-                ? "bg-[#d8b76a] text-white font-semibold"
-                : "bg-[#d8b76a]/20"
-            }`}
+            onClick={() => goToPage(pagination.currentPage - 1)}
+            disabled={pagination.currentPage <= 1}
+            className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            {i + 1}
+            Prev
           </button>
-        ))}
 
-        <button
-          onClick={() => goToPage(pagination.currentPage + 1)}
-          disabled={pagination.currentPage >= pagination.totalPages}
-          className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-        >
-          Next
-        </button>
+          {[...Array(pagination.totalPages).keys()].map((_, i) => (
+            <button
+              key={i + 1}
+              onClick={() => goToPage(i + 1)}
+              className={`px-5 py-2 rounded text-base cursor-pointer ${
+                pagination.currentPage === i + 1
+                  ? "bg-[#d8b76a] text-white font-semibold"
+                  : "bg-[#d8b76a]/20"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            onClick={() => goToPage(pagination.currentPage + 1)}
+            disabled={pagination.currentPage >= pagination.totalPages}
+            className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </Dashboard>
   );

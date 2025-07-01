@@ -127,13 +127,13 @@ const BulkRmPanel = ({ onClose }) => {
       <div className="flex justify-between mb-4">
         <button
           onClick={onClose}
-          className="flex items-center bg-[#d8b76a] px-4 font-semibold gap-2 rounded hover:bg-[#d8b76a]/80 text-[#292926] cursor-pointer"
+          className="flex items-center bg-[#d8b76a] px-3 py-1.5 font-semibold gap-2 rounded hover:bg-[#d8b76a]/80 text-[#292926] cursor-pointer"
         >
           <FiArrowLeft /> Back
         </button>
         <button
           onClick={handleReset}
-          className="bg-[#d8b76a] flex justify-center font-semibold items-center gap-1 text-[#292926] px-4 py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer duration-100"
+          className="bg-[#d8b76a] flex justify-center px-3 py-1.5 font-semibold items-center gap-1 text-[#292926]  rounded hover:bg-[#d8b76a]/80 cursor-pointer duration-100"
         >
           <RiResetRightLine />
           Reset
@@ -336,13 +336,13 @@ const BulkRmPanel = ({ onClose }) => {
       <div className="flex justify-end gap-4 mt-6">
         <button
           onClick={addRow}
-          className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-[#292926] cursor-pointer font-semibold px-4 py-2 rounded flex items-center gap-2 duration-100"
+          className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-[#292926] cursor-pointer font-semibold px-3 py-1.5 rounded flex items-center gap-2 duration-100"
         >
           <FiPlus /> Add Items
         </button>
         <button
           onClick={handleSubmit}
-          className="bg-[#d8b76a]  hover:bg-[#d8b76a]/80 text-[#292926] cursor-pointer font-semibold px-6 py-2 rounded duration-100"
+          className="bg-[#d8b76a]  hover:bg-[#d8b76a]/80 text-[#292926] cursor-pointer font-semibold px-4 py-1.5 rounded duration-100"
         >
           {loading ? (
             <>
