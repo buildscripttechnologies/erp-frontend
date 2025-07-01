@@ -1,19 +1,19 @@
-// src/App.jsx
-
-import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./pages/ResetPassword";
 import ChangePassword from "./pages/ChangePassword";
-import Dashboard from "./pages/Dashboard";
 import Dash from "./components/Dash";
 import MasterUsers from "./components/master/MasterUsers";
 import RmMaster from "./components/master/RmMaster";
 import "react-toggle/style.css";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { useAuth } from "./context/AuthContext";
 import UomMaster from "./components/master/UomMaster";
+import SfgMaster from "./components/master/SfgMaster";
+import LocationMaster from "./components/master/LocationMaster";
+import FgMaster from "./components/master/FgMaster";
+import VendorMaster from "./components/master/VendorMaster";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -45,6 +45,22 @@ const App = () => {
         <Route
           path="/dashboard"
           element={isAuthenticated ? <Dash /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/sfg-master"
+          element={isAuthenticated ? <SfgMaster /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/location-master"
+          element={isAuthenticated ? <LocationMaster /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/fg-master"
+          element={isAuthenticated ? <FgMaster /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/vendor-master"
+          element={isAuthenticated ? <VendorMaster /> : <Navigate to="/login" />}
         />
         <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>

@@ -22,6 +22,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
+import { path } from "framer-motion/client";
 
 export function Sidebar({ isOpen, setIsOpen }) {
   const [isMasterOpen, setIsMasterOpen] = useState(false);
@@ -32,10 +33,10 @@ export function Sidebar({ isOpen, setIsOpen }) {
     { label: "Users", icon: FaUserCog, path: "/master-users" },
     { label: "R. M. Master", icon: FaCubes, path: "/rm-master" },
     { label: "UOM Master", icon: FaBalanceScale, path: "/uom-master" },
-    { label: "SFG Master", icon: FaLayerGroup },
-    { label: "Location Master", icon: FaMapMarkerAlt },
-    { label: "FG Master", icon: FaCube },
-    { label: "Vendor Master", icon: FaIndustry },
+    { label: "SFG Master", icon: FaLayerGroup, path: "/sfg-master" },
+    { label: "Location Master", icon: FaMapMarkerAlt, path: "/location-master" },
+    { label: "FG Master", icon: FaCube, path: "/fg-master" },
+    { label: "Vendor Master", icon: FaIndustry, path: "/vendor-master" },
     { label: "Customer Master", icon: FaUserFriends },
   ];
 
