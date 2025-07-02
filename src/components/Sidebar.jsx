@@ -37,7 +37,7 @@ export function Sidebar({ isOpen, setIsOpen }) {
     { label: "Location Master", icon: FaMapMarkerAlt, path: "/location-master" },
     { label: "FG Master", icon: FaCube, path: "/fg-master" },
     { label: "Vendor Master", icon: FaIndustry, path: "/vendor-master" },
-    { label: "Customer Master", icon: FaUserFriends },
+    { label: "Customer Master", icon: FaUserFriends, path: "/customer-master" },
   ];
 
   // const handleLogout = () => {

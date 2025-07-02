@@ -21,8 +21,6 @@ import Toggle from "react-toggle";
 import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
 import AttachmentsModal from "../AttachmentsModal.jsx";
 import ScrollLock from "../ScrollLock.js";
-import { Navbar } from "../Navbar";
-import { Sidebar } from "../Sidebar";
 
 // export const baseurl = "http://localhost:5000";
 
@@ -37,12 +35,9 @@ const RmMaster = () => {
   const [exportScope, setExportScope] = useState("current");
   const [exportFormat, setExportFormat] = useState("excel");
   const [showExportOptions, setShowExportOptions] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
-  const toggleSidebar = () => setIsOpen((prev) => !prev);
 
   ScrollLock(editData != null || showBulkPanel || openAttachments!=null);
-  console.log("isOpen", isOpen);
-  
+
   const toggleExportOptions = () => {
     setShowExportOptions((prev) => !prev);
   };
@@ -287,80 +282,81 @@ const RmMaster = () => {
   ];
 
   return (
-      <Dashboard>
-        <div
-          className={`p-2 md:px-4 mx-auto overflow-x-hidden mt-4`}
-        >
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
-              Raw Materials{" "}
-              <span className="text-gray-500">({rawMaterials.length})</span>
-            </h2>
-  
-            <div className="flex gap-2 flex-wrap">
-              {showExportOptions && (
-                <div className="flex gap-2 items-center">
-                  <select
-                    value={exportScope}
-                    onChange={(e) => setExportScope(e.target.value)}
-                    className="border border-[#d8b76a] px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
-                  >
-                    <option value="current">This Page</option>
-                    <option value="filtered">Filtered Data</option>
-                    <option value="all">All Data</option>
-                  </select>
-  
-                  <select
-                    value={exportFormat}
-                    onChange={(e) => setExportFormat(e.target.value)}
-                    className="border border-[#d8b76a] px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
-                  >
-                    <option value="excel">Excel</option>
-                    <option value="pdf">PDF</option>
-                  </select>
-  
-                  <button
-                    onClick={handleExport}
-                    className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
-                  >
-                    Export
-                  </button>
-                </div>
-              )}
-              <button
-                onClick={toggleExportOptions}
-                className="bg-[#d8b76a] cursor-pointer hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded flex justify-center items-center whitespace-nowrap transition"
-              >
-                <FiDownload className="mr-2" /> Export
-              </button>
-  
-              <button
-                onClick={handleSampleDownload}
-                className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
-              >
-                <FiDownload /> Sample Excel
-              </button>
-  
-              <label className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 px-4 py-1.5 rounded cursor-pointer text-[#292926] font-semibold ">
-                <FiUploadCloud />
-                <span>Upload Excel</span>
-                <input
-                  type="file"
-                  accept=".xlsx, .xls"
-                  className="hidden"
-                  onChange={(e) => setFile(e.target.files[0])}
-                />
-              </label>
-              <button
-                onClick={handleFileUpload}
-                className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
-              >
-                Submit
-              </button>
-            </div>
+    <Dashboard>
+      <div
+        className={`p-2 md:px-4 mx-auto overflow-x-hidden mt-4`}
+      >
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
+            Raw Materials{" "}
+            <span className="text-gray-500">({rawMaterials.length})</span>
+          </h2>
+
+          <div className="flex gap-2 flex-wrap">
+            {showExportOptions && (
+              <div className="flex gap-2 items-center">
+                <select
+                  value={exportScope}
+                  onChange={(e) => setExportScope(e.target.value)}
+                  className="border border-[#d8b76a] px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
+                >
+                  <option value="current">This Page</option>
+                  <option value="filtered">Filtered Data</option>
+                  <option value="all">All Data</option>
+                </select>
+
+                <select
+                  value={exportFormat}
+                  onChange={(e) => setExportFormat(e.target.value)}
+                  className="border border-[#d8b76a] px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
+                >
+                  <option value="excel">Excel</option>
+                  <option value="pdf">PDF</option>
+                </select>
+
+                <button
+                  onClick={handleExport}
+                  className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
+                >
+                  Export
+                </button>
+              </div>
+            )}
+            <button
+              onClick={toggleExportOptions}
+              className="bg-[#d8b76a] cursor-pointer hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded flex justify-center items-center whitespace-nowrap transition"
+            >
+              <FiDownload className="mr-2" /> Export
+            </button>
+
+            <button
+              onClick={handleSampleDownload}
+              className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
+            >
+              <FiDownload /> Sample Excel
+            </button>
+
+            <label className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 px-4 py-1.5 rounded cursor-pointer text-[#292926] font-semibold ">
+              <FiUploadCloud />
+              <span>Upload Excel</span>
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                className="hidden"
+                onChange={(e) => setFile(e.target.files[0])}
+              />
+            </label>
+            <button
+              onClick={handleFileUpload}
+              className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
+            >
+              Submit
+            </button>
           </div>
-          {/* Search */}
+        </div>
+
+        {/* Search */}
         <div className="flex flex-col w-auto sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div className="relative w-full sm:w-1/3">
             <input
@@ -379,11 +375,10 @@ const RmMaster = () => {
             <FiPlus /> Add R.M.
           </button>
         </div>
-                
-        <div className={`overflow-x-scroll rounded border border-[#d8b76a] shadow-sm flex-1 transition-all duration-300 ease-in-out ${
-            isOpen ? "max-w-[84vw]" : "max-w-[98vw]"
-          }`}>
-          <table className="max-w-full text-xs sm:text-sm">
+
+        {/* Table */}
+        <div className="overflow-x-auto max-w-[98vw] rounded border border-[#d8b76a] shadow-sm">
+          <table className="min-w-full text-xs sm:text-sm">
             <thead className="bg-[#d8b76a] text-[#292926] text-left">
               <tr>
                 {[
@@ -557,7 +552,6 @@ const RmMaster = () => {
             </tbody>
           </table>
         </div>
-
         <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
           <button
             onClick={() => goToPage(pagination.currentPage - 1)}
@@ -592,11 +586,9 @@ const RmMaster = () => {
         {showBulkPanel && (
           <BulkRmPanel onClose={() => setShowBulkPanel(false)} />
         )}
-  
-        </div>
-          
-      </Dashboard>
-    );
-} 
+      </div>
+    </Dashboard>
+  );
+};
 
 export default RmMaster;
