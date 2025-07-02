@@ -55,7 +55,7 @@ const SfgMaster = () => {
 
   return (
     <Dashboard>
-      <div className="relative p-4 sm:p-6 max-w-[92vw] mx-auto overflow-x-hidden">
+      <div className="relative p-4 sm:p-6 max-w-[99vw] mx-auto overflow-x-hidden">
         <h2 className="text-xl sm:text-2xl font-bold mb-4">
           Semi Finished Goods (SFG) <span className="text-gray-500">({sfgs.length})</span>
         </h2>

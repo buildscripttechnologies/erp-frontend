@@ -15,7 +15,11 @@ import SfgMaster from "./components/master/SfgMaster";
 import LocationMaster from "./components/master/LocationMaster";
 import FgMaster from "./components/master/fgmaster";
 import VendorMaster from "./components/master/VendorMaster";
+
 import RoleMaster from "./components/master/Role/RoleMaster";
+
+import CustomerMaster from "./components/master/CustomerMaster";
+
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -72,6 +76,10 @@ const App = () => {
           element={
             isAuthenticated ? <VendorMaster /> : <Navigate to="/login" />
           }
+        />
+        <Route
+          path="/customer-master"
+          element={isAuthenticated ? <CustomerMaster /> : <Navigate to="/login" />}
         />
         <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
