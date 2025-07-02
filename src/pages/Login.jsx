@@ -19,7 +19,7 @@ const Login = () => {
     try {
       const res = await axios.post("/auth/login", { email, password });
 
-      const { token, status } = res.data;
+      const { token, status, user } = res.data;
 
       if (status === 403) {
         toast.error("Please verify your email for 2FA.");
@@ -32,8 +32,8 @@ const Login = () => {
         return;
       }
 
-      if (status === 200 && token) {
-        login(token);
+      if (status === 200 && token && user) {
+        login(token, user);
         toast.success("Login successful!");
         navigate("/dashboard");
       } else {

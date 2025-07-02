@@ -20,6 +20,7 @@ import Toggle from "react-toggle";
 import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
 import AttachmentsModal from "../AttachmentsModal.jsx";
 import ScrollLock from "../ScrollLock.js";
+import PaginationControls from "../PaginationControls.jsx";
 
 // export const baseurl = "http://localhost:5000";
 
@@ -35,7 +36,7 @@ const RmMaster = () => {
   const [exportFormat, setExportFormat] = useState("excel");
   const [showExportOptions, setShowExportOptions] = useState(false);
 
-  ScrollLock(editData != null || showBulkPanel || openAttachments!=null);
+  ScrollLock(editData != null || showBulkPanel || openAttachments != null);
 
   const toggleExportOptions = () => {
     setShowExportOptions((prev) => !prev);
@@ -125,7 +126,7 @@ const RmMaster = () => {
 
   useEffect(() => {
     fetchRawMaterials(pagination.currentPage);
-  }, [pagination.currentPage, showBulkPanel]);
+  }, [pagination.currentPage, showBulkPanel, pagination.limit]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this raw material?"))
@@ -481,7 +482,7 @@ const RmMaster = () => {
                             onClick={() => setOpenAttachments(rm.attachments)}
                             className="cursor-pointer hover:text-[#d8b76a] hover:underline text-center items-center justify-center"
                           >
-                            View Attachments
+                            View
                           </button>
                         ) : (
                           "-"
@@ -551,37 +552,19 @@ const RmMaster = () => {
             </tbody>
           </table>
         </div>
-        <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
-          <button
-            onClick={() => goToPage(pagination.currentPage - 1)}
-            disabled={pagination.currentPage <= 1}
-            className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer "
-          >
-            Prev
-          </button>
-
-          {[...Array(pagination.totalPages).keys()].map((_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => goToPage(i + 1)}
-              className={`px-5 py-2 rounded text-base cursor-pointer ${
-                pagination.currentPage === i + 1
-                  ? "bg-[#d8b76a] text-white font-semibold"
-                  : "bg-[#d8b76a]/20"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-
-          <button
-            onClick={() => goToPage(pagination.currentPage + 1)}
-            disabled={pagination.currentPage >= pagination.totalPages}
-            className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            Next
-          </button>
-        </div>
+        <PaginationControls
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          entriesPerPage={pagination.limit}
+          onEntriesChange={(limit) => {
+            setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
+            fetchData(1, limit);
+          }}
+          onPageChange={(page) => {
+            setPagination((prev) => ({ ...prev, currentPage: page }));
+            fetchData(page, pagination.limit);
+          }}
+        />
         {showBulkPanel && (
           <BulkRmPanel onClose={() => setShowBulkPanel(false)} />
         )}

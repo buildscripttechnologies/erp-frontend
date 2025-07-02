@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Navbar } from "../components/Navbar";
 import { Sidebar } from "../components/Sidebar";
+import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard({ children }) {
   const [isOpen, setIsOpen] = useState(true);
   const toggleSidebar = () => setIsOpen((prev) => !prev);
+
+  const { user } = useAuth();
 
   return (
     <>
@@ -12,7 +15,7 @@ export default function Dashboard({ children }) {
         isOpen={isOpen}
         setIsOpen={toggleSidebar}
         title="SmartFlow360"
-        username="admin"
+        user={user}
       />
 
       <div className="flex min-h-screen w-full bg-gradient-to-r from-white to-[#d8b76a]/10 overflow-auto ">

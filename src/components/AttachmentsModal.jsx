@@ -85,7 +85,7 @@ const AttachmentsModal = ({ attachments = [], onClose }) => {
                     <img
                       src={att.fileUrl}
                       alt={att.fileName}
-                      className="w-12 h-12 object-cover rounded border border-gray-300"
+                      className="w-12 h-12 object-cover rounded border border-gray-300 "
                     />
                   ) : (
                     <div className="w-12 h-12 flex items-center justify-center bg-gray-100 text-gray-600 border border-gray-300 rounded text-xl">
@@ -98,7 +98,7 @@ const AttachmentsModal = ({ attachments = [], onClose }) => {
                     onClick={() => handlePreview(att)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:underline truncate"
+                    className="text-sm text-blue-600 hover:underline truncate  cursor-pointer duration-100 "
                     title={att.fileName}
                   >
                     {att.fileName}
@@ -111,7 +111,7 @@ const AttachmentsModal = ({ attachments = [], onClose }) => {
                     onClick={() => handlePreview(att)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[#292926] hover:text-[#d8b76a] transition"
+                    className="text-[#292926] hover:text-[#d8b76a] transition cursor-pointer duration-100"
                     title="Open"
                   >
                     <FiExternalLink size={18} />

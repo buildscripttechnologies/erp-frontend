@@ -15,6 +15,7 @@ import SfgMaster from "./components/master/SfgMaster";
 import LocationMaster from "./components/master/LocationMaster";
 import FgMaster from "./components/master/fgmaster";
 import VendorMaster from "./components/master/VendorMaster";
+import RoleMaster from "./components/master/Role/RoleMaster";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -32,6 +33,10 @@ const App = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route
+          path="/dashboard"
+          element={isAuthenticated ? <Dash /> : <Navigate to="/login" />}
+        />
+        <Route
           path="/master-users"
           element={isAuthenticated ? <MasterUsers /> : <Navigate to="/login" />}
         />
@@ -44,16 +49,19 @@ const App = () => {
           element={isAuthenticated ? <UomMaster /> : <Navigate to="/login" />}
         />
         <Route
-          path="/dashboard"
-          element={isAuthenticated ? <Dash /> : <Navigate to="/login" />}
+          path="/role-master"
+          element={isAuthenticated ? <RoleMaster /> : <Navigate to="/login" />}
         />
+
         <Route
           path="/sfg-master"
           element={isAuthenticated ? <SfgMaster /> : <Navigate to="/login" />}
         />
         <Route
           path="/location-master"
-          element={isAuthenticated ? <LocationMaster /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? <LocationMaster /> : <Navigate to="/login" />
+          }
         />
         <Route
           path="/fg-master"
@@ -61,7 +69,9 @@ const App = () => {
         />
         <Route
           path="/vendor-master"
-          element={isAuthenticated ? <VendorMaster /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? <VendorMaster /> : <Navigate to="/login" />
+          }
         />
         <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
