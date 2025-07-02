@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "../../utils/axios";
 import { FiMinus, FiPlus } from "react-icons/fi";
@@ -7,7 +7,7 @@ import { ClipLoader } from "react-spinners";
 const AddFgModal = ({ onClose, onAdded }) => {
   const [uoms, setUoms] = useState([]);
   const [rms, setRms] = useState([]);
-  const [sfgs, setSfgs] = useState([]);
+  const [sfgs] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const [formList, setFormList] = useState([
@@ -30,7 +30,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [uomRes, rmRes, sfgRes] = await Promise.all([
+        const [uomRes, rmRes] = await Promise.all([
           axios.get("/uoms/all-uoms?limit=1000"),
           axios.get("/rms/rm"),
           //axios.get("/sfgs/all?limit=1000")
