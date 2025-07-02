@@ -21,8 +21,12 @@ import Toggle from "react-toggle";
 import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
 import AttachmentsModal from "../AttachmentsModal.jsx";
 import ScrollLock from "../ScrollLock.js";
+
+import PaginationControls from "../PaginationControls.jsx";
+
 import { Navbar } from "../Navbar";
 import { Sidebar } from "../Sidebar";
+
 
 // export const baseurl = "http://localhost:5000";
 
@@ -40,9 +44,13 @@ const RmMaster = () => {
   const [isOpen, setIsOpen] = useState(true);
   const toggleSidebar = () => setIsOpen((prev) => !prev);
 
+
+  ScrollLock(editData != null || showBulkPanel || openAttachments != null);
+
+
   ScrollLock(editData != null || showBulkPanel || openAttachments!=null);
   console.log("isOpen", isOpen);
-  
+
   const toggleExportOptions = () => {
     setShowExportOptions((prev) => !prev);
   };
@@ -131,7 +139,7 @@ const RmMaster = () => {
 
   useEffect(() => {
     fetchRawMaterials(pagination.currentPage);
-  }, [pagination.currentPage, showBulkPanel]);
+  }, [pagination.currentPage, showBulkPanel, pagination.limit]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this raw material?"))
@@ -487,7 +495,7 @@ const RmMaster = () => {
                             onClick={() => setOpenAttachments(rm.attachments)}
                             className="cursor-pointer hover:text-[#d8b76a] hover:underline text-center items-center justify-center"
                           >
-                            View Attachments
+                            View
                           </button>
                         ) : (
                           "-"
@@ -558,6 +566,21 @@ const RmMaster = () => {
           </table>
         </div>
 
+        <PaginationControls
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          entriesPerPage={pagination.limit}
+          onEntriesChange={(limit) => {
+            setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
+            fetchData(1, limit);
+          }}
+          onPageChange={(page) => {
+            setPagination((prev) => ({ ...prev, currentPage: page }));
+            fetchData(page, pagination.limit);
+          }}
+        />
+
+
         <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
           <button
             onClick={() => goToPage(pagination.currentPage - 1)}
@@ -589,6 +612,7 @@ const RmMaster = () => {
             Next
           </button>
         </div>
+
         {showBulkPanel && (
           <BulkRmPanel onClose={() => setShowBulkPanel(false)} />
         )}

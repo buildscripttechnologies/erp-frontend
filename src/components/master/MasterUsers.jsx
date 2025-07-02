@@ -585,7 +585,7 @@ export default function MasterUsers() {
             </button>
           </div>
         </div>
-      </>x
+      </>
       {/* ) : (
         <AccessDeniedNotice userType="Admin" />
       )} */}

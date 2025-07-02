@@ -33,8 +33,13 @@ export function Sidebar({ isOpen, setIsOpen }) {
     { label: "Users", icon: FaUserCog, path: "/master-users" },
     { label: "R. M. Master", icon: FaCubes, path: "/rm-master" },
     { label: "UOM Master", icon: FaBalanceScale, path: "/uom-master" },
+    { label: "Role Master", icon: FaBalanceScale, path: "/role-master" },
     { label: "SFG Master", icon: FaLayerGroup, path: "/sfg-master" },
-    { label: "Location Master", icon: FaMapMarkerAlt, path: "/location-master" },
+    {
+      label: "Location Master",
+      icon: FaMapMarkerAlt,
+      path: "/location-master",
+    },
     { label: "FG Master", icon: FaCube, path: "/fg-master" },
     { label: "Vendor Master", icon: FaIndustry, path: "/vendor-master" },
     { label: "Customer Master", icon: FaUserFriends, path: "/customer-master" },
@@ -52,12 +57,12 @@ export function Sidebar({ isOpen, setIsOpen }) {
 
   return (
     <aside
-      className={`fixed  top-0 left-0 z-40 h-full w-42 sm:w-50 bg-white shadow-md transform ${
+      className={`fixed  top-0 left-0 z-40 h-full w-42 sm:w-50 bg-[#d8b76a]/10 shadow-2xl drop-shadow-2xl  transform ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       } transition-transform duration-300 ease-in-out overflow-y-auto`}
     >
-      <div className="flex justify-between items-center p-4 border-b border-[#d8b76a]">
-        <h2 className="sm:text-2xl text-lg font-bold text-[#d8b76a] ">
+      <div className="flex h-15 justify-between bg-[#d8b76a]/50 items-center p-3   ">
+        <h2 className="sm:text-2xl text-lg font-bold text-[#292926] ">
           SmartFlow360
         </h2>
       </div>
@@ -88,7 +93,7 @@ export function Sidebar({ isOpen, setIsOpen }) {
         {/* Master collapsible section */}
         <div>
           <button
-            className="flex items-center justify-between w-full p-1 text-sm hover:bg-gray-100 rounded border border-[#d8b76a] text-[#292926] cursor-pointer"
+            className="flex items-center justify-between w-full p-1 text-sm hover:bg-gray-100 rounded  text-[#292926] cursor-pointer"
             onClick={() => setIsMasterOpen((prev) => !prev)}
           >
             <span className="flex items-center gap-3 ">
