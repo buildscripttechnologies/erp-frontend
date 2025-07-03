@@ -5,6 +5,7 @@ import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
 import Dashboard from "../../pages/Dashboard";
 import AddVendorModal from "./AddVendorModel";
 import TableSkeleton from "../TableSkeleton";
+import ScrollLock from "../../components/ScrollLock";
 
 const VendorMaster = () => {
   const [vendors, setVendors] = useState([]);
@@ -55,6 +56,8 @@ const VendorMaster = () => {
     }
   };
 
+  ScrollLock(showModal);
+  
   useEffect(() => {
     fetchVendors();
     fetchMetaData();
@@ -82,7 +85,7 @@ const VendorMaster = () => {
           sfgs={sfgs}
         />
       )}
-      <div className="p-4 sm:p-6 max-w-[92vw] mx-auto">
+      <div className="p-4 sm:p-6 max-w-[99vw] mx-auto">
         <h2 className="text-2xl font-bold mb-4">
           Vendors <span className="text-gray-500">({pagination.totalResults})</span>
         </h2>
