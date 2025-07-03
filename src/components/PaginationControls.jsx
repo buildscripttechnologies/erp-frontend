@@ -6,8 +6,12 @@ const PaginationControls = ({
   onPageChange,
   entriesPerPage,
   onEntriesChange,
+  totalResults,
 }) => {
   const pageNumbers = [...Array(totalPages).keys()].map((_, i) => i + 1);
+
+  const start = (currentPage - 1) * entriesPerPage + 1;
+  const end = Math.min(currentPage * entriesPerPage, totalResults);
 
   return (
     <div className="mt-4 flex flex-wrap justify-center sm:justify-between items-center gap-4 text-sm">
@@ -30,12 +34,18 @@ const PaginationControls = ({
         </select>
       </div>
 
+      {/* Showing count */}
+      <div className="text-[#292926] font-medium">
+        Showing {totalResults === 0 ? 0 : start} to {end} of {totalResults}{" "}
+        entries
+      </div>
+
       {/* Page controls */}
       <div className="flex items-center gap-2">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
-          className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-1 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Prev
         </button>
@@ -44,7 +54,7 @@ const PaginationControls = ({
           <button
             key={page}
             onClick={() => onPageChange(page)}
-            className={`px-5 py-2 rounded text-base cursor-pointer ${
+            className={`px-5 py-1 rounded text-base cursor-pointer ${
               currentPage === page
                 ? "bg-[#d8b76a] text-white font-semibold"
                 : "bg-[#d8b76a]/20"
@@ -57,7 +67,7 @@ const PaginationControls = ({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
-          className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-1 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Next
         </button>

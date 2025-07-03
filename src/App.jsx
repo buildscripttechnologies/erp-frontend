@@ -16,6 +16,7 @@ import LocationMaster from "./components/master/LocationMaster";
 import FgMaster from "./components/master/fgmaster";
 import VendorMaster from "./components/master/VendorMaster";
 import RoleMaster from "./components/master/Role/RoleMaster";
+import Dashboard from "./pages/Dashboard";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -42,7 +43,15 @@ const App = () => {
         />
         <Route
           path="/rm-master"
-          element={isAuthenticated ? <RmMaster /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? (
+              <Dashboard>
+                <RmMaster />
+              </Dashboard>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/uom-master"

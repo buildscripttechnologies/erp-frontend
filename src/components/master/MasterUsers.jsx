@@ -19,6 +19,7 @@ import TableSkeleton from "../TableSkeleton";
 import RoleSkeleton from "../RoleSkeleton";
 import AccessDeniedNotice from "../AccessDeniedNotice";
 import Toggle from "react-toggle";
+import PaginationControls from "../PaginationControls";
 
 export default function MasterUsers() {
   const navigate = useNavigate();
@@ -79,12 +80,12 @@ export default function MasterUsers() {
     setShowForm(false);
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (page = 1, limit = pagination.limit) => {
     try {
       setLoading(true);
       const params = {
-        page: currentPage,
-        limit: pagination.limit,
+        page,
+        limit,
       };
       if (filterRole !== "All") {
         params.userType = filterRole;
@@ -93,7 +94,15 @@ export default function MasterUsers() {
       const res = await axios.get("/users/all-users", { params });
       if (res.data.status === 200) {
         setUsers(res.data.users);
-        setPagination(res.data.pagination);
+        setPagination({
+          totalResults: res.data.pagination.totalResults,
+          totalPages: res.data.pagination.totalPages,
+          currentPage: res.data.pagination.currentPage,
+          limit: res.data.pagination.limit,
+        });
+
+        console.log("pagiantion", pagination);
+
         // setAccess(true);
         setLoading(false);
       } else {
@@ -354,7 +363,7 @@ export default function MasterUsers() {
 
         {/* Header and Actions */}
         <div
-          className={`relative p-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden mt-4
+          className={`relative p-2 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden mt-4
           ${editMode || showForm ? "scroll-events-none" : ""} `}
         >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
@@ -395,7 +404,7 @@ export default function MasterUsers() {
                       setFilterRole(role);
                       setCurrentPage(1);
                     }}
-                    className={`px-3 py-1 rounded text-sm ${
+                    className={`px-3 py-1.5 rounded text-sm ${
                       role === filterRole
                         ? "bg-[#d8b76a] text-white font-semibold"
                         : "bg-[#d8b76a]/20 text-[#292926]"
@@ -419,7 +428,7 @@ export default function MasterUsers() {
                         setFilterRole(role);
                         setCurrentPage(1);
                       }}
-                      className={`px-3 py-1 rounded text-sm whitespace-nowrap ${
+                      className={`px-3 py-1.5 rounded text-sm whitespace-nowrap ${
                         role === filterRole
                           ? "bg-[#d8b76a] text-white font-semibold"
                           : "bg-[#d8b76a]/20 text-[#292926]"
@@ -465,9 +474,14 @@ export default function MasterUsers() {
                     {filteredUsers.map((u, i) => (
                       <tr
                         key={u.id}
-                        className="border-b border-[#d8b76a] hover:bg-gray-50"
+                        className="border-b  border-[#d8b76a] hover:bg-gray-50"
                       >
-                        <td className="py-1 px-2">{i + 1}</td>
+                        <td className="px-2 py-1">
+                          {Number(pagination.currentPage - 1) *
+                            Number(pagination.limit) +
+                            i +
+                            1}
+                        </td>
                         <td className="py-1 px-2">{u.fullName}</td>
                         <td className="py-1 px-2 hidden md:table-cell">
                           {u.mobile}
@@ -475,13 +489,7 @@ export default function MasterUsers() {
                         <td className="py-1 px-2 hidden lg:table-cell">
                           {u.email}
                         </td>
-                        <td
-                          // data-tooltip-id="statusTip"
-                          // data-tooltip-content={
-                          //   u.isVerified ? "Set Verified" : "Set Not Verified"
-                          // }
-                          className="pt-1 px-2 hidden lg:table-cell "
-                        >
+                        <td className=" px-2 hidden lg:table-cell ">
                           <Toggle
                             checked={u.isVerified}
                             onChange={() => toggleVerification(u)}
@@ -492,21 +500,13 @@ export default function MasterUsers() {
                         <td className="py-1 px-2 hidden xl:table-cell">
                           {u.username}
                         </td>
-                        <td
-                          // data-tooltip-id="statusTip"
-                          // data-tooltip-content={
-                          //   u.status == "Active"
-                          //     ? "Deactivate User"
-                          //     : "Activate User"
-                          // }
-                          className="pt-1 px-2"
-                        >
+                        <td className=" px-2">
                           <Toggle
                             checked={u.status == "Active"}
                             onClick={() => handleToggleStatus(u)}
                           />
                         </td>
-                        <td className="pt-1.5 px-2 flex gap-2 text-lg items-center  text-[#d39c25]">
+                        <td className="pt-1 px-2 flex gap-2 text-lg items-center  text-[#d39c25]">
                           <FiEdit
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Edit User"
@@ -555,35 +555,21 @@ export default function MasterUsers() {
           </div>
 
           {/* Pagination */}
-          <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
-            <button
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage <= 1}
-              className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50"
-            >
-              Prev
-            </button>
-            {[...Array(pagination.totalPages).keys()].map((_, i) => (
-              <button
-                key={i + 1}
-                onClick={() => goToPage(i + 1)}
-                className={`px-5 py-2 rounded text-base ${
-                  pagination.currentPage === i + 1
-                    ? "bg-[#d8b76a] text-white font-semibold"
-                    : "bg-[#d8b76a]/20"
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-            <button
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage >= pagination.totalPages}
-              className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
+
+          <PaginationControls
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            entriesPerPage={pagination.limit}
+            totalResults={pagination.totalResults}
+            onEntriesChange={(limit) => {
+              setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
+              fetchUsers(1, limit);
+            }}
+            onPageChange={(page) => {
+              setPagination((prev) => ({ ...prev, currentPage: page }));
+              fetchUsers(page, pagination.limit);
+            }}
+          />
         </div>
       </>
       {/* ) : (

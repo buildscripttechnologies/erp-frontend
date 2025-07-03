@@ -8,6 +8,7 @@ import EditUomModal from "./EditUomModal";
 import TableSkeleton from "../TableSkeleton";
 import ScrollLock from "../ScrollLock";
 import Toggle from "react-toggle";
+import PaginationControls from "../PaginationControls";
 
 const UomMaster = () => {
   const [uoms, setUoms] = useState([]);
@@ -24,11 +25,11 @@ const UomMaster = () => {
 
   ScrollLock(formOpen || editUom != null);
 
-  const fetchUOMs = async (page = 1) => {
+  const fetchUOMs = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/uoms/all-uoms?page=${page}&limit=${pagination.limit}&status="all"`
+        `/uoms/all-uoms?page=${page}&limit=${limit}&status="all"`
       );
       setUoms(res.data.data || []);
       setPagination({
@@ -172,7 +173,12 @@ const UomMaster = () => {
                       key={uom._id}
                       className="border-t text-xs sm:text-sm border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
                     >
-                      <td className="px-2 py-1">{index + 1}</td>
+                      <td className="px-2 py-1">
+                        {Number(pagination.currentPage - 1) *
+                          Number(pagination.limit) +
+                          index +
+                          1}
+                      </td>
                       <td className="px-2 py-1 hidden md:table-cell">
                         {new Date(uom.createdAt).toLocaleString("en-IN", {
                           day: "2-digit",
@@ -243,7 +249,7 @@ const UomMaster = () => {
             onUpdated={fetchUOMs}
           />
         )}
-        <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
+        {/* <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
           <button
             onClick={() => goToPage(pagination.currentPage - 1)}
             disabled={pagination.currentPage <= 1}
@@ -273,7 +279,21 @@ const UomMaster = () => {
           >
             Next
           </button>
-        </div>
+        </div> */}
+        <PaginationControls
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          entriesPerPage={pagination.limit}
+          totalResults={pagination.totalResults}
+          onEntriesChange={(limit) => {
+            setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
+            fetchUOMs(1, limit);
+          }}
+          onPageChange={(page) => {
+            setPagination((prev) => ({ ...prev, currentPage: page }));
+            fetchUOMs(page, pagination.limit);
+          }}
+        />
       </div>
     </Dashboard>
   );
