@@ -26,11 +26,11 @@ const RoleMaster = () => {
 
   ScrollLock(showAddModal || editData != null);
 
-  const fetchRoles = async (page = 1) => {
+  const fetchRoles = async (page = 1, limit = pagination.limit) => {
     try {
       setLoading(true);
       const res = await axios.get(
-        `/roles/all-roles/?page=${page}&limit=${pagination.limit}&status="all"`
+        `/roles/all-roles/?page=${page}&limit=${limit}&status="all"`
       );
       setRoles(res.data.roles);
       setPagination({
@@ -39,7 +39,6 @@ const RoleMaster = () => {
         totalResults: res.data.totalResults,
         limit: res.data.limit,
       });
-      console.log("roles", roles);
     } catch (err) {
       toast.error("Failed to fetch roles");
     } finally {
@@ -96,7 +95,7 @@ const RoleMaster = () => {
 
   return (
     <Dashboard>
-      <div className="p-4 mt-3 max-w-[99vw] mx-auto overflow-x-auto">
+      <div className="p-2 md:px-4  mt-3 max-w-[99vw] mx-auto overflow-x-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
@@ -158,7 +157,12 @@ const RoleMaster = () => {
                     key={role._id}
                     className="border-b border-[#d8b76a] hover:bg-gray-50"
                   >
-                    <td className="px-2 py-1">{idx + 1}</td>
+                    <td className="px-2 py-1">
+                      {Number(pagination.currentPage - 1) *
+                        Number(pagination.limit) +
+                        idx +
+                        1}
+                    </td>
                     <td className="px-2 py-1 hidden md:table-cell">
                       {new Date(role.createdAt).toLocaleString("en-IN", {
                         day: "2-digit",
@@ -213,13 +217,14 @@ const RoleMaster = () => {
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}
           entriesPerPage={pagination.limit}
+          totalResults={pagination.totalResults}
           onEntriesChange={(limit) => {
             setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-            fetchData(1, limit);
+            fetchRoles(1, limit);
           }}
           onPageChange={(page) => {
             setPagination((prev) => ({ ...prev, currentPage: page }));
-            fetchData(page, pagination.limit);
+            fetchRoles(page, pagination.limit);
           }}
         />
 

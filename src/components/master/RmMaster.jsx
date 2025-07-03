@@ -1,10 +1,9 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Dashboard from "../../pages/Dashboard";
 import {
   FiPlus,
   FiSearch,
+  FiCheckCircle,
   FiUploadCloud,
   FiDownload,
   FiEdit,
@@ -15,22 +14,17 @@ import toast from "react-hot-toast";
 import { Tooltip } from "react-tooltip";
 import TableSkeleton from "../TableSkeleton";
 import EditRawMaterialModal from "./EditRawMaterialModal";
-//import AddBulkRawMaterials from "./BulkRmPanel.jsx";
+import AddBulkRawMaterials from "./BulkRmPanel.jsx";
 import BulkRmPanel from "./BulkRmPanel.jsx";
 import Toggle from "react-toggle";
 import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
 import AttachmentsModal from "../AttachmentsModal.jsx";
 import ScrollLock from "../ScrollLock.js";
-
 import PaginationControls from "../PaginationControls.jsx";
-
-import { Navbar } from "../Navbar";
-import { Sidebar } from "../Sidebar";
-
 
 // export const baseurl = "http://localhost:5000";
 
-const RmMaster = () => {
+const RmMaster = ({ isOpen }) => {
   const [rawMaterials, setRawMaterials] = useState([]);
   const [editData, setEditData] = useState(null);
   const [search, setSearch] = useState("");
@@ -41,15 +35,8 @@ const RmMaster = () => {
   const [exportScope, setExportScope] = useState("current");
   const [exportFormat, setExportFormat] = useState("excel");
   const [showExportOptions, setShowExportOptions] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
-  const toggleSidebar = () => setIsOpen((prev) => !prev);
-
 
   ScrollLock(editData != null || showBulkPanel || openAttachments != null);
-
-
-  ScrollLock(editData != null || showBulkPanel || openAttachments!=null);
-  console.log("isOpen", isOpen);
 
   const toggleExportOptions = () => {
     setShowExportOptions((prev) => !prev);
@@ -148,7 +135,7 @@ const RmMaster = () => {
       const res = await axios.delete(`/rms/delete-rm/${id}`);
       if (res.status == 200) {
         toast.success("Raw material deleted successfully");
-        fetchRawMaterials();
+        fetchRawMaterials(); // reload list
       } else {
         toast.error("Failed to delete raw material");
       }
@@ -295,332 +282,296 @@ const RmMaster = () => {
   ];
 
   return (
-      <Dashboard>
-        <div
-          className={`p-2 md:px-4 mx-auto overflow-x-hidden mt-4`}
-        >
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
-              Raw Materials{" "}
-              <span className="text-gray-500">({rawMaterials.length})</span>
-            </h2>
-  
-            <div className="flex gap-2 flex-wrap">
-              {showExportOptions && (
-                <div className="flex gap-2 items-center">
-                  <select
-                    value={exportScope}
-                    onChange={(e) => setExportScope(e.target.value)}
-                    className="border border-[#d8b76a] px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
-                  >
-                    <option value="current">This Page</option>
-                    <option value="filtered">Filtered Data</option>
-                    <option value="all">All Data</option>
-                  </select>
-  
-                  <select
-                    value={exportFormat}
-                    onChange={(e) => setExportFormat(e.target.value)}
-                    className="border border-[#d8b76a] px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
-                  >
-                    <option value="excel">Excel</option>
-                    <option value="pdf">PDF</option>
-                  </select>
-  
-                  <button
-                    onClick={handleExport}
-                    className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
-                  >
-                    Export
-                  </button>
-                </div>
-              )}
-              <button
-                onClick={toggleExportOptions}
-                className="bg-[#d8b76a] cursor-pointer hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded flex justify-center items-center whitespace-nowrap transition"
+    <div
+      className={` p-2 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden mt-4 `}
+    >
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
+          Raw Materials{" "}
+          <span className="text-gray-500">({rawMaterials.length})</span>
+        </h2>
+
+        <div className="flex gap-2 flex-wrap">
+          {showExportOptions && (
+            <div className="flex gap-2 items-center">
+              <select
+                value={exportScope}
+                onChange={(e) => setExportScope(e.target.value)}
+                className="border border-[#d8b76a] px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
               >
-                <FiDownload className="mr-2" /> Export
-              </button>
-  
-              <button
-                onClick={handleSampleDownload}
-                className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
+                <option value="current">This Page</option>
+                <option value="filtered">Filtered Data</option>
+                <option value="all">All Data</option>
+              </select>
+
+              <select
+                value={exportFormat}
+                onChange={(e) => setExportFormat(e.target.value)}
+                className="border border-[#d8b76a] px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
               >
-                <FiDownload /> Sample Excel
-              </button>
-  
-              <label className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 px-4 py-1.5 rounded cursor-pointer text-[#292926] font-semibold ">
-                <FiUploadCloud />
-                <span>Upload Excel</span>
-                <input
-                  type="file"
-                  accept=".xlsx, .xls"
-                  className="hidden"
-                  onChange={(e) => setFile(e.target.files[0])}
-                />
-              </label>
+                <option value="excel">Excel</option>
+                <option value="pdf">PDF</option>
+              </select>
+
               <button
-                onClick={handleFileUpload}
+                onClick={handleExport}
                 className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
               >
-                Submit
+                Export
               </button>
             </div>
-          </div>
-          {/* Search */}
-        <div className="flex flex-col w-auto sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div className="relative w-full sm:w-1/3">
+          )}
+          <button
+            onClick={toggleExportOptions}
+            className="bg-[#d8b76a] cursor-pointer hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded flex justify-center items-center whitespace-nowrap transition"
+          >
+            <FiDownload className="mr-2" /> Export
+          </button>
+
+          <button
+            onClick={handleSampleDownload}
+            className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
+          >
+            <FiDownload /> Sample Excel
+          </button>
+
+          <label className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 px-4 py-1.5 rounded cursor-pointer text-[#292926] font-semibold ">
+            <FiUploadCloud />
+            <span>Upload Excel</span>
             <input
-              type="text"
-              placeholder="Search raw materials..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full sm:w-80 pl-10 pr-4 py-1 text-[#292926] border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+              type="file"
+              accept=".xlsx, .xls"
+              className="hidden"
+              onChange={(e) => setFile(e.target.files[0])}
             />
-            <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
-          </div>
+          </label>
           <button
-            onClick={() => setShowBulkPanel(true)}
-            className="w-full sm:w-40 justify-center bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer transition duration-200"
+            onClick={handleFileUpload}
+            className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
           >
-            <FiPlus /> Add R.M.
+            Submit
           </button>
         </div>
-                
-        <div className={`overflow-x-scroll rounded border border-[#d8b76a] shadow-sm flex-1 transition-all duration-300 ease-in-out ${
-            isOpen ? "max-w-[84vw]" : "max-w-[98vw]"
-          }`}>
-          <table className="max-w-full text-xs sm:text-sm">
-            <thead className="bg-[#d8b76a] text-[#292926] text-left">
-              <tr>
-                {[
-                  "#",
-                  "Created At",
-                  "Updated At",
-                  "SKU Code",
-                  "Item Name",
-                  "Description",
-                  "HSN/SAC",
-                  "Type",
-                  "Qual. Insp.",
-                  "Location",
-                  "Base Qty",
-                  "Pkg Qty",
-                  "MOQ",
-                  "Pur. Uom",
-                  "GST",
-                  "Stock Qty",
-                  "Stock Uom",
-                  "Attachment",
-                  "Status",
-                  "Created By",
-                  "Action",
-                ].map((th) => (
-                  <th
-                    key={th}
-                    className="py-1.5 px-2 text-xs sm:text-sm whitespace-nowrap"
+      </div>
+
+      {/* Search */}
+      <div className="flex flex-col w-auto sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div className="relative w-full sm:w-1/3">
+          <input
+            type="text"
+            placeholder="Search raw materials..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full sm:w-80 pl-10 pr-4 py-1 text-[#292926] border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+          />
+          <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
+        </div>
+        <button
+          onClick={() => setShowBulkPanel(true)}
+          className="w-full sm:w-40 justify-center bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer transition duration-200"
+        >
+          <FiPlus /> Add R.M.
+        </button>
+      </div>
+
+      {/* Table */}
+      <div
+        className={`relative overflow-x-scroll  overflow-y-auto ${
+          isOpen ? `max-w-[83.8vw]` : `max-w-[99vw]`
+        } rounded border border-[#d8b76a] shadow-sm`}
+      >
+        <table className="text-xs sm:text-sm">
+          <thead className="bg-[#d8b76a] text-[#292926] text-left">
+            <tr>
+              {[
+                "#",
+                "Created At",
+                "Updated At",
+                "SKU Code",
+                "Item Name",
+                "Description",
+                "HSN/SAC",
+                "Type",
+                "Qual. Insp.",
+                "Location",
+                "Base Qty",
+                "Pkg Qty",
+                "MOQ",
+                "Pur. Uom",
+                "GST",
+                "Stock Qty",
+                "Stock Uom",
+                "Attachment",
+                "Status",
+                "Created By",
+                "Action",
+              ].map((th) => (
+                <th
+                  key={th}
+                  className="py-1.5 px-2 text-xs sm:text-sm whitespace-nowrap"
+                >
+                  {th}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <TableSkeleton rows={50} columns={TableHeaders} />
+            ) : (
+              <>
+                {filteredData.map((rm, i) => (
+                  <tr
+                    key={rm._id}
+                    className="border-b text-xs sm:text-sm whitespace-nowrap border-[#d8b76a] hover:bg-gray-50"
                   >
-                    {th}
-                  </th>
+                    <td className="px-2 py-1">
+                      {Number(pagination.currentPage - 1) *
+                        Number(pagination.limit) +
+                        i +
+                        1}
+                    </td>
+                    <td className="px-2 py-1">
+                      {new Date(rm.createdAt).toLocaleString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
+                    </td>
+                    <td className="px-2 py-1">
+                      {new Date(rm.updatedAt).toLocaleString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
+                    </td>
+                    <td className="px-2 py-1">{rm.skuCode}</td>
+                    <td className="px-2 py-1">{rm.itemName}</td>
+                    <td className="px-2 py-1">{rm.description || "-"}</td>
+                    <td className="px-2 py-1">{rm.hsnOrSac}</td>
+                    <td className="px-2 py-1">{rm.type}</td>
+                    <td className="px-2 ">
+                      <Toggle
+                        checked={rm.qualityInspectionNeeded}
+                        onChange={() =>
+                          handleToggleQualityInspection(
+                            rm.id,
+                            rm.qualityInspectionNeeded
+                          )
+                        }
+                      />
+                    </td>
+
+                    <td className="px-2 py-1">{rm.location || "-"}</td>
+                    <td className="px-2 py-1">{rm.baseQty}</td>
+                    <td className="px-2 py-1">{rm.pkgQty}</td>
+                    <td className="px-2 py-1">{rm.moq}</td>
+                    <td className="px-2 py-1">{rm.purchaseUOM || "-"}</td>
+                    <td className="px-2 py-1">{rm.gst}%</td>
+                    <td className="px-2 py-1">{rm.stockQty}</td>
+                    <td className="px-2 py-1 ">{rm.stockUOM || "-"}</td>
+
+                    <td className="text-center items-center justify-center">
+                      {Array.isArray(rm.attachments) &&
+                      rm.attachments.length > 0 ? (
+                        <button
+                          onClick={() => setOpenAttachments(rm.attachments)}
+                          className="cursor-pointer hover:text-[#d8b76a] hover:underline text-center items-center justify-center"
+                        >
+                          View
+                        </button>
+                      ) : (
+                        "-"
+                      )}
+
+                      {openAttachments && (
+                        <AttachmentsModal
+                          attachments={openAttachments}
+                          onClose={() => setOpenAttachments(null)}
+                        />
+                      )}
+                    </td>
+                    <td className="px-2 ">
+                      <Toggle
+                        checked={rm.status === "Active"}
+                        onChange={() => handleToggleStatus(rm.id, rm.status)}
+                      />
+                    </td>
+                    <td className="px-2 py-1">{rm.createdByName || "-"}</td>
+                    <td className="px-2 py-1">
+                      <div className="flex items-center gap-2 text-base text-[#d39c25]">
+                        <FiEdit
+                          data-tooltip-id="statusTip"
+                          data-tooltip-content="Edit"
+                          onClick={() => setEditData(rm)}
+                          className="hover:text-blue-500 cursor-pointer"
+                        />
+                        {editData && (
+                          <EditRawMaterialModal
+                            rawMaterial={editData}
+                            onClose={() => setEditData(null)}
+                            onUpdated={fetchRawMaterials}
+                          />
+                        )}
+                        <FiTrash2
+                          data-tooltip-id="statusTip"
+                          data-tooltip-content="Delete"
+                          onClick={() => handleDelete(rm.id)}
+                          className="hover:text-red-500 cursor-pointer"
+                        />
+                        <Tooltip
+                          id="statusTip"
+                          place="top"
+                          style={{
+                            backgroundColor: "#292926",
+                            color: "#d8b76a",
+                            fontSize: "12px",
+                            fontWeight: "bold",
+                          }}
+                        />
+                      </div>
+                    </td>
+                  </tr>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <TableSkeleton rows={50} columns={TableHeaders} />
-              ) : (
-                <>
-                  {filteredData.map((rm, i) => (
-                    <tr
-                      key={rm._id}
-                      className="border-b text-xs sm:text-sm whitespace-nowrap border-[#d8b76a] hover:bg-gray-50"
+                {filteredData.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan="4"
+                      className="text-center py-4 text-gray-500 w-full"
                     >
-                      <td className="px-2 py-1">
-                        {Number(pagination.currentPage - 1) *
-                          Number(pagination.limit) +
-                          i +
-                          1}
-                      </td>
-                      <td className="px-2 py-1">
-                        {new Date(rm.createdAt).toLocaleString("en-IN", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        })}
-                      </td>
-                      <td className="px-2 py-1">
-                        {new Date(rm.updatedAt).toLocaleString("en-IN", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        })}
-                      </td>
-                      <td className="px-2 py-1">{rm.skuCode}</td>
-                      <td className="px-2 py-1">{rm.itemName}</td>
-                      <td className="px-2 py-1">{rm.description || "-"}</td>
-                      <td className="px-2 py-1">{rm.hsnOrSac}</td>
-                      <td className="px-2 py-1">{rm.type}</td>
-                      <td className="px-2 ">
-                        <Toggle
-                          checked={rm.qualityInspectionNeeded}
-                          onChange={() =>
-                            handleToggleQualityInspection(
-                              rm.id,
-                              rm.qualityInspectionNeeded
-                            )
-                          }
-                        />
-                      </td>
-
-                      <td className="px-2 py-1">{rm.location || "-"}</td>
-                      <td className="px-2 py-1">{rm.baseQty}</td>
-                      <td className="px-2 py-1">{rm.pkgQty}</td>
-                      <td className="px-2 py-1">{rm.moq}</td>
-                      <td className="px-2 py-1">{rm.purchaseUOM || "-"}</td>
-                      <td className="px-2 py-1">{rm.gst}%</td>
-                      <td className="px-2 py-1">{rm.stockQty}</td>
-                      <td className="px-2 py-1 ">{rm.stockUOM || "-"}</td>
-
-                      <td className="text-center items-center justify-center">
-                        {Array.isArray(rm.attachments) &&
-                        rm.attachments.length > 0 ? (
-                          <button
-                            onClick={() => setOpenAttachments(rm.attachments)}
-                            className="cursor-pointer hover:text-[#d8b76a] hover:underline text-center items-center justify-center"
-                          >
-                            View
-                          </button>
-                        ) : (
-                          "-"
-                        )}
-
-                        {openAttachments && (
-                          <AttachmentsModal
-                            attachments={openAttachments}
-                            onClose={() => setOpenAttachments(null)}
-                          />
-                        )}
-                      </td>
-                      <td className="px-2 ">
-                        <Toggle
-                          checked={rm.status === "Active"}
-                          onChange={() => handleToggleStatus(rm.id, rm.status)}
-                        />
-                      </td>
-                      <td className="px-2 py-1">{rm.createdByName || "-"}</td>
-                      <td className="px-2 py-1">
-                        <div className="flex items-center gap-2 text-base text-[#d39c25]">
-                          <FiEdit
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Edit"
-                            onClick={() => setEditData(rm)}
-                            className="hover:text-blue-500 cursor-pointer"
-                          />
-                          {editData && (
-                            <EditRawMaterialModal
-                              rawMaterial={editData}
-                              onClose={() => setEditData(null)}
-                              onUpdated={fetchRawMaterials}
-                            />
-                          )}
-                          <FiTrash2
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Delete"
-                            onClick={() => handleDelete(rm.id)}
-                            className="hover:text-red-500 cursor-pointer"
-                          />
-                          <Tooltip
-                            id="statusTip"
-                            place="top"
-                            style={{
-                              backgroundColor: "#292926",
-                              color: "#d8b76a",
-                              fontSize: "12px",
-                              fontWeight: "bold",
-                            }}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredData.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan="4"
-                        className="text-center py-4 text-gray-500 w-full"
-                      >
-                        No RMs found.
-                      </td>
-                    </tr>
-                  )}
-                </>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <PaginationControls
-          currentPage={pagination.currentPage}
-          totalPages={pagination.totalPages}
-          entriesPerPage={pagination.limit}
-          onEntriesChange={(limit) => {
-            setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-            fetchData(1, limit);
-          }}
-          onPageChange={(page) => {
-            setPagination((prev) => ({ ...prev, currentPage: page }));
-            fetchData(page, pagination.limit);
-          }}
-        />
-
-
-        <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
-          <button
-            onClick={() => goToPage(pagination.currentPage - 1)}
-            disabled={pagination.currentPage <= 1}
-            className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer "
-          >
-            Prev
-          </button>
-
-          {[...Array(pagination.totalPages).keys()].map((_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => goToPage(i + 1)}
-              className={`px-5 py-2 rounded text-base cursor-pointer ${
-                pagination.currentPage === i + 1
-                  ? "bg-[#d8b76a] text-white font-semibold"
-                  : "bg-[#d8b76a]/20"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-
-          <button
-            onClick={() => goToPage(pagination.currentPage + 1)}
-            disabled={pagination.currentPage >= pagination.totalPages}
-            className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            Next
-          </button>
-        </div>
-
-        {showBulkPanel && (
-          <BulkRmPanel onClose={() => setShowBulkPanel(false)} />
-        )}
-  
-        </div>
-          
-      </Dashboard>
-    );
-} 
+                      No RMs found.
+                    </td>
+                  </tr>
+                )}
+              </>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <PaginationControls
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        entriesPerPage={pagination.limit}
+        totalResults={pagination.totalResults}
+        onEntriesChange={(limit) => {
+          setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
+          fetchData(1, limit);
+        }}
+        onPageChange={(page) => {
+          setPagination((prev) => ({ ...prev, currentPage: page }));
+          fetchData(page, pagination.limit);
+        }}
+      />
+      {showBulkPanel && <BulkRmPanel onClose={() => setShowBulkPanel(false)} />}
+    </div>
+  );
+};
 
 export default RmMaster;

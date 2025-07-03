@@ -7,6 +7,7 @@ import { ClipLoader } from "react-spinners";
 import { useAuth } from "../context/AuthContext";
 const Login = () => {
   const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -17,15 +18,26 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post("/auth/login", { email, password });
+      const res = await axios.post("/auth/login", { identifier, password });
 
       const { token, status, user } = res.data;
+      console.log("res", res.data);
 
-      if (status === 403) {
+      if (status == 203) {
+        toast.error("Please verify your email first.");
+        navigate("/verify-otp", {
+          state: {
+            email: user.email,
+            purpose: "verification",
+          },
+        });
+        return;
+      }
+      if (status === 206) {
         toast.error("Please verify your email for 2FA.");
         navigate("/verify-otp", {
           state: {
-            email: email,
+            email: user.email,
             purpose: "2FA",
           },
         });
@@ -53,10 +65,10 @@ const Login = () => {
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
+          type="text"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          placeholder="Username or Email"
           className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-3 focus:border-[#b38a37] focus:outline-none transition duration-200"
           required
         />

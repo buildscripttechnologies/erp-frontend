@@ -57,7 +57,7 @@ export function Sidebar({ isOpen, setIsOpen }) {
 
   return (
     <aside
-      className={`fixed  top-0 left-0 z-40 h-full w-42 sm:w-50 bg-[#d8b76a]/10 shadow-2xl drop-shadow-2xl  transform ${
+      className={`fixed  top-0 left-0 z-40 h-full w-42 sm:w-50 bg-white shadow-xl drop-shadow-xl  transform ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       } transition-transform duration-300 ease-in-out overflow-y-auto`}
     >
