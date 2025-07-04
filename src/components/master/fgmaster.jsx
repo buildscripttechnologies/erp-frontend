@@ -4,15 +4,15 @@ import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
 import Dashboard from "../../pages/Dashboard";
 import TableSkeleton from "../TableSkeleton";
-import AddFgModal from "./addfgmodel"; // Update the path as needed
+import AddFgModal from "./AddFgModal";
 
 const FgMaster = () => {
   const [fgs, setFgs] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
-  const [nestedExpanded, setNestedExpanded] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -35,7 +35,7 @@ const FgMaster = () => {
         limit: res.data.limit,
       });
     } catch {
-      //toast.error("Failed to fetch FGs");
+      toast.error("Failed to fetch FGs");
     } finally {
       setLoading(false);
     }
@@ -43,6 +43,7 @@ const FgMaster = () => {
 
   useEffect(() => {
     fetchFGs();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const goToPage = (page) => {
@@ -52,15 +53,11 @@ const FgMaster = () => {
 
   const toggleRow = (index) => {
     setExpandedRow(expandedRow === index ? null : index);
-    setNestedExpanded(null);
-  };
-
-  const toggleNested = (idx) => {
-    setNestedExpanded(nestedExpanded === idx ? null : idx);
   };
 
   const filteredFGs = fgs.filter((fg) =>
-    fg.itemName.toLowerCase().includes(search.toLowerCase())
+    fg.itemName?.toLowerCase().includes(search.toLowerCase()) ||
+    fg.skuCode?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (

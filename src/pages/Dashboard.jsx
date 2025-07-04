@@ -3,6 +3,7 @@ import { Navbar } from "../components/Navbar";
 import { Sidebar } from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
 
+
 export default function Dashboard({ children }) {
   const [isOpen, setIsOpen] = useState(false);
 

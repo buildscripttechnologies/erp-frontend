@@ -5,6 +5,7 @@ import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
 import Dashboard from "../../pages/Dashboard";
 import AddVendorModal from "./AddVendorModel";
 import TableSkeleton from "../TableSkeleton";
+import ScrollLock from "../../components/ScrollLock";
 
 const VendorMaster = () => {
   const [vendors, setVendors] = useState([]);
@@ -57,6 +58,8 @@ const VendorMaster = () => {
     }
   };
 
+  ScrollLock(showModal);
+  
   useEffect(() => {
     fetchVendors();
     fetchMetaData();
