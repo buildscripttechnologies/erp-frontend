@@ -21,7 +21,7 @@ const Login = () => {
       const res = await axios.post("/auth/login", { identifier, password });
 
       const { token, status, user } = res.data;
-      console.log("res", res.data);
+      
 
       if (status == 203) {
         toast.error("Please verify your email first.");
