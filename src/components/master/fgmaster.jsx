@@ -13,7 +13,6 @@ const FgMaster = () => {
   const [expandedRow, setExpandedRow] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
-
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -43,7 +42,7 @@ const FgMaster = () => {
 
   useEffect(() => {
     fetchFGs();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const goToPage = (page) => {
@@ -55,16 +54,20 @@ const FgMaster = () => {
     setExpandedRow(expandedRow === index ? null : index);
   };
 
-  const filteredFGs = fgs.filter((fg) =>
-    fg.itemName?.toLowerCase().includes(search.toLowerCase()) ||
-    fg.skuCode?.toLowerCase().includes(search.toLowerCase())
+  const filteredFGs = fgs.filter(
+    (fg) =>
+      fg.itemName?.toLowerCase().includes(search.toLowerCase()) ||
+      fg.skuCode?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <Dashboard>
       <>
-        {showModal && (
-          <AddFgModal onClose={() => setShowModal(false)} onAdded={fetchFGs} />
+        {showAddModal && (
+          <AddFgModal
+            onClose={() => setShowAddModal(false)}
+            onAdded={fetchFGs}
+          />
         )}
         <div className="relative p-4 sm:p-6 max-w-[92vw] mx-auto overflow-x-hidden">
           <h2 className="text-xl sm:text-2xl font-bold mb-4">
@@ -84,7 +87,7 @@ const FgMaster = () => {
               />
             </div>
             <button
-              onClick={() => setShowModal(true)}
+              onClick={() => setShowAddModal(true)}
               className="w-full sm:w-auto justify-center bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-2 rounded flex items-center gap-2 transition duration-200"
             >
               <FiPlus /> Add FG
