@@ -6,6 +6,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
   const [formData, setFormData] = useState(rawMaterial);
   const [loading, setLoading] = useState(false);
   const [uoms, setUoms] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [deletedAttachments, setDeletedAttachments] = useState([]);
   const [newAttachments, setNewAttachments] = useState([]);
 
@@ -18,7 +19,20 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
         toast.error("Failed to load UOMs");
       }
     };
+
     fetchUOMs();
+  }, []);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await axios.get("/locations/get-all"); // your UOM endpoint
+        setLocations(res.data.data || []);
+      } catch (err) {
+        toast.error("Failed to load Locations");
+      }
+    };
+    fetchLocations();
   }, []);
 
   const handleChange = (field, value) => {
@@ -151,12 +165,19 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
           {/* Location */}
           <div>
             <label className="block mb-1 font-medium">Location</label>
-            <input
+            <select
               type="text"
               value={formData.location}
               onChange={(e) => handleChange("location", e.target.value)}
               className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
-            />
+            >
+              <option value="">Select</option>
+              {locations.map((l) => (
+                <option key={l._id} value={l.locationId}>
+                  {l.locationId}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Base Qty */}

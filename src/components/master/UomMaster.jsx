@@ -249,37 +249,7 @@ const UomMaster = () => {
             onUpdated={fetchUOMs}
           />
         )}
-        {/* <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
-          <button
-            onClick={() => goToPage(pagination.currentPage - 1)}
-            disabled={pagination.currentPage <= 1}
-            className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            Prev
-          </button>
 
-          {[...Array(pagination.totalPages).keys()].map((_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => goToPage(i + 1)}
-              className={`px-5 py-2 rounded text-base cursor-pointer ${
-                pagination.currentPage === i + 1
-                  ? "bg-[#d8b76a] text-white font-semibold"
-                  : "bg-[#d8b76a]/20"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-
-          <button
-            onClick={() => goToPage(pagination.currentPage + 1)}
-            disabled={pagination.currentPage >= pagination.totalPages}
-            className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            Next
-          </button>
-        </div> */}
         <PaginationControls
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}

@@ -21,6 +21,7 @@ const AttachmentsModal = ({ attachments = [], onClose }) => {
         responseType: "blob",
       });
 
+      console.log("fileurl", att.fileUrl);
       const mimeType = getMimeType(att.fileName); // ✅ use filename
       const blob = new Blob([response.data], { type: mimeType });
       const url = URL.createObjectURL(blob);

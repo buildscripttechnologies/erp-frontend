@@ -9,6 +9,7 @@ import { ClipLoader } from "react-spinners";
 const BulkRmPanel = ({ onClose }) => {
   const [rows, setRows] = useState([]);
   const [uoms, setUoms] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const fetchUoms = async () => {
@@ -19,6 +20,17 @@ const BulkRmPanel = ({ onClose }) => {
       toast.error("Failed to load UOMs");
     }
   };
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await axios.get("/locations/get-all"); // your UOM endpoint
+        setLocations(res.data.data || []);
+      } catch (err) {
+        toast.error("Failed to load Locations");
+      }
+    };
+    fetchLocations();
+  }, []);
 
   const addRow = () => {
     setRows((prev) => [
@@ -224,14 +236,21 @@ const BulkRmPanel = ({ onClose }) => {
                   </select>
                 </td>
                 <td className="p-2">
-                  <input
+                  <select
                     placeholder="Location"
                     className="px-2 py-1 w-40 border border-[#d8b76a] rounded focus:border-2 focus:border-[#b38a37] focus:outline-none transition duration-200 "
                     value={rm.location}
                     onChange={(e) =>
                       handleChange(i, "location", e.target.value)
                     }
-                  />
+                  >
+                    <option value="">Select</option>
+                    {locations.map((l) => (
+                      <option key={l._id} value={l.locationId}>
+                        {l.locationId}
+                      </option>
+                    ))}
+                  </select>
                 </td>
                 <td className="p-2">
                   <input

@@ -1,54 +1,73 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import axios from "../../utils/axios";
+import axios from "../../../utils/axios";
 import { FiMinus, FiPlus } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 
-const AddFgModal = ({ onClose, onAdded }) => {
+const AddSfgModal = ({ onClose, onAdded }) => {
   const [uoms, setUoms] = useState([]);
-  const [rms, setRms] = useState([]);
-  const [sfgs] = useState([]);
+  const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [locations, setLocations] = useState([]);
 
   const [formList, setFormList] = useState([
     {
-      skuCode: "",
       itemName: "",
+      description: "",
+      hsnOrSac: "",
+      qualityInspectionNeeded: false,
+      location: "",
       basePrice: "",
       gst: "",
       moq: "",
-      hsnSac: "",
-      uom: "",
-      qualityInspection: "",
-      location: "",
-      description: "",
-      file: null,
-      materials: [], // contains both RM and SFG entries
+      type: "SFG",
+      UOM: "",
+      rm: [],
+      sfg: [],
+      file: [],
+      materials: [],
     },
   ]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchDropdownData = async () => {
       try {
-        const [uomRes, rmRes] = await Promise.all([
+        const [uomRes, rmRes, sfgRes, locationRes] = await Promise.all([
           axios.get("/uoms/all-uoms?limit=1000"),
           axios.get("/rms/rm"),
-          //axios.get("/sfgs/all?limit=1000")
+          axios.get("/sfgs/get-all?limit=1000"),
+          axios.get("/locations/get-all"),
         ]);
+
         setUoms(uomRes.data.data || []);
-        setRms(rmRes.data.rawMaterials || []);
-        //setSfgs(sfgRes.data.data || []);
+        setLocations(locationRes.data.data || []);
+
+        const rawMaterials = (rmRes.data.rawMaterials || []).map((item) => ({
+          ...item,
+          type: "RM",
+        }));
+        const sfgItems = (sfgRes.data.data || []).map((item) => ({
+          ...item,
+          type: "SFG",
+        }));
+        setComponents([...rawMaterials, ...sfgItems]);
       } catch {
         toast.error("Failed to load dropdown data");
       }
     };
-    fetchData();
+    fetchDropdownData();
   }, []);
 
   const handleChange = (index, e) => {
     const updated = [...formList];
     const { name, value, files } = e.target;
-    updated[index][name] = files ? files[0] : value;
+
+    if (name === "file") {
+      updated[index][name] = Array.from(files);
+    } else {
+      updated[index][name] = value;
+    }
+
     setFormList(updated);
   };
 
@@ -58,9 +77,10 @@ const AddFgModal = ({ onClose, onAdded }) => {
     setFormList(updated);
   };
 
-  const addMaterial = (index, type = "rm") => {
+  const addMaterial = (index) => {
     const updated = [...formList];
-    updated[index].materials.push({ itemId: "", qty: "", type });
+    updated[index].materials.push({ itemId: "", qty: "" });
+
     setFormList(updated);
   };
 
@@ -74,17 +94,19 @@ const AddFgModal = ({ onClose, onAdded }) => {
     setFormList([
       ...formList,
       {
-        skuCode: "",
         itemName: "",
+        description: "",
+        hsnOrSac: "",
+        qualityInspectionNeeded: "",
+        location: "",
         basePrice: "",
         gst: "",
         moq: "",
-        hsnSac: "",
-        uom: "",
-        qualityInspection: "",
-        location: "",
-        description: "",
-        file: null,
+        type: "SFG",
+        UOM: "",
+        rm: [],
+        sfg: [],
+        file: [],
         materials: [],
       },
     ]);
@@ -96,19 +118,62 @@ const AddFgModal = ({ onClose, onAdded }) => {
     setFormList(updated);
   };
 
+  useEffect(() => {
+    if (formList.length > 1) {
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 100);
+    }
+  }, [formList.length]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const payload = new FormData();
-      payload.append("data", JSON.stringify(formList));
+
+      const transformedData = formList.map((item) => {
+        const rm = [];
+        const sfg = [];
+
+        item.materials?.forEach((mat) => {
+          const matched = components.find((c) => c.id == mat.itemId);
+
+          if (!matched || !mat.qty) return;
+          if (matched.type == "RM") {
+            rm.push({ rmid: matched.id, qty: Number(mat.qty) });
+          } else if (matched.type === "SFG") {
+            sfg.push({ sfgid: matched.id, qty: Number(mat.qty) });
+          }
+        });
+
+        return {
+          ...item,
+          rm,
+          sfg,
+          file: undefined,
+          materials: undefined,
+        };
+      });
+
+      console.log("transformed data sfg", transformedData);
+
+      payload.append("sfgs", JSON.stringify(transformedData));
+
       formList.forEach((item, i) => {
-        if (item.file) {
-          payload.append(`files[${i}]`, item.file);
+        if (Array.isArray(item.file)) {
+          item.file.forEach((file) => {
+            const renamed = new File([file], `${file.name}__index_${i}__`);
+            payload.append("files", renamed);
+          });
         }
       });
-      await axios.post("/fgs/add-many", payload);
-      toast.success("Finished Goods added successfully");
+
+      await axios.post("/sfgs/add-many", payload);
+      toast.success("SFGs added successfully");
       onAdded();
     } catch (err) {
       toast.error(err.response?.data?.message || "Add failed");
@@ -121,7 +186,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white w-[95vw] max-w-6xl rounded-lg p-6 border border-[#d8b76a] overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
         <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">
-          Create Finished Goods BOM
+          Create Semi Finished Goods BOM
         </h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           {formList.map((item, index) => (
@@ -129,16 +194,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
               key={index}
               className="space-y-4 border border-[#d8b76a] p-4 rounded"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <input
-                  type="text"
-                  name="skuCode"
-                  placeholder="SKU Code"
-                  value={item.skuCode}
-                  onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded"
-                  required
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <input
                   type="text"
                   name="itemName"
@@ -150,9 +206,9 @@ const AddFgModal = ({ onClose, onAdded }) => {
                 />
                 <input
                   type="text"
-                  name="hsnSac"
+                  name="hsnOrSac"
                   placeholder="HSN/SAC"
-                  value={item.hsnSac}
+                  value={item.hsnOrSac}
                   onChange={(e) => handleChange(index, e)}
                   className="p-2 border border-[#d8b76a] rounded"
                 />
@@ -181,43 +237,57 @@ const AddFgModal = ({ onClose, onAdded }) => {
                   className="p-2 border border-[#d8b76a] rounded"
                 />
                 <select
-                  name="uom"
-                  value={item.uom}
+                  name="UOM"
+                  value={item.UOM}
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded"
+                  className="p-2 border border-[#d8b76a] rounded cursor-pointer"
                   required
                 >
                   <option value="">Select UOM</option>
                   {uoms.map((u) => (
-                    <option key={u._id} value={u.unitName}>
+                    <option key={u._id} value={u._id}>
                       {u.unitName}
                     </option>
                   ))}
                 </select>
                 <select
-                  name="qualityInspection"
-                  value={item.qualityInspection}
+                  name="qualityInspectionNeeded"
+                  value={item.qualityInspectionNeeded}
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded"
+                  className="p-2 border border-[#d8b76a] rounded cursor-pointer"
                 >
                   <option value="">Select Quality Inspection</option>
-                  <option value="Required">Required</option>
-                  <option value="Not-required">Not-required</option>
+                  <option value={true}>Required</option>
+                  <option value={false}>Not-required</option>
+                </select>
+                <select
+                  name="type"
+                  value={item.type}
+                  onChange={(e) => handleChange(index, e)}
+                  className="p-2 border border-[#d8b76a] rounded cursor-pointer"
+                >
+                  <option value="">Select Type</option>
+                  <option value="SFG">SFG</option>
                 </select>
                 <select
                   name="location"
                   value={item.location}
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded"
-                  disabled
+                  className="p-2 border border-[#d8b76a] rounded cursor-pointer"
                 >
-                  <option value="">Select Location (Coming soon)</option>
+                  <option value="">Select Location</option>
+                  {locations.map((l) => (
+                    <option key={l._id} value={l.locationId}>
+                      {l.locationId}
+                    </option>
+                  ))}
                 </select>
                 <input
                   type="file"
                   name="file"
+                  multiple
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded"
+                  className="p-2 border border-[#d8b76a] rounded cursor-pointer"
                 />
               </div>
 
@@ -234,7 +304,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                   List of Consumed Components
                 </p>
                 {item.materials.map((mat, matIndex) => (
-                  <div key={matIndex} className="flex gap-2 mb-2">
+                  <div key={matIndex} className="flex gap-2 mb-2 flex-wrap">
                     <select
                       value={mat.itemId}
                       onChange={(e) =>
@@ -245,14 +315,12 @@ const AddFgModal = ({ onClose, onAdded }) => {
                           e.target.value
                         )
                       }
-                      className="p-2 border border-[#d8b76a] rounded w-full"
+                      className="p-2 border border-[#d8b76a] rounded flex-grow cursor-pointer"
                     >
-                      <option value="">
-                        Select {mat.type === "sfg" ? "SFG" : "RM"}
-                      </option>
-                      {(mat.type === "sfg" ? sfgs : rms).map((i) => (
-                        <option key={i._id} value={i._id}>
-                          {i.skuCode} - {i.itemName}
+                      <option value="">Select RM or SFG</option>
+                      {components.map((comp) => (
+                        <option key={comp._id} value={comp.id}>
+                          {comp.skuCode} - {comp.itemName} ({comp.type})
                         </option>
                       ))}
                     </select>
@@ -273,28 +341,19 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     <button
                       type="button"
                       onClick={() => removeMaterial(index, matIndex)}
-                      className="text-red-600"
+                      className="text-red-600 cursor-pointer"
                     >
                       <FiMinus />
                     </button>
                   </div>
                 ))}
-                <div className="flex gap-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => addMaterial(index, "rm")}
-                    className="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 rounded flex items-center gap-1"
-                  >
-                    <FiPlus /> Add RM
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addMaterial(index, "sfg")}
-                    className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded flex items-center gap-1"
-                  >
-                    <FiPlus /> Add SFG
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => addMaterial(index)}
+                  className="bg-[#d8b76a] hover:bg-[#d8b76a91] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer"
+                >
+                  <FiPlus /> Add RM/SFG
+                </button>
               </div>
 
               {formList.length > 1 && (
@@ -302,9 +361,9 @@ const AddFgModal = ({ onClose, onAdded }) => {
                   <button
                     type="button"
                     onClick={() => removeRow(index)}
-                    className="text-red-600 hover:underline"
+                    className="text-red-600 hover:underline cursor-pointer"
                   >
-                    Remove This FG
+                    Remove This SFG
                   </button>
                 </div>
               )}
@@ -315,9 +374,9 @@ const AddFgModal = ({ onClose, onAdded }) => {
             <button
               type="button"
               onClick={addRow}
-              className="bg-[#6d28d9] text-white px-4 py-2 rounded flex items-center gap-1"
+              className="bg-[#d8b76a] px-4 py-2 rounded flex items-center gap-1 cursor-pointer"
             >
-              <FiPlus /> Add FG
+              <FiPlus /> Add SFG
             </button>
           </div>
 
@@ -325,14 +384,14 @@ const AddFgModal = ({ onClose, onAdded }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded"
+              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#d8b76a] flex justify-center items-center hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded"
+              className="px-6 py-2 bg-[#d8b76a] flex justify-center items-center hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded cursor-pointer"
             >
               {loading ? (
                 <>
@@ -350,4 +409,4 @@ const AddFgModal = ({ onClose, onAdded }) => {
   );
 };
 
-export default AddFgModal;
+export default AddSfgModal;

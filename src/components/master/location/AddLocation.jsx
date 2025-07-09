@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
-import axios from "../../utils/axios";
+import axios from "../../../utils/axios";
 import { FiMinus, FiPlus } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 
 const AddLocationModal = ({ onClose, onAdded }) => {
   const [formList, setFormList] = useState([
-    { storeNo: "", storeRackNo: "", binNo: "" },
+    { locationId: "", storeNo: "", storeRno: "", binNo: "" },
   ]);
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +17,10 @@ const AddLocationModal = ({ onClose, onAdded }) => {
   };
 
   const addRow = () => {
-    setFormList([...formList, { storeNo: "", storeRackNo: "", binNo: "" }]);
+    setFormList([
+      ...formList,
+      { locationId: "", storeNo: "", storeRno: "", binNo: "" },
+    ]);
   };
 
   const removeRow = (index) => {
@@ -28,9 +31,16 @@ const AddLocationModal = ({ onClose, onAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const locations = { locations: formList };
+    console.log("loactions", locations);
     setLoading(true);
     try {
-      await axios.post("/locations/add-many", formList);
+      let res = await axios.post("/locations/add-many", locations);
+      if (res.data.staus == 400) {
+        toast.error("All Fields Are Required");
+        return;
+      }
       toast.success("Locations added successfully");
       onClose();
       onAdded();
@@ -54,6 +64,15 @@ const AddLocationModal = ({ onClose, onAdded }) => {
             >
               <input
                 type="text"
+                name="locationId"
+                placeholder="Location ID"
+                value={item.locationId}
+                onChange={(e) => handleChange(index, e)}
+                className="p-2 border border-[#d8b76a] rounded"
+                required
+              />
+              <input
+                type="text"
                 name="storeNo"
                 placeholder="Store No"
                 value={item.storeNo}
@@ -63,11 +82,12 @@ const AddLocationModal = ({ onClose, onAdded }) => {
               />
               <input
                 type="text"
-                name="storeRackNo"
+                name="storeRno"
                 placeholder="Store Rack No"
-                value={item.storeRackNo}
+                value={item.storeRno}
                 onChange={(e) => handleChange(index, e)}
                 className="p-2 border border-[#d8b76a] rounded"
+                required
               />
               <input
                 type="text"
@@ -76,6 +96,7 @@ const AddLocationModal = ({ onClose, onAdded }) => {
                 value={item.binNo}
                 onChange={(e) => handleChange(index, e)}
                 className="p-2 border border-[#d8b76a] rounded"
+                required
               />
               <div className="flex gap-2">
                 {formList.length > 1 && (

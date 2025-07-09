@@ -11,16 +11,15 @@ import "react-toggle/style.css";
 import { useAuth } from "./context/AuthContext";
 import UomMaster from "./components/master/UomMaster";
 import "react-toggle/style.css";
-import SfgMaster from "./components/master/SfgMaster";
-import LocationMaster from "./components/master/LocationMaster";
-import FgMaster from "./components/master/fgmaster";
+import SfgMaster from "./components/master/sfg/SfgMaster";
+import LocationMaster from "./components/master/location/LocationMaster";
+import FgMaster from "./components/master/fg/FgMaster";
 import VendorMaster from "./components/master/VendorMaster";
 
 import RoleMaster from "./components/master/Role/RoleMaster";
 import Dashboard from "./pages/Dashboard";
 
 import CustomerMaster from "./components/master/CustomerMaster";
-
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -88,7 +87,9 @@ const App = () => {
         />
         <Route
           path="/customer-master"
-          element={isAuthenticated ? <CustomerMaster /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? <CustomerMaster /> : <Navigate to="/login" />
+          }
         />
         <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
