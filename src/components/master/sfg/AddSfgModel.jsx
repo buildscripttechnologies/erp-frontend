@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import axios from "../../../utils/axios";
 import { FiMinus, FiPlus } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
+import Select from "react-select";
 
 const AddSfgModal = ({ onClose, onAdded }) => {
   const [uoms, setUoms] = useState([]);
@@ -201,7 +202,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   placeholder="Item Name"
                   value={item.itemName}
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded"
+                  className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                   required
                 />
                 <input
@@ -210,7 +211,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   placeholder="HSN/SAC"
                   value={item.hsnOrSac}
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded"
+                  className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                 />
                 <input
                   type="text"
@@ -218,7 +219,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   placeholder="Base Price"
                   value={item.basePrice}
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded"
+                  className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                 />
                 <input
                   type="text"
@@ -226,7 +227,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   placeholder="GST %"
                   value={item.gst}
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded"
+                  className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                 />
                 <input
                   type="text"
@@ -234,13 +235,13 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   placeholder="MOQ"
                   value={item.moq}
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded"
+                  className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                 />
                 <select
                   name="UOM"
                   value={item.UOM}
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded cursor-pointer"
+                  className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                   required
                 >
                   <option value="">Select UOM</option>
@@ -254,7 +255,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   name="qualityInspectionNeeded"
                   value={item.qualityInspectionNeeded}
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded cursor-pointer"
+                  className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                 >
                   <option value="">Select Quality Inspection</option>
                   <option value={true}>Required</option>
@@ -264,7 +265,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   name="type"
                   value={item.type}
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded cursor-pointer"
+                  className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                 >
                   <option value="">Select Type</option>
                   <option value="SFG">SFG</option>
@@ -273,7 +274,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   name="location"
                   value={item.location}
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded cursor-pointer"
+                  className=" p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                 >
                   <option value="">Select Location</option>
                   {locations.map((l) => (
@@ -287,7 +288,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   name="file"
                   multiple
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded cursor-pointer"
+                  className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                 />
               </div>
 
@@ -296,57 +297,108 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                 value={item.description}
                 onChange={(e) => handleChange(index, e)}
                 placeholder="Description (optional)"
-                className="w-full p-2 border border-[#d8b76a] rounded"
+                className="w-full p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
               />
 
               <div>
                 <p className="font-semibold mb-2">
                   List of Consumed Components
                 </p>
-                {item.materials.map((mat, matIndex) => (
-                  <div key={matIndex} className="flex gap-2 mb-2 flex-wrap">
-                    <select
-                      value={mat.itemId}
-                      onChange={(e) =>
-                        handleMaterialChange(
-                          index,
-                          matIndex,
-                          "itemId",
-                          e.target.value
-                        )
-                      }
-                      className="p-2 border border-[#d8b76a] rounded flex-grow cursor-pointer"
+                {item.materials.map((mat, matIndex) => {
+                  const selectedOption = components.find(
+                    (comp) => comp.id === mat.itemId
+                  );
+
+                  return (
+                    <div
+                      key={matIndex}
+                      className="flex gap-2 mb-2 flex-wrap w-full "
                     >
-                      <option value="">Select RM or SFG</option>
-                      {components.map((comp) => (
-                        <option key={comp._id} value={comp.id}>
-                          {comp.skuCode} - {comp.itemName} ({comp.type})
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      type="number"
-                      placeholder="Qty"
-                      value={mat.qty}
-                      onChange={(e) =>
-                        handleMaterialChange(
-                          index,
-                          matIndex,
-                          "qty",
-                          e.target.value
-                        )
-                      }
-                      className="p-2 border border-[#d8b76a] rounded w-24"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeMaterial(index, matIndex)}
-                      className="text-red-600 cursor-pointer"
-                    >
-                      <FiMinus />
-                    </button>
-                  </div>
-                ))}
+                      <div className="w-[65%]">
+                        <Select
+                          value={
+                            selectedOption
+                              ? {
+                                  value: selectedOption.id,
+                                  label: `${selectedOption.skuCode} - ${selectedOption.itemName} (${selectedOption.type})`,
+                                }
+                              : null
+                          }
+                          onChange={(selected) =>
+                            handleMaterialChange(
+                              index,
+                              matIndex,
+                              "itemId",
+                              selected.value
+                            )
+                          }
+                          options={components.map((comp) => ({
+                            value: comp.id,
+                            label: `${comp.skuCode} - ${comp.itemName} (${comp.type})`,
+                          }))}
+                          filterOption={(option, inputValue) => {
+                            const label = option.label
+                              .replace(/\s+/g, "")
+                              .toLowerCase();
+                            const input = inputValue
+                              .replace(/\s+/g, "")
+                              .toLowerCase();
+                            return label.includes(input);
+                          }}
+                          styles={{
+                            control: (base, state) => ({
+                              ...base,
+                              borderColor: "#d8b76a",
+                              boxShadow: state.isFocused
+                                ? "0 0 0 1px #d8b76a"
+                                : "none",
+                              "&:hover": {
+                                borderColor: "#d8b76a",
+                              },
+                            }),
+                            // option: (base, { isFocused }) => ({
+                            //   ...base,
+                            //   backgroundColor: isFocused ? "#f3e6c0" : "white",
+                            //   color: "#292926",
+                            // }),
+                            singleValue: (base) => ({
+                              ...base,
+                              color: "#292926",
+                            }),
+                          }}
+                          placeholder="Select RM/SFG"
+                          className="react-select-container"
+                          classNamePrefix="react-select"
+                          isSearchable
+                        />
+                      </div>
+
+                      <input
+                        type="number"
+                        placeholder="Qty"
+                        value={mat.qty}
+                        onChange={(e) =>
+                          handleMaterialChange(
+                            index,
+                            matIndex,
+                            "qty",
+                            e.target.value
+                          )
+                        }
+                        className="p-1.5 w-[20%] border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => removeMaterial(index, matIndex)}
+                        className="text-red-600 cursor-pointer"
+                      >
+                        <FiMinus />
+                      </button>
+                    </div>
+                  );
+                })}
+
                 <button
                   type="button"
                   onClick={() => addMaterial(index)}

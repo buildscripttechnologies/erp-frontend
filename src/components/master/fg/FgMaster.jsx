@@ -29,23 +29,34 @@ const renderNestedMaterials = (
     // Map level number to label
     const levelLabel = `L${level}`;
 
+    let color;
+    if (level == 1) {
+      color = "green";
+    } else if (level == 2) {
+      color = "yellow";
+    } else if (level == 3) {
+      color = "blue";
+    }
+
     return (
       <React.Fragment key={`${mat.id}-${level}-${idx}`}>
         <tr
-          className="border-t border-[#d8b76a]/50 cursor-pointer hover:bg-gray-50"
+          className={`border-t border-${color}-600 cursor-pointer hover:bg-gray-50`}
           onClick={() => {
             if (level === 1) toggleL2(currentKey);
             else if (level === 2) toggleL3(currentKey);
           }}
         >
           <td className="flex" style={{ paddingLeft: `${level * 15}px` }}>
-            <span className="text-[#d8b76a] mr-2 font-bold pl-2 border-dashed border-l-2">
+            <span
+              className={`text-${color}-600 mr-2 font-bold pl-2 border-${color}-600 border-dashed border-l-2`}
+            >
               {levelLabel}
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 ">
               {mat.skuCode}
               {(mat.rm?.length > 0 || mat.sfg?.length > 0) && (
-                <span className="text-[#d8b76a] text-xs">
+                <span className={`text-${color}-600 text-xs`}>
                   {level === 1 && expandedL2 === currentKey ? "▲" : ""}
                   {level === 1 && expandedL2 !== currentKey ? "▼" : ""}
                   {level === 2 && expandedL3 === currentKey ? "▲" : ""}
@@ -70,14 +81,14 @@ const renderNestedMaterials = (
           isExpandedL2 &&
           (mat.rm?.length > 0 || mat.sfg?.length > 0) && (
             <tr>
-              <td colSpan="17">
-                <div className=" border border-[#d8b76a]/50 rounded">
-                  <table className="min-w-full text-sm text-left">
-                    <thead className="bg-[#d8b76a]/30">
+              <td colSpan="17" className="px-2 pb-2">
+                <div className=" border border-yellow-500 rounded-sm">
+                  <table className="min-w-full text-sm text-left ">
+                    <thead className="bg-yellow-100 rounded-sm">
                       <tr>
                         <th
-                          className="px-2 font-semibold"
-                          style={{ paddingLeft: `${level * 15}px` }}
+                          className="px-2 font-semibold rounded-tl"
+                          style={{ paddingLeft: `${level * 64}px` }}
                         >
                           SKU Code
                         </th>
@@ -88,7 +99,7 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
-                        <th className="px-2 font-semibold">Qty</th>
+                        <th className="px-2 font-semibold rounded-tr">Qty</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -121,14 +132,14 @@ const renderNestedMaterials = (
           isExpandedL3 &&
           (mat.rm?.length > 0 || mat.sfg?.length > 0) && (
             <tr>
-              <td colSpan="17">
-                <div className="mt-2 border border-[#d8b76a]/30 rounded">
+              <td colSpan="17" className="px-2 pb-2">
+                <div className=" border border-blue-600 rounded">
                   <table className="min-w-full text-sm text-left">
-                    <thead className="bg-[#d8b76a]/20">
-                      <tr>
+                    <thead className="bg-blue-100 ">
+                      <tr className="rounded">
                         <th
-                          className="px-2 font-semibold"
-                          style={{ paddingLeft: `${level * 15}px` }}
+                          className="px-2 font-semibold rounded-tl"
+                          style={{ paddingLeft: `${level * 40}px` }}
                         >
                           SKU Code
                         </th>
@@ -139,7 +150,7 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
-                        <th className="px-2 font-semibold">Qty</th>
+                        <th className="px-2 font-semibold rounded-tr">Qty</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -457,11 +468,11 @@ const SfgMaster = () => {
                         (fg.rm.length !== 0 || fg.sfg.length !== 0) && (
                           <tr>
                             <td colSpan="17" className="px-2">
-                              <div className="border border-[#d8b76a] rounded overflow-x-auto mb-2">
-                                <table className="min-w-full text-sm text-left">
-                                  <thead className="bg-[#d8b76a]/50">
+                              <div className="border border-green-600 rounded overflow-x-auto mb-2 ">
+                                <table className="min-w-full text-sm text-left rounded">
+                                  <thead className="bg-green-100 rounded">
                                     <tr>
-                                      <th className="px-2 font-semibold">
+                                      <th className="px-2 pl-12 font-semibold">
                                         SKU Code
                                       </th>
                                       <th className="px-2 font-semibold">

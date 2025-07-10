@@ -20,4 +20,37 @@
   top: 2px;
 }
 
-  
+.react-select__control {
+  border-color: #d8b76a;
+  border-radius: 0.375rem; /* rounded */
+}
+
+.react-select__option--is-focused {
+  background-color: #f3e6c0;
+  color: #292926;
+}
+
+.react-select__single-value {
+  color: #292926;
+}
+
+
+.custom-select {
+  border: 1px solid #d8b76a;
+  border-radius: 0.375rem; /* Tailwind's rounded */
+  padding: 0.5rem;
+  background-color: white;
+  color: #292926;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.custom-select:focus {
+  outline: none;
+  border-color: #d8b76a;
+  box-shadow: 0 0 0 2px rgba(216, 183, 106, 0.5); /* soft focus ring */
+}
+
+.custom-select:hover {
+  border-color: #b89d4f;
+}

@@ -26,26 +26,37 @@ const renderNestedMaterials = (
     const isExpandedL2 = expandedL2 === currentKey;
     const isExpandedL3 = expandedL3 === currentKey;
 
+    let color;
+    if (level == 1) {
+      color = "green";
+    } else if (level == 2) {
+      color = "yellow";
+    } else if (level == 3) {
+      color = "blue";
+    }
+
     // Map level number to label
     const levelLabel = `L${level}`;
 
     return (
       <React.Fragment key={`${mat.id}-${level}-${idx}`}>
         <tr
-          className="border-t border-[#d8b76a]/50 cursor-pointer hover:bg-gray-50"
+          className={`border-t border-${color}-600 cursor-pointer hover:bg-gray-50`}
           onClick={() => {
             if (level === 1) toggleL2(currentKey);
             else if (level === 2) toggleL3(currentKey);
           }}
         >
           <td className="flex" style={{ paddingLeft: `${level * 15}px` }}>
-            <span className="text-[#d8b76a] mr-2 font-bold pl-2 border-dashed border-l-2">
+            <span
+              className={`text-${color}-600 mr-2 font-bold pl-2 border-${color}-600 border-dashed border-l-2`}
+            >
               {levelLabel}
             </span>
             <div className="flex items-center gap-1">
               {mat.skuCode}
               {(mat.rm?.length > 0 || mat.sfg?.length > 0) && (
-                <span className="text-[#d8b76a] text-xs">
+                <span className={`text-${color}-600 text-xs`}>
                   {level === 1 && expandedL2 === currentKey ? "▲" : ""}
                   {level === 1 && expandedL2 !== currentKey ? "▼" : ""}
                   {level === 2 && expandedL3 === currentKey ? "▲" : ""}
@@ -70,14 +81,14 @@ const renderNestedMaterials = (
           isExpandedL2 &&
           (mat.rm?.length > 0 || mat.sfg?.length > 0) && (
             <tr>
-              <td colSpan="17">
-                <div className=" border border-[#d8b76a]/50 rounded">
-                  <table className="min-w-full text-sm text-left">
-                    <thead className="bg-[#d8b76a]/30">
-                      <tr>
+              <td colSpan="17" className="px-2 pb-2">
+                <div className=" border border-yellow-500 rounded-sm">
+                  <table className="min-w-full text-sm text-left rounded-sm ">
+                    <thead className="bg-yellow-100 rounded-sm">
+                      <tr className="">
                         <th
-                          className="px-2 font-semibold"
-                          style={{ paddingLeft: `${level * 15}px` }}
+                          className="px-2 font-semibold rounded-sm"
+                          style={{ paddingLeft: `${level * 63}px` }}
                         >
                           SKU Code
                         </th>
@@ -456,12 +467,12 @@ const SfgMaster = () => {
                       {expandedL1 === index &&
                         (sfg.rm.length !== 0 || sfg.sfg.length !== 0) && (
                           <tr>
-                            <td colSpan="17" className="px-2">
-                              <div className="border border-[#d8b76a] rounded overflow-x-auto mb-2">
+                            <td colSpan="17" className="px-2 pb-2">
+                              <div className="border border-green-600 rounded overflow-x-auto">
                                 <table className="min-w-full text-sm text-left">
-                                  <thead className="bg-[#d8b76a]/50">
+                                  <thead className=" bg-green-100">
                                     <tr>
-                                      <th className="px-2 font-semibold">
+                                      <th className="px-2 pl-12 font-semibold">
                                         SKU Code
                                       </th>
                                       <th className="px-2 font-semibold">

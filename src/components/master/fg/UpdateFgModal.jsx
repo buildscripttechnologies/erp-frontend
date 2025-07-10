@@ -3,6 +3,7 @@ import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
 import { FiPlus, FiMinus } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
+import Select from "react-select";
 
 const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
   const [form, setForm] = useState(null);
@@ -155,6 +156,27 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
     }
   };
 
+  const groupedOptions = [
+    {
+      label: "Raw Materials",
+      options: components
+        .filter((c) => c.type === "RM")
+        .map((c) => ({
+          value: c.id,
+          label: `${c.skuCode} - ${c.itemName} (${c.type})`,
+        })),
+    },
+    {
+      label: "Semi-Finished Goods",
+      options: components
+        .filter((c) => c.type === "SFG")
+        .map((c) => ({
+          value: c.id,
+          label: `${c.skuCode} - ${c.itemName} (${c.type})`,
+        })),
+    },
+  ];
+
   if (!form) return null;
 
   return (
@@ -168,7 +190,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
               placeholder="Item Name"
               value={form.itemName}
               onChange={handleChange}
-              className="p-2 border border-[#d8b76a] rounded"
+              className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
               required
             />
             <input
@@ -176,20 +198,20 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
               placeholder="HSN/SAC"
               value={form.hsnOrSac}
               onChange={handleChange}
-              className="p-2 border border-[#d8b76a] rounded"
+              className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
             />
             <input
               name="gst"
               placeholder="GST %"
               value={form.gst}
               onChange={handleChange}
-              className="p-2 border border-[#d8b76a] rounded "
+              className="p-2 border border-[#d8b76a] rounded  focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
             />
             <select
               name="UOM"
               value={form.UOM}
               onChange={handleChange}
-              className="p-2 border border-[#d8b76a] rounded cursor-pointer"
+              className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
             >
               <option value={form.UOM}>{form.UOM}</option>
               {uoms.map((u) => (
@@ -202,7 +224,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
               name="qualityInspectionNeeded"
               value={form.qualityInspectionNeeded}
               onChange={handleChange}
-              className="p-2 border border-[#d8b76a] rounded cursor-pointer"
+              className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
             >
               <option value={true}>Required</option>
               <option value={false}>Not-required</option>
@@ -211,7 +233,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
               name="location"
               value={form.location}
               onChange={handleChange}
-              className="p-2 border border-[#d8b76a] rounded cursor-pointer"
+              className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
             >
               <option value="">Select Location</option>
               {locations.map((l) => (
@@ -224,7 +246,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
               name="status"
               value={form.status}
               onChange={handleChange}
-              className="p-2  border border-[#d8b76a] rounded cursor-pointer"
+              className="p-2  border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
             >
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
@@ -276,7 +298,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                 type="file"
                 multiple
                 onChange={(e) => setNewFiles(Array.from(e.target.files))}
-                className="p-2 border border-[#d8b76a] rounded w-full cursor-pointer"
+                className="p-2 border border-[#d8b76a] rounded w-full cursor-pointer  focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
               />
               {newFiles.length > 0 && (
                 <ul className="mt-2 list-disc list-inside text-sm text-gray-700">
@@ -293,27 +315,68 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
             value={form.description}
             onChange={handleChange}
             placeholder="Description"
-            className="w-full p-2 border border-[#d8b76a] rounded"
+            className="w-full p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
           />
 
           <div>
             <p className="font-semibold mb-2">List of Consumed Components</p>
             {form.materials.map((mat, index) => (
               <div key={index} className="flex gap-2 mb-2 flex-wrap">
-                <select
-                  value={mat.itemId}
-                  onChange={(e) =>
-                    handleMaterialChange(index, "itemId", e.target.value)
+                <Select
+                  className="flex-grow w-[60%]"
+                  value={
+                    groupedOptions
+                      .flatMap((g) => g.options)
+                      .find((opt) => opt.value === mat.itemId) || null
                   }
-                  className="p-2 border border-[#d8b76a] rounded flex-grow cursor-pointer"
-                >
-                  <option value="">Select RM or SFG</option>
-                  {components.map((c) => (
-                    <option key={c._id} value={c.id}>
-                      {c.skuCode} - {c.itemName} ({c.type})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(selected) =>
+                    handleMaterialChange(index, "itemId", selected?.value)
+                  }
+                  options={groupedOptions}
+                  placeholder="Select RM or SFG"
+                  isSearchable
+                  styles={{
+                    control: (base, state) => ({
+                      ...base,
+                      padding: "2px",
+                      borderRadius: "6px",
+                      borderColor: "#d8b76a",
+                      boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
+                      "&:hover": {
+                        borderColor: "#d8b76a",
+                      },
+                    }),
+                    // option: (base, state) => ({
+                    //   ...base,
+                    //   backgroundColor: state.isFocused ? "#f3e6c0" : "#fff",
+                    //   color: "#292926",
+                    // }),
+                    menu: (base) => ({
+                      ...base,
+                      zIndex: 9999,
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: "#292926",
+                    }),
+                    placeholder: (base) => ({
+                      ...base,
+                      color: "#9e9e9e",
+                    }),
+                    groupHeading: (base) => ({
+                      ...base,
+                      color: "#292926",
+                      fontWeight: "bold",
+                    }),
+                  }}
+                  filterOption={(option, inputValue) => {
+                    const label = option.label
+                      .replace(/\s+/g, "")
+                      .toLowerCase();
+                    const input = inputValue.replace(/\s+/g, "").toLowerCase();
+                    return label.includes(input);
+                  }}
+                />
                 <input
                   type="number"
                   placeholder="Qty"
@@ -321,7 +384,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                   onChange={(e) =>
                     handleMaterialChange(index, "qty", e.target.value)
                   }
-                  className="p-2 border border-[#d8b76a] rounded w-24 "
+                  className="p-2 w-[20%] border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                 />
                 <button
                   type="button"

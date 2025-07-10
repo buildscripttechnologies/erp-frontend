@@ -6,6 +6,8 @@ import Dashboard from "../../pages/Dashboard";
 import AddVendorModal from "./AddVendorModel";
 import TableSkeleton from "../TableSkeleton";
 import ScrollLock from "../../components/ScrollLock";
+import Toggle from "react-toggle";
+import PaginationControls from "../PaginationControls";
 
 const VendorMaster = () => {
   const [vendors, setVendors] = useState([]);
@@ -15,6 +17,7 @@ const VendorMaster = () => {
   const [uoms, setUoms] = useState([]);
   const [rms, setRms] = useState([]);
   const [sfgs, setSfgs] = useState([]);
+  const [fgs, setFgs] = useState([]);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -23,11 +26,11 @@ const VendorMaster = () => {
     limit: 10,
   });
 
-  const fetchVendors = async (page = 1) => {
+  const fetchVendors = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/vendors?page=${page}&limit=${pagination.limit}`
+        `/vendors/get-all?page=${page}&limit=${limit}`
       );
       setVendors(res.data.data || []);
       setPagination({
@@ -45,21 +48,23 @@ const VendorMaster = () => {
 
   const fetchMetaData = async () => {
     try {
-      const [uomRes, rmRes, sfgRes] = await Promise.all([
-        axios.get("/uoms"),
-        axios.get("/rawmaterials"),
-        axios.get("/sfgs"),
+      const [uomRes, rmRes, sfgRes, fgRes] = await Promise.all([
+        axios.get("/uoms/all-uoms?status=all"),
+        axios.get("/rms/rm"),
+        axios.get("fgs/get-all"),
+        axios.get("/sfgs/get-all"),
       ]);
       setUoms(uomRes.data || []);
       setRms(rmRes.data || []);
       setSfgs(sfgRes.data || []);
+      setFgs(fgRes.data || []);
     } catch {
       toast.error("Failed to fetch dropdown metadata");
     }
   };
 
   ScrollLock(showModal);
-  
+
   useEffect(() => {
     fetchVendors();
     fetchMetaData();
@@ -76,6 +81,39 @@ const VendorMaster = () => {
       v.vendorCode.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleToggleStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === true ? false : true;
+    try {
+      const res = await axios.patch(`/vendors/update/${id}`, {
+        isActive: newStatus,
+      });
+
+      if (res.data.status == 200) {
+        toast.success(`Vendor status updated`);
+
+        // ✅ Update local state without refetch
+        setVendors((prev) =>
+          prev.map((v) => (v._id === id ? { ...v, isActive: newStatus } : v))
+        );
+      } else {
+        toast.error("Failed to update status");
+      }
+    } catch (err) {
+      toast.error("Failed to update status");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this Vendor?")) return;
+    try {
+      await axios.delete(`/vendors/delete/${id}`);
+      toast.success("Vendor deleted");
+      fetchVendors();
+    } catch {
+      toast.error("Delete failed");
+    }
+  };
+
   return (
     <Dashboard>
       <>
@@ -84,11 +122,12 @@ const VendorMaster = () => {
             onClose={() => setShowModal(false)}
             onAdded={() => fetchVendors(pagination.currentPage)}
             uoms={uoms}
-            rms={rms}
-            sfgs={sfgs}
+            // sfgs={sfgs}
+            // rms={rms}
+            // fgs={fgs}
           />
         )}
-        <div className="p-4 sm:p-6 max-w-[92vw] mx-auto">
+        <div className="p-3 max-w-[99vw] mx-auto">
           <h2 className="text-2xl font-bold mb-4">
             Vendors{" "}
             <span className="text-gray-500">({pagination.totalResults})</span>
@@ -114,24 +153,24 @@ const VendorMaster = () => {
           </div>
 
           <div className="overflow-x-auto border border-[#d8b76a] rounded">
-            <table className="min-w-full text-sm">
+            <table className="min-w-full text-sm whitespace-nowrap ">
               <thead className="bg-[#d8b76a] text-[#292926]">
                 <tr>
-                  <th className="px-3 py-2">#</th>
-                  <th className="px-3 py-2">Created At</th>
-                  <th className="px-3 py-2">Updated At</th>
-                  <th className="px-3 py-2">Vendor Code</th>
-                  <th className="px-3 py-2">Vendor Name</th>
-                  <th className="px-3 py-2">Nature of Business</th>
-                  <th className="px-3 py-2">Address</th>
-                  <th className="px-3 py-2">City</th>
-                  <th className="px-3 py-2">State</th>
-                  <th className="px-3 py-2">Country</th>
-                  <th className="px-3 py-2">Postal Code</th>
-                  <th className="px-3 py-2">GSTIN</th>
-                  <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2">Created By</th>
-                  <th className="px-3 py-2">Actions</th>
+                  <th className="px-3 py-1.5">#</th>
+                  <th className="px-3 py-1.5">Created At</th>
+                  <th className="px-3 py-1.5">Updated At</th>
+                  <th className="px-3 py-1.5">Vendor Code</th>
+                  <th className="px-3 py-1.5">Vendor Name</th>
+                  <th className="px-3 py-1.5">Nature of Business</th>
+                  <th className="px-3 py-1.5">Address</th>
+                  <th className="px-3 py-1.5">City</th>
+                  <th className="px-3 py-1.5">State</th>
+                  <th className="px-3 py-1.5">Country</th>
+                  <th className="px-3 py-1.5">Postal Code</th>
+                  <th className="px-3 py-1.5">GSTIN</th>
+                  <th className="px-3 py-1.5">Status</th>
+                  <th className="px-3 py-1.5">Created By</th>
+                  <th className="px-3 py-1.5">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -140,36 +179,51 @@ const VendorMaster = () => {
                 ) : (
                   <>
                     {filtered.map((v, i) => (
-                      <tr key={v._id} className="border-t hover:bg-gray-50">
-                        <td className="px-3 py-2">
+                      <tr
+                        key={v._id}
+                        className=" border-t border-t-[#d8b76a] hover:bg-gray-50"
+                      >
+                        <td className="px-3 py-1">
                           {(pagination.currentPage - 1) * pagination.limit +
                             i +
                             1}
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-1">
                           {new Date(v.createdAt).toLocaleString()}
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-1">
                           {new Date(v.updatedAt).toLocaleString()}
                         </td>
-                        <td className="px-3 py-2">{v.vendorCode}</td>
-                        <td className="px-3 py-2">{v.vendorName}</td>
-                        <td className="px-3 py-2">{v.nature || "-"}</td>
-                        <td className="px-3 py-2">{v.address || "-"}</td>
-                        <td className="px-3 py-2">{v.city}</td>
-                        <td className="px-3 py-2">{v.state}</td>
-                        <td className="px-3 py-2">{v.country}</td>
-                        <td className="px-3 py-2">{v.postalCode}</td>
-                        <td className="px-3 py-2">{v.gstin}</td>
-                        <td className="px-3 py-2">
-                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
-                            {v.status}
+                        <td className="px-3 py-1">{v.venderCode}</td>
+                        <td className="px-3 py-1">{v.vendorName}</td>
+                        <td className="px-3 py-1">
+                          {v.natureOfBusiness || "-"}
+                        </td>
+                        <td className="px-3 py-1">{v.address || "-"}</td>
+                        <td className="px-3 py-1">{v.city}</td>
+                        <td className="px-3 py-1">{v.state}</td>
+                        <td className="px-3 py-1">{v.country}</td>
+                        <td className="px-3 py-1">{v.postalCode}</td>
+                        <td className="px-3 py-1">{v.gst}</td>
+                        <td className="px-3">
+                          <span className=" px-2 rounded text-xs">
+                            <Toggle
+                              checked={v.isActive}
+                              onChange={() =>
+                                handleToggleStatus(v._id, v.isActive)
+                              }
+                            />
                           </span>
                         </td>
-                        <td className="px-3 py-2">{v.createdBy || "-"}</td>
-                        <td className="px-3 py-2 flex gap-2">
+                        <td className="px-3 py-1">
+                          {v.createdBy.fullName || "-"}
+                        </td>
+                        <td className="px-3 mt-1.5 flex gap-2">
                           <FiEdit className="cursor-pointer text-[#d8b76a]" />
-                          <FiTrash2 className="cursor-pointer text-[#d8b76a]" />
+                          <FiTrash2
+                            onClick={() => handleDelete(v._id)}
+                            className="cursor-pointer text-[#d8b76a]"
+                          />
                         </td>
                       </tr>
                     ))}
@@ -189,35 +243,20 @@ const VendorMaster = () => {
             </table>
           </div>
 
-          <div className="mt-4 flex flex-wrap justify-center sm:justify-end items-center gap-2 text-sm">
-            <button
-              onClick={() => goToPage(pagination.currentPage - 1)}
-              disabled={pagination.currentPage <= 1}
-              className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50"
-            >
-              Prev
-            </button>
-            {[...Array(pagination.totalPages).keys()].map((_, i) => (
-              <button
-                key={i + 1}
-                onClick={() => goToPage(i + 1)}
-                className={`px-5 py-2 rounded text-base ${
-                  pagination.currentPage === i + 1
-                    ? "bg-[#d8b76a] text-white font-semibold"
-                    : "bg-[#d8b76a]/20"
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-            <button
-              onClick={() => goToPage(pagination.currentPage + 1)}
-              disabled={pagination.currentPage >= pagination.totalPages}
-              className="px-4 py-2 rounded text-base bg-[#d8b76a]/20 hover:bg-[#d8b76a] disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
+          <PaginationControls
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            entriesPerPage={pagination.limit}
+            totalResults={pagination.totalResults}
+            onEntriesChange={(limit) => {
+              setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
+              fetchVendors(1, limit);
+            }}
+            onPageChange={(page) => {
+              setPagination((prev) => ({ ...prev, currentPage: page }));
+              fetchVendors(page, pagination.limit);
+            }}
+          />
         </div>
       </>
     </Dashboard>
