@@ -27,11 +27,11 @@ const renderNestedMaterials = (
     const isExpandedL3 = expandedL3 === currentKey;
 
     let color;
-    if (level == 1) {
+    if (level == 1 || level == "1") {
       color = "green";
-    } else if (level == 2) {
+    } else if (level == 2 || level == "2") {
       color = "yellow";
-    } else if (level == 3) {
+    } else if (level == 3 || level == "3") {
       color = "blue";
     }
 
