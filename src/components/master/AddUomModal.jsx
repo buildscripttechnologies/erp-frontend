@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "../../utils/axios";
-import { FiMinus, FiPlus } from "react-icons/fi";
+import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 
 const AddUomModal = ({ onClose, onAdded }) => {
@@ -77,16 +77,16 @@ const AddUomModal = ({ onClose, onAdded }) => {
                     onClick={() => removeRow(index)}
                     className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded cursor-pointer"
                   >
-                    <FiMinus />
+                    <FiTrash2 />
                   </button>
                 )}
                 {index === formList.length - 1 && (
                   <button
                     type="button"
                     onClick={addRow}
-                    className="bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] px-3 py-2 rounded cursor-pointer"
+                    className="bg-[#d8b76a] flex items-center gap-1 hover:bg-[#b38a37] text-[#292926] px-3 py-2 rounded cursor-pointer"
                   >
-                    <FiPlus />
+                    <FiPlus /> <span>Add UOM</span>
                   </button>
                 )}
               </div>

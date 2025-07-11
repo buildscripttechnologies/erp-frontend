@@ -409,7 +409,7 @@ const RmMaster = ({ isOpen }) => {
               ].map((th) => (
                 <th
                   key={th}
-                  className="py-1.5 px-2 text-xs sm:text-sm whitespace-nowrap"
+                  className="py-1.5 px-2 text-[11px] whitespace-nowrap"
                 >
                   {th}
                 </th>
@@ -424,15 +424,15 @@ const RmMaster = ({ isOpen }) => {
                 {filteredData.map((rm, i) => (
                   <tr
                     key={rm._id}
-                    className="border-b text-xs sm:text-sm whitespace-nowrap border-[#d8b76a] hover:bg-gray-50"
+                    className="border-b text-[11px] whitespace-nowrap border-[#d8b76a] hover:bg-gray-50"
                   >
-                    <td className="px-2 py-1">
+                    <td className="px-2 border-r border-r-[#d8b76a]">
                       {Number(pagination.currentPage - 1) *
                         Number(pagination.limit) +
                         i +
                         1}
                     </td>
-                    <td className="px-2 py-1">
+                    <td className="px-2 border-r border-r-[#d8b76a]">
                       {new Date(rm.createdAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
@@ -442,7 +442,7 @@ const RmMaster = ({ isOpen }) => {
                         hour12: true,
                       })}
                     </td>
-                    <td className="px-2 py-1">
+                    <td className="px-2 border-r border-r-[#d8b76a]">
                       {new Date(rm.updatedAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
@@ -452,12 +452,22 @@ const RmMaster = ({ isOpen }) => {
                         hour12: true,
                       })}
                     </td>
-                    <td className="px-2 py-1">{rm.skuCode}</td>
-                    <td className="px-2 py-1">{rm.itemName}</td>
-                    <td className="px-2 py-1">{rm.description || "-"}</td>
-                    <td className="px-2 py-1">{rm.hsnOrSac}</td>
-                    <td className="px-2 py-1">{rm.type}</td>
-                    <td className="px-2 ">
+                    <td className="px-2 border-r border-r-[#d8b76a]">
+                      {rm.skuCode}
+                    </td>
+                    <td className="px-2 border-r border-r-[#d8b76a] ">
+                      {rm.itemName}
+                    </td>
+                    <td className="px-2 border-r border-r-[#d8b76a]">
+                      {rm.description || "-"}
+                    </td>
+                    <td className="px-2 border-r border-r-[#d8b76a]">
+                      {rm.hsnOrSac}
+                    </td>
+                    <td className="px-2 border-r border-r-[#d8b76a]">
+                      {rm.type}
+                    </td>
+                    <td className="px-2 border-r border-r-[#d8b76a]">
                       <Toggle
                         checked={rm.qualityInspectionNeeded}
                         onChange={() =>
@@ -469,16 +479,32 @@ const RmMaster = ({ isOpen }) => {
                       />
                     </td>
 
-                    <td className="px-2 py-1">{rm.location || "-"}</td>
-                    <td className="px-2 py-1">{rm.baseQty}</td>
-                    <td className="px-2 py-1">{rm.pkgQty}</td>
-                    <td className="px-2 py-1">{rm.moq}</td>
-                    <td className="px-2 py-1">{rm.purchaseUOM || "-"}</td>
-                    <td className="px-2 py-1">{rm.gst}%</td>
-                    <td className="px-2 py-1">{rm.stockQty}</td>
-                    <td className="px-2 py-1 ">{rm.stockUOM || "-"}</td>
+                    <td className="px-2 border-r border-r-[#d8b76a]">
+                      {rm.location || "-"}
+                    </td>
+                    <td className="px-2 border-r border-r-[#d8b76a]">
+                      {rm.baseQty}
+                    </td>
+                    <td className="px-2 border-r border-r-[#d8b76a]">
+                      {rm.pkgQty}
+                    </td>
+                    <td className="px-2 border-r border-r-[#d8b76a]">
+                      {rm.moq}
+                    </td>
+                    <td className="px-2 border-r border-r-[#d8b76a]">
+                      {rm.purchaseUOM || "-"}
+                    </td>
+                    <td className="px-2 border-r border-r-[#d8b76a]">
+                      {rm.gst ? rm.gst + "%" : "-"}
+                    </td>
+                    <td className="px-2 border-r border-r-[#d8b76a]">
+                      {rm.stockQty}
+                    </td>
+                    <td className="px-2 border-r border-r-[#d8b76a] ">
+                      {rm.stockUOM || "-"}
+                    </td>
 
-                    <td className="text-center items-center justify-center">
+                    <td className="text-center items-center justify-center border-r border-r-[#d8b76a]">
                       {Array.isArray(rm.attachments) &&
                       rm.attachments.length > 0 ? (
                         <button
@@ -498,14 +524,16 @@ const RmMaster = ({ isOpen }) => {
                         />
                       )}
                     </td>
-                    <td className="px-2 ">
+                    <td className="px-2 border-r border-r-[#d8b76a]">
                       <Toggle
                         checked={rm.status === "Active"}
                         onChange={() => handleToggleStatus(rm.id, rm.status)}
                       />
                     </td>
-                    <td className="px-2 py-1">{rm.createdByName || "-"}</td>
-                    <td className="px-2 py-1">
+                    <td className="px-2 border-r border-r-[#d8b76a]">
+                      {rm.createdByName || "-"}
+                    </td>
+                    <td className="px-2 ">
                       <div className="flex items-center gap-2 text-base text-[#d39c25]">
                         <FiEdit
                           data-tooltip-id="statusTip"

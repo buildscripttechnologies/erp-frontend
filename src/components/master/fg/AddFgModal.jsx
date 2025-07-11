@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "../../../utils/axios";
-import { FiMinus, FiPlus } from "react-icons/fi";
+import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import Select from "react-select";
 
@@ -391,7 +391,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                       onClick={() => removeMaterial(index, matIndex)}
                       className="text-red-600 cursor-pointer"
                     >
-                      <FiMinus />
+                      <FiTrash2 />
                     </button>
                   </div>
                 ))}
@@ -424,7 +424,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
               onClick={addRow}
               className="bg-[#d8b76a] px-4 py-2 rounded flex items-center gap-1 cursor-pointer"
             >
-              <FiPlus /> Add SFG
+              <FiPlus /> Add FG
             </button>
           </div>
 

@@ -9,6 +9,7 @@ import TableSkeleton from "../TableSkeleton";
 import ScrollLock from "../ScrollLock";
 import Toggle from "react-toggle";
 import PaginationControls from "../PaginationControls";
+import { Tooltip } from "react-tooltip";
 
 const UomMaster = () => {
   const [uoms, setUoms] = useState([]);
@@ -144,8 +145,8 @@ const UomMaster = () => {
         )}
 
         <div className="overflow-x-auto rounded border border-[#d8b76a] shadow-sm">
-          <table className="min-w-full text-xs sm:text-sm">
-            <thead className="bg-[#d8b76a] text-xs sm:text-sm text-[#292926] text-left whitespace-nowrap">
+          <table className="min-w-full text-[11px] ">
+            <thead className="bg-[#d8b76a]  text-[#292926] text-left whitespace-nowrap">
               <tr>
                 <th className="px-2 py-1.5 ">#</th>
                 <th className="px-2 py-1.5  hidden md:table-cell">
@@ -171,15 +172,15 @@ const UomMaster = () => {
                   {filteredUoms.map((uom, index) => (
                     <tr
                       key={uom._id}
-                      className="border-t text-xs sm:text-sm border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
+                      className="border-t text-[11px] border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
                     >
-                      <td className="px-2 py-1">
+                      <td className="px-2 border-r border-[#d8b76a]">
                         {Number(pagination.currentPage - 1) *
                           Number(pagination.limit) +
                           index +
                           1}
                       </td>
-                      <td className="px-2 py-1 hidden md:table-cell">
+                      <td className="px-2 hidden md:table-cell  border-r border-[#d8b76a]">
                         {new Date(uom.createdAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -189,7 +190,7 @@ const UomMaster = () => {
                           hour12: true,
                         })}
                       </td>
-                      <td className="px-2 py-1 hidden md:table-cell">
+                      <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
                         {new Date(uom.updatedAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -199,11 +200,13 @@ const UomMaster = () => {
                           hour12: true,
                         })}
                       </td>
-                      <td className="px-2 py-1">{uom.unitName}</td>
-                      <td className="px-2 py-1">
+                      <td className="px-2  border-r border-[#d8b76a]">
+                        {uom.unitName}
+                      </td>
+                      <td className="px-2  border-r border-[#d8b76a]">
                         {uom.unitDescription || "-"}
                       </td>
-                      <td className="px-2 ">
+                      <td className="px-2  border-r border-[#d8b76a]">
                         <Toggle
                           checked={uom.status}
                           onChange={() =>
@@ -211,20 +214,35 @@ const UomMaster = () => {
                           }
                         />
                       </td>
-                      <td className="px-2 py-1 hidden md:table-cell">
+                      <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
                         {uom.createdBy?.fullName || "-"}
                       </td>
-                      <td className="px-2 py-1 flex gap-3 text-lg">
+                      <td className="px-2 mt-1.5 flex gap-3 text-sm ">
                         <FiEdit
+                        data-tooltip-id="statusTip"
+                          data-tooltip-content="Edit"
                           className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
                           onClick={() => setEditUom(uom)}
                         />
                         <FiTrash2
+                        data-tooltip-id="statusTip"
+                          data-tooltip-content="Delete"
                           className="cursor-pointer text-[#d8b76a] hover:text-red-600"
                           onClick={() => handleDelete(uom._id)}
                         />
+                        <Tooltip
+                            id="statusTip"
+                            place="top"
+                            style={{
+                              backgroundColor: "#292926",
+                              color: "#d8b76a",
+                              fontSize: "12px",
+                              fontWeight: "bold",
+                            }}
+                          />
                       </td>
                     </tr>
+                    
                   ))}
                   {filteredUoms.length === 0 && (
                     <tr>

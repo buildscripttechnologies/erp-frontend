@@ -9,6 +9,7 @@ import { useAuth } from "../../../context/AuthContext";
 import Toggle from "react-toggle";
 import ScrollLock from "../../ScrollLock";
 import PaginationControls from "../../PaginationControls";
+import { Tooltip } from "react-tooltip";
 
 const RoleMaster = () => {
   const [roles, setRoles] = useState([]);
@@ -126,7 +127,7 @@ const RoleMaster = () => {
 
         {/* Table */}
         <div className="overflow-auto border border-[#d8b76a] rounded text-left whitespace-nowrap">
-          <table className="min-w-full text-sm">
+          <table className="min-w-full text-[11px]">
             <thead className="bg-[#d8b76a] text-[#292926]">
               <tr>
                 <th className="py-1.5 px-3">#</th>
@@ -157,13 +158,13 @@ const RoleMaster = () => {
                     key={role._id}
                     className="border-b border-[#d8b76a] hover:bg-gray-50"
                   >
-                    <td className="px-2 py-1">
+                    <td className="px-2   border-r border-[#d8b76a]">
                       {Number(pagination.currentPage - 1) *
                         Number(pagination.limit) +
                         idx +
                         1}
                     </td>
-                    <td className="px-2 py-1 hidden md:table-cell">
+                    <td className="px-2  border-r border-[#d8b76a] hidden md:table-cell">
                       {new Date(role.createdAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
@@ -173,7 +174,7 @@ const RoleMaster = () => {
                         hour12: true,
                       })}
                     </td>
-                    <td className="px-2 py-1 hidden md:table-cell">
+                    <td className="px-2  border-r border-[#d8b76a] hidden md:table-cell">
                       {new Date(role.updatedAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
@@ -183,8 +184,10 @@ const RoleMaster = () => {
                         hour12: true,
                       })}
                     </td>
-                    <td className="px-2 py-1">{role.name}</td>
-                    <td className="px-2 ">
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {role.name}
+                    </td>
+                    <td className="px-2 border-r border-[#d8b76a] ">
                       <Toggle
                         checked={role.isActive}
                         onChange={() =>
@@ -192,19 +195,33 @@ const RoleMaster = () => {
                         }
                       />
                     </td>
-                    <td className="px-2 py-1">
+                    <td className="px-2  border-r border-[#d8b76a]">
                       {role.createdBy?.fullName || "-"}
                     </td>
                     <td className="px-2 py-1">
-                      <div className="flex items-center gap-2 text-base text-[#d39c25]">
+                      <div className="flex items-center gap-2 text-sm text-[#d39c25]">
                         <FiEdit
+                        data-tooltip-id="statusTip"
+                          data-tooltip-content="Edit"
                           className="cursor-pointer hover:text-blue-500"
                           onClick={() => setEditData(role)}
                         />
                         <FiTrash2
+                        data-tooltip-id="statusTip"
+                          data-tooltip-content="Delete"
                           className="cursor-pointer hover:text-red-500"
                           onClick={() => handleDelete(role._id)}
                         />
+                        <Tooltip
+                            id="statusTip"
+                            place="top"
+                            style={{
+                              backgroundColor: "#292926",
+                              color: "#d8b76a",
+                              fontSize: "12px",
+                              fontWeight: "bold",
+                            }}
+                          />
                       </div>
                     </td>
                   </tr>

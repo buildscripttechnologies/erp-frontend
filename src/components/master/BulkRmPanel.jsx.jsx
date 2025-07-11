@@ -81,6 +81,13 @@ const BulkRmPanel = ({ onClose }) => {
 
   const handleSubmit = async () => {
     if (rows.length === 0) return toast.error("Please add at least one row.");
+    // 🔍 Check for missing itemName
+    const hasMissingItemNames = rows.some(
+      (row, index) => !row.itemName?.trim()
+    );
+    if (hasMissingItemNames) {
+      return toast.error("All rows must have an Item Name.");
+    }
     setLoading(true);
     const formData = new FormData();
     formData.append(
@@ -186,6 +193,7 @@ const BulkRmPanel = ({ onClose }) => {
                 {/* <td className="p-2">{rm.skuCode}</td> */}
                 <td className="p-2">
                   <input
+                    required
                     placeholder="Item Name"
                     className="px-2 py-1 w-40 border border-[#d8b76a] rounded focus:border-2 focus:border-[#b38a37] focus:outline-none transition duration-200 "
                     value={rm.itemName}

@@ -8,6 +8,7 @@ import TableSkeleton from "../../TableSkeleton";
 import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";
 import UpdateLocationModal from "./UpdateLocationModal";
+import { Tooltip } from "react-tooltip";
 
 const LocationMaster = () => {
   const [locations, setLocations] = useState([]);
@@ -110,19 +111,19 @@ const LocationMaster = () => {
 
         <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
           <div className="relative w-full sm:w-80">
-            <FiSearch className="absolute left-3 top-3 text-[#d8b76a]" />
+            <FiSearch className="absolute left-3 top-2 text-[#d8b76a]" />
             <input
               type="text"
               placeholder="Search Location..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+              className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
             />
           </div>
 
           <button
             onClick={() => setFormOpen(!formOpen)}
-            className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-2 rounded flex items-center gap-2 transition duration-200"
+            className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
           >
             <FiPlus />
             {formOpen ? "Close Form" : "Add Location"}
@@ -137,7 +138,7 @@ const LocationMaster = () => {
         )}
 
         <div className="overflow-x-auto rounded border border-[#d8b76a] shadow-sm">
-          <table className="min-w-full text-sm">
+          <table className="min-w-full text-[11px]">
             <thead className="bg-[#d8b76a] text-[#292926] text-left whitespace-nowrap">
               <tr>
                 <th className="px-4 py-1.5">#</th>
@@ -162,13 +163,13 @@ const LocationMaster = () => {
                       key={loc._id}
                       className="border-t border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
                     >
-                      <td className="px-4 py-1">
+                      <td className="px-4  border-r border-[#d8b76a]">
                         {Number(pagination.currentPage - 1) *
                           Number(pagination.limit) +
                           index +
                           1}
                       </td>
-                      <td className="px-4 py-1 hidden md:table-cell">
+                      <td className="px-4  border-r border-[#d8b76a] hidden md:table-cell">
                         {new Date(loc.createdAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -178,7 +179,7 @@ const LocationMaster = () => {
                           hour12: true,
                         }) || "-"}
                       </td>
-                      <td className="px-4 py-1 hidden md:table-cell">
+                      <td className="px-4  border-r border-[#d8b76a] hidden md:table-cell">
                         {new Date(loc.updatedAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -188,11 +189,19 @@ const LocationMaster = () => {
                           hour12: true,
                         }) || "-"}
                       </td>
-                      <td className="px-4 py-1 ">{loc.locationId || "-"}</td>
-                      <td className="px-4 py-1">{loc.storeNo || "-"}</td>
-                      <td className="px-4 py-1">{loc.storeRno || "-"}</td>
-                      <td className="px-4 py-1">{loc.binNo || "-"}</td>
-                      <td className="px-4 ">
+                      <td className="px-4  border-r border-[#d8b76a] ">
+                        {loc.locationId || "-"}
+                      </td>
+                      <td className="px-4  border-r border-[#d8b76a]">
+                        {loc.storeNo || "-"}
+                      </td>
+                      <td className="px-4  border-r border-[#d8b76a]">
+                        {loc.storeRno || "-"}
+                      </td>
+                      <td className="px-4  border-r border-[#d8b76a]">
+                        {loc.binNo || "-"}
+                      </td>
+                      <td className="px-4  border-r border-[#d8b76a]">
                         <Toggle
                           checked={loc.isActive}
                           onChange={() =>
@@ -200,17 +209,31 @@ const LocationMaster = () => {
                           }
                         />
                       </td>
-                      <td className="px-4 py-1 hidden md:table-cell">
+                      <td className="px-4  border-r border-[#d8b76a] hidden md:table-cell">
                         {loc.createdBy?.fullName || "-"}
                       </td>
-                      <td className="px-4 flex gap-3  mt-1 items-center">
+                      <td className="px-4 mt-1.5 flex gap-3 text-sm  items-center">
                         <FiEdit
+                          data-tooltip-id="statusTip"
+                          data-tooltip-content="Edit"
                           onClick={() => setEditingLocation(loc)}
                           className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
                         />
                         <FiTrash2
+                          data-tooltip-id="statusTip"
+                          data-tooltip-content="Delete"
                           className="cursor-pointer text-[#d8b76a] hover:text-red-600"
                           onClick={() => handleDelete(loc._id)}
+                        />
+                        <Tooltip
+                          id="statusTip"
+                          place="top"
+                          style={{
+                            backgroundColor: "#292926",
+                            color: "#d8b76a",
+                            fontSize: "12px",
+                            fontWeight: "bold",
+                          }}
                         />
                       </td>
                     </tr>

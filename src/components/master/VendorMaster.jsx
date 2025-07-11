@@ -8,6 +8,7 @@ import TableSkeleton from "../TableSkeleton";
 import ScrollLock from "../../components/ScrollLock";
 import Toggle from "react-toggle";
 import PaginationControls from "../PaginationControls";
+import { Tooltip } from "react-tooltip";
 
 const VendorMaster = () => {
   const [vendors, setVendors] = useState([]);
@@ -135,42 +136,42 @@ const VendorMaster = () => {
 
           <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
             <div className="relative w-full sm:w-80">
-              <FiSearch className="absolute left-3 top-3 text-[#d8b76a]" />
+              <FiSearch className="absolute left-3 top-2 text-[#d8b76a]" />
               <input
                 type="text"
                 placeholder="Search by Vendor Code or Name..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[#d8b76a] rounded focus:outline-none"
+                className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:outline-none"
               />
             </div>
             <button
               onClick={() => setShowModal(true)}
-              className="bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-2 rounded flex items-center gap-2"
+              className="bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
             >
               <FiPlus /> Add Vendor
             </button>
           </div>
 
           <div className="overflow-x-auto border border-[#d8b76a] rounded">
-            <table className="min-w-full text-sm whitespace-nowrap ">
-              <thead className="bg-[#d8b76a] text-[#292926]">
+            <table className="min-w-full text-[11px] whitespace-nowrap ">
+              <thead className="bg-[#d8b76a] text-left text-[#292926]">
                 <tr>
-                  <th className="px-3 py-1.5">#</th>
-                  <th className="px-3 py-1.5">Created At</th>
-                  <th className="px-3 py-1.5">Updated At</th>
-                  <th className="px-3 py-1.5">Vendor Code</th>
-                  <th className="px-3 py-1.5">Vendor Name</th>
-                  <th className="px-3 py-1.5">Nature of Business</th>
-                  <th className="px-3 py-1.5">Address</th>
-                  <th className="px-3 py-1.5">City</th>
-                  <th className="px-3 py-1.5">State</th>
-                  <th className="px-3 py-1.5">Country</th>
-                  <th className="px-3 py-1.5">Postal Code</th>
-                  <th className="px-3 py-1.5">GSTIN</th>
-                  <th className="px-3 py-1.5">Status</th>
-                  <th className="px-3 py-1.5">Created By</th>
-                  <th className="px-3 py-1.5">Actions</th>
+                  <th className="px-2 py-1.5">#</th>
+                  <th className="px-2 py-1.5">Created At</th>
+                  <th className="px-2 py-1.5">Updated At</th>
+                  <th className="px-2 py-1.5">Vendor Code</th>
+                  <th className="px-2 py-1.5">Vendor Name</th>
+                  <th className="px-2 py-1.5">Nature of Business</th>
+                  <th className="px-2 py-1.5">Address</th>
+                  <th className="px-2 py-1.5">City</th>
+                  <th className="px-2 py-1.5">State</th>
+                  <th className="px-2 py-1.5">Country</th>
+                  <th className="px-2 py-1.5">Postal Code</th>
+                  <th className="px-2 py-1.5">GSTIN</th>
+                  <th className="px-1 py-1.5">Status</th>
+                  <th className="px-2 py-1.5">Created By</th>
+                  <th className="px-2 py-1.5">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -183,30 +184,46 @@ const VendorMaster = () => {
                         key={v._id}
                         className=" border-t border-t-[#d8b76a] hover:bg-gray-50"
                       >
-                        <td className="px-3 py-1">
+                        <td className="px-2 border-r border-[#d8b76a]">
                           {(pagination.currentPage - 1) * pagination.limit +
                             i +
                             1}
                         </td>
-                        <td className="px-3 py-1">
+                        <td className="px-2  border-r border-[#d8b76a]">
                           {new Date(v.createdAt).toLocaleString()}
                         </td>
-                        <td className="px-3 py-1">
+                        <td className="px-2 border-r border-[#d8b76a]">
                           {new Date(v.updatedAt).toLocaleString()}
                         </td>
-                        <td className="px-3 py-1">{v.venderCode}</td>
-                        <td className="px-3 py-1">{v.vendorName}</td>
-                        <td className="px-3 py-1">
+                        <td className="px-2 border-r border-[#d8b76a]">
+                          {v.venderCode}
+                        </td>
+                        <td className="px-2 border-r border-[#d8b76a]">
+                          {v.vendorName}
+                        </td>
+                        <td className="px-2 border-r border-[#d8b76a]">
                           {v.natureOfBusiness || "-"}
                         </td>
-                        <td className="px-3 py-1">{v.address || "-"}</td>
-                        <td className="px-3 py-1">{v.city}</td>
-                        <td className="px-3 py-1">{v.state}</td>
-                        <td className="px-3 py-1">{v.country}</td>
-                        <td className="px-3 py-1">{v.postalCode}</td>
-                        <td className="px-3 py-1">{v.gst}</td>
-                        <td className="px-3">
-                          <span className=" px-2 rounded text-xs">
+                        <td className="px-2 border-r border-[#d8b76a]">
+                          {v.address || "-"}
+                        </td>
+                        <td className="px-2 border-r border-[#d8b76a]">
+                          {v.city}
+                        </td>
+                        <td className="px-2 border-r border-[#d8b76a]">
+                          {v.state}
+                        </td>
+                        <td className="px-2 border-r border-[#d8b76a]">
+                          {v.country}
+                        </td>
+                        <td className="px-2 border-r border-[#d8b76a]">
+                          {v.postalCode}
+                        </td>
+                        <td className="px-2 border-r border-[#d8b76a]">
+                          {v.gst}
+                        </td>
+                        <td className="px-2 border-r border-[#d8b76a]">
+                          <span className="rounded">
                             <Toggle
                               checked={v.isActive}
                               onChange={() =>
@@ -215,14 +232,30 @@ const VendorMaster = () => {
                             />
                           </span>
                         </td>
-                        <td className="px-3 py-1">
+                        <td className="px-2 border-r border-[#d8b76a]">
                           {v.createdBy.fullName || "-"}
                         </td>
-                        <td className="px-3 mt-1.5 flex gap-2">
-                          <FiEdit className="cursor-pointer text-[#d8b76a]" />
+                        <td className="px-2 mt-1.5 text-sm  flex gap-2">
+                          <FiEdit
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Edit"
+                            className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                          />
                           <FiTrash2
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Delete"
                             onClick={() => handleDelete(v._id)}
-                            className="cursor-pointer text-[#d8b76a]"
+                            className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                          />
+                          <Tooltip
+                            id="statusTip"
+                            place="top"
+                            style={{
+                              backgroundColor: "#292926",
+                              color: "#d8b76a",
+                              fontSize: "12px",
+                              fontWeight: "bold",
+                            }}
                           />
                         </td>
                       </tr>

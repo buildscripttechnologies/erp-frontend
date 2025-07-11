@@ -12,6 +12,8 @@ import AttachmentsModal from "../../AttachmentsModal";
 import UpdateFgModal from "./UpdateFgModal";
 import AddFgModal from "./AddFgModal";
 
+import { FaCircleArrowDown, FaCircleArrowUp } from "react-icons/fa6";
+
 const renderNestedMaterials = (
   materials,
   level = 1,
@@ -23,58 +25,86 @@ const renderNestedMaterials = (
 ) => {
   return materials.map((mat, idx) => {
     const currentKey = `${parentIdx}-${idx}`;
-    const isExpandedL2 = expandedL2 === currentKey;
-    const isExpandedL3 = expandedL3 === currentKey;
+    const isExpandedL2 = expandedL2[currentKey];
+    const isExpandedL3 = expandedL3[currentKey];
 
     // Map level number to label
     const levelLabel = `L${level}`;
 
-    let color;
+    let border, text;
     if (level == 1 || level == "1") {
-      color = "green";
+      border = `border-green-600`;
+      text = `text-green-600`;
     } else if (level == 2 || level == "2") {
-      color = "yellow";
+      border = `border-yellow-600`;
+      text = `text-yellow-600`;
     } else if (level == 3 || level == "3") {
-      color = "blue";
+      border = `border-blue-600`;
+      text = `text-blue-600`;
     }
 
     return (
       <React.Fragment key={`${mat.id}-${level}-${idx}`}>
         <tr
-          className={`border-t border-${color}-600 cursor-pointer hover:bg-gray-50`}
+          className={`border-t ${border} cursor-pointer hover:bg-gray-50 text-[11px]`}
           onClick={() => {
             if (level === 1) toggleL2(currentKey);
             else if (level === 2) toggleL3(currentKey);
           }}
         >
-          <td className="flex" style={{ paddingLeft: `${level * 15}px` }}>
+          <td
+            className={`flex border-r ${border}`}
+            style={{ paddingLeft: `${level * 21}px` }}
+          >
             <span
-              className={`text-${color}-600 mr-2 font-bold pl-2 border-${color}-600 border-dashed border-l-2`}
+              className={`${text} mr-2 font-bold pl-2 ${border} border-dashed border-l-2`}
             >
               {levelLabel}
             </span>
             <div className="flex items-center gap-1 ">
               {mat.skuCode}
               {(mat.rm?.length > 0 || mat.sfg?.length > 0) && (
-                <span className={`text-${color}-600 text-xs`}>
-                  {level === 1 && expandedL2 === currentKey ? "▲" : ""}
-                  {level === 1 && expandedL2 !== currentKey ? "▼" : ""}
-                  {level === 2 && expandedL3 === currentKey ? "▲" : ""}
-                  {level === 2 && expandedL3 !== currentKey ? "▼" : ""}
+                <span className={`${text} text-[12px] overflow-auto`}>
+                  {level === 1 && expandedL2 === currentKey ? (
+                    <FaCircleArrowUp />
+                  ) : (
+                    ""
+                  )}
+                  {level === 1 && expandedL2 !== currentKey ? (
+                    <FaCircleArrowDown />
+                  ) : (
+                    ""
+                  )}
+                  {level === 2 && expandedL3 === currentKey ? (
+                    <FaCircleArrowUp />
+                  ) : (
+                    ""
+                  )}
+                  {level === 2 && expandedL3 !== currentKey ? (
+                    <FaCircleArrowDown />
+                  ) : (
+                    ""
+                  )}
                 </span>
               )}
             </div>
           </td>
-          <td className="px-2">{mat.itemName}</td>
-          <td className="px-2">{mat.description || "-"}</td>
-          <td className="px-2">{mat.type}</td>
-          <td className="px-2">{mat.hsnOrSac || mat.hsnSac}</td>
-          <td className="px-2">{mat.stockUOM || mat.uom}</td>
-          <td className="px-2">
+          <td className={`px-2 border-r ${border}`}>{mat.itemName}</td>
+          <td className={`px-2 border-r ${border}`}>
+            {mat.description || "-"}
+          </td>
+          <td className={`px-2 border-r ${border}`}>{mat.type}</td>
+          <td className={`px-2 border-r ${border}`}>
+            {mat.hsnOrSac || mat.hsnSac}
+          </td>
+          <td className={`px-2 border-r ${border}`}>
+            {mat.stockUOM || mat.uom}
+          </td>
+          <td className={`px-2 border-r ${border}`}>
             {mat.qualityInspectionNeeded ? "Required" : "Not Required"}
           </td>
-          <td className="px-2">{mat.location}</td>
-          <td className="px-2">{mat.qty}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.location}</td>
+          <td className={`px-2 `}>{mat.qty}</td>
         </tr>
 
         {level === 1 &&
@@ -83,23 +113,22 @@ const renderNestedMaterials = (
             <tr>
               <td colSpan="17" className="px-2 pb-2">
                 <div className=" border border-yellow-500 rounded-sm">
-                  <table className="min-w-full text-sm text-left ">
+                  <table className="min-w-full text-[11px] text-left ">
                     <thead className="bg-yellow-100 rounded-sm">
-                      <tr>
-                        <th
-                          className="px-2 font-semibold rounded-tl"
-                          style={{ paddingLeft: `${level * 64}px` }}
-                        >
-                          SKU Code
+                      <tr className="">
+                        <th className="px-2 font-semibold  pl-18">SKU Code</th>
+                        <th className="px-2 font-semibold min-w-[220px]">
+                          Item Name
                         </th>
-                        <th className="px-2 font-semibold">Item Name</th>
-                        <th className="px-2 font-semibold">Description</th>
+                        <th className="px-2 font-semibold min-w-[190px]">
+                          Description
+                        </th>
                         <th className="px-2 font-semibold">Type</th>
                         <th className="px-2 font-semibold">HSN/SAC</th>
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
-                        <th className="px-2 font-semibold rounded-tr">Qty</th>
+                        <th className="px-2 font-semibold">Qty</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -134,23 +163,24 @@ const renderNestedMaterials = (
             <tr>
               <td colSpan="17" className="px-2 pb-2">
                 <div className=" border border-blue-600 rounded">
-                  <table className="min-w-full text-sm text-left">
+                  <table className="min-w-full  text-left">
                     <thead className="bg-blue-100 ">
-                      <tr className="rounded">
-                        <th
-                          className="px-2 font-semibold rounded-tl"
-                          style={{ paddingLeft: `${level * 40}px` }}
-                        >
+                      <tr className="">
+                        <th className="px-2 font-semibold  pl-23.5">
                           SKU Code
                         </th>
-                        <th className="px-2 font-semibold">Item Name</th>
-                        <th className="px-2 font-semibold">Description</th>
+                        <th className="px-2 font-semibold min-w-[220px]">
+                          Item Name
+                        </th>
+                        <th className="px-2 font-semibold min-w-[190px]">
+                          Description
+                        </th>
                         <th className="px-2 font-semibold">Type</th>
                         <th className="px-2 font-semibold">HSN/SAC</th>
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
-                        <th className="px-2 font-semibold rounded-tr">Qty</th>
+                        <th className="px-2 font-semibold">Qty</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -188,9 +218,10 @@ const SfgMaster = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [openAttachments, setOpenAttachments] = useState(null);
-  const [expandedL1, setExpandedL1] = useState(null);
-  const [expandedL2, setExpandedL2] = useState(null);
-  const [expandedL3, setExpandedL3] = useState(null);
+  const [expandedL1, setExpandedL1] = useState(null); // Only one FG open
+  const [expandedL2, setExpandedL2] = useState({}); // Multiple SFGs per FG
+  const [expandedL3, setExpandedL3] = useState({}); // Multiple SFGs per SFG
+
   const [showAddFG, setShowAddFG] = useState(false);
   const [editingFg, setEditingFg] = useState(null);
 
@@ -205,6 +236,30 @@ const SfgMaster = () => {
 
   const toogleAddFG = (prev) => {
     setShowAddFG(!prev);
+  };
+
+  const toggleL1 = (fgId) => {
+    if (expandedL1 === fgId) {
+      setExpandedL1(null);
+      setExpandedL2({});
+      setExpandedL3({});
+    } else {
+      setExpandedL1(fgId);
+    }
+  };
+
+  const toggleL2 = (key) => {
+    setExpandedL2((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const toggleL3 = (key) => {
+    setExpandedL3((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   };
 
   const fetchFGs = async (page = 1, limit = pagination.limit) => {
@@ -249,16 +304,6 @@ const SfgMaster = () => {
       fg.createdAt?.toLowerCase().includes(query)
     );
   });
-
-  const toggleL1 = (index) => {
-    setExpandedL1(expandedL1 === index ? null : index);
-  };
-  const toggleL2 = (index) => {
-    setExpandedL2(expandedL2 === index ? null : index);
-  };
-  const toggleL3 = (index) => {
-    setExpandedL3(expandedL3 === index ? null : index);
-  };
 
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
@@ -335,18 +380,18 @@ const SfgMaster = () => {
 
         <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
           <div className="relative w-full sm:w-80">
-            <FiSearch className="absolute left-3 top-3 text-[#d8b76a]" />
+            <FiSearch className="absolute left-3 top-2 text-[#d8b76a]" />
             <input
               type="text"
               placeholder="Search by SKU, Item Name, etc..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+              className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
             />
           </div>
           <button
             onClick={() => toogleAddFG(showAddFG)}
-            className="w-full sm:w-auto justify-center bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-2 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
+            className="w-full sm:w-auto justify-center bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
           >
             <FiPlus /> Add FG
           </button>
@@ -359,25 +404,25 @@ const SfgMaster = () => {
         )}
 
         <div className="overflow-x-auto border border-[#d8b76a] rounded shadow-sm">
-          <table className="min-w-full text-sm whitespace-nowrap">
+          <table className="min-w-full text-[11px] whitespace-nowrap">
             <thead className="bg-[#d8b76a] text-[#292926] text-left whitespace-nowrap">
               <tr>
-                <th className="px-3 py-1.5">#</th>
-                <th className="px-3 py-1.5">Created At</th>
-                <th className="px-3 py-1.5">Updated At</th>
-                <th className="px-3 py-1.5">SKU Code</th>
-                <th className="px-3 py-1.5">Item Name</th>
-                <th className="px-3 py-1.5">Description</th>
-                <th className="px-3 py-1.5">HSN/SAC</th>
-                <th className="px-3 py-1.5">Quality Insp.</th>
-                <th className="px-3 py-1.5">Location</th>
-                <th className="px-3 py-1.5">GST</th>
-                <th className="px-3 py-1.5">Type</th>
-                <th className="px-3 py-1.5">UOM</th>
-                <th className="px-3 py-1.5">Status</th>
-                <th className="px-3 py-1.5">Files</th>
-                <th className="px-3 py-1.5">Created By</th>
-                <th className="px-3 py-1.5">Actions</th>
+                <th className="px-[8px] py-1">#</th>
+                <th className="px-[8px] ">Created At</th>
+                <th className="px-[8px] ">Updated At</th>
+                <th className="px-[8px] ">SKU Code</th>
+                <th className="px-[8px] ">Item Name</th>
+                <th className="px-[8px] ">Description</th>
+                <th className="px-[8px] ">HSN/SAC</th>
+                <th className="px-[8px] ">Quality Insp.</th>
+                <th className="px-[8px] ">Location</th>
+                <th className="px-[8px] ">GST</th>
+                <th className="px-[8px] ">Type</th>
+                <th className="px-[8px] ">UOM</th>
+                <th className="px-[8px] ">Status</th>
+                <th className="px-[8px] ">Files</th>
+                <th className="px-[8px] ">Created By</th>
+                <th className="px-[8px] ">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -388,26 +433,34 @@ const SfgMaster = () => {
                   {filteredFGs.map((fg, index) => (
                     <React.Fragment key={fg.id}>
                       <tr
-                        onClick={() => toggleL1(index)}
+                        onClick={() => toggleL1(fg.id)}
                         className="border-t border-[#d8b76a] hover:bg-gray-50 cursor-pointer "
                       >
-                        <td className="px-3 py-1">
+                        <td className="px-[8px] border-r border-[#d8b76a]">
                           {Number(pagination.currentPage - 1) *
                             Number(pagination.limit) +
                             index +
                             1}
                         </td>
-                        <td className="px-3 py-1">
+                        <td className="px-[8px] border-r border-[#d8b76a]">
                           {new Date(fg.createdAt).toLocaleString()}
                         </td>
-                        <td className="px-3 py-1">
+                        <td className="px-[8px] border-r border-[#d8b76a]">
                           {new Date(fg.updatedAt).toLocaleString()}
                         </td>
-                        <td className="px-3 py-1">{fg.skuCode}</td>
-                        <td className="px-3 py-1">{fg.itemName}</td>
-                        <td className="px-3 py-1">{fg.description || "-"}</td>
-                        <td className="px-3 py-1">{fg.hsnOrSac || "-"}</td>
-                        <td className="px-3 ">
+                        <td className="px-[8px] border-r border-[#d8b76a]">
+                          {fg.skuCode}
+                        </td>
+                        <td className="px-[8px] border-r border-[#d8b76a] md:max-w-[120px] md:truncate  hover:max-w-[1000px] transition-all duration-200">
+                          {fg.itemName}
+                        </td>
+                        <td className="px-[8px] border-r border-[#d8b76a] md:max-w-[120px] md:truncate  hover:max-w-[1000px] transition-all duration-200">
+                          {fg.description || "-"}
+                        </td>
+                        <td className="px-[8px] border-r border-[#d8b76a]">
+                          {fg.hsnOrSac || "-"}
+                        </td>
+                        <td className="px-[8px] border-r border-[#d8b76a]">
                           <Toggle
                             checked={fg.qualityInspectionNeeded}
                             onChange={() =>
@@ -418,11 +471,19 @@ const SfgMaster = () => {
                             }
                           />
                         </td>
-                        <td className="px-3 py-1">{fg.location || "-"}</td>
-                        <td className="px-3 py-1">{fg.gst}</td>
-                        <td className="px-3 py-1">{fg.type}</td>
-                        <td className="px-3 py-1">{fg.uom}</td>
-                        <td className="px-3 ">
+                        <td className="px-[8px] border-r border-[#d8b76a]">
+                          {fg.location || "-"}
+                        </td>
+                        <td className="px-[8px] border-r border-[#d8b76a]">
+                          {fg.gst}
+                        </td>
+                        <td className="px-[8px] border-r border-[#d8b76a]">
+                          {fg.type}
+                        </td>
+                        <td className="px-[8px] border-r border-[#d8b76a]">
+                          {fg.uom}
+                        </td>
+                        <td className="px-[8px] border-r border-[#d8b76a]">
                           <Toggle
                             checked={fg.status == "Active"}
                             onChange={() =>
@@ -430,7 +491,7 @@ const SfgMaster = () => {
                             }
                           />
                         </td>
-                        <td className="px-3 py-1">
+                        <td className="px-[8px] border-r border-[#d8b76a]">
                           {Array.isArray(fg.files) && fg.files.length > 0 ? (
                             <button
                               onClick={() => setOpenAttachments(fg.files)}
@@ -449,36 +510,36 @@ const SfgMaster = () => {
                             />
                           )}
                         </td>
-                        <td className="px-3 py-1">
+                        <td className="px-[8px] border-r border-[#d8b76a]">
                           {fg.createdBy?.fullName || "-"}
                         </td>
-                        <td className="px-3 py-1 flex gap-2">
-                          <FaFileDownload className="cursor-pointer text-[#d8b76a]" />
+                        <td className="px-[8px]  pt-2 text-sm flex gap-2">
+                          <FaFileDownload className="cursor-pointer text-[#d8b76a] hover:text-green-600" />
                           <FiEdit
-                            className="cursor-pointer text-[#d8b76a]"
+                            className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
                             onClick={() => setEditingFg(fg)}
                           />
                           <FiTrash2
-                            className="cursor-pointer text-[#d8b76a]"
+                            className="cursor-pointer text-[#d8b76a] hover:text-red-600"
                             onClick={() => handleDelete(fg.id)}
                           />
                         </td>
                       </tr>
-                      {expandedL1 === index &&
+                      {expandedL1 == fg.id &&
                         (fg.rm.length !== 0 || fg.sfg.length !== 0) && (
                           <tr>
                             <td colSpan="17" className="px-2">
                               <div className="border border-green-600 rounded overflow-x-auto mb-2 ">
-                                <table className="min-w-full text-sm text-left rounded">
+                                <table className="min-w-full text-[11px] text-left rounded">
                                   <thead className="bg-green-100 rounded">
-                                    <tr>
-                                      <th className="px-2 pl-12 font-semibold">
+                                    <tr className="">
+                                      <th className="px-2 font-semibold  pl-13">
                                         SKU Code
                                       </th>
-                                      <th className="px-2 font-semibold">
+                                      <th className="px-2 font-semibold min-w-[220px]">
                                         Item Name
                                       </th>
-                                      <th className="px-2 font-semibold">
+                                      <th className="px-2 font-semibold min-w-[190px]">
                                         Description
                                       </th>
                                       <th className="px-2 font-semibold">
@@ -505,7 +566,7 @@ const SfgMaster = () => {
                                     {renderNestedMaterials(
                                       [...fg.rm, ...fg.sfg],
                                       1,
-                                      `${index}`,
+                                      fg.id,
                                       expandedL2,
                                       expandedL3,
                                       toggleL2,

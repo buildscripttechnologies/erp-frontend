@@ -450,20 +450,18 @@ export default function MasterUsers() {
 
           {/* Table */}
           <div className="bg-white rounded border border-[#d8b76a]  overflow-x-auto">
-            <table className="min-w-full text-xs sm:text-sm">
+            <table className="min-w-full text-[11px]">
               <thead className="bg-[#d8b76a] text-[#292927] text-left">
                 <tr>
                   <th className="py-1.5 px-2">#</th>
-                  <th className="py-1.5 px-2">Name</th>
-                  <th className="py-1.5 px-2 hidden md:table-cell">Mobile</th>
-                  <th className="py-1.5 px-2 hidden lg:table-cell">Email</th>
-                  <th className="py-1.5 px-2 hidden lg:table-cell">
-                    IsVerified
-                  </th>
-                  <th className="py-1.5 px-2">Role</th>
-                  <th className="py-1.5 px-2 hidden xl:table-cell">Username</th>
-                  <th className="py-1.5 px-2">Status</th>
-                  <th className="py-1.5 px-2">Actions</th>
+                  <th className=" px-2">Name</th>
+                  <th className=" px-2 hidden md:table-cell">Mobile</th>
+                  <th className=" px-2 hidden lg:table-cell">Email</th>
+                  <th className=" px-2 hidden lg:table-cell">IsVerified</th>
+                  <th className=" px-2">Role</th>
+                  <th className=" px-2 hidden xl:table-cell">Username</th>
+                  <th className=" px-2">Status</th>
+                  <th className=" px-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -476,37 +474,37 @@ export default function MasterUsers() {
                         key={u.id}
                         className="border-b  border-[#d8b76a] hover:bg-gray-50"
                       >
-                        <td className="px-2 py-1">
+                        <td className="px-2  border-r  border-[#d8b76a]">
                           {Number(pagination.currentPage - 1) *
                             Number(pagination.limit) +
                             i +
                             1}
                         </td>
-                        <td className="py-1 px-2">{u.fullName}</td>
-                        <td className="py-1 px-2 hidden md:table-cell">
+                        <td className=" px-2 border-r  border-[#d8b76a]">{u.fullName}</td>
+                        <td className=" px-2 border-r  border-[#d8b76a] hidden md:table-cell">
                           {u.mobile}
                         </td>
-                        <td className="py-1 px-2 hidden lg:table-cell">
+                        <td className=" px-2 border-r  border-[#d8b76a] hidden lg:table-cell">
                           {u.email}
                         </td>
-                        <td className=" px-2 hidden lg:table-cell ">
+                        <td className=" px-2 border-r  border-[#d8b76a] hidden lg:table-cell ">
                           <Toggle
                             checked={u.isVerified}
                             onChange={() => toggleVerification(u)}
                           />
                         </td>
 
-                        <td className="py-1 px-2">{u.userType}</td>
-                        <td className="py-1 px-2 hidden xl:table-cell">
+                        <td className=" px-2 border-r  border-[#d8b76a]">{u.userType}</td>
+                        <td className=" px-2 border-r  border-[#d8b76a] hidden xl:table-cell">
                           {u.username}
                         </td>
-                        <td className=" px-2">
+                        <td className=" px-2 border-r  border-[#d8b76a]">
                           <Toggle
                             checked={u.status == "Active"}
                             onClick={() => handleToggleStatus(u)}
                           />
                         </td>
-                        <td className="pt-1 px-2 flex gap-2 text-lg items-center  text-[#d39c25]">
+                        <td className="pt-1 px-2 flex gap-2 text-sm items-center  text-[#d39c25]">
                           <FiEdit
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Edit User"
