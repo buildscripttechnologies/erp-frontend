@@ -9,6 +9,7 @@ import ScrollLock from "../../components/ScrollLock";
 import Toggle from "react-toggle";
 import PaginationControls from "../PaginationControls";
 import { Tooltip } from "react-tooltip";
+import UpdateVendorModal from "./UpdateVendorModal";
 
 const VendorMaster = () => {
   const [vendors, setVendors] = useState([]);
@@ -19,6 +20,14 @@ const VendorMaster = () => {
   const [rms, setRms] = useState([]);
   const [sfgs, setSfgs] = useState([]);
   const [fgs, setFgs] = useState([]);
+  const [selectedVendor, setSelectedVendor] = useState(null);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+
+  // Function to open modal
+  const handleEdit = (vendor) => {
+    setSelectedVendor(vendor); // vendor object from the list
+    setShowUpdateModal(true);
+  };
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -51,14 +60,14 @@ const VendorMaster = () => {
     try {
       const [uomRes, rmRes, sfgRes, fgRes] = await Promise.all([
         axios.get("/uoms/all-uoms?status=all"),
-        axios.get("/rms/rm"),
-        axios.get("fgs/get-all"),
-        axios.get("/sfgs/get-all"),
+        axios.get("/rms/rm?limit=1000"),
+        axios.get("fgs/get-all?limit=1000"),
+        axios.get("/sfgs/get-all?limit=1000"),
       ]);
-      setUoms(uomRes.data || []);
-      setRms(rmRes.data || []);
-      setSfgs(sfgRes.data || []);
-      setFgs(fgRes.data || []);
+      setUoms(uomRes.data.data || []);
+      setRms(rmRes.data.rawMaterials || []);
+      setSfgs(sfgRes.data.data || []);
+      setFgs(fgRes.data.data || []);
     } catch {
       toast.error("Failed to fetch dropdown metadata");
     }
@@ -237,6 +246,7 @@ const VendorMaster = () => {
                         </td>
                         <td className="px-2 mt-1.5 text-sm  flex gap-2">
                           <FiEdit
+                            onClick={() => handleEdit(v)}
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Edit"
                             className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
@@ -290,6 +300,20 @@ const VendorMaster = () => {
               fetchVendors(page, pagination.limit);
             }}
           />
+          {showUpdateModal && (
+            <UpdateVendorModal
+              vendorData={selectedVendor}
+              rms={rms}
+              sfgs={sfgs}
+              fgs={fgs}
+              uoms={uoms}
+              onClose={() => setShowUpdateModal(false)}
+              onSuccess={() => {
+                fetchVendors(); // optional: refresh table
+                setShowUpdateModal(false);
+              }}
+            />
+          )}
         </div>
       </>
     </Dashboard>
