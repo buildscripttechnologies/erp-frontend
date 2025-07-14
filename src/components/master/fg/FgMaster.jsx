@@ -44,47 +44,39 @@ const renderNestedMaterials = (
     }
 
     return (
-      <React.Fragment key={`${mat.id}-${level}-${idx}`}>
+      <React.Fragment key={`${mat.id}-${level}-${idx}`} className="">
         <tr
-          className={`border-t ${border} cursor-pointer hover:bg-gray-50 text-[11px]`}
+          className={`border-t ${border} cursor-pointer hover:bg-gray-50 text-[11px] rounded-sm border-separate`}
           onClick={() => {
             if (level === 1) toggleL2(currentKey);
             else if (level === 2) toggleL3(currentKey);
           }}
         >
           <td
-            className={`flex border-r ${border}`}
+            className={`flex border-r ${border} rounded-bl-sm overflow-hidden`}
             style={{ paddingLeft: `${level * 21}px` }}
           >
             <span
-              className={`${text} mr-2 font-bold pl-2 ${border} border-dashed border-l-2`}
+              className={`${text} mr-2 font-bold pl-2 ${border} border-dashed border-l-2 `}
             >
               {levelLabel}
             </span>
-            <div className="flex items-center gap-1 ">
+            <div className="flex items-center gap-1 rounded-bl-sm">
               {mat.skuCode}
               {(mat.rm?.length > 0 || mat.sfg?.length > 0) && (
                 <span className={`${text} text-[12px] overflow-auto`}>
-                  {level === 1 && expandedL2 === currentKey ? (
-                    <FaCircleArrowUp />
-                  ) : (
-                    ""
-                  )}
-                  {level === 1 && expandedL2 !== currentKey ? (
-                    <FaCircleArrowDown />
-                  ) : (
-                    ""
-                  )}
-                  {level === 2 && expandedL3 === currentKey ? (
-                    <FaCircleArrowUp />
-                  ) : (
-                    ""
-                  )}
-                  {level === 2 && expandedL3 !== currentKey ? (
-                    <FaCircleArrowDown />
-                  ) : (
-                    ""
-                  )}
+                  {level === 1 &&
+                    (expandedL2[currentKey] ? (
+                      <FaCircleArrowUp />
+                    ) : (
+                      <FaCircleArrowDown />
+                    ))}
+                  {level === 2 &&
+                    (expandedL3[currentKey] ? (
+                      <FaCircleArrowUp />
+                    ) : (
+                      <FaCircleArrowDown />
+                    ))}
                 </span>
               )}
             </div>
@@ -104,19 +96,21 @@ const renderNestedMaterials = (
             {mat.qualityInspectionNeeded ? "Required" : "Not Required"}
           </td>
           <td className={`px-2 border-r ${border}`}>{mat.location}</td>
-          <td className={`px-2 `}>{mat.qty}</td>
+          <td className={`px-2 rounded-br-sm`}>{mat.qty}</td>
         </tr>
 
         {level === 1 &&
           isExpandedL2 &&
           (mat.rm?.length > 0 || mat.sfg?.length > 0) && (
             <tr>
-              <td colSpan="17" className="px-2 pb-2">
+              <td colSpan="17" className="px-2 pb-2 rounded-sm">
                 <div className=" border border-yellow-500 rounded-sm">
-                  <table className="min-w-full text-[11px] text-left ">
+                  <table className="min-w-full text-[11px] text-left rounded-sm overflow-hidden">
                     <thead className="bg-yellow-100 rounded-sm">
                       <tr className="">
-                        <th className="px-2 font-semibold  pl-18">SKU Code</th>
+                        <th className="px-2 font-semibold  pl-18 rounded-tl-sm">
+                          SKU Code
+                        </th>
                         <th className="px-2 font-semibold min-w-[220px]">
                           Item Name
                         </th>
@@ -128,10 +122,12 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
-                        <th className="px-2 font-semibold">Qty</th>
+                        <th className="px-2 font-semibold rounded-tr-sm">
+                          Qty
+                        </th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="rounded-sm">
                       {renderNestedMaterials(
                         mat.rm || [],
                         2,
@@ -163,10 +159,10 @@ const renderNestedMaterials = (
             <tr>
               <td colSpan="17" className="px-2 pb-2">
                 <div className=" border border-blue-600 rounded">
-                  <table className="min-w-full  text-left">
+                  <table className="min-w-full  text-left rounded-sm overflow-hidden">
                     <thead className="bg-blue-100 ">
-                      <tr className="">
-                        <th className="px-2 font-semibold  pl-23.5">
+                      <tr className="rounded-sm">
+                        <th className="px-2 font-semibold  pl-23.5 rounded-tl-sm">
                           SKU Code
                         </th>
                         <th className="px-2 font-semibold min-w-[220px]">
@@ -180,7 +176,9 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
-                        <th className="px-2 font-semibold">Qty</th>
+                        <th className="px-2 font-semibold rounded-tr-sm">
+                          Qty
+                        </th>
                       </tr>
                     </thead>
                     <tbody>

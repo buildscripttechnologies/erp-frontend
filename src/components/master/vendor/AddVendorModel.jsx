@@ -1,40 +1,97 @@
 import { useEffect, useState } from "react";
 import { FiX, FiTrash2 } from "react-icons/fi";
-import axios from "../../utils/axios";
+import axios from "../../../utils/axios";
 import { Country, State, City } from "country-state-city";
 import toast from "react-hot-toast";
 import PropTypes from "prop-types";
 import Select from "react-select";
 
-const UpdateVendorModal = ({
-  vendorData,
-  onClose,
-  onSuccess,
-  uoms,
-  rms,
-  sfgs,
-  fgs,
-}) => {
+const AddVendorModal = ({ onClose, onAdded }) => {
   const [vendors, setVendors] = useState([
     {
-      form: vendorData || {},
-      contactPersons: vendorData?.contactPersons || [],
-      rm:
-        vendorData?.rm?.map((mat) => ({
-          itemId: mat.item?._id || mat.item,
-          type: mat.type,
-          deliveryDays: mat.deliveryDays,
-          moq: mat.moq,
-          uomId: mat.uom?._id || mat.uom,
-          rate: mat.rate,
-          preferenceIndex: mat.preferenceIndex,
-        })) || [],
+      form: {
+        venderCode: "",
+        vendorName: "",
+        natureOfBusiness: "",
+        address: "",
+        country: "",
+        state: "",
+        city: "",
+        postalCode: "",
+        gst: "",
+        factoryAddress: "",
+        factoryCountry: "",
+        factoryState: "",
+        factoryCity: "",
+        factoryPostalCode: "",
+        bankName: "",
+        branch: "",
+        accountNo: "",
+        ifscCode: "",
+        priceTerms: "",
+        paymentTerms: "",
+      },
+      contactPersons: [
+        {
+          contactPerson: "",
+          designation: "",
+          phone: "",
+          email: "",
+          information: "",
+        },
+      ],
+      rm: [
+        {
+          itemId: "",
+          type: "RM",
+          deliveryDays: "",
+          moq: "",
+          uomId: "",
+          rate: "",
+          preferenceIndex: "",
+        },
+      ],
     },
   ]);
+
+  AddVendorModal.propTypes = {
+    onClose: PropTypes.func.isRequired,
+  };
+
+  const [uoms, setUoms] = useState([]);
+  const [rms, setRms] = useState([]);
+  const [sfgs, setSfgs] = useState([]);
+  const [fgs, setFgs] = useState([]);
+
+  useEffect(() => {
+    const fetchDropdowns = async () => {
+      try {
+        const [uomRes, rmRes, sfgRes, fgRes] = await Promise.all([
+          axios.get("/uoms/all-uoms?limit=1000"),
+          axios.get("/rms/rm?limit=1000"),
+          axios.get("/sfgs/get-all?limit=1000"),
+          axios.get("/fgs/get-all?limit=1000"),
+        ]);
+        setUoms(uomRes.data.data || []);
+        setRms(rmRes.data.rawMaterials || []);
+        setSfgs(sfgRes.data.data || []);
+        setFgs(fgRes.data.data || []);
+      } catch {
+        toast.error("Failed to fetch UOM or RM data");
+      }
+    };
+    fetchDropdowns();
+  }, []);
 
   const handleFormChange = (vendorIdx, e) => {
     const newVendors = [...vendors];
     newVendors[vendorIdx].form[e.target.name] = e.target.value;
+    setVendors(newVendors);
+  };
+
+  const handleFactoryChange = (vendorIdx, e) => {
+    const newVendors = [...vendors];
+    newVendors[vendorIdx].factory[e.target.name] = e.target.value;
     setVendors(newVendors);
   };
 
@@ -46,27 +103,14 @@ const UpdateVendorModal = ({
   };
 
   const handleMaterialChange = (vendorIdx, materialIdx, key, value) => {
-    console.log("mat", vendorIdx, materialIdx, key, value);
-
     const updated = [...vendors];
     updated[vendorIdx].rm[materialIdx][key] = value;
     setVendors(updated);
   };
-  const handleMaterialSelect = (vendorIdx, materialIdx, selected) => {
-    const updated = [...vendors];
-    console.log("selected", selected);
 
-    updated[vendorIdx].rm[materialIdx] = {
-      ...updated[vendorIdx].rm[materialIdx],
-      itemId: selected?.value || "",
-      type: selected?.type || "",
-    };
-    setVendors(updated);
-  };
-
-  const addContact = () => {
+  const addContact = (vendorIdx) => {
     const updated = [...vendors];
-    updated[0].contactPersons.push({
+    updated[vendorIdx].contactPersons.push({
       contactPerson: "",
       designation: "",
       phone: "",
@@ -76,56 +120,147 @@ const UpdateVendorModal = ({
     setVendors(updated);
   };
 
-  const removeContact = (contactIdx) => {
+  const removeContact = (vendorIdx, contactIdx) => {
     const updated = [...vendors];
-    updated[0].contactPersons.splice(contactIdx, 1);
+    updated[vendorIdx].contactPersons.splice(contactIdx, 1);
     setVendors(updated);
   };
 
-  const addMaterial = () => {
+  const addMaterial = (vendorIdx) => {
     const updated = [...vendors];
-    updated[0].rm.push({
+    updated[vendorIdx].rm.push({
       itemId: "",
-      type: "",
+      type: "", // default to RM
       deliveryDays: "",
       moq: "",
       uomId: "",
       rate: "",
       preferenceIndex: "",
     });
+
     setVendors(updated);
   };
 
-  const removeMaterial = (materialIdx) => {
+  const removeMaterial = (vendorIdx, materialIdx) => {
     const updated = [...vendors];
-    updated[0].rm.splice(materialIdx, 1);
+    updated[vendorIdx].rm.splice(materialIdx, 1);
     setVendors(updated);
+  };
+
+  const addVendor = () => {
+    setVendors([
+      ...vendors,
+      {
+        form: {
+          venderCode: "",
+          vendorName: "",
+          natureOfBusiness: "",
+          address: "",
+          country: "",
+          state: "",
+          city: "",
+          postalCode: "",
+          gst: "",
+
+          factoryAddress: "",
+          factoryCountry: "",
+          factoryState: "",
+          factoryCity: "",
+          factoryPostalCode: "",
+          bankName: "",
+          branch: "",
+          accountNo: "",
+          ifscCode: "",
+          priceTerms: "",
+          paymentTerms: "",
+        },
+        contactPersons: [
+          {
+            contactPerson: "",
+            designation: "",
+            phone: "",
+            email: "",
+            information: "",
+          },
+        ],
+        rm: [
+          {
+            itemId: "",
+            type: "",
+            deliveryDays: "",
+            moq: "",
+            uomId: "",
+            rate: "",
+            preferenceIndex: "",
+          },
+        ],
+      },
+    ]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const v = vendors[0];
-    const payload = {
-      ...v.form,
-      contactPersons: v.contactPersons,
-      rm: v.rm.map((mat) => ({
-        item: mat.itemId,
-        type: mat.type,
-        deliveryDays: +mat.deliveryDays,
-        moq: +mat.moq,
-        uom: mat.uomId,
-        rate: +mat.rate,
-        preferenceIndex: mat.preferenceIndex,
-      })),
-    };
 
     try {
-      await axios.patch(`/vendors/update/${vendorData._id}`, payload);
-      toast.success("Vendor updated successfully");
-      onSuccess();
+      const payload = vendors.map(({ form, contactPersons, rm }) => ({
+        // venderCode: form.venderCode,
+        vendorName: form.vendorName,
+        natureOfBusiness: form.natureOfBusiness,
+        address: form.address,
+        country: form.country,
+        state: form.state,
+        city: form.city,
+        postalCode: form.postalCode,
+        gst: form.gst,
+        factoryAddress: form.factoryAddress,
+        factoryCountry: form.factoryCountry,
+        factoryState: form.factoryState,
+        factoryCity: form.factoryCity,
+        factoryPostalCode: form.factoryPostalCode,
+        bankName: form.bankName,
+        branch: form.branch,
+        accountNo: form.accountNo,
+        ifscCode: form.ifscCode,
+        priceTerms: form.priceTerms,
+        paymentTerms: form.paymentTerms,
+        contactPersons: contactPersons.map((cp) => ({
+          contactPerson: cp.contactPerson,
+          designation: cp.designation,
+          phone: cp.phone,
+          email: cp.email,
+          information: cp.information,
+        })),
+        rm: rm
+          ?.filter((mat) => mat?.itemId) // only include if item is selected
+          .map((mat) => {
+            const matchedRM = rms.find((r) => r.id === mat.itemId);
+            const matchedSFG = sfgs.find((s) => s.id === mat.itemId);
+            const matchedFG = fgs.find((f) => f.id === mat.itemId);
+
+            let type = "";
+            if (matchedRM) type = "RawMaterial";
+            else if (matchedSFG) type = "SFG";
+            else if (matchedFG) type = "FG";
+
+            return {
+              item: mat.itemId,
+              type,
+              deliveryDays: +mat.deliveryDays,
+              moq: +mat.moq,
+              uom: mat.uomId,
+              rate: +mat.rate,
+              preferenceIndex: mat.preferenceIndex,
+            };
+          }),
+      }));
+
+      await axios.post("/vendors/add-many", { vendors: payload });
+      toast.success("Vendors added successfully");
+      onClose();
+      onAdded();
     } catch (err) {
-      console.error("Update Error:", err);
-      toast.error("Failed to update vendor");
+      console.error("Submit Error:", err.response?.data || err.message);
+      toast.error("Failed to add vendors");
     }
   };
 
@@ -138,26 +273,16 @@ const UpdateVendorModal = ({
     ...sfgs.map((s) => ({
       value: s.id,
       label: `${s.skuCode} - ${s.itemName}`,
-      type: s.type,
+      type: "SFG",
     })),
     ...fgs.map((f) => ({
       value: f.id,
       label: `${f.skuCode} - ${f.itemName}`,
-      type: f.type,
+      type: "FG",
     })),
   ];
 
-  const vendor = vendors[0];
-  const form = vendor.form;
-  const contacts = vendor.contactPersons;
-  const materials = vendor.rm;
-  const states = State.getStatesOfCountry(form.country);
-  const cities = City.getCitiesOfState(form.country, form.state);
-  const factoryStates = State.getStatesOfCountry(form.factoryCountry);
-  const factoryCities = City.getCitiesOfState(
-    form.factoryCountry,
-    form.factoryState
-  );
+  // console.log("materials", materialOptions);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-2">
@@ -168,11 +293,11 @@ const UpdateVendorModal = ({
         >
           <FiX />
         </button>
-        <h2 className="text-base font-semibold text-[#292926] mb-3">
-          Update Vendor
+        <h2 className="text-base  font-semibold text-[#292926] mb-3">
+          Add Vendors
         </h2>
         <form onSubmit={handleSubmit}>
-          {vendors.map((vendor, vendorIdx = 0) => {
+          {vendors.map((vendor, vendorIdx) => {
             const form = vendor.form;
             const contacts = vendor.contactPersons;
             const materials = vendor.rm;
@@ -418,9 +543,20 @@ const UpdateVendorModal = ({
                             (opt) =>
                               opt.value === m.itemId && opt.type === m.type
                           )}
-                          onChange={(selected) =>
-                            handleMaterialSelect(vendorIdx, i, selected)
-                          }
+                          onChange={(selected) => {
+                            handleMaterialChange(
+                              vendorIdx,
+                              i,
+                              "itemId",
+                              selected?.value || ""
+                            );
+                            handleMaterialChange(
+                              vendorIdx,
+                              i,
+                              "type",
+                              selected?.type || ""
+                            );
+                          }}
                           styles={{
                             control: (base, state) => ({
                               ...base,
@@ -527,7 +663,15 @@ const UpdateVendorModal = ({
               </div>
             );
           })}
+
           <div className="flex justify-end gap-2 pt-4">
+            <button
+              type="button"
+              onClick={addVendor}
+              className="bg-[#d8b76a] text-black px-4 py-[4px] text-sm rounded cursor-pointer hover:bg-[#d8b76a]/80"
+            >
+              + Add
+            </button>
             <button
               type="button"
               onClick={onClose}
@@ -539,7 +683,7 @@ const UpdateVendorModal = ({
               type="submit"
               className="bg-[#d8b76a] text-black px-5 py-[4px] text-sm rounded cursor-pointer hover:bg-[#d8b76a]/80"
             >
-              Update
+              Submit
             </button>
           </div>
         </form>
@@ -548,14 +692,4 @@ const UpdateVendorModal = ({
   );
 };
 
-UpdateVendorModal.propTypes = {
-  vendorData: PropTypes.object.isRequired,
-  uoms: PropTypes.array.isRequired,
-  rms: PropTypes.array.isRequired,
-  sfgs: PropTypes.array.isRequired,
-  fgs: PropTypes.array.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onSuccess: PropTypes.func.isRequired,
-};
-
-export default UpdateVendorModal;
+export default AddVendorModal;

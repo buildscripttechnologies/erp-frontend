@@ -14,12 +14,12 @@ import "react-toggle/style.css";
 import SfgMaster from "./components/master/sfg/SfgMaster";
 import LocationMaster from "./components/master/location/LocationMaster";
 import FgMaster from "./components/master/fg/FgMaster";
-import VendorMaster from "./components/master/VendorMaster";
+import VendorMaster from "./components/master/vendor/VendorMaster";
 
 import RoleMaster from "./components/master/Role/RoleMaster";
 import Dashboard from "./pages/Dashboard";
 
-import CustomerMaster from "./components/master/CustomerMaster";
+import CustomerMaster from "./components/master/customer/CustomerMaster";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
