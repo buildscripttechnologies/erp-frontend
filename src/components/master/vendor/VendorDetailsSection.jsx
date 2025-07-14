@@ -164,7 +164,7 @@ const VendorDetailsSection = ({ vendorData }) => {
                 {c.information || "-"}
               </td>
               <td className="border-r border-[#d8b76a] px-2">
-                {c.isActive ? "Active" : "False"}
+                {c.isActive ? "Active" : "Not Active"}
               </td>
             </tr>
           ))}
