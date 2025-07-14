@@ -183,7 +183,7 @@ const CustomerDetailsSection = ({ customerData }) => {
                 {c.information || "-"}
               </td> */}
               <td className="border-r border-[#d8b76a] px-2">
-                {c.isActive ? "Active" : "Not Active"}
+                {c.isActive ? "Active" : "Inactive"}
               </td>
             </tr>
           ))}
@@ -249,7 +249,7 @@ const CustomerDetailsSection = ({ customerData }) => {
                 {d.email || "-"}
               </td>
               <td className="border-r border-[#d8b76a] px-2">
-                {d.isActive ? "Active" : "Not Active" || "-"}
+                {d.isActive ? "Active" : "Inactive" || "-"}
               </td>
               <td className="border-r border-[#d8b76a] px-2">
                 {new Date(customerData.createdAt).toLocaleString("en-IN", {
