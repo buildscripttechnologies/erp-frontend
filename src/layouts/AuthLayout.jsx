@@ -8,23 +8,31 @@ const AuthLayout = ({ children }) => {
     <div className="min-h-screen w-full overflow-hidden flex flex-col md:flex-row bg-gradient-to-r from-white  to-[#d8b76a]">
       {/* Left Panel */}
       <motion.div
-        className=" md:flex md:w-1/2 items-center justify-center mt-[-5%] px-10 bg-opacity-40 text-center"
+        className=" md:flex md:w-1/2 items-center justify-center sm:mt-[-5%] px-10 bg-opacity-40 text-center"
         initial={{ opacity: 0, x: -100 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 1 }}
       >
         <div className="max-w-2xl">
-          <div className="relative mb-[-20px]">
+          <div className="relative mb-[-40px] sm:mb-[-80px] ">
             <img
               src="/images/logo.png"
               alt="SmartFlow360 Logo"
               className="md:w-100 w-40 mx-auto "
             />
           </div>
-          <h2 className="text-2xl  md:mt-[-12%] md:text-4xl lg:text-5xl font-bold drop-shadow-lg">
-            SmartFlow360
-          </h2>
-          <p className="mt-4 text-lg md:text-xl lg:text-2xl font-medium drop-shadow">
+
+          <div className="flex  justify-center  items-center p-3  gap-2  ">
+            <p className=" text-xs sm:text-md  drop-shadow whitespace-nowrap">
+              Powered By
+            </p>
+            <img
+              src="/images/logo2.png"
+              alt="smartflow360 logo"
+              className="sm:w-70 w-40"
+            />
+          </div>
+          <p className=" text-base sm:text-md font-medium drop-shadow">
             Streamlining your workflow from planning to dispatch
           </p>
         </div>

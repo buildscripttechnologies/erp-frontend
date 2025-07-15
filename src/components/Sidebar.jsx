@@ -62,9 +62,10 @@ export function Sidebar({ isOpen, setIsOpen }) {
       } transition-transform duration-300 ease-in-out overflow-y-auto`}
     >
       <div className="flex h-15 justify-between bg-[#d8b76a]/50 items-center p-3   ">
-        <h2 className="sm:text-2xl text-lg font-bold text-[#292926] ">
+        {/* <h2 className="sm:text-2xl text-lg font-bold text-[#292926] ">
           SmartFlow360
-        </h2>
+        </h2> */}
+        <img src="/images/logo4.png" alt="smartflow360 logo" />
       </div>
 
       <nav className="flex flex-col px-3 pt-1 text-base font-semibold text-gray-800">

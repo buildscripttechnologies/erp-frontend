@@ -155,7 +155,7 @@ const LocationMaster = () => {
             </thead>
             <tbody>
               {loading ? (
-                <TableSkeleton rows={5} columns={Array(8).fill({})} />
+                <TableSkeleton rows={pagination.limit} columns={Array(10).fill({})} />
               ) : (
                 <>
                   {filteredLocations.map((loc, index) => (

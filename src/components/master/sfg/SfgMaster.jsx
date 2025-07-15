@@ -402,7 +402,7 @@ const SfgMaster = ({ isOpen }) => {
 
       <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
         <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[98vw]`}`}>
-          <table className="text-[11px] whitespace-nowrap min-w-[97.3vw]">
+          <table className={"text-[11px] whitespace-nowrap min-w-[100vw]"}>
             <thead className="bg-[#d8b76a] text-[#292926] text-left ">
               <tr>
                 <th className="px-[8px] py-1">#</th>
@@ -426,7 +426,7 @@ const SfgMaster = ({ isOpen }) => {
             </thead>
             <tbody>
               {loading ? (
-                <TableSkeleton rows={5} columns={Array(15).fill({})} />
+                <TableSkeleton rows={pagination.limit} columns={Array(17).fill({})} />
               ) : (
                 <>
                   {filteredSFGs.map((sfg, index) => (

@@ -107,6 +107,7 @@ const UomMaster = () => {
     { label: "Updated At	", className: "hidden md:table-cell" },
     { label: "UOM", className: "" },
     { label: "Description", className: "" },
+    { label: "Satus", className: "" },
     { label: "Created By	", className: "hidden md:table-cell" },
     { label: "Actions", className: "" },
   ];
@@ -166,7 +167,7 @@ const UomMaster = () => {
             </thead>
             <tbody>
               {loading ? (
-                <TableSkeleton rows={5} columns={uomTableHeaders} />
+                <TableSkeleton rows={pagination.limit} columns={uomTableHeaders} />
               ) : (
                 <>
                   {filteredUoms.map((uom, index) => (
@@ -219,30 +220,29 @@ const UomMaster = () => {
                       </td>
                       <td className="px-2 mt-1.5 flex gap-3 text-sm ">
                         <FiEdit
-                        data-tooltip-id="statusTip"
+                          data-tooltip-id="statusTip"
                           data-tooltip-content="Edit"
                           className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
                           onClick={() => setEditUom(uom)}
                         />
                         <FiTrash2
-                        data-tooltip-id="statusTip"
+                          data-tooltip-id="statusTip"
                           data-tooltip-content="Delete"
                           className="cursor-pointer text-[#d8b76a] hover:text-red-600"
                           onClick={() => handleDelete(uom._id)}
                         />
                         <Tooltip
-                            id="statusTip"
-                            place="top"
-                            style={{
-                              backgroundColor: "#292926",
-                              color: "#d8b76a",
-                              fontSize: "12px",
-                              fontWeight: "bold",
-                            }}
-                          />
+                          id="statusTip"
+                          place="top"
+                          style={{
+                            backgroundColor: "#292926",
+                            color: "#d8b76a",
+                            fontSize: "12px",
+                            fontWeight: "bold",
+                          }}
+                        />
                       </td>
                     </tr>
-                    
                   ))}
                   {filteredUoms.length === 0 && (
                     <tr>

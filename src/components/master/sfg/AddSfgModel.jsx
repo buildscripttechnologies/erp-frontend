@@ -288,7 +288,8 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   name="file"
                   multiple
                   onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                  className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-1 focus:ring-[#d8b76a] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
+                  // className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                 />
               </div>
 
@@ -320,7 +321,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                             selectedOption
                               ? {
                                   value: selectedOption.id,
-                                  label: `${selectedOption.skuCode} - ${selectedOption.itemName} (${selectedOption.type})`,
+                                  label: `${selectedOption.skuCode} - ${selectedOption.itemName} - (${selectedOption.description})`,
                                 }
                               : null
                           }
@@ -334,7 +335,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                           }
                           options={components.map((comp) => ({
                             value: comp.id,
-                            label: `${comp.skuCode} - ${comp.itemName} (${comp.type})`,
+                            label: `${comp.skuCode} - ${comp.itemName} - (${comp.description})`,
                           }))}
                           filterOption={(option, inputValue) => {
                             const label = option.label

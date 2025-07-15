@@ -79,7 +79,7 @@ const VendorDetailsSection = ({ vendorData }) => {
               Created At
             </td>
             <td className="px-2 py-1 border-r border-[#d8b76a]">
-              {new Date(vendorData.createdAt).toLocaleString("en-IN", {
+              {new Date(vendorData.createdAt || "-").toLocaleString("en-IN", {
                 day: "2-digit",
                 month: "short",
                 year: "numeric",
@@ -93,7 +93,7 @@ const VendorDetailsSection = ({ vendorData }) => {
             </td>
             <td className="px-2 py-1">
               {" "}
-              {new Date(vendorData.updatedAt).toLocaleString("en-IN", {
+              {new Date(vendorData.updatedAt || "-").toLocaleString("en-IN", {
                 day: "2-digit",
                 month: "short",
                 year: "numeric",
@@ -129,7 +129,7 @@ const VendorDetailsSection = ({ vendorData }) => {
             <tr key={idx} className="border-b border-[#d8b76a]">
               <td className="border-r border-[#d8b76a] px-2">{idx + 1}</td>
               <td className="border-r border-[#d8b76a] px-2">
-                {new Date(vendorData.createdAt).toLocaleString("en-IN", {
+                {new Date(vendorData.createdAt || "-").toLocaleString("en-IN", {
                   day: "2-digit",
                   month: "short",
                   year: "numeric",
@@ -139,7 +139,7 @@ const VendorDetailsSection = ({ vendorData }) => {
                 })}
               </td>
               <td className="border-r border-[#d8b76a] px-2">
-                {new Date(vendorData.updatedAt).toLocaleString("en-IN", {
+                {new Date(vendorData.updatedAt || "-").toLocaleString("en-IN", {
                   day: "2-digit",
                   month: "short",
                   year: "numeric",
@@ -200,7 +200,7 @@ const VendorDetailsSection = ({ vendorData }) => {
             <tr key={idx} className="border-b border-[#d8b76a]">
               <td className="border-r border-[#d8b76a] px-2">{idx + 1}</td>
               <td className="border-r border-[#d8b76a] px-2">
-                {new Date(vendorData.createdAt).toLocaleString("en-IN", {
+                {new Date(vendorData.createdAt || "-").toLocaleString("en-IN", {
                   day: "2-digit",
                   month: "short",
                   year: "numeric",
@@ -210,7 +210,7 @@ const VendorDetailsSection = ({ vendorData }) => {
                 })}
               </td>
               <td className="border-r border-[#d8b76a] px-2">
-                {new Date(vendorData.updatedAt).toLocaleString("en-IN", {
+                {new Date(vendorData.updatedAt || "-").toLocaleString("en-IN", {
                   day: "2-digit",
                   month: "short",
                   year: "numeric",
@@ -236,8 +236,8 @@ const VendorDetailsSection = ({ vendorData }) => {
               </td>
               <td className="border-r border-[#d8b76a] px-2">
                 {r.item?.UOM
-                  ? r.item.UOM?.unitName || "-"
-                  : r.item.stockUOM?.unitName || "-"}
+                  ? r.item?.UOM?.unitName || "-"
+                  : r.item?.stockUOM?.unitName || "-"}
               </td>
               <td className="border-r border-[#d8b76a] px-2">
                 {r.deliveryDays || "-"}
@@ -253,7 +253,7 @@ const VendorDetailsSection = ({ vendorData }) => {
                 {r.preferenceIndex || "-"}
               </td>
               <td className="border-r border-[#d8b76a] px-2">
-                {r.item.status || "-"}
+                {r.item?.status || "-"}
               </td>
             </tr>
           ))}

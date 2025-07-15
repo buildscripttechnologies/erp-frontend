@@ -13,7 +13,7 @@ import UpdateVendorModal from "./UpdateVendorModal";
 import ViewVendorModal from "./VendorDetailsSection";
 import VendorDetailsSection from "./VendorDetailsSection";
 
-const VendorMaster = () => {
+const VendorMaster = ({ isOpen }) => {
   const [vendors, setVendors] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -128,46 +128,46 @@ const VendorMaster = () => {
   };
 
   return (
-    <Dashboard>
-      <>
-        {showModal && (
-          <AddVendorModal
-            onClose={() => setShowModal(false)}
-            onAdded={() => fetchVendors(pagination.currentPage)}
-            uoms={uoms}
-            // sfgs={sfgs}
-            // rms={rms}
-            // fgs={fgs}
-          />
-        )}
-        <div className="p-3 max-w-[99vw] mx-auto">
-          <h2 className="text-2xl font-bold mb-4">
-            Vendors{" "}
-            <span className="text-gray-500">({pagination.totalResults})</span>
-          </h2>
+    <>
+      {showModal && (
+        <AddVendorModal
+          onClose={() => setShowModal(false)}
+          onAdded={() => fetchVendors(pagination.currentPage)}
+          uoms={uoms}
+          // sfgs={sfgs}
+          // rms={rms}
+          // fgs={fgs}
+        />
+      )}
+      <div className="p-3 max-w-[99vw] mx-auto">
+        <h2 className="text-2xl font-bold mb-4">
+          Vendors{" "}
+          <span className="text-gray-500">({pagination.totalResults})</span>
+        </h2>
 
-          <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-            <div className="relative w-full sm:w-80">
-              <FiSearch className="absolute left-3 top-2 text-[#d8b76a]" />
-              <input
-                type="text"
-                placeholder="Search by Vendor Code or Name..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:outline-none"
-              />
-            </div>
-            <button
-              onClick={() => setShowModal(true)}
-              className="bg-[#d8b76a]   hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <FiPlus /> Add Vendor
-            </button>
+        <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
+          <div className="relative w-full sm:w-80">
+            <FiSearch className="absolute left-3 top-2 text-[#d8b76a]" />
+            <input
+              type="text"
+              placeholder="Search by Vendor Code or Name..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:outline-none"
+            />
           </div>
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-[#d8b76a]   hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <FiPlus /> Add Vendor
+          </button>
+        </div>
 
-          <div className="overflow-x-auto border border-[#d8b76a] rounded">
-            <table className="min-w-full text-[11px] whitespace-nowrap ">
-              <thead className="bg-[#d8b76a] text-left text-[#292926]">
+        <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
+          <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[98vw]`}`}>
+            <table className={"text-[11px] whitespace-nowrap min-w-[100vw]"}>
+              <thead className="bg-[#d8b76a] text-[#292926] text-left ">
                 <tr>
                   <th className="px-2 py-1.5">#</th>
                   <th className="px-2 py-1.5">Created At</th>
@@ -188,7 +188,10 @@ const VendorMaster = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <TableSkeleton rows={6} columns={Array(15).fill({})} />
+                  <TableSkeleton
+                    rows={pagination.limit}
+                    columns={Array(15).fill({})}
+                  />
                 ) : (
                   <>
                     {filtered.map((v, i) => (
@@ -208,16 +211,16 @@ const VendorMaster = () => {
                               1}
                           </td>
                           <td className="px-2  border-r border-[#d8b76a]">
-                            {new Date(v.createdAt).toLocaleString()}
+                            {new Date(v.createdAt || "-").toLocaleString()}
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
-                            {new Date(v.updatedAt).toLocaleString()}
+                            {new Date(v.updatedAt || "-").toLocaleString()}
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
-                            {v.venderCode}
+                            {v.venderCode || "-"}
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
-                            {v.vendorName}
+                            {v.vendorName || "-"}
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
                             {v.natureOfBusiness || "-"}
@@ -226,19 +229,19 @@ const VendorMaster = () => {
                             {v.address || "-"}
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
-                            {v.city}
+                            {v.city || "-"}
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
-                            {v.state}
+                            {v.state || "-"}
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
-                            {v.country}
+                            {v.country || "-"}
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
-                            {v.postalCode}
+                            {v.postalCode || "-"}
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
-                            {v.gst}
+                            {v.gst || "-"}
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
                             <span className="rounded">
@@ -302,38 +305,38 @@ const VendorMaster = () => {
               </tbody>
             </table>
           </div>
+        </div>
 
-          <PaginationControls
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
-            entriesPerPage={pagination.limit}
-            totalResults={pagination.totalResults}
-            onEntriesChange={(limit) => {
-              setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-              fetchVendors(1, limit);
-            }}
-            onPageChange={(page) => {
-              setPagination((prev) => ({ ...prev, currentPage: page }));
-              fetchVendors(page, pagination.limit);
+        <PaginationControls
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          entriesPerPage={pagination.limit}
+          totalResults={pagination.totalResults}
+          onEntriesChange={(limit) => {
+            setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
+            fetchVendors(1, limit);
+          }}
+          onPageChange={(page) => {
+            setPagination((prev) => ({ ...prev, currentPage: page }));
+            fetchVendors(page, pagination.limit);
+          }}
+        />
+        {showUpdateModal && (
+          <UpdateVendorModal
+            vendorData={selectedVendor}
+            rms={rms}
+            sfgs={sfgs}
+            fgs={fgs}
+            uoms={uoms}
+            onClose={() => setShowUpdateModal(false)}
+            onSuccess={() => {
+              fetchVendors(); // optional: refresh table
+              setShowUpdateModal(false);
             }}
           />
-          {showUpdateModal && (
-            <UpdateVendorModal
-              vendorData={selectedVendor}
-              rms={rms}
-              sfgs={sfgs}
-              fgs={fgs}
-              uoms={uoms}
-              onClose={() => setShowUpdateModal(false)}
-              onSuccess={() => {
-                fetchVendors(); // optional: refresh table
-                setShowUpdateModal(false);
-              }}
-            />
-          )}
-        </div>
-      </>
-    </Dashboard>
+        )}
+      </div>
+    </>
   );
 };
 

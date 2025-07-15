@@ -27,13 +27,18 @@ export function Navbar({ isOpen, setIsOpen, title = "SmartFlow360" }) {
       </button>
 
       {/* Title */}
-      <h1
+      {/* <h1
         className={`text-xl sm:text-2xl ${
           isOpen ? `ml-5 hidden` : ``
         } font-bold text-[#292927]`}
       >
         {title}
-      </h1>
+      </h1> */}
+      <img
+        src="/images/logo4.png"
+        alt="smartflow360 logo"
+        className={`w-50 ml-20 ${isOpen ? `ml-5 hidden` : ``} transition-transform `}
+      />
 
       {/* User Section */}
       <div className="relative text-[#292927]">

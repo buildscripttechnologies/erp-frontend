@@ -85,18 +85,38 @@ const App = () => {
         />
         <Route
           path="/fg-master"
-          element={isAuthenticated ? <FgMaster /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? (
+              <Dashboard>
+                <FgMaster />
+              </Dashboard>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/vendor-master"
           element={
-            isAuthenticated ? <VendorMaster /> : <Navigate to="/login" />
+            isAuthenticated ? (
+              <Dashboard>
+                <VendorMaster />
+              </Dashboard>
+            ) : (
+              <Navigate to="/login" />
+            )
           }
         />
         <Route
           path="/customer-master"
           element={
-            isAuthenticated ? <CustomerMaster /> : <Navigate to="/login" />
+            isAuthenticated ? (
+              <Dashboard>
+                <CustomerMaster />
+              </Dashboard>
+            ) : (
+              <Navigate to="/login" />
+            )
           }
         />
         <Route path="*" element={<Navigate to="/dashboard" />} />

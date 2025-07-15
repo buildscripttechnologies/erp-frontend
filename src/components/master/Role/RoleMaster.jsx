@@ -10,6 +10,7 @@ import Toggle from "react-toggle";
 import ScrollLock from "../../ScrollLock";
 import PaginationControls from "../../PaginationControls";
 import { Tooltip } from "react-tooltip";
+import TableSkeleton from "../../TableSkeleton";
 
 const RoleMaster = () => {
   const [roles, setRoles] = useState([]);
@@ -94,6 +95,16 @@ const RoleMaster = () => {
     r.name?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const userTableHeaders = [
+    { label: "#", className: "" },
+    { label: "Created At", className: "hidden md:table-cell" },
+    { label: "Updated At", className: "hidden md:table-cell" },
+    { label: "Role Name", className: "" },
+    { label: "Status", className: "" },
+    { label: "Created By", className: "" },
+    { label: "Action", className: "" },
+  ];
+
   return (
     <Dashboard>
       <div className="p-2 md:px-4  mt-3 max-w-[99vw] mx-auto overflow-x-auto">
@@ -141,11 +152,10 @@ const RoleMaster = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan="5" className="text-center py-4 text-gray-500">
-                    Loading...
-                  </td>
-                </tr>
+                <TableSkeleton
+                  rows={pagination.limit}
+                  columns={userTableHeaders}
+                />
               ) : filteredRoles.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="text-center py-4 text-gray-500">
@@ -201,27 +211,27 @@ const RoleMaster = () => {
                     <td className="px-2 py-1">
                       <div className="flex items-center gap-2 text-sm text-[#d39c25]">
                         <FiEdit
-                        data-tooltip-id="statusTip"
+                          data-tooltip-id="statusTip"
                           data-tooltip-content="Edit"
                           className="cursor-pointer hover:text-blue-500"
                           onClick={() => setEditData(role)}
                         />
                         <FiTrash2
-                        data-tooltip-id="statusTip"
+                          data-tooltip-id="statusTip"
                           data-tooltip-content="Delete"
                           className="cursor-pointer hover:text-red-500"
                           onClick={() => handleDelete(role._id)}
                         />
                         <Tooltip
-                            id="statusTip"
-                            place="top"
-                            style={{
-                              backgroundColor: "#292926",
-                              color: "#d8b76a",
-                              fontSize: "12px",
-                              fontWeight: "bold",
-                            }}
-                          />
+                          id="statusTip"
+                          place="top"
+                          style={{
+                            backgroundColor: "#292926",
+                            color: "#d8b76a",
+                            fontSize: "12px",
+                            fontWeight: "bold",
+                          }}
+                        />
                       </div>
                     </td>
                   </tr>

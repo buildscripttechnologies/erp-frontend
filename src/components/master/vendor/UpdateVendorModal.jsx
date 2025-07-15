@@ -132,17 +132,17 @@ const UpdateVendorModal = ({
   const materialOptions = [
     ...rms.map((r) => ({
       value: r.id,
-      label: `${r.skuCode} - ${r.itemName}`,
+      label: `${r.skuCode} - ${r.itemName} - (${r.description})`,
       type: "RawMaterial",
     })),
     ...sfgs.map((s) => ({
       value: s.id,
-      label: `${s.skuCode} - ${s.itemName}`,
+      label: `${s.skuCode} - ${s.itemName} - (${s.description})`,
       type: s.type,
     })),
     ...fgs.map((f) => ({
       value: f.id,
-      label: `${f.skuCode} - ${f.itemName}`,
+      label: `${f.skuCode} - ${f.itemName} - (${f.description})`,
       type: f.type,
     })),
   ];

@@ -8,6 +8,7 @@ import {
   FiDownload,
   FiEdit,
   FiTrash2,
+  FiX,
 } from "react-icons/fi";
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
@@ -21,6 +22,8 @@ import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
 import AttachmentsModal from "../AttachmentsModal.jsx";
 import ScrollLock from "../ScrollLock.js";
 import PaginationControls from "../PaginationControls.jsx";
+import { ClipLoader } from "react-spinners";
+import { span } from "framer-motion/client";
 
 // export const baseurl = "http://localhost:5000";
 
@@ -35,6 +38,9 @@ const RmMaster = ({ isOpen }) => {
   const [exportScope, setExportScope] = useState("current");
   const [exportFormat, setExportFormat] = useState("excel");
   const [showExportOptions, setShowExportOptions] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [sampleDownloading, setSampleDownloading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   ScrollLock(editData != null || showBulkPanel || openAttachments != null);
 
@@ -78,6 +84,7 @@ const RmMaster = ({ isOpen }) => {
 
   const handleSampleDownload = async () => {
     try {
+      setSampleDownloading(true);
       const res = await axios.get("/rms/sample-excel", {
         responseType: "blob",
       });
@@ -89,8 +96,10 @@ const RmMaster = ({ isOpen }) => {
       document.body.appendChild(link);
       link.click();
       toast.success("Sample downloaded");
+      setSampleDownloading(false);
     } catch (err) {
       toast.error("Failed to download sample");
+      sampleDownloading(false);
     }
   };
 
@@ -100,12 +109,15 @@ const RmMaster = ({ isOpen }) => {
     formData.append("file", file);
 
     try {
+      setUploading(true);
       const res = await axios.post("/rms/upload-rm-excel", formData);
       toast.success("Raw materials uploaded");
       setFile(null);
+      setUploading(false);
       fetchRawMaterials(); // reload list
     } catch (err) {
       toast.error("Upload failed");
+      setUploading(false);
     }
   };
 
@@ -223,30 +235,31 @@ const RmMaster = ({ isOpen }) => {
     }));
   };
 
-  const handleExport = () => {
-    let exportData = [];
+  const handleExport = async () => {
+    try {
+      setDownloading(true);
 
-    if (exportScope === "current") {
-      exportData = data(filteredData); // This should be your paginated data state
-    } else if (exportScope === "filtered") {
-      exportData = data(filteredData); // This should be your search-filtered data
-    } else {
-      // Fetch full data from backend
-      axios
-        .get("/rms/rm", {
-          params: {
-            limit: pagination.totalResults,
-          },
-        })
-        .then((res) => {
-          exportData = data(res.data.rawMaterials);
-          generateExportFile(exportData);
-        })
-        .catch((err) => toast.error("Failed to export data"));
-      return;
+      let exportData = [];
+
+      if (exportScope === "current" || exportScope === "filtered") {
+        exportData = data(filteredData);
+        generateExportFile(exportData); // Synchronous export
+        setDownloading(false);
+      } else {
+        // Export all: fetch full data from backend first
+        const res = await axios.get("/rms/rm", {
+          params: { limit: pagination.totalResults },
+        });
+
+        exportData = data(res.data.rawMaterials);
+        generateExportFile(exportData);
+        setDownloading(false);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to export data");
+      setDownloading(false);
     }
-
-    generateExportFile(exportData);
   };
 
   const generateExportFile = (data) => {
@@ -313,10 +326,18 @@ const RmMaster = ({ isOpen }) => {
               </select>
 
               <button
+                disabled={downloading}
                 onClick={handleExport}
                 className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
               >
-                Export
+                {downloading ? (
+                  <span className="flex justify-center items-center gap-1">
+                    {/* Downloading */}
+                    <ClipLoader size={20} color="#292926" />
+                  </span>
+                ) : (
+                  "Download"
+                )}
               </button>
             </div>
           )}
@@ -328,27 +349,62 @@ const RmMaster = ({ isOpen }) => {
           </button>
 
           <button
+            disabled={sampleDownloading}
             onClick={handleSampleDownload}
             className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
           >
-            <FiDownload /> Sample Excel
+            {sampleDownloading ? (
+              <span className="flex justify-center items-center gap-1">
+                {/* Downloading */}
+                <ClipLoader size={20} color="#292926" />
+              </span>
+            ) : (
+              <>
+                <FiDownload /> Sample Excel
+              </>
+            )}
           </button>
 
-          <label className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 px-4 py-1.5 rounded cursor-pointer text-[#292926] font-semibold ">
-            <FiUploadCloud />
-            <span>Upload Excel</span>
-            <input
-              type="file"
-              accept=".xlsx, .xls"
-              className="hidden"
-              onChange={(e) => setFile(e.target.files[0])}
-            />
-          </label>
+          <div className="flex items-center justify-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 px-4 py-1.5 rounded cursor-pointer text-[#292926] font-semibold ">
+            <label
+              title={file ? file.name : "Upload Excel"}
+              className="flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <FiUploadCloud />
+              <span className="w-24 truncate">
+                {file ? file.name : "Upload Excel"}
+              </span>
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                className="hidden"
+                onChange={(e) => setFile(e.target.files[0])}
+              />
+            </label>
+            {file && (
+              <button
+                onClick={() => setFile(null)}
+                className="text-[#292926] border rounded-full p-1 hover:text-red-600 cursor-pointer"
+                title="Remove file"
+              >
+                <FiX size={16} />
+              </button>
+            )}
+          </div>
+
           <button
+            disabled={uploading}
             onClick={handleFileUpload}
             className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
           >
-            Submit
+            {uploading ? (
+              <span className="flex justify-center items-center gap-1">
+                {/* Downloading */}
+                <ClipLoader size={20} color="#292926" />
+              </span>
+            ) : (
+              "Submit"
+            )}
           </button>
         </div>
       </div>
@@ -378,7 +434,7 @@ const RmMaster = ({ isOpen }) => {
         className={`relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm`}
       >
         <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[99vw]`}`}>
-          <table className={`text-[11px] min-w-[97.3vw]`}>
+          <table className={`text-[11px] min-w-[100vw]`}>
             <thead className="bg-[#d8b76a] text-[#292926] text-left">
               <tr>
                 {[
@@ -415,7 +471,7 @@ const RmMaster = ({ isOpen }) => {
             </thead>
             <tbody>
               {loading ? (
-                <TableSkeleton rows={50} columns={TableHeaders} />
+                <TableSkeleton rows={pagination.limit} columns={TableHeaders} />
               ) : (
                 <>
                   {filteredData.map((rm, i) => (
@@ -568,7 +624,7 @@ const RmMaster = ({ isOpen }) => {
                   {filteredData.length === 0 && (
                     <tr>
                       <td
-                        colSpan="4"
+                        colSpan="21"
                         className="text-center py-4 text-gray-500 w-full"
                       >
                         No RMs found.

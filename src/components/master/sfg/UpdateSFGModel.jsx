@@ -62,17 +62,20 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         qualityInspectionNeeded: sfg.qualityInspectionNeeded,
         location: sfg.location?._id || sfg.location || "",
         gst: sfg.gst || "",
+        type: sfg.type || "",
+        moq: sfg.moq || "",
+        basePrice: sfg.basePrice || "",
         status: sfg.status || "Active",
         UOM: sfg.uom || "",
         file: [],
         materials: mappedMaterials,
       });
-      console.log("form", form);
     }
   }, [sfg]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
+
     setForm((prev) => ({
       ...prev,
       [name]: name === "file" ? Array.from(files) : value,
@@ -107,8 +110,6 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
       const rm = [];
       const sfgNested = [];
 
-      console.log("materials", form.materials);
-
       form.materials.forEach((mat) => {
         const match = components.find((c) => c.id == mat.itemId);
         if (!match || !mat.qty) return;
@@ -126,6 +127,8 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         qualityInspectionNeeded: form.qualityInspectionNeeded,
         location: form.location,
         status: form.status,
+        moq: form.moq,
+        basePrice: form.basePrice,
         gst: form.gst,
         UOM: form.UOM,
         rm,
@@ -133,13 +136,11 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         deletedFiles: deletedFileIds,
       };
 
-      console.log("data", data);
       newFiles.forEach((file) => {
         payload.append("files", file);
       });
 
       payload.append("data", JSON.stringify(data));
-      console.log("payload", payload);
 
       if (form.file.length) {
         form.file.forEach((file) => payload.append("files", file));
@@ -157,7 +158,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
 
   const options = components.map((c) => ({
     value: c.id,
-    label: `${c.skuCode} - ${c.itemName} (${c.type})`,
+    label: `${c.skuCode} - ${c.itemName} - (${c.description})`,
   }));
 
   if (!form) return null;
@@ -187,6 +188,20 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
               name="gst"
               placeholder="GST %"
               value={form.gst}
+              onChange={handleChange}
+              className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+            />
+            <input
+              name="moq"
+              placeholder="MOQ"
+              value={form.moq}
+              onChange={handleChange}
+              className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+            />
+            <input
+              name="basePrice"
+              placeholder="Base Price"
+              value={form.basePrice}
               onChange={handleChange}
               className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
             />
@@ -244,6 +259,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
               <option value="SFG">SFG</option>
             </select>
             <div></div>
+            <div></div>
 
             <div className="mt-4">
               <p className="font-semibold mb-2 text-[#292926]">
@@ -289,15 +305,16 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 type="file"
                 multiple
                 onChange={(e) => setNewFiles(Array.from(e.target.files))}
-                className="p-2 border border-[#d8b76a] rounded w-full cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-1 focus:ring-[#d8b76a] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
+                // className="p-2 border border-[#d8b76a] rounded w-full cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
               />
-              {newFiles.length > 0 && (
+              {/* {newFiles.length > 0 && (
                 <ul className="mt-2 list-disc list-inside text-sm text-gray-700">
                   {newFiles.map((file, idx) => (
                     <li key={idx}>{file.name}</li>
                   ))}
                 </ul>
-              )}
+              )} */}
             </div>
           </div>
 
@@ -314,7 +331,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
             {form.materials.map((mat, index) => (
               <div key={index} className="flex w-full gap-2 mb-2 flex-wrap">
                 <Select
-                  className="flex-grow w-[50%]"
+                  className="flex-grow w-[50%] "
                   value={
                     options.find((opt) => opt.value === mat.itemId) || null
                   }

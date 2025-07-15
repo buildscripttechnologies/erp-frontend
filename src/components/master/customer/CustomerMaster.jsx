@@ -12,7 +12,7 @@ import PaginationControls from "../../PaginationControls";
 import EditCustomerModal from "./EditCustomerModal";
 import CustomerDetailsSection from "./CustomerDetailsView";
 
-const CustomerMaster = () => {
+const CustomerMaster = ({ isOpen }) => {
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -106,42 +106,42 @@ const CustomerMaster = () => {
   };
 
   return (
-    <Dashboard>
-      <>
-        {showModal && (
-          <AddCustomerModal
-            onClose={() => setShowModal(false)}
-            onAdded={() => fetchCustomers(pagination.currentPage)}
-          />
-        )}
+    <>
+      {showModal && (
+        <AddCustomerModal
+          onClose={() => setShowModal(false)}
+          onAdded={() => fetchCustomers(pagination.currentPage)}
+        />
+      )}
 
-        <div className="p-3 max-w-[99vw] mx-auto">
-          <h2 className="text-2xl font-bold mb-4">
-            Customers{" "}
-            <span className="text-gray-500">({pagination.totalResults})</span>
-          </h2>
+      <div className="p-3 max-w-[99vw] mx-auto">
+        <h2 className="text-2xl font-bold mb-4">
+          Customers{" "}
+          <span className="text-gray-500">({pagination.totalResults})</span>
+        </h2>
 
-          <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-            <div className="relative w-full sm:w-80">
-              <FiSearch className="absolute left-3 top-2.5 text-[#d8b76a]" />
-              <input
-                type="text"
-                placeholder="Search by Customer Code or Name..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:outline-none"
-              />
-            </div>
-            <button
-              onClick={() => setShowModal(true)}
-              className="bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
-            >
-              <FiPlus /> Add Customer
-            </button>
+        <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
+          <div className="relative w-full sm:w-80">
+            <FiSearch className="absolute left-3 top-2.5 text-[#d8b76a]" />
+            <input
+              type="text"
+              placeholder="Search by Customer Code or Name..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:outline-none"
+            />
           </div>
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-[#d8b76a] hover:bg-[#b38a37]  justify-center text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
+          >
+            <FiPlus /> Add Customer
+          </button>
+        </div>
 
-          <div className="overflow-x-auto border border-[#d8b76a] rounded">
-            <table className="min-w-full text-[11px] whitespace-nowrap text-left">
+        <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
+          <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[98vw]`}`}>
+            <table className={"text-[11px] whitespace-nowrap min-w-[100vw]"}>
               <thead className="bg-[#d8b76a] text-[#292926]">
                 <tr>
                   <th className="px-[8px] py-1.5 ">#</th>
@@ -164,7 +164,10 @@ const CustomerMaster = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <TableSkeleton rows={6} columns={Array(16).fill({})} />
+                  <TableSkeleton
+                    rows={pagination.limit}
+                    columns={Array(16).fill({})}
+                  />
                 ) : (
                   <>
                     {filtered.map((c, i) => (
@@ -264,34 +267,34 @@ const CustomerMaster = () => {
               </tbody>
             </table>
           </div>
-          {editingCustomer && (
-            <EditCustomerModal
-              customer={editingCustomer}
-              onClose={() => setEditingCustomer(null)}
-              onUpdated={() => {
-                fetchCustomers(); // re-fetch or refresh list
-                setEditingCustomer(null);
-              }}
-            />
-          )}
-
-          <PaginationControls
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
-            entriesPerPage={pagination.limit}
-            totalResults={pagination.totalResults}
-            onEntriesChange={(limit) => {
-              setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-              fetchCustomers(1, limit);
-            }}
-            onPageChange={(page) => {
-              setPagination((prev) => ({ ...prev, currentPage: page }));
-              fetchCustomers(page, pagination.limit);
+        </div>
+        {editingCustomer && (
+          <EditCustomerModal
+            customer={editingCustomer}
+            onClose={() => setEditingCustomer(null)}
+            onUpdated={() => {
+              fetchCustomers(); // re-fetch or refresh list
+              setEditingCustomer(null);
             }}
           />
-        </div>
-      </>
-    </Dashboard>
+        )}
+
+        <PaginationControls
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          entriesPerPage={pagination.limit}
+          totalResults={pagination.totalResults}
+          onEntriesChange={(limit) => {
+            setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
+            fetchCustomers(1, limit);
+          }}
+          onPageChange={(page) => {
+            setPagination((prev) => ({ ...prev, currentPage: page }));
+            fetchCustomers(page, pagination.limit);
+          }}
+        />
+      </div>
+    </>
   );
 };
 

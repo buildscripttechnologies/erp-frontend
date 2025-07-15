@@ -466,7 +466,7 @@ export default function MasterUsers() {
               </thead>
               <tbody>
                 {loading ? (
-                  <TableSkeleton rows={5} columns={userTableHeaders} />
+                  <TableSkeleton rows={pagination.limit} columns={userTableHeaders} />
                 ) : (
                   <>
                     {filteredUsers.map((u, i) => (
