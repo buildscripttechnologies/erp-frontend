@@ -15,7 +15,7 @@ export function Navbar({ isOpen, setIsOpen, title = "SmartFlow360" }) {
   return (
     <div
       className={`relative flex h-15 ${
-        isOpen ? `pl-45 sm:pl-53` : `pl-4`
+        isOpen ? `pl-53` : `pl-4`
       } p-4 transition-transform duration-300 ease-in-out justify-between items-center bg-gradient-to-r from-white to-[#d8b76a] shadow-md sticky top-0 z-30`}
     >
       {/* Sidebar Toggle */}

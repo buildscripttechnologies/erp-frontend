@@ -67,7 +67,15 @@ const App = () => {
 
         <Route
           path="/sfg-master"
-          element={isAuthenticated ? <SfgMaster /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? (
+              <Dashboard>
+                <SfgMaster />
+              </Dashboard>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/location-master"

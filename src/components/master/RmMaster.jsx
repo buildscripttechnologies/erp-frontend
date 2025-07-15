@@ -282,9 +282,7 @@ const RmMaster = ({ isOpen }) => {
   ];
 
   return (
-    <div
-      className={` p-2 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden mt-4 `}
-    >
+    <div className={` p-3 max-w-[99vw] mx-auto overflow-x-hidden mt-4 `}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
@@ -377,211 +375,211 @@ const RmMaster = ({ isOpen }) => {
 
       {/* Table */}
       <div
-        className={`relative overflow-x-scroll  overflow-y-auto ${
-          isOpen ? `max-w-[83.8vw]` : `max-w-[99vw]`
-        } rounded border border-[#d8b76a] shadow-sm`}
+        className={`relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm`}
       >
-        <table className="text-xs sm:text-sm">
-          <thead className="bg-[#d8b76a] text-[#292926] text-left">
-            <tr>
-              {[
-                "#",
-                "Created At",
-                "Updated At",
-                "SKU Code",
-                "Item Name",
-                "Description",
-                "HSN/SAC",
-                "Type",
-                "Qual. Insp.",
-                "Location",
-                "Base Qty",
-                "Pkg Qty",
-                "MOQ",
-                "Pur. Uom",
-                "GST",
-                "Stock Qty",
-                "Stock Uom",
-                "Attachment",
-                "Status",
-                "Created By",
-                "Action",
-              ].map((th) => (
-                <th
-                  key={th}
-                  className="py-1.5 px-2 text-[11px] whitespace-nowrap"
-                >
-                  {th}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <TableSkeleton rows={50} columns={TableHeaders} />
-            ) : (
-              <>
-                {filteredData.map((rm, i) => (
-                  <tr
-                    key={rm._id}
-                    className="border-b text-[11px] whitespace-nowrap border-[#d8b76a] hover:bg-gray-50"
+        <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[99vw]`}`}>
+          <table className={`text-[11px] min-w-[97.3vw]`}>
+            <thead className="bg-[#d8b76a] text-[#292926] text-left">
+              <tr>
+                {[
+                  "#",
+                  "Created At",
+                  "Updated At",
+                  "SKU Code",
+                  "Item Name",
+                  "Description",
+                  "HSN/SAC",
+                  "Type",
+                  "Qual. Insp.",
+                  "Location",
+                  "Base Qty",
+                  "Pkg Qty",
+                  "MOQ",
+                  "Pur. Uom",
+                  "GST",
+                  "Stock Qty",
+                  "Stock Uom",
+                  "Attachment",
+                  "Status",
+                  "Created By",
+                  "Action",
+                ].map((th) => (
+                  <th
+                    key={th}
+                    className="py-1.5 px-2 text-[11px] whitespace-nowrap"
                   >
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {Number(pagination.currentPage - 1) *
-                        Number(pagination.limit) +
-                        i +
-                        1}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {new Date(rm.createdAt).toLocaleString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {new Date(rm.updatedAt).toLocaleString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {rm.skuCode}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a] ">
-                      {rm.itemName}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {rm.description || "-"}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {rm.hsnOrSac}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {rm.type}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      <Toggle
-                        checked={rm.qualityInspectionNeeded}
-                        onChange={() =>
-                          handleToggleQualityInspection(
-                            rm.id,
-                            rm.qualityInspectionNeeded
-                          )
-                        }
-                      />
-                    </td>
-
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {rm.location || "-"}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {rm.baseQty}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {rm.pkgQty}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {rm.moq}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {rm.purchaseUOM || "-"}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {rm.gst ? rm.gst + "%" : "-"}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {rm.stockQty}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a] ">
-                      {rm.stockUOM || "-"}
-                    </td>
-
-                    <td className="text-center items-center justify-center border-r border-r-[#d8b76a]">
-                      {Array.isArray(rm.attachments) &&
-                      rm.attachments.length > 0 ? (
-                        <button
-                          onClick={() => setOpenAttachments(rm.attachments)}
-                          className="cursor-pointer hover:text-[#d8b76a] hover:underline text-center items-center justify-center"
-                        >
-                          View
-                        </button>
-                      ) : (
-                        "-"
-                      )}
-
-                      {openAttachments && (
-                        <AttachmentsModal
-                          attachments={openAttachments}
-                          onClose={() => setOpenAttachments(null)}
+                    {th}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <TableSkeleton rows={50} columns={TableHeaders} />
+              ) : (
+                <>
+                  {filteredData.map((rm, i) => (
+                    <tr
+                      key={rm._id}
+                      className="border-b text-[11px] whitespace-nowrap border-[#d8b76a] hover:bg-gray-50"
+                    >
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {Number(pagination.currentPage - 1) *
+                          Number(pagination.limit) +
+                          i +
+                          1}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {new Date(rm.createdAt).toLocaleString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {new Date(rm.updatedAt).toLocaleString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.skuCode}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a] ">
+                        {rm.itemName}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.description || "-"}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.hsnOrSac}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.type}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        <Toggle
+                          checked={rm.qualityInspectionNeeded}
+                          onChange={() =>
+                            handleToggleQualityInspection(
+                              rm.id,
+                              rm.qualityInspectionNeeded
+                            )
+                          }
                         />
-                      )}
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      <Toggle
-                        checked={rm.status === "Active"}
-                        onChange={() => handleToggleStatus(rm.id, rm.status)}
-                      />
-                    </td>
-                    <td className="px-2 border-r border-r-[#d8b76a]">
-                      {rm.createdByName || "-"}
-                    </td>
-                    <td className="px-2 ">
-                      <div className="flex items-center gap-2 text-base text-[#d39c25]">
-                        <FiEdit
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Edit"
-                          onClick={() => setEditData(rm)}
-                          className="hover:text-blue-500 cursor-pointer"
-                        />
-                        {editData && (
-                          <EditRawMaterialModal
-                            rawMaterial={editData}
-                            onClose={() => setEditData(null)}
-                            onUpdated={fetchRawMaterials}
+                      </td>
+
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.location || "-"}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.baseQty}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.pkgQty}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.moq}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.purchaseUOM || "-"}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.gst ? rm.gst + "%" : "-"}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.stockQty}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a] ">
+                        {rm.stockUOM || "-"}
+                      </td>
+
+                      <td className="text-center items-center justify-center border-r border-r-[#d8b76a]">
+                        {Array.isArray(rm.attachments) &&
+                        rm.attachments.length > 0 ? (
+                          <button
+                            onClick={() => setOpenAttachments(rm.attachments)}
+                            className="cursor-pointer hover:text-[#d8b76a] hover:underline text-center items-center justify-center"
+                          >
+                            View
+                          </button>
+                        ) : (
+                          "-"
+                        )}
+
+                        {openAttachments && (
+                          <AttachmentsModal
+                            attachments={openAttachments}
+                            onClose={() => setOpenAttachments(null)}
                           />
                         )}
-                        <FiTrash2
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Delete"
-                          onClick={() => handleDelete(rm.id)}
-                          className="hover:text-red-500 cursor-pointer"
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        <Toggle
+                          checked={rm.status === "Active"}
+                          onChange={() => handleToggleStatus(rm.id, rm.status)}
                         />
-                        <Tooltip
-                          id="statusTip"
-                          place="top"
-                          style={{
-                            backgroundColor: "#292926",
-                            color: "#d8b76a",
-                            fontSize: "12px",
-                            fontWeight: "bold",
-                          }}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {filteredData.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan="4"
-                      className="text-center py-4 text-gray-500 w-full"
-                    >
-                      No RMs found.
-                    </td>
-                  </tr>
-                )}
-              </>
-            )}
-          </tbody>
-        </table>
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.createdByName || "-"}
+                      </td>
+                      <td className="px-2 ">
+                        <div className="flex items-center gap-2 text-base text-[#d39c25]">
+                          <FiEdit
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Edit"
+                            onClick={() => setEditData(rm)}
+                            className="hover:text-blue-500 cursor-pointer"
+                          />
+                          {editData && (
+                            <EditRawMaterialModal
+                              rawMaterial={editData}
+                              onClose={() => setEditData(null)}
+                              onUpdated={fetchRawMaterials}
+                            />
+                          )}
+                          <FiTrash2
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Delete"
+                            onClick={() => handleDelete(rm.id)}
+                            className="hover:text-red-500 cursor-pointer"
+                          />
+                          <Tooltip
+                            id="statusTip"
+                            place="top"
+                            style={{
+                              backgroundColor: "#292926",
+                              color: "#d8b76a",
+                              fontSize: "12px",
+                              fontWeight: "bold",
+                            }}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredData.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan="4"
+                        className="text-center py-4 text-gray-500 w-full"
+                      >
+                        No RMs found.
+                      </td>
+                    </tr>
+                  )}
+                </>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       <PaginationControls
         currentPage={pagination.currentPage}

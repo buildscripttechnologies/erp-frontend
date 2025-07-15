@@ -3,7 +3,6 @@ import { Navbar } from "../components/Navbar";
 import { Sidebar } from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
 
-
 export default function Dashboard({ children }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -32,7 +31,7 @@ export default function Dashboard({ children }) {
         {/* Main Content */}
         <main
           className={`flex-1 transition-all duration-300 ease-in-out ${
-            isOpen ? "md:ml-50 ml-42" : "ml-0"
+            isOpen ? "ml-50 " : "ml-0"
           }`}
         >
           {cloneElement(children, { isOpen })}

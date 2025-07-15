@@ -209,7 +209,7 @@ const renderNestedMaterials = (
   });
 };
 
-const SfgMaster = () => {
+const SfgMaster = ({ isOpen }) => {
   const [sfgs, setSfgs] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -369,40 +369,40 @@ const SfgMaster = () => {
   };
 
   return (
-    <Dashboard>
-      <div className="relative p-3 max-w-[99vw] mx-auto overflow-x-hidden">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4">
-          Semi Finished Goods (SFG){" "}
-          <span className="text-gray-500">({sfgs.length})</span>
-        </h2>
+    <div className="p-3 max-w-[99vw] mx-auto overflow-x-hidden mt-4">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4">
+        Semi Finished Goods (SFG){" "}
+        <span className="text-gray-500">({sfgs.length})</span>
+      </h2>
 
-        <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
-          <div className="relative w-full sm:w-80">
-            <FiSearch className="absolute left-3 top-2 text-[#d8b76a]" />
-            <input
-              type="text"
-              placeholder="Search by SKU, Item Name, etc..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-            />
-          </div>
-          <button
-            onClick={() => toogleAddSFG(showAddSFG)}
-            className="w-full sm:w-auto justify-center bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
-          >
-            <FiPlus /> Add SFG
-          </button>
-        </div>
-        {showAddSFG && (
-          <AddSfgModal
-            onClose={() => toogleAddSFG(showAddSFG)}
-            onAdded={fetchSFGs}
+      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
+        <div className="relative w-full sm:w-80">
+          <FiSearch className="absolute left-3 top-2 text-[#d8b76a]" />
+          <input
+            type="text"
+            placeholder="Search by SKU, Item Name, etc..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
           />
-        )}
+        </div>
+        <button
+          onClick={() => toogleAddSFG(showAddSFG)}
+          className="w-full sm:w-auto justify-center bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
+        >
+          <FiPlus /> Add SFG
+        </button>
+      </div>
+      {showAddSFG && (
+        <AddSfgModal
+          onClose={() => toogleAddSFG(showAddSFG)}
+          onAdded={fetchSFGs}
+        />
+      )}
 
-        <div className="overflow-x-auto border border-[#d8b76a] rounded shadow-sm">
-          <table className="w-full text-[11px] whitespace-nowrap ">
+      <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
+        <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[98vw]`}`}>
+          <table className="text-[11px] whitespace-nowrap min-w-[97.3vw]">
             <thead className="bg-[#d8b76a] text-[#292926] text-left ">
               <tr>
                 <th className="px-[8px] py-1">#</th>
@@ -450,10 +450,10 @@ const SfgMaster = () => {
                         <td className="px-[8px]  border-r border-r-[#d8b76a]">
                           {sfg.skuCode}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a] md:max-w-[120px] md:truncate  hover:max-w-[1000px] transition-all duration-200">
+                        <td className="px-[8px]  border-r border-r-[#d8b76a] ">
                           {sfg.itemName}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a] md:max-w-[120px] md:truncate hover:max-w-[1000px] transition-all duration-200 ">
+                        <td className="px-[8px]  border-r border-r-[#d8b76a]  ">
                           {sfg.description || "-"}
                         </td>
                         <td className="px-[8px]  border-r border-r-[#d8b76a]">
@@ -613,33 +613,33 @@ const SfgMaster = () => {
             </tbody>
           </table>
         </div>
+      </div>
 
-        {editingSfg && (
-          <UpdateSfgModal
-            sfg={editingSfg}
-            onClose={() => setEditingSfg(null)}
-            onUpdated={() => {
-              fetchSFGs(pagination.currentPage);
-              setEditingSfg(null);
-            }}
-          />
-        )}
-        <PaginationControls
-          currentPage={pagination.currentPage}
-          totalPages={pagination.totalPages}
-          entriesPerPage={pagination.limit}
-          totalResults={pagination.totalResults}
-          onEntriesChange={(limit) => {
-            setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-            fetchSFGs(1, limit);
-          }}
-          onPageChange={(page) => {
-            setPagination((prev) => ({ ...prev, currentPage: page }));
-            fetchSFGs(page, pagination.limit);
+      {editingSfg && (
+        <UpdateSfgModal
+          sfg={editingSfg}
+          onClose={() => setEditingSfg(null)}
+          onUpdated={() => {
+            fetchSFGs(pagination.currentPage);
+            setEditingSfg(null);
           }}
         />
-      </div>
-    </Dashboard>
+      )}
+      <PaginationControls
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        entriesPerPage={pagination.limit}
+        totalResults={pagination.totalResults}
+        onEntriesChange={(limit) => {
+          setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
+          fetchSFGs(1, limit);
+        }}
+        onPageChange={(page) => {
+          setPagination((prev) => ({ ...prev, currentPage: page }));
+          fetchSFGs(page, pagination.limit);
+        }}
+      />
+    </div>
   );
 };
 
