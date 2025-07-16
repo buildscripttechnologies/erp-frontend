@@ -132,17 +132,17 @@ const UpdateVendorModal = ({
   const materialOptions = [
     ...rms.map((r) => ({
       value: r.id,
-      label: `${r.skuCode} - ${r.itemName} - (${r.description})`,
+      label: `${r.skuCode} - ${r.itemName} - ${r.description}`,
       type: "RawMaterial",
     })),
     ...sfgs.map((s) => ({
       value: s.id,
-      label: `${s.skuCode} - ${s.itemName} - (${s.description})`,
+      label: `${s.skuCode} - ${s.itemName} - ${s.description}`,
       type: s.type,
     })),
     ...fgs.map((f) => ({
       value: f.id,
-      label: `${f.skuCode} - ${f.itemName} - (${f.description})`,
+      label: `${f.skuCode} - ${f.itemName} - ${f.description}`,
       type: f.type,
     })),
   ];
@@ -168,7 +168,7 @@ const UpdateVendorModal = ({
         >
           <FiX />
         </button>
-        <h2 className="text-base font-semibold text-[#292926] mb-3">
+        <h2 className="text-base font-semibold text-[#d8b76a] mb-3 underline">
           Update Vendor
         </h2>
         <form onSubmit={handleSubmit}>
@@ -198,7 +198,7 @@ const UpdateVendorModal = ({
                     onClick={() =>
                       setVendors(vendors.filter((_, i) => i !== vendorIdx))
                     }
-                    className="text-red-600 text-sm cursor-pointer"
+                    className="text-black hover:text-red-600 text-sm cursor-pointer"
                   >
                     <FiX />
                   </button>
@@ -372,7 +372,7 @@ const UpdateVendorModal = ({
                       <button
                         type="button"
                         onClick={() => removeContact(vendorIdx, i)}
-                        className="  self-start flex gap-1 items-center bg-[#d8b76a] text-black px-3 py-2 text-xs rounded hover:bg-[#d8b76a]/80"
+                        className="self-start flex gap-1 items-center mt-1 text-red-600  text-sm rounded cursor-pointer hover:underline"
                       >
                         <FiTrash2 /> Delete
                       </button>
@@ -382,7 +382,7 @@ const UpdateVendorModal = ({
                   <button
                     onClick={() => addContact(vendorIdx)}
                     type="button"
-                    className="mt-3 bg-[#d8b76a] text-black px-3 py-2 text-xs rounded hover:bg-[#d8b76a]/80"
+                    className="mt-3 bg-[#d8b76a] text-black px-3 py-2 text-xs rounded hover:bg-[#d8b76a]/80 cursor-pointer"
                   >
                     + Add Contact
                   </button>
@@ -470,7 +470,7 @@ const UpdateVendorModal = ({
                               e.target.value
                             )
                           }
-                          className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
+                          className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none cursor-pointer"
                         >
                           <option value="">UOM</option>
                           {uoms.map((u) => (
@@ -509,7 +509,7 @@ const UpdateVendorModal = ({
                       <button
                         type="button"
                         onClick={() => removeMaterial(vendorIdx, i)}
-                        className="self-start flex gap-1 items-center bg-[#d8b76a] text-black px-3 py-2 text-xs rounded hover:bg-[#d8b76a]/80"
+                        className="self-start flex gap-1 items-center mt-1.5 text-red-600  text-sm rounded cursor-pointer hover:underline"
                       >
                         <FiTrash2 /> Delete
                       </button>
@@ -519,7 +519,7 @@ const UpdateVendorModal = ({
                   <button
                     onClick={() => addMaterial(vendorIdx)}
                     type="button"
-                    className="mt-3 bg-[#d8b76a] text-black px-3 py-2 text-xs rounded hover:bg-[#d8b76a]/80"
+                    className="mt-3 bg-[#d8b76a] text-black px-3 py-2 text-xs rounded hover:bg-[#d8b76a]/80 cursor-pointer"
                   >
                     + Add Material
                   </button>

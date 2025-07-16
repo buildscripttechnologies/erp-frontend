@@ -1,4 +1,3 @@
-
 import * as XLSX from "xlsx";
 
 import jsPDF from "jspdf";
@@ -24,13 +23,14 @@ export const exportToPDF = (rawMaterials) => {
     "Type",
     "Location",
     "MOQ",
-    "GST(%)",
+    "Rate",
+    "GST",
     "Stock Qty",
     "Base Qty",
     "Pkg Qty",
-    "Purchase UOM",
-    "Stock UOM",
-    "Quality Inspection",
+    "P UOM",
+    "S UOM",
+    "Qual. Insp.",
   ];
 
   const data = rawMaterials.map((e) => [
@@ -41,6 +41,7 @@ export const exportToPDF = (rawMaterials) => {
     e.type,
     e.location,
     e.moq,
+    e.rate,
     e.gst,
     e.stockQty,
     e.baseQty,
@@ -65,11 +66,14 @@ export const exportToPDF = (rawMaterials) => {
       fontStyle: "bold",
     },
     columnStyles: {
-      0: { cellWidth: 20 }, // SKU
-      1: { cellWidth: 20 }, // Item Name
+      0: { cellWidth: 17 }, // SKU
+      1: { cellWidth: 35 }, // Item Name
       2: { cellWidth: 30 }, // Description
-      5: { cellWidth: 20 }, // Location
-      // 14: { cellWidth: 80 }, // Attachments
+      5: { cellWidth: 15 }, // Location
+      12: { cellWidth: 14 }, // Qual. Insp.
+      13: { cellWidth: 14 }, // Qual. Insp.
+      14: { cellWidth: 18 }, // Qual. Insp.
+      // 15: { cellWidth: 80 }, // Attachments
     },
     startY: 15,
     theme: "grid",

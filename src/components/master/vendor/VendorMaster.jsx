@@ -91,7 +91,12 @@ const VendorMaster = ({ isOpen }) => {
   const filtered = vendors.filter(
     (v) =>
       v.vendorName.toLowerCase().includes(search.toLowerCase()) ||
-      v.vendorCode.toLowerCase().includes(search.toLowerCase())
+      v.natureOfBusiness.toLowerCase().includes(search.toLowerCase()) ||
+      v.city.toLowerCase().includes(search.toLowerCase()) ||
+      v.state.toLowerCase().includes(search.toLowerCase()) ||
+      v.venderCode.toLowerCase().includes(search.toLowerCase()) ||
+      v.country.toLowerCase().includes(search.toLowerCase()) ||
+      v.postalCode.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleToggleStatus = async (id, currentStatus) => {
@@ -211,10 +216,30 @@ const VendorMaster = ({ isOpen }) => {
                               1}
                           </td>
                           <td className="px-2  border-r border-[#d8b76a]">
-                            {new Date(v.createdAt || "-").toLocaleString()}
+                            {new Date(v.createdAt || "-").toLocaleString(
+                              "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              }
+                            )}
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
-                            {new Date(v.updatedAt || "-").toLocaleString()}
+                            {new Date(v.updatedAt || "-").toLocaleString(
+                              "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              }
+                            )}
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
                             {v.venderCode || "-"}

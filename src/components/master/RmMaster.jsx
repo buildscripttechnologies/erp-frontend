@@ -451,6 +451,7 @@ const RmMaster = ({ isOpen }) => {
                   "Base Qty",
                   "Pkg Qty",
                   "MOQ",
+                  "Rate",
                   "Pur. Uom",
                   "GST",
                   "Stock Qty",
@@ -545,6 +546,9 @@ const RmMaster = ({ isOpen }) => {
                         {rm.moq}
                       </td>
                       <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.rate}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
                         {rm.purchaseUOM || "-"}
                       </td>
                       <td className="px-2 border-r border-r-[#d8b76a]">
@@ -624,7 +628,7 @@ const RmMaster = ({ isOpen }) => {
                   {filteredData.length === 0 && (
                     <tr>
                       <td
-                        colSpan="21"
+                        colSpan="22"
                         className="text-center py-4 text-gray-500 w-full"
                       >
                         No RMs found.

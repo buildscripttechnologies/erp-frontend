@@ -426,7 +426,10 @@ const SfgMaster = ({ isOpen }) => {
             </thead>
             <tbody>
               {loading ? (
-                <TableSkeleton rows={pagination.limit} columns={Array(17).fill({})} />
+                <TableSkeleton
+                  rows={pagination.limit}
+                  columns={Array(17).fill({})}
+                />
               ) : (
                 <>
                   {filteredSFGs.map((sfg, index) => (
@@ -442,10 +445,24 @@ const SfgMaster = ({ isOpen }) => {
                             1}
                         </td>
                         <td className="px-[8px]  border-r border-r-[#d8b76a]">
-                          {new Date(sfg.createdAt).toLocaleString()}
+                          {new Date(sfg.createdAt).toLocaleString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
                         </td>
                         <td className="px-[8px]  border-r border-r-[#d8b76a]">
-                          {new Date(sfg.updatedAt).toLocaleString()}
+                          {new Date(sfg.updatedAt).toLocaleString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
                         </td>
                         <td className="px-[8px]  border-r border-r-[#d8b76a]">
                           {sfg.skuCode}
@@ -603,7 +620,10 @@ const SfgMaster = ({ isOpen }) => {
                   ))}
                   {filteredSFGs.length === 0 && (
                     <tr>
-                      <td colSpan="15" className="text-center text-gray-500">
+                      <td
+                        colSpan="17"
+                        className="text-center text-gray-500 py-3"
+                      >
                         No SFGs found.
                       </td>
                     </tr>

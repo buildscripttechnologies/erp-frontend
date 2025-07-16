@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "../../utils/axios";
+import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
 import { ClipLoader } from "react-spinners";
 

@@ -215,6 +215,17 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
             />
           </div>
 
+          {/* Rate */}
+          <div>
+            <label className="block mb-1 font-medium">Rate</label>
+            <input
+              type="number"
+              value={formData.rate}
+              onChange={(e) => handleChange("rate", e.target.value)}
+              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+            />
+          </div>
+
           {/* Purchase UOM */}
           <div>
             <label className="block mb-1 font-medium">Purchase UOM</label>

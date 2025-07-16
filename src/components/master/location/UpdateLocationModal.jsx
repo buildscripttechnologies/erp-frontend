@@ -41,7 +41,7 @@ const UpdateLocationModal = ({ location, onClose, onUpdated }) => {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <label htmlFor="">Location ID </label>{" "}
+          <label className="font-medium">Location ID </label>{" "}
           <input
             type="text"
             name="locationId"
@@ -51,7 +51,7 @@ const UpdateLocationModal = ({ location, onClose, onUpdated }) => {
             className="w-full p-2 border border-[#d8b76a] rounded"
             required
           />
-          <label htmlFor="">Store No</label>{" "}
+          <label className="font-medium">Store No</label>{" "}
           <input
             type="text"
             name="storeNo"
@@ -61,7 +61,7 @@ const UpdateLocationModal = ({ location, onClose, onUpdated }) => {
             className="w-full p-2 border border-[#d8b76a] rounded"
             required
           />
-          <label htmlFor="">Store Rack No</label>{" "}
+          <label className="font-medium">Store Rack No</label>{" "}
           <input
             type="text"
             name="storeRno"
@@ -70,7 +70,7 @@ const UpdateLocationModal = ({ location, onClose, onUpdated }) => {
             onChange={handleChange}
             className="w-full p-2 border border-[#d8b76a] rounded"
           />
-          <label htmlFor="">Bin No</label>{" "}
+          <label className="font-medium">Bin No</label>{" "}
           <input
             type="text"
             name="binNo"

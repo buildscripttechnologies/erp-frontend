@@ -163,7 +163,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         .filter((c) => c.type === "RM")
         .map((c) => ({
           value: c.id,
-          label: `${c.skuCode} - ${c.itemName} - (${c.description})`,
+          label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
         })),
     },
     {
@@ -172,7 +172,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         .filter((c) => c.type === "SFG")
         .map((c) => ({
           value: c.id,
-          label: `${c.skuCode} - ${c.itemName} - (${c.description})`,
+          label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
         })),
     },
   ];
@@ -185,76 +185,105 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">Edit FG Item</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <input
-              name="itemName"
-              placeholder="Item Name"
-              value={form.itemName}
-              onChange={handleChange}
-              className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-              required
-            />
-            <input
-              name="hsnOrSac"
-              placeholder="HSN/SAC"
-              value={form.hsnOrSac}
-              onChange={handleChange}
-              className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-            />
-            <input
-              name="gst"
-              placeholder="GST %"
-              value={form.gst}
-              onChange={handleChange}
-              className="p-2 border border-[#d8b76a] rounded  focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-            />
-            <select
-              name="UOM"
-              value={form.UOM}
-              onChange={handleChange}
-              className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-            >
-              <option value={form.UOM}>{form.UOM}</option>
-              {uoms.map((u) => (
-                <option key={u._id} value={u.unitName}>
-                  {u.unitName}
-                </option>
-              ))}
-            </select>
-            <select
-              name="qualityInspectionNeeded"
-              value={form.qualityInspectionNeeded}
-              onChange={handleChange}
-              className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-            >
-              <option value={true}>Required</option>
-              <option value={false}>Not-required</option>
-            </select>
-            <select
-              name="location"
-              value={form.location}
-              onChange={handleChange}
-              className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-            >
-              <option value="">Select Location</option>
-              {locations.map((l) => (
-                <option key={l._id} value={l.locationId}>
-                  {l.locationId}
-                </option>
-              ))}
-            </select>
-            <select
-              name="status"
-              value={form.status}
-              onChange={handleChange}
-              className="p-2  border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Item Name</label>
+              <input
+                name="itemName"
+                placeholder="Item Name"
+                value={form.itemName}
+                onChange={handleChange}
+                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">HSN/SAC</label>
+              <input
+                name="hsnOrSac"
+                placeholder="HSN/SAC"
+                value={form.hsnOrSac}
+                onChange={handleChange}
+                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">GST %</label>
+              <input
+                name="gst"
+                placeholder="GST %"
+                value={form.gst}
+                onChange={handleChange}
+                className="p-2 border border-[#d8b76a] rounded  focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">UOM</label>
+              <select
+                name="UOM"
+                value={form.UOM}
+                onChange={handleChange}
+                className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+              >
+                <option value={form.UOM}>{form.UOM}</option>
+                {uoms.map((u) => (
+                  <option key={u._id} value={u.unitName}>
+                    {u.unitName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Quality Inspection</label>
+              <select
+                name="qualityInspectionNeeded"
+                value={form.qualityInspectionNeeded}
+                onChange={handleChange}
+                className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+              >
+                <option value={true}>Required</option>
+                <option value={false}>Not-required</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Location</label>
+              <select
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+              >
+                <option value="">Select Location</option>
+                {locations.map((l) => (
+                  <option key={l._id} value={l.locationId}>
+                    {l.locationId}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Status</label>
+              <select
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+                className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+
             <div></div>
             <div></div>
 
-            <div className="mt-4">
+            {/* Existing Files */}
+            <div className="mt-4 col-span-full">
               <p className="font-semibold mb-2 text-[#292926]">
                 Existing Files
               </p>
@@ -289,8 +318,9 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                 </div>
               ))}
             </div>
+
             {/* Upload New Files */}
-            <div className="mt-4">
+            <div className="mt-4 col-span-full">
               <label className="block font-semibold mb-2 text-[#292926]">
                 Upload New Files
               </label>
@@ -299,98 +329,103 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                 multiple
                 onChange={(e) => setNewFiles(Array.from(e.target.files))}
                 className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-1 focus:ring-[#d8b76a] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
-                // className="p-2 border border-[#d8b76a] rounded w-full cursor-pointer  focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
               />
-              {/* {newFiles.length > 0 && (
-                <ul className="mt-2 list-disc list-inside text-sm text-gray-700">
-                  {newFiles.map((file, idx) => (
-                    <li key={idx}>{file.name}</li>
-                  ))}
-                </ul>
-              )} */}
             </div>
           </div>
-
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            placeholder="Description"
-            className="w-full p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-          />
+          <div className="flex flex-col">
+            <label className="font-medium">Description</label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              placeholder="Description"
+              className="w-full p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+            />
+          </div>
 
           <div>
             <p className="font-semibold mb-2">List of Consumed Components</p>
             {form.materials.map((mat, index) => (
               <div key={index} className="flex gap-2 mb-2 flex-wrap">
-                <Select
-                  className="flex-grow w-[60%]"
-                  value={
-                    groupedOptions
-                      .flatMap((g) => g.options)
-                      .find((opt) => opt.value === mat.itemId) || null
-                  }
-                  onChange={(selected) =>
-                    handleMaterialChange(index, "itemId", selected?.value)
-                  }
-                  options={groupedOptions}
-                  placeholder="Select RM or SFG"
-                  isSearchable
-                  styles={{
-                    control: (base, state) => ({
-                      ...base,
-                      padding: "2px",
-                      borderRadius: "6px",
-                      borderColor: "#d8b76a",
-                      boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
-                      "&:hover": {
+                <div className="w-[65%]">
+                  <label className="font-medium">Material</label>
+                  <Select
+                    className="flex-grow"
+                    value={
+                      groupedOptions
+                        .flatMap((g) => g.options)
+                        .find((opt) => opt.value === mat.itemId) || null
+                    }
+                    onChange={(selected) =>
+                      handleMaterialChange(index, "itemId", selected?.value)
+                    }
+                    options={groupedOptions}
+                    placeholder="Select RM or SFG"
+                    isSearchable
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        padding: "2px",
+                        borderRadius: "6px",
                         borderColor: "#d8b76a",
-                      },
-                    }),
-                    // option: (base, state) => ({
-                    //   ...base,
-                    //   backgroundColor: state.isFocused ? "#f3e6c0" : "#fff",
-                    //   color: "#292926",
-                    // }),
-                    menu: (base) => ({
-                      ...base,
-                      zIndex: 9999,
-                    }),
-                    singleValue: (base) => ({
-                      ...base,
-                      color: "#292926",
-                    }),
-                    placeholder: (base) => ({
-                      ...base,
-                      color: "#9e9e9e",
-                    }),
-                    groupHeading: (base) => ({
-                      ...base,
-                      color: "#292926",
-                      fontWeight: "bold",
-                    }),
-                  }}
-                  filterOption={(option, inputValue) => {
-                    const label = option.label
-                      .replace(/\s+/g, "")
-                      .toLowerCase();
-                    const input = inputValue.replace(/\s+/g, "").toLowerCase();
-                    return label.includes(input);
-                  }}
-                />
-                <input
-                  type="number"
-                  placeholder="Qty"
-                  value={mat.qty}
-                  onChange={(e) =>
-                    handleMaterialChange(index, "qty", e.target.value)
-                  }
-                  className="p-2 w-[20%] border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-                />
+                        boxShadow: state.isFocused
+                          ? "0 0 0 1px #d8b76a"
+                          : "none",
+                        "&:hover": {
+                          borderColor: "#d8b76a",
+                        },
+                      }),
+                      // option: (base, state) => ({
+                      //   ...base,
+                      //   backgroundColor: state.isFocused ? "#f3e6c0" : "#fff",
+                      //   color: "#292926",
+                      // }),
+                      menu: (base) => ({
+                        ...base,
+                        zIndex: 9999,
+                      }),
+                      singleValue: (base) => ({
+                        ...base,
+                        color: "#292926",
+                      }),
+                      placeholder: (base) => ({
+                        ...base,
+                        color: "#9e9e9e",
+                      }),
+                      groupHeading: (base) => ({
+                        ...base,
+                        color: "#292926",
+                        fontWeight: "bold",
+                      }),
+                    }}
+                    filterOption={(option, inputValue) => {
+                      const label = option.label
+                        .replace(/\s+/g, "")
+                        .toLowerCase();
+                      const input = inputValue
+                        .replace(/\s+/g, "")
+                        .toLowerCase();
+                      return label.includes(input);
+                    }}
+                  />
+                </div>
+
+                <div className="flex flex-col  w-[10%]">
+                  <label>Qty</label>
+                  <input
+                    type="number"
+                    placeholder="Qty"
+                    value={mat.qty}
+                    onChange={(e) =>
+                      handleMaterialChange(index, "qty", e.target.value)
+                    }
+                    className="p-2  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => removeMaterial(index)}
-                  className="text-red-600 cursor-pointer"
+                  className="text-red-600 cursor-pointer mt-5 mr-2"
                 >
                   <FiTrash2 />
                 </button>

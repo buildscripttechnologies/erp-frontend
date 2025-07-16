@@ -191,96 +191,129 @@ const AddFgModal = ({ onClose, onAdded }) => {
               className="space-y-4 border border-[#d8b76a] p-4 rounded"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                <input
-                  type="text"
-                  name="itemName"
-                  placeholder="Item Name"
-                  value={item.itemName}
-                  onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-                  required
-                />
-                <input
-                  type="text"
-                  name="hsnOrSac"
-                  placeholder="HSN/SAC"
-                  value={item.hsnOrSac}
-                  onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-                />
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Item Name</label>
+                  <input
+                    type="text"
+                    name="itemName"
+                    placeholder="Item Name"
+                    value={item.itemName}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    required
+                  />
+                </div>
 
-                <input
-                  type="text"
-                  name="gst"
-                  placeholder="GST %"
-                  value={item.gst}
-                  onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-                />
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">HSN/SAC</label>
+                  <input
+                    type="text"
+                    name="hsnOrSac"
+                    placeholder="HSN/SAC"
+                    value={item.hsnOrSac}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                  />
+                </div>
 
-                <select
-                  name="UOM"
-                  value={item.UOM}
-                  onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-                  required
-                >
-                  <option value="">Select UOM</option>
-                  {uoms.map((u) => (
-                    <option key={u._id} value={u._id}>
-                      {u.unitName}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  name="qualityInspectionNeeded"
-                  value={item.qualityInspectionNeeded}
-                  onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-                >
-                  <option value="">Select Quality Inspection</option>
-                  <option value={true}>Required</option>
-                  <option value={false}>Not-required</option>
-                </select>
-                <select
-                  name="type"
-                  value={item.type}
-                  onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-                >
-                  <option value="">Select Type</option>
-                  <option value="FG">FG</option>
-                </select>
-                <select
-                  name="location"
-                  value={item.location}
-                  onChange={(e) => handleChange(index, e)}
-                  className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-                >
-                  <option value="">Select Location</option>
-                  {locations.map((l) => (
-                    <option key={l._id} value={l.locationId}>
-                      {l.locationId}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="file"
-                  name="file"
-                  multiple
-                  onChange={(e) => handleChange(index, e)}
-                  className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-1 focus:ring-[#d8b76a] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
-                  // className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-                />
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">GST %</label>
+                  <input
+                    type="text"
+                    name="gst"
+                    placeholder="GST %"
+                    value={item.gst}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">UOM</label>
+                  <select
+                    name="UOM"
+                    value={item.UOM}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    required
+                  >
+                    <option value="">Select UOM</option>
+                    {uoms.map((u) => (
+                      <option key={u._id} value={u._id}>
+                        {u.unitName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">
+                    Quality Inspection
+                  </label>
+                  <select
+                    name="qualityInspectionNeeded"
+                    value={item.qualityInspectionNeeded}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                  >
+                    <option value="">Select Quality Inspection</option>
+                    <option value={true}>Required</option>
+                    <option value={false}>Not-required</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Type</label>
+                  <select
+                    name="type"
+                    value={item.type}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                  >
+                    <option value="">Select Type</option>
+                    <option value="FG">FG</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Location</label>
+                  <select
+                    name="location"
+                    value={item.location}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                  >
+                    <option value="">Select Location</option>
+                    {locations.map((l) => (
+                      <option key={l._id} value={l.locationId}>
+                        {l.locationId}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Upload Files</label>
+                  <input
+                    type="file"
+                    name="file"
+                    multiple
+                    onChange={(e) => handleChange(index, e)}
+                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-1 focus:ring-[#d8b76a] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
+                  />
+                </div>
               </div>
 
-              <textarea
-                name="description"
-                value={item.description}
-                onChange={(e) => handleChange(index, e)}
-                placeholder="Description (optional)"
-                className="w-full p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-              />
+              <div className="flex flex-col">
+                <label className="font-medium">Description</label>
+                <textarea
+                  name="description"
+                  value={item.description}
+                  onChange={(e) => handleChange(index, e)}
+                  placeholder="Description (optional)"
+                  className="w-full p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                />
+              </div>
 
               <div>
                 <p className="font-semibold mb-2">
@@ -292,13 +325,14 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     key={matIndex}
                     className="flex gap-2 mb-2 flex-wrap w-full items-center"
                   >
-                    <div className="flex-grow w-[60%]">
+                    <div className="w-[65%]">
+                      <label className="font-medium">Material</label>
                       <Select
                         value={
                           components
                             .map((c) => ({
                               value: c.id,
-                              label: `${c.skuCode} - ${c.itemName} - (${c.description})`,
+                              label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
                             }))
                             .find((opt) => opt.value === mat.itemId) || null
                         }
@@ -317,7 +351,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                               .filter((c) => c.type === "RM")
                               .map((c) => ({
                                 value: c.id,
-                                label: `${c.skuCode} - ${c.itemName} - (${c.description})`,
+                                label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
                               })),
                           },
                           {
@@ -326,7 +360,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                               .filter((c) => c.type === "SFG")
                               .map((c) => ({
                                 value: c.id,
-                                label: `${c.skuCode} - ${c.itemName} - (${c.description})`,
+                                label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
                               })),
                           },
                         ]}
@@ -372,25 +406,28 @@ const AddFgModal = ({ onClose, onAdded }) => {
                       />
                     </div>
 
-                    <input
-                      type="number"
-                      placeholder="Qty"
-                      value={mat.qty}
-                      onChange={(e) =>
-                        handleMaterialChange(
-                          index,
-                          matIndex,
-                          "qty",
-                          e.target.value
-                        )
-                      }
-                      className="p-1.5 border border-[#d8b76a] rounded w-[20%] focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-                    />
+                    <div className="flex flex-col  w-[10%]">
+                      <label className="font-medium">Qty</label>
+                      <input
+                        type="number"
+                        placeholder="Qty"
+                        value={mat.qty}
+                        onChange={(e) =>
+                          handleMaterialChange(
+                            index,
+                            matIndex,
+                            "qty",
+                            e.target.value
+                          )
+                        }
+                        className="p-1.5 border border-[#d8b76a] rounded  focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                      />
+                    </div>
 
                     <button
                       type="button"
                       onClick={() => removeMaterial(index, matIndex)}
-                      className="text-red-600 cursor-pointer"
+                      className="text-red-600 cursor-pointer mt-5"
                     >
                       <FiTrash2 />
                     </button>

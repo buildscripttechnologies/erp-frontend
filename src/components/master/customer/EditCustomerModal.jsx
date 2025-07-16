@@ -97,11 +97,11 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
       <div className="bg-white w-full max-w-[95vw] max-h-[90vh] overflow-y-auto rounded-md border border-[#d8b76a] text-xs relative scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-gray-100 p-3">
         <button
           onClick={onClose}
-          className="absolute right-3 top-3 text-sm text-gray-700 hover:text-red-600"
+          className="absolute right-3 top-3 text-sm text-gray-700 hover:text-red-600 cursor-pointer"
         >
           <FiX />
         </button>
-        <h2 className="text-base font-semibold text-[#292926] mb-3">
+        <h2 className="text-base font-bold text-[#d8b76a] mb-3 underline ">
           Edit Customer
         </h2>
         <form onSubmit={handleSubmit}>
@@ -177,33 +177,43 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
             {contacts.map((c, i) => (
               <div
                 key={i}
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 mb-2 items-center"
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 mb-2 items-start"
               >
-                {["contactPerson", "designation", "phone", "email"].map(
-                  (key) => (
+                {[
+                  ["Contact Person", "contactPerson"],
+                  ["Designation", "designation"],
+                  ["Phone", "phone"],
+                  ["Email", "email"],
+                ].map(([label, key]) => (
+                  <div key={key} className="flex flex-col">
+                    <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
+                      {label}
+                    </label>
                     <input
-                      key={key}
                       name={key}
                       value={c[key]}
-                      placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
+                      placeholder={label}
                       onChange={(e) => handleContactChange(i, e)}
-                      className="border border-[#d8b76a] rounded px-2 py-[5px] text-[12px]"
+                      className="border border-[#d8b76a] rounded px-2 py-[5px] text-[12px] focus:outline-none focus:ring-1 focus:ring-[#d8b76a] transition"
                     />
-                  )
-                )}
+                  </div>
+                ))}
+
                 <button
                   type="button"
                   onClick={() => removeContact(i)}
-                  className="text-red-600 text-sm flex items-center gap-1"
+                  className="text-red-600 text-sm flex items-center gap-1 hover:underline mt-5 cursor-pointer"
                 >
-                  <FiTrash2 /> Remove
+                  <FiTrash2 className="text-base" />
+                  Remove
                 </button>
               </div>
             ))}
+
             <button
               type="button"
               onClick={addContact}
-              className="mt-2 text-[#292926] bg-[#d8b76a] px-3 py-1.5 rounded text-xs"
+              className="mt-2 text-[#292926] bg-[#d8b76a] px-3 py-1.5 rounded text-xs cursor-pointer hover:bg-[#d8b76a]/80"
             >
               + Add Contact
             </button>
@@ -282,7 +292,7 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
                   <button
                     type="button"
                     onClick={() => removeLocation(i)}
-                    className="text-red-600 text-sm flex items-center gap-1 mb-1"
+                    className="text-red-600 text-sm flex items-center gap-1 mb-1 cursor-pointer"
                   >
                     <FiTrash2 /> Remove
                   </button>
@@ -292,7 +302,7 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
             <button
               type="button"
               onClick={addLocation}
-              className="mt-2 bg-[#d8b76a] text-[#292926] px-3 py-1.5 rounded text-xs"
+              className="mt-2 bg-[#d8b76a] text-[#292926] px-3 py-1.5 rounded text-xs cursor-pointer hover:bg-[#d8b76a]/80"
             >
               + Add Delivery Location
             </button>
@@ -303,13 +313,13 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-400 text-white px-4 py-[4px] text-sm rounded"
+              className="bg-gray-500 text-white px-4 py-[4px] text-sm rounded cursor-pointer hover:bg-gray-400"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-[#d8b76a] text-black px-5 py-[4px] text-sm rounded hover:bg-[#d8b76a]/80"
+              className="bg-[#d8b76a] text-black px-5 py-[4px] text-sm rounded hover:bg-[#d8b76a]/80 cursor-pointer"
             >
               Update
             </button>

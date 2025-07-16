@@ -174,7 +174,7 @@ export default function MasterUsers() {
       username: user.username,
       email: user.email,
       mobile: user.mobile,
-      password: "", // leave blank for update
+      // password: user.password, // leave blank for update
       userType: user.userType,
       userGroup: user.userGroup || "UserGrp",
     });
@@ -293,7 +293,7 @@ export default function MasterUsers() {
   ];
 
   return (
-    <Dashboard>
+    <>
       {/* {access ? ( */}
       <>
         {/* Add User Modal */}
@@ -311,45 +311,69 @@ export default function MasterUsers() {
               </h3>
               <form className="space-y-4" onSubmit={handleSubmit}>
                 {["fullName", "username", "email", "password", "mobile"].map(
-                  (field) => (
-                    <input
-                      key={field}
-                      type={
-                        field === "email"
-                          ? "email"
-                          : field === "password"
-                          ? "password"
-                          : "text"
-                      }
-                      placeholder={
-                        field.charAt(0).toUpperCase() + field.slice(1)
-                      }
-                      value={formData[field]}
-                      onChange={(e) =>
-                        setFormData({ ...formData, [field]: e.target.value })
-                      }
-                      className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none"
-                      required={!editMode || field !== "password"}
-                    />
-                  )
-                )}
-                <select
-                  value={formData.userType}
-                  onChange={(e) =>
-                    setFormData({ ...formData, userType: e.target.value })
+                  (field) => {
+                    const label =
+                      field.charAt(0).toUpperCase() + field.slice(1);
+                    return (
+                      <div key={field} className="space-y-1">
+                        <label
+                          htmlFor={field}
+                          className="block text-sm font-semibold text-[#292926]"
+                        >
+                          {label}
+                        </label>
+                        <input
+                          id={field}
+                          type={
+                            field === "email"
+                              ? "email"
+                              : field === "password"
+                              ? "password"
+                              : "text"
+                          }
+                          placeholder={label}
+                          value={formData[field]}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              [field]: e.target.value,
+                            })
+                          }
+                          className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none"
+                          required={!editMode || field !== "password"}
+                        />
+                      </div>
+                    );
                   }
-                  className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none cursor-pointer"
-                  required
-                >
-                  <option value="">Select User Type</option>
-                  {roles
-                    .filter((r) => r !== "All")
-                    .map((role) => (
-                      <option key={role} value={role}>
-                        {role}
-                      </option>
-                    ))}
-                </select>
+                )}
+
+                <div className="space-y-1">
+                  <label
+                    htmlFor="userType"
+                    className="block text-sm font-semibold text-[#292926]"
+                  >
+                    User Type
+                  </label>
+                  <select
+                    id="userType"
+                    value={formData.userType}
+                    onChange={(e) =>
+                      setFormData({ ...formData, userType: e.target.value })
+                    }
+                    className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none cursor-pointer"
+                    required
+                  >
+                    <option value="">Select User Type</option>
+                    {roles
+                      .filter((r) => r !== "All")
+                      .map((role) => (
+                        <option key={role} value={role}>
+                          {role}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
                 <button
                   type="submit"
                   className="w-full bg-[#d8b76a] hover:bg-[#c3a14f] text-white font-semibold py-2 rounded"
@@ -466,7 +490,16 @@ export default function MasterUsers() {
               </thead>
               <tbody>
                 {loading ? (
-                  <TableSkeleton rows={pagination.limit} columns={userTableHeaders} />
+                  <TableSkeleton
+                    rows={pagination.limit}
+                    columns={userTableHeaders}
+                  />
+                ) : filteredUsers.length == 0 ? (
+                  <tr>
+                    <td colSpan="9" className="text-center py-4 text-gray-500">
+                      No Users found.
+                    </td>
+                  </tr>
                 ) : (
                   <>
                     {filteredUsers.map((u, i) => (
@@ -480,7 +513,9 @@ export default function MasterUsers() {
                             i +
                             1}
                         </td>
-                        <td className=" px-2 border-r  border-[#d8b76a]">{u.fullName}</td>
+                        <td className=" px-2 border-r  border-[#d8b76a]">
+                          {u.fullName}
+                        </td>
                         <td className=" px-2 border-r  border-[#d8b76a] hidden md:table-cell">
                           {u.mobile}
                         </td>
@@ -494,7 +529,9 @@ export default function MasterUsers() {
                           />
                         </td>
 
-                        <td className=" px-2 border-r  border-[#d8b76a]">{u.userType}</td>
+                        <td className=" px-2 border-r  border-[#d8b76a]">
+                          {u.userType}
+                        </td>
                         <td className=" px-2 border-r  border-[#d8b76a] hidden xl:table-cell">
                           {u.username}
                         </td>
@@ -573,6 +610,6 @@ export default function MasterUsers() {
       {/* ) : (
         <AccessDeniedNotice userType="Admin" />
       )} */}
-    </Dashboard>
+    </>
   );
 }

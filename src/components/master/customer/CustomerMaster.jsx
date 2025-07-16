@@ -186,10 +186,24 @@ const CustomerMaster = ({ isOpen }) => {
                               1}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {new Date(c.createdAt).toLocaleString()}
+                            {new Date(c.createdAt).toLocaleString("en-IN", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {new Date(c.updatedAt).toLocaleString()}
+                            {new Date(c.updatedAt).toLocaleString("en-IN", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
                             {c.customerCode || "-"}

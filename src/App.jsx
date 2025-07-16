@@ -9,7 +9,7 @@ import MasterUsers from "./components/master/MasterUsers";
 import RmMaster from "./components/master/RmMaster";
 import "react-toggle/style.css";
 import { useAuth } from "./context/AuthContext";
-import UomMaster from "./components/master/UomMaster";
+import UomMaster from "./components/master/uom/UomMaster";
 import "react-toggle/style.css";
 import SfgMaster from "./components/master/sfg/SfgMaster";
 import LocationMaster from "./components/master/location/LocationMaster";
@@ -38,11 +38,27 @@ const App = () => {
         <Route path="/change-password" element={<ChangePassword />} />
         <Route
           path="/dashboard"
-          element={isAuthenticated ? <Dash /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? (
+              <Dashboard>
+                <Dash />
+              </Dashboard>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/master-users"
-          element={isAuthenticated ? <MasterUsers /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? (
+              <Dashboard>
+                <MasterUsers />
+              </Dashboard>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/rm-master"
@@ -58,11 +74,27 @@ const App = () => {
         />
         <Route
           path="/uom-master"
-          element={isAuthenticated ? <UomMaster /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? (
+              <Dashboard>
+                <UomMaster />
+              </Dashboard>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/role-master"
-          element={isAuthenticated ? <RoleMaster /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? (
+              <Dashboard>
+                <RoleMaster />
+              </Dashboard>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
 
         <Route
@@ -80,7 +112,13 @@ const App = () => {
         <Route
           path="/location-master"
           element={
-            isAuthenticated ? <LocationMaster /> : <Navigate to="/login" />
+            isAuthenticated ? (
+              <Dashboard>
+                <LocationMaster />
+              </Dashboard>
+            ) : (
+              <Navigate to="/login" />
+            )
           }
         />
         <Route

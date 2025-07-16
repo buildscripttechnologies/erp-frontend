@@ -441,10 +441,24 @@ const FgMaster = ({ isOpen }) => {
                             1}
                         </td>
                         <td className="px-[8px] border-r border-[#d8b76a]">
-                          {new Date(fg.createdAt).toLocaleString()}
+                          {new Date(fg.createdAt).toLocaleString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
                         </td>
                         <td className="px-[8px] border-r border-[#d8b76a]">
-                          {new Date(fg.updatedAt).toLocaleString()}
+                          {new Date(fg.updatedAt).toLocaleString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
                         </td>
                         <td className="px-[8px] border-r border-[#d8b76a]">
                           {fg.skuCode}
@@ -580,7 +594,10 @@ const FgMaster = ({ isOpen }) => {
                   ))}
                   {filteredFGs.length === 0 && (
                     <tr>
-                      <td colSpan="15" className="text-center text-gray-500">
+                      <td
+                        colSpan="16"
+                        className="text-center py-3 text-gray-500"
+                      >
                         No FGs found.
                       </td>
                     </tr>

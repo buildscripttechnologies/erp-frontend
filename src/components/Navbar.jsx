@@ -37,7 +37,7 @@ export function Navbar({ isOpen, setIsOpen, title = "SmartFlow360" }) {
       <img
         src="/images/logo4.png"
         alt="smartflow360 logo"
-        className={`w-50 ml-20 ${isOpen ? `ml-5 hidden` : ``} transition-transform `}
+        className={`w-50 sm:ml-[10%] ${isOpen ? `ml-5 hidden` : ``} transition-transform `}
       />
 
       {/* User Section */}

@@ -3,17 +3,18 @@ import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
 import Dashboard from "../../../pages/Dashboard";
-import AddLocationModal from "./AddLocation";
+import AddUomModal from "./AddUomModal";
+import EditUomModal from "./EditUomModal";
 import TableSkeleton from "../../TableSkeleton";
+import ScrollLock from "../../ScrollLock";
 import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";
-import UpdateLocationModal from "./UpdateLocationModal";
 import { Tooltip } from "react-tooltip";
 
-const LocationMaster = () => {
-  const [locations, setLocations] = useState([]);
+const UomMaster = () => {
+  const [uoms, setUoms] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
-  const [editingLocation, setEditingLocation] = useState(null);
+  const [editUom, setEditUom] = useState(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -23,15 +24,15 @@ const LocationMaster = () => {
     limit: 10,
   });
 
-  const fetchLocations = async (page = 1, limit = pagination.limit) => {
+  ScrollLock(formOpen || editUom != null);
+
+  const fetchUOMs = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/locations/get-all?page=${page}&limit=${limit}&isActive=all`
+        `/uoms/all-uoms?page=${page}&limit=${limit}&status="all"`
       );
-      setLocations(res.data.data || []);
-      console.log("locations", locations);
-
+      setUoms(res.data.data || []);
       setPagination({
         currentPage: res.data.currentPage,
         totalPages: res.data.totalPages,
@@ -39,58 +40,41 @@ const LocationMaster = () => {
         limit: res.data.limit,
       });
     } catch {
-      toast.error("Failed to fetch locations");
+      toast.error("Failed to fetch UOMs");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchLocations();
+    fetchUOMs();
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this location?"))
-      return;
+    if (!window.confirm("Are you sure you want to delete this UOM?")) return;
     try {
-      await axios.delete(`/locations/delete-location/${id}`);
-      toast.success("Location deleted");
-      fetchLocations();
+      await axios.delete(`/uoms/delete-uom/${id}`);
+      toast.success("UOM deleted");
+      fetchUOMs();
     } catch {
       toast.error("Delete failed");
     }
   };
 
-  const filteredLocations = locations.filter(
-    (l) =>
-      l.locationId.toLowerCase().includes(search.toLowerCase()) ||
-      l.storeNo.toLowerCase().includes(search.toLowerCase()) ||
-      l.storeRno.toLowerCase().includes(search.toLowerCase()) ||
-      l.binNo.toLowerCase().includes(search.toLowerCase()) ||
-      l.createdBy?.fullName?.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const goToPage = (page) => {
-    if (page < 1 || page > pagination.totalPages) return;
-    fetchLocations(page);
-  };
-
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === true ? false : true;
     try {
-      const res = await axios.patch(`/locations/update-location/${id}`, {
-        isActive: newStatus,
+      const res = await axios.patch(`/uoms/update-uom/${id}`, {
+        status: newStatus,
       });
 
-      console.log("res");
-
       if (res.data.status == 200) {
-        toast.success(`Location status updated`);
+        toast.success(`UOM status updated`);
 
         // ✅ Update local state without refetch
-        setLocations((prev) =>
-          prev.map((loc) =>
-            loc._id == id ? { ...loc, isActive: newStatus } : loc
+        setUoms((prev) =>
+          prev.map((uom) =>
+            uom._id === id ? { ...uom, status: newStatus } : uom
           )
         );
       } else {
@@ -101,19 +85,45 @@ const LocationMaster = () => {
     }
   };
 
+  const filteredUoms = uoms.filter(
+    (u) =>
+      u.unitName.toLowerCase().includes(search.toLowerCase()) ||
+      u.unitDescription.toLowerCase().includes(search.toLowerCase()) ||
+      u.createdBy.fullName.toLowerCase().includes(search.toLocaleLowerCase())
+  );
+
+  const goToPage = (page) => {
+    if (page < 1 || page > pagination.totalPages) return;
+    fetchUOMs(page);
+  };
+
+  useEffect(() => {
+    fetchUOMs(1);
+  }, []);
+
+  const uomTableHeaders = [
+    { label: "#", className: "" },
+    { label: "Created At	", className: "hidden md:table-cell" },
+    { label: "Updated At	", className: "hidden md:table-cell" },
+    { label: "UOM", className: "" },
+    { label: "Description", className: "" },
+    { label: "Satus", className: "" },
+    { label: "Created By	", className: "hidden md:table-cell" },
+    { label: "Actions", className: "" },
+  ];
+
   return (
-    <div className="relative p-3 max-w-[99vw] mx-auto overflow-x-hidden">
+    <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Location Master{" "}
-        <span className="text-gray-500">({locations.length})</span>
+        Units of Measure <span className="text-gray-500">({uoms.length})</span>
       </h2>
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
         <div className="relative w-full sm:w-80">
-          <FiSearch className="absolute left-3 top-2 text-[#d8b76a]" />
+          <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
           <input
             type="text"
-            placeholder="Search Location..."
+            placeholder="Search Unit of Measure"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
@@ -125,107 +135,94 @@ const LocationMaster = () => {
           className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
         >
           <FiPlus />
-          {formOpen ? "Close Form" : "Add Location"}
+          {formOpen ? "Close Form" : "Add UOM"}
         </button>
       </div>
 
       {formOpen && (
-        <AddLocationModal
-          onClose={() => setFormOpen(false)}
-          onAdded={fetchLocations}
-        />
+        <AddUomModal onClose={() => setFormOpen(false)} onAdded={fetchUOMs} />
       )}
 
       <div className="overflow-x-auto rounded border border-[#d8b76a] shadow-sm">
-        <table className="min-w-full text-[11px]">
-          <thead className="bg-[#d8b76a] text-[#292926] text-left whitespace-nowrap">
+        <table className="min-w-full text-[11px] ">
+          <thead className="bg-[#d8b76a]  text-[#292926] text-left whitespace-nowrap">
             <tr>
-              <th className="px-4 py-1.5">#</th>
-              <th className="px-4 py-1.5 hidden md:table-cell">Created At</th>
-              <th className="px-4 py-1.5 hidden md:table-cell">Updated At</th>
-              <th className="px-4 py-1.5">Location ID</th>
-              <th className="px-4 py-1.5">Store No.</th>
-              <th className="px-4 py-1.5">Store R. No.</th>
-              <th className="px-4 py-1.5">Bin No.</th>
-              <th className="px-4 py-1.5">Status</th>
-              <th className="px-4 py-1.5 hidden md:table-cell">Created By</th>
-              <th className="px-4 py-1.5">Actions</th>
+              <th className="px-2 py-1.5 ">#</th>
+              <th className="px-2 py-1.5  hidden md:table-cell">Created At</th>
+              <th className="px-2 py-1.5  hidden md:table-cell">Updated At</th>
+              <th className="px-2 py-1.5 ">UOM</th>
+              <th className="px-2 py-1.5 ">Description</th>
+              <th className="px-2 py-1.5 ">Status</th>
+              <th className="px-2 py-1.5  hidden md:table-cell">Created By</th>
+              <th className="px-2 py-1.5">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(10).fill({})}
+                columns={uomTableHeaders}
               />
             ) : (
               <>
-                {filteredLocations.map((loc, index) => (
+                {filteredUoms.map((uom, index) => (
                   <tr
-                    key={loc._id}
-                    className="border-t border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
+                    key={uom._id}
+                    className="border-t text-[11px] border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
                   >
-                    <td className="px-4  border-r border-[#d8b76a]">
+                    <td className="px-2 border-r border-[#d8b76a]">
                       {Number(pagination.currentPage - 1) *
                         Number(pagination.limit) +
                         index +
                         1}
                     </td>
-                    <td className="px-4  border-r border-[#d8b76a] hidden md:table-cell">
-                      {new Date(loc.createdAt).toLocaleString("en-IN", {
+                    <td className="px-2 hidden md:table-cell  border-r border-[#d8b76a]">
+                      {new Date(uom.createdAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
                         hour: "2-digit",
                         minute: "2-digit",
                         hour12: true,
-                      }) || "-"}
+                      })}
                     </td>
-                    <td className="px-4  border-r border-[#d8b76a] hidden md:table-cell">
-                      {new Date(loc.updatedAt).toLocaleString("en-IN", {
+                    <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
+                      {new Date(uom.updatedAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
                         hour: "2-digit",
                         minute: "2-digit",
                         hour12: true,
-                      }) || "-"}
+                      })}
                     </td>
-                    <td className="px-4  border-r border-[#d8b76a] ">
-                      {loc.locationId || "-"}
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {uom.unitName}
                     </td>
-                    <td className="px-4  border-r border-[#d8b76a]">
-                      {loc.storeNo || "-"}
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {uom.unitDescription || "-"}
                     </td>
-                    <td className="px-4  border-r border-[#d8b76a]">
-                      {loc.storeRno || "-"}
-                    </td>
-                    <td className="px-4  border-r border-[#d8b76a]">
-                      {loc.binNo || "-"}
-                    </td>
-                    <td className="px-4  border-r border-[#d8b76a]">
+                    <td className="px-2  border-r border-[#d8b76a]">
                       <Toggle
-                        checked={loc.isActive}
-                        onChange={() =>
-                          handleToggleStatus(loc._id, loc.isActive)
-                        }
+                        checked={uom.status}
+                        onChange={() => handleToggleStatus(uom._id, uom.status)}
                       />
                     </td>
-                    <td className="px-4  border-r border-[#d8b76a] hidden md:table-cell">
-                      {loc.createdBy?.fullName || "-"}
+                    <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
+                      {uom.createdBy?.fullName || "-"}
                     </td>
-                    <td className="px-4 mt-1.5 flex gap-3 text-sm  items-center">
+                    <td className="px-2 mt-1.5 flex gap-3 text-sm ">
                       <FiEdit
                         data-tooltip-id="statusTip"
                         data-tooltip-content="Edit"
-                        onClick={() => setEditingLocation(loc)}
                         className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                        onClick={() => setEditUom(uom)}
                       />
                       <FiTrash2
                         data-tooltip-id="statusTip"
                         data-tooltip-content="Delete"
                         className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                        onClick={() => handleDelete(loc._id)}
+                        onClick={() => handleDelete(uom._id)}
                       />
                       <Tooltip
                         id="statusTip"
@@ -240,10 +237,10 @@ const LocationMaster = () => {
                     </td>
                   </tr>
                 ))}
-                {filteredLocations.length === 0 && (
+                {filteredUoms.length === 0 && (
                   <tr>
-                    <td colSpan="10" className="text-center py-3  text-gray-500">
-                      No locations found.
+                    <td colSpan="8" className="text-center py-4 text-gray-500">
+                      No UOMs found.
                     </td>
                   </tr>
                 )}
@@ -252,15 +249,15 @@ const LocationMaster = () => {
           </tbody>
         </table>
       </div>
-      {editingLocation && (
-        <UpdateLocationModal
-          location={editingLocation}
-          onClose={() => setEditingLocation(null)}
-          onUpdated={fetchLocations}
+
+      {editUom && (
+        <EditUomModal
+          uom={editUom}
+          onClose={() => setEditUom(null)}
+          onUpdated={fetchUOMs}
         />
       )}
 
-      
       <PaginationControls
         currentPage={pagination.currentPage}
         totalPages={pagination.totalPages}
@@ -268,15 +265,15 @@ const LocationMaster = () => {
         totalResults={pagination.totalResults}
         onEntriesChange={(limit) => {
           setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-          fetchLocations(1, limit);
+          fetchUOMs(1, limit);
         }}
         onPageChange={(page) => {
           setPagination((prev) => ({ ...prev, currentPage: page }));
-          fetchLocations(page, pagination.limit);
+          fetchUOMs(page, pagination.limit);
         }}
       />
     </div>
   );
 };
 
-export default LocationMaster;
+export default UomMaster;

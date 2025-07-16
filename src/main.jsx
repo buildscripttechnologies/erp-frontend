@@ -6,6 +6,17 @@ import "react-toggle/style.css";
 
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { registerSW } from "virtual:pwa-register";
+const updateSW = registerSW({
+  onNeedRefresh() {
+    if (confirm("New version available. Refresh now?")) {
+      updateSW(true);
+    }
+  },
+  onOfflineReady() {
+    console.log("App is ready to work offline.");
+  },
+});
 
 createRoot(document.getElementById("root")).render(
   <>

@@ -46,6 +46,7 @@ const BulkRmPanel = ({ onClose }) => {
         baseQty: "",
         pkgQty: "",
         moq: "",
+        rate:"",
         purchaseUOM: "",
         stockQty: "",
         stockUOM: "",
@@ -174,6 +175,7 @@ const BulkRmPanel = ({ onClose }) => {
                 "Base Qty",
                 "Pkg Qty",
                 "MOQ",
+                "Rate",
                 "Pur. UOM",
                 "GST %",
                 "Stock Qty",
@@ -285,6 +287,15 @@ const BulkRmPanel = ({ onClose }) => {
                     className="px-2 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#b38a37] focus:outline-none transition duration-200  w-16"
                     value={rm.moq}
                     onChange={(e) => handleChange(i, "moq", e.target.value)}
+                  />
+                </td>
+                <td className="p-2">
+                  <input
+                    placeholder="Rate"
+                    type="number"
+                    className="px-2 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#b38a37] focus:outline-none transition duration-200  w-16"
+                    value={rm.rate}
+                    onChange={(e) => handleChange(i, "rate", e.target.value)}
                   />
                 </td>
                 <td className="p-2">

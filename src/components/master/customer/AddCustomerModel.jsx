@@ -6,7 +6,7 @@ import { Country, State, City } from "country-state-city";
 import toast from "react-hot-toast";
 import PropTypes from "prop-types";
 
-const AddCustomerModal = ({ onClose,onAdded }) => {
+const AddCustomerModal = ({ onClose, onAdded }) => {
   const [customerSets, setCustomerSets] = useState([
     {
       form: {
@@ -167,7 +167,7 @@ const AddCustomerModal = ({ onClose,onAdded }) => {
       if (res.status === 201) {
         toast.success("Customer(s) added successfully");
         onClose();
-        onAdded()
+        onAdded();
       }
     } catch (err) {
       toast.error("Failed to add customer(s)");
@@ -183,7 +183,7 @@ const AddCustomerModal = ({ onClose,onAdded }) => {
         >
           <FiX />
         </button>
-        <h2 className="text-base font-semibold text-[#292926] mb-3">
+        <h2 className="text-base font-semibold text-[#d8b76a] mb-3 underline">
           Add Customers
         </h2>
         <form onSubmit={handleSubmit}>
@@ -286,33 +286,39 @@ const AddCustomerModal = ({ onClose,onAdded }) => {
                 </div>
 
                 <div className="mt-4">
-                  <h3 className="font-bold text-[14px] mb-2 text-[#d8b76a] underline ">
+                  <h3 className="font-bold text-[14px] mb-2 text-[#d8b76a] underline">
                     Contact Persons
                   </h3>
 
                   {set.contacts.map((c, i) => (
                     <div
                       key={i}
-                      className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 mb-2 items-center"
+                      className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 mb-2 items-start"
                     >
-                      {["contactPerson", "designation", "phone", "email"].map(
-                        (key) => (
+                      {[
+                        ["Contact Person", "contactPerson"],
+                        ["Designation", "designation"],
+                        ["Phone", "phone"],
+                        ["Email", "email"],
+                      ].map(([label, key]) => (
+                        <div key={key} className="flex flex-col">
+                          <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
+                            {label}
+                          </label>
                           <input
-                            key={key}
                             name={key}
                             value={c[key]}
-                            placeholder={
-                              key.charAt(0).toUpperCase() + key.slice(1)
-                            }
+                            placeholder={label}
                             onChange={(e) => handleContactChange(idx, i, e)}
                             className="border border-[#d8b76a] rounded px-3 py-[6px] text-[12px] focus:outline-none focus:ring-1 focus:ring-[#d8b76a] transition"
                           />
-                        )
-                      )}
+                        </div>
+                      ))}
+
                       <button
                         type="button"
                         onClick={() => removeContact(idx, i)}
-                        className="text-red-600 text-sm flex items-center gap-1 hover:underline cursor-pointer"
+                        className="text-red-600 text-sm flex items-center gap-1 hover:underline mt-5 cursor-pointer"
                       >
                         <FiTrash2 className="text-base" />
                         Remove
@@ -323,7 +329,7 @@ const AddCustomerModal = ({ onClose,onAdded }) => {
                   <button
                     type="button"
                     onClick={() => addContact(idx)}
-                    className="mt-2 text-[#292926] bg-[#d8b76a] px-3 py-1.5  rounded text-xs hover:bg-[#d8b76a]/80 transition cursor-pointer"
+                    className="mt-2 text-[#292926] bg-[#d8b76a] px-3 py-1.5 rounded text-xs hover:bg-[#d8b76a]/80 transition cursor-pointer"
                   >
                     + Add Contact
                   </button>
@@ -410,7 +416,7 @@ const AddCustomerModal = ({ onClose,onAdded }) => {
                         <button
                           type="button"
                           onClick={() => removeLocation(idx, i)}
-                          className="text-red-600 text-sm flex items-center gap-1 hover:underline mb-1"
+                          className="text-red-600 text-sm flex items-center gap-1 hover:underline mb-1 cursor-pointer"
                         >
                           <FiTrash2 className="text-base" />
                           Remove

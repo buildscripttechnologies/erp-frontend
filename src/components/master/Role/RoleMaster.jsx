@@ -106,171 +106,169 @@ const RoleMaster = () => {
   ];
 
   return (
-    <Dashboard>
-      <div className="p-2 md:px-4  mt-3 max-w-[99vw] mx-auto overflow-x-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
-            Role Master <span className="text-gray-500">({roles.length})</span>
-          </h2>
+    <div className="p-2 md:px-4  mt-3 max-w-[99vw] mx-auto overflow-x-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
+          Role Master <span className="text-gray-500">({roles.length})</span>
+        </h2>
 
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="bg-[#d8b76a] text-black font-semibold px-4 py-1.5 rounded flex items-center gap-2 hover:bg-[#d8b76a]/80 cursor-pointer"
-            >
-              <FiPlus /> Add Role
-            </button>
-          </div>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="bg-[#d8b76a] text-black font-semibold px-4 py-1.5 rounded flex items-center gap-2 hover:bg-[#d8b76a]/80 cursor-pointer"
+          >
+            <FiPlus /> Add Role
+          </button>
         </div>
+      </div>
 
-        {/* Search */}
-        <div className="relative w-full sm:w-1/3 mb-4">
-          <input
-            type="text"
-            placeholder="Search roles..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:outline-none text-[#292926]"
-          />
-          <FiSearch className="absolute left-2.5 top-2 text-[#d8b76a]" />
-        </div>
+      {/* Search */}
+      <div className="relative w-full sm:w-1/3 mb-4">
+        <input
+          type="text"
+          placeholder="Search roles..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-8 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:outline-none text-[#292926]"
+        />
+        <FiSearch className="absolute left-2.5 top-2 text-[#d8b76a]" />
+      </div>
 
-        {/* Table */}
-        <div className="overflow-auto border border-[#d8b76a] rounded text-left whitespace-nowrap">
-          <table className="min-w-full text-[11px]">
-            <thead className="bg-[#d8b76a] text-[#292926]">
+      {/* Table */}
+      <div className="overflow-auto border border-[#d8b76a] rounded text-left whitespace-nowrap">
+        <table className="min-w-full text-[11px]">
+          <thead className="bg-[#d8b76a] text-[#292926]">
+            <tr>
+              <th className="py-1.5 px-3">#</th>
+              <th className="py-1.5 px-3 hidden md:table-cell">Created At</th>
+              <th className="py-1.5 px-3 hidden md:table-cell">Updated At</th>
+              <th className="py-1.5 px-3">Role Name</th>
+              <th className="py-1.5 px-3">Status</th>
+              <th className="py-1.5 px-3">Created By</th>
+              <th className="py-1.5 px-3">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <TableSkeleton
+                rows={pagination.limit}
+                columns={userTableHeaders}
+              />
+            ) : filteredRoles.length === 0 ? (
               <tr>
-                <th className="py-1.5 px-3">#</th>
-                <th className="py-1.5 px-3 hidden md:table-cell">Created At</th>
-                <th className="py-1.5 px-3 hidden md:table-cell">Updated At</th>
-                <th className="py-1.5 px-3">Role Name</th>
-                <th className="py-1.5 px-3">Status</th>
-                <th className="py-1.5 px-3">Created By</th>
-                <th className="py-1.5 px-3">Action</th>
+                <td colSpan="7" className="text-center py-4 text-gray-500">
+                  No roles found.
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <TableSkeleton
-                  rows={pagination.limit}
-                  columns={userTableHeaders}
-                />
-              ) : filteredRoles.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="text-center py-4 text-gray-500">
-                    No roles found.
+            ) : (
+              filteredRoles.map((role, idx) => (
+                <tr
+                  key={role._id}
+                  className="border-b border-[#d8b76a] hover:bg-gray-50"
+                >
+                  <td className="px-2   border-r border-[#d8b76a]">
+                    {Number(pagination.currentPage - 1) *
+                      Number(pagination.limit) +
+                      idx +
+                      1}
+                  </td>
+                  <td className="px-2  border-r border-[#d8b76a] hidden md:table-cell">
+                    {new Date(role.createdAt).toLocaleString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}
+                  </td>
+                  <td className="px-2  border-r border-[#d8b76a] hidden md:table-cell">
+                    {new Date(role.updatedAt).toLocaleString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}
+                  </td>
+                  <td className="px-2  border-r border-[#d8b76a]">
+                    {role.name}
+                  </td>
+                  <td className="px-2 border-r border-[#d8b76a] ">
+                    <Toggle
+                      checked={role.isActive}
+                      onChange={() =>
+                        handleToggleStatus(role._id, role.isActive)
+                      }
+                    />
+                  </td>
+                  <td className="px-2  border-r border-[#d8b76a]">
+                    {role.createdBy?.fullName || "-"}
+                  </td>
+                  <td className="px-2 py-1">
+                    <div className="flex items-center gap-2 text-sm text-[#d39c25]">
+                      <FiEdit
+                        data-tooltip-id="statusTip"
+                        data-tooltip-content="Edit"
+                        className="cursor-pointer hover:text-blue-500"
+                        onClick={() => setEditData(role)}
+                      />
+                      <FiTrash2
+                        data-tooltip-id="statusTip"
+                        data-tooltip-content="Delete"
+                        className="cursor-pointer hover:text-red-500"
+                        onClick={() => handleDelete(role._id)}
+                      />
+                      <Tooltip
+                        id="statusTip"
+                        place="top"
+                        style={{
+                          backgroundColor: "#292926",
+                          color: "#d8b76a",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                        }}
+                      />
+                    </div>
                   </td>
                 </tr>
-              ) : (
-                filteredRoles.map((role, idx) => (
-                  <tr
-                    key={role._id}
-                    className="border-b border-[#d8b76a] hover:bg-gray-50"
-                  >
-                    <td className="px-2   border-r border-[#d8b76a]">
-                      {Number(pagination.currentPage - 1) *
-                        Number(pagination.limit) +
-                        idx +
-                        1}
-                    </td>
-                    <td className="px-2  border-r border-[#d8b76a] hidden md:table-cell">
-                      {new Date(role.createdAt).toLocaleString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
-                    </td>
-                    <td className="px-2  border-r border-[#d8b76a] hidden md:table-cell">
-                      {new Date(role.updatedAt).toLocaleString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
-                    </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {role.name}
-                    </td>
-                    <td className="px-2 border-r border-[#d8b76a] ">
-                      <Toggle
-                        checked={role.isActive}
-                        onChange={() =>
-                          handleToggleStatus(role._id, role.isActive)
-                        }
-                      />
-                    </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {role.createdBy?.fullName || "-"}
-                    </td>
-                    <td className="px-2 py-1">
-                      <div className="flex items-center gap-2 text-sm text-[#d39c25]">
-                        <FiEdit
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Edit"
-                          className="cursor-pointer hover:text-blue-500"
-                          onClick={() => setEditData(role)}
-                        />
-                        <FiTrash2
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Delete"
-                          className="cursor-pointer hover:text-red-500"
-                          onClick={() => handleDelete(role._id)}
-                        />
-                        <Tooltip
-                          id="statusTip"
-                          place="top"
-                          style={{
-                            backgroundColor: "#292926",
-                            color: "#d8b76a",
-                            fontSize: "12px",
-                            fontWeight: "bold",
-                          }}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-        <PaginationControls
-          currentPage={pagination.currentPage}
-          totalPages={pagination.totalPages}
-          entriesPerPage={pagination.limit}
-          totalResults={pagination.totalResults}
-          onEntriesChange={(limit) => {
-            setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-            fetchRoles(1, limit);
-          }}
-          onPageChange={(page) => {
-            setPagination((prev) => ({ ...prev, currentPage: page }));
-            fetchRoles(page, pagination.limit);
-          }}
-        />
-
-        {/* Modals */}
-        {showAddModal && (
-          <AddRoleModal
-            onClose={() => setShowAddModal(false)}
-            onAdded={fetchRoles}
-          />
-        )}
-        {editData && (
-          <EditRoleModal
-            role={editData}
-            onClose={() => setEditData(null)}
-            onUpdated={fetchRoles}
-          />
-        )}
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
-    </Dashboard>
+      <PaginationControls
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        entriesPerPage={pagination.limit}
+        totalResults={pagination.totalResults}
+        onEntriesChange={(limit) => {
+          setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
+          fetchRoles(1, limit);
+        }}
+        onPageChange={(page) => {
+          setPagination((prev) => ({ ...prev, currentPage: page }));
+          fetchRoles(page, pagination.limit);
+        }}
+      />
+
+      {/* Modals */}
+      {showAddModal && (
+        <AddRoleModal
+          onClose={() => setShowAddModal(false)}
+          onAdded={fetchRoles}
+        />
+      )}
+      {editData && (
+        <EditRoleModal
+          role={editData}
+          onClose={() => setEditData(null)}
+          onUpdated={fetchRoles}
+        />
+      )}
+    </div>
   );
 };
 
