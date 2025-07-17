@@ -13,6 +13,7 @@ import { FaFileDownload } from "react-icons/fa";
 import ScrollLock from "../../ScrollLock";
 import AttachmentsModal from "../../AttachmentsModal";
 import { Tooltip } from "react-tooltip";
+import { generateBOM } from "../../../utils/generateBOMPdf";
 
 const renderNestedMaterials = (
   materials,
@@ -544,6 +545,7 @@ const SfgMaster = ({ isOpen }) => {
                         </td>
                         <td className="px-[8px] pt-2 text-sm flex gap-2 border-r border-r-[#d8b76a]/30">
                           <FaFileDownload
+                            onClick={() => generateBOM(sfg)}
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Download"
                             className="cursor-pointer text-[#d8b76a] hover:text-green-600"

@@ -202,7 +202,7 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
                 <button
                   type="button"
                   onClick={() => removeContact(i)}
-                  className="text-red-600 text-sm flex items-center gap-1 hover:underline mt-5 cursor-pointer"
+                  className="text-red-600 text-sm flex items-center gap-1 hover:underline  cursor-pointer"
                 >
                   <FiTrash2 className="text-base" />
                   Remove

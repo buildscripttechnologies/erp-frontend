@@ -21,7 +21,7 @@ export default defineConfig({
       ],
       manifest: {
         name: "Smartflow 360",
-        short_name: "ERP",
+        short_name: "Smartflow 360",
         description: "Progressive ERP System",
         theme_color: "#d8b76a",
         background_color: "#ffffff",
