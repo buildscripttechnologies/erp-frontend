@@ -16,10 +16,10 @@ const AddFgModal = ({ onClose, onAdded }) => {
       itemName: "",
       description: "",
       hsnOrSac: "",
-      qualityInspectionNeeded: "",
+      qualityInspectionNeeded: false,
       location: "",
       gst: "",
-      type: "SFG",
+      type: "FG",
       UOM: "",
       rm: [],
       sfg: [],
@@ -71,6 +71,8 @@ const AddFgModal = ({ onClose, onAdded }) => {
   };
 
   const handleMaterialChange = (index, matIndex, field, value) => {
+    // console.log("mat", index, matIndex, field, value);
+
     const updated = [...formList];
     updated[index].materials[matIndex][field] = value;
     setFormList(updated);
@@ -78,7 +80,13 @@ const AddFgModal = ({ onClose, onAdded }) => {
 
   const addMaterial = (index) => {
     const updated = [...formList];
-    updated[index].materials.push({ itemId: "", qty: "" });
+    updated[index].materials.push({
+      itemId: "",
+      height: "",
+      width: "",
+      depth: "",
+      qty: "",
+    });
 
     setFormList(updated);
   };
@@ -141,9 +149,21 @@ const AddFgModal = ({ onClose, onAdded }) => {
 
           if (!matched || !mat.qty) return;
           if (matched.type == "RM") {
-            rm.push({ rmid: matched.id, qty: Number(mat.qty) });
+            rm.push({
+              rmid: matched.id,
+              height: Number(mat.height),
+              width: Number(mat.width),
+              depth: Number(mat.depth),
+              qty: Number(mat.qty),
+            });
           } else if (matched.type === "SFG") {
-            sfg.push({ sfgid: matched.id, qty: Number(mat.qty) });
+            sfg.push({
+              sfgid: matched.id,
+              height: Number(mat.height),
+              width: Number(mat.width),
+              depth: Number(mat.depth),
+              qty: Number(mat.qty),
+            });
           }
         });
 
@@ -155,7 +175,6 @@ const AddFgModal = ({ onClose, onAdded }) => {
           materials: undefined,
         };
       });
-      console.log("transformed Data", transformedData);
 
       payload.append("fgs", JSON.stringify(transformedData));
 
@@ -168,9 +187,10 @@ const AddFgModal = ({ onClose, onAdded }) => {
         }
       });
 
-      await axios.post("/fgs/add-many", payload);
-      toast.success("FGs added successfully");
+      const res = await axios.post("/fgs/add-many", payload);
+
       onAdded();
+      toast.success("FGs added successfully");
     } catch (err) {
       toast.error(err.response?.data?.message || "Add failed");
     } finally {
@@ -323,9 +343,9 @@ const AddFgModal = ({ onClose, onAdded }) => {
                 {item.materials.map((mat, matIndex) => (
                   <div
                     key={matIndex}
-                    className="flex gap-2 mb-2 flex-wrap w-full items-center"
+                    className="flex flex-wrap gap-3 mb-4 border p-3 rounded-md border-[#d8b76a]"
                   >
-                    <div className="w-[65%]">
+                    <div className="flex flex-col w-full sm:w-[55%] md:w-[40%]">
                       <label className="font-medium">Material</label>
                       <Select
                         value={
@@ -406,7 +426,70 @@ const AddFgModal = ({ onClose, onAdded }) => {
                       />
                     </div>
 
-                    <div className="flex flex-col  w-[10%]">
+                    {/* Height */}
+                    <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
+                      <label className="font-medium text-sm mb-1">
+                        Height (cm)
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Height"
+                        value={mat.height}
+                        onChange={(e) =>
+                          handleMaterialChange(
+                            index,
+                            matIndex,
+                            "height",
+                            e.target.value
+                          )
+                        }
+                        className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                      />
+                    </div>
+
+                    {/* Width */}
+                    <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
+                      <label className="font-medium text-sm mb-1">
+                        Width (cm)
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Width"
+                        value={mat.width}
+                        onChange={(e) =>
+                          handleMaterialChange(
+                            index,
+                            matIndex,
+                            "width",
+                            e.target.value
+                          )
+                        }
+                        className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                      />
+                    </div>
+
+                    {/* Depth */}
+                    <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
+                      <label className="font-medium text-sm mb-1">
+                        Depth (cm)
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Depth"
+                        value={mat.depth}
+                        onChange={(e) =>
+                          handleMaterialChange(
+                            index,
+                            matIndex,
+                            "depth",
+                            e.target.value
+                          )
+                        }
+                        className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                      />
+                    </div>
+
+                    <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[10%]">
                       <label className="font-medium">Qty</label>
                       <input
                         type="number"
@@ -427,9 +510,9 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     <button
                       type="button"
                       onClick={() => removeMaterial(index, matIndex)}
-                      className="text-red-600 cursor-pointer mt-5"
+                      className="text-red-600 cursor-pointer gap-1 items-center flex hover:underline"
                     >
-                      <FiTrash2 />
+                      <FiTrash2 /> Remove
                     </button>
                   </div>
                 ))}

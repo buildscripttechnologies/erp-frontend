@@ -44,7 +44,7 @@ const renderNestedMaterials = (
     }
 
     return (
-      <React.Fragment key={`${mat.id}-${level}-${idx}`} className="">
+      <React.Fragment key={`${mat.id}-${level}-${idx}`}>
         <tr
           className={`border-t ${border} cursor-pointer hover:bg-gray-50 text-[11px] rounded-sm border-separate`}
           onClick={() => {
@@ -62,7 +62,7 @@ const renderNestedMaterials = (
               {levelLabel}
             </span>
             <div className="flex items-center gap-1 rounded-bl-sm">
-              {mat.skuCode}
+              {mat.skuCode || "-"}
               {(mat.rm?.length > 0 || mat.sfg?.length > 0) && (
                 <span className={`${text} text-[12px] overflow-auto`}>
                   {level === 1 &&
@@ -81,22 +81,25 @@ const renderNestedMaterials = (
               )}
             </div>
           </td>
-          <td className={`px-2 border-r ${border}`}>{mat.itemName}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.itemName || "-"}</td>
           <td className={`px-2 border-r ${border}`}>
             {mat.description || "-"}
           </td>
-          <td className={`px-2 border-r ${border}`}>{mat.type}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.type || "-"}</td>
           <td className={`px-2 border-r ${border}`}>
-            {mat.hsnOrSac || mat.hsnSac}
+            {mat.hsnOrSac || mat.hsnSac || "-"}
           </td>
           <td className={`px-2 border-r ${border}`}>
-            {mat.stockUOM || mat.uom}
+            {mat.stockUOM || mat.uom || "-"}
           </td>
           <td className={`px-2 border-r ${border}`}>
-            {mat.qualityInspectionNeeded ? "Required" : "Not Required"}
+            {mat.qualityInspectionNeeded ? "Required" : "Not Required" || "-"}
           </td>
-          <td className={`px-2 border-r ${border}`}>{mat.location}</td>
-          <td className={`px-2 rounded-br-sm`}>{mat.qty}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.location || "-"}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.height || "-"}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.width || "-"}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.depth || "-"}</td>
+          <td className={`px-2 rounded-br-sm`}>{mat.qty || "-"}</td>
         </tr>
 
         {level === 1 &&
@@ -111,10 +114,10 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold  pl-18 rounded-tl-sm">
                           SKU Code
                         </th>
-                        <th className="px-2 font-semibold min-w-[220px]">
+                        <th className="px-2 font-semibold min-w-[150px]">
                           Item Name
                         </th>
-                        <th className="px-2 font-semibold min-w-[190px]">
+                        <th className="px-2 font-semibold min-w-[120px]">
                           Description
                         </th>
                         <th className="px-2 font-semibold">Type</th>
@@ -122,6 +125,9 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
+                        <th className="px-2 font-semibold">Height(cm)</th>
+                        <th className="px-2 font-semibold">Width(cm)</th>
+                        <th className="px-2 font-semibold">depth(cm)</th>
                         <th className="px-2 font-semibold rounded-tr-sm">
                           Qty
                         </th>
@@ -165,10 +171,10 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold  pl-23.5 rounded-tl-sm">
                           SKU Code
                         </th>
-                        <th className="px-2 font-semibold min-w-[220px]">
+                        <th className="px-2 font-semibold min-w-[140px]">
                           Item Name
                         </th>
-                        <th className="px-2 font-semibold min-w-[190px]">
+                        <th className="px-2 font-semibold min-w-[120px]">
                           Description
                         </th>
                         <th className="px-2 font-semibold">Type</th>
@@ -176,6 +182,9 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
+                        <th className="px-2 font-semibold">Height(cm)</th>
+                        <th className="px-2 font-semibold">Width(cm)</th>
+                        <th className="px-2 font-semibold">depth(cm)</th>
                         <th className="px-2 font-semibold rounded-tr-sm">
                           Qty
                         </th>
@@ -359,7 +368,7 @@ const FgMaster = ({ isOpen }) => {
       const res = await axios.delete(`/fgs/delete/${id}`);
       if (res.status == 200) {
         toast.success("FG deleted successfully");
-        fetchSFGs(); // reload list
+        fetchFGs(); // reload list
       } else {
         toast.error("Failed to delete FG");
       }
@@ -394,7 +403,10 @@ const FgMaster = ({ isOpen }) => {
         </button>
       </div>
       {showAddFG && (
-        <AddFgModal onClose={() => toogleAddFG(showAddFG)} onAdded={fetchFGs} />
+        <AddFgModal
+          onClose={() => toogleAddFG(showAddFG)}
+          onAdded={() => (fetchFGs(), toogleAddFG(showAddFG))}
+        />
       )}
 
       <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
@@ -548,10 +560,10 @@ const FgMaster = ({ isOpen }) => {
                                       <th className="px-2 font-semibold  pl-13">
                                         SKU Code
                                       </th>
-                                      <th className="px-2 font-semibold min-w-[220px]">
+                                      <th className="px-2 font-semibold min-w-[160px]">
                                         Item Name
                                       </th>
-                                      <th className="px-2 font-semibold min-w-[190px]">
+                                      <th className="px-2 font-semibold min-w-[120px]">
                                         Description
                                       </th>
                                       <th className="px-2 font-semibold">
@@ -568,6 +580,15 @@ const FgMaster = ({ isOpen }) => {
                                       </th>
                                       <th className="px-2 font-semibold">
                                         Location
+                                      </th>
+                                      <th className="px-2 font-semibold">
+                                        Height(cm)
+                                      </th>
+                                      <th className="px-2 font-semibold">
+                                        Width(cm)
+                                      </th>
+                                      <th className="px-2 font-semibold">
+                                        Depth(cm)
                                       </th>
                                       <th className="px-2 font-semibold">
                                         Qty

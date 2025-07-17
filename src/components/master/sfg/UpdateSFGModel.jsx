@@ -391,10 +391,11 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                     }}
                   />
                 </div>
-                <div className="flex flex-col w-[48%] sm:w-[30%] md:w-[14%]">
+                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
                   <label className="font-medium">Height (cm)</label>
                   <input
                     type="number"
+                    step="any"
                     placeholder="Height"
                     value={mat.height}
                     onChange={(e) =>
@@ -408,10 +409,11 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                     className="p-2  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                   />
                 </div>
-                <div className="flex flex-col w-[48%] sm:w-[30%] md:w-[14%]">
+                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
                   <label className="font-medium">Width (cm)</label>
                   <input
                     type="number"
+                    step="any"
                     placeholder="Width"
                     value={mat.width}
                     onChange={(e) =>
@@ -425,10 +427,11 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                     className="p-2  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                   />
                 </div>
-                <div className="flex flex-col w-[48%] sm:w-[30%] md:w-[14%]">
+                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
                   <label className="font-medium">Depth (cm)</label>
                   <input
                     type="number"
+                    step="any"
                     placeholder="Depth"
                     value={mat.depth}
                     onChange={(e) =>
@@ -442,10 +445,11 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                     className="p-2  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                   />
                 </div>
-                <div className="flex flex-col w-[48%] sm:w-[30%] md:w-[10%]">
+                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[10%]">
                   <label className="font-semibold">Qty</label>
                   <input
                     type="number"
+                    step="any"
                     placeholder="Qty"
                     value={mat.qty}
                     onChange={(e) =>

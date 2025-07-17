@@ -10,6 +10,8 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: [
+        "images/pwa1.png",
+        "images/pwa2.png",
         "images/favicon.ico",
         "images/logo4.png",
         "images/logo3.png",
@@ -27,7 +29,13 @@ export default defineConfig({
         start_url: "/",
         icons: [
           {
-            src: "/images/favicon.ico",
+            src: "/images/pwa1.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/images/pwa2.png",
+            sizes: "512x512",
             type: "image/png",
           },
         ],
@@ -38,7 +46,7 @@ export default defineConfig({
         // ✅ MOVE runtimeCaching INSIDE workbox
         runtimeCaching: [
           {
-            // urlPattern: /^https:\/\/localhost:5000\/api\/.*$/,
+            // urlPattern: /^http:\/\/localhost:5000\/api\/.*$/,
             urlPattern: /^https:\/\/erp-backend-joj6\.onrender\.com\/api\/.*$/,
             handler: "NetworkFirst",
             options: {

@@ -50,10 +50,22 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
       const mappedMaterials = [];
 
       (fg.rm || []).forEach((r) => {
-        mappedMaterials.push({ itemId: r.id, qty: r.qty });
+        mappedMaterials.push({
+          itemId: r.id,
+          height: r.height,
+          width: r.width,
+          depth: r.depth,
+          qty: r.qty,
+        });
       });
       (fg.sfg || []).forEach((s) => {
-        mappedMaterials.push({ itemId: s.id, qty: s.qty });
+        mappedMaterials.push({
+          itemId: s.id,
+          height: s.height,
+          width: s.width,
+          depth: s.depth,
+          qty: s.qty,
+        });
       });
 
       setForm({
@@ -68,7 +80,6 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         file: [],
         materials: mappedMaterials,
       });
-      console.log("form", form);
     }
   }, [fg]);
 
@@ -89,7 +100,10 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
   const addMaterial = () => {
     setForm((prev) => ({
       ...prev,
-      materials: [...prev.materials, { itemId: "", qty: "" }],
+      materials: [
+        ...prev.materials,
+        { itemId: "", height: "", width: "", depth: "", qty: "" },
+      ],
     }));
   };
 
@@ -108,15 +122,25 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
       const rm = [];
       const sfgNested = [];
 
-      console.log("materials", form.materials);
-
       form.materials.forEach((mat) => {
         const match = components.find((c) => c.id == mat.itemId);
         if (!match || !mat.qty) return;
         if (match.type === "RM") {
-          rm.push({ rmid: match.id, qty: Number(mat.qty) });
+          rm.push({
+            rmid: match.id,
+            height: Number(mat.height),
+            width: Number(mat.width),
+            depth: Number(mat.depth),
+            qty: Number(mat.qty),
+          });
         } else {
-          sfgNested.push({ sfgid: match.id, qty: Number(mat.qty) });
+          sfgNested.push({
+            sfgid: match.id,
+            height: Number(mat.height),
+            width: Number(mat.width),
+            depth: Number(mat.depth),
+            qty: Number(mat.qty),
+          });
         }
       });
 
@@ -134,13 +158,12 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         deletedFiles: deletedFileIds,
       };
 
-      console.log("data", data);
+      // console.log("data", data);
       newFiles.forEach((file) => {
         payload.append("files", file);
       });
 
       payload.append("data", JSON.stringify(data));
-      console.log("payload", payload);
 
       if (form.file.length) {
         form.file.forEach((file) => payload.append("files", file));
@@ -346,8 +369,11 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
           <div>
             <p className="font-semibold mb-2">List of Consumed Components</p>
             {form.materials.map((mat, index) => (
-              <div key={index} className="flex gap-2 mb-2 flex-wrap">
-                <div className="w-[65%]">
+              <div
+                key={index}
+                className="flex flex-wrap gap-3 mb-4 border p-3 rounded-md border-[#d8b76a]"
+              >
+                <div className="w-full sm:w-[55%] md:w-[40%]">
                   <label className="font-medium">Material</label>
                   <Select
                     className="flex-grow"
@@ -410,10 +436,58 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                   />
                 </div>
 
-                <div className="flex flex-col  w-[10%]">
-                  <label>Qty</label>
+                {/* Height */}
+                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
+                  <label className="font-medium text-sm mb-1">
+                    Height (cm)
+                  </label>
                   <input
                     type="number"
+                    step="any"
+                    placeholder="Height"
+                    value={mat.height}
+                    onChange={(e) =>
+                      handleMaterialChange(index, "height", e.target.value)
+                    }
+                    className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                  />
+                </div>
+
+                {/* Width */}
+                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
+                  <label className="font-medium text-sm mb-1">Width (cm)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="Width"
+                    value={mat.width}
+                    onChange={(e) =>
+                      handleMaterialChange(index, "width", e.target.value)
+                    }
+                    className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                  />
+                </div>
+
+                {/* Depth */}
+                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
+                  <label className="font-medium text-sm mb-1">Depth (cm)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="Depth"
+                    value={mat.depth}
+                    onChange={(e) =>
+                      handleMaterialChange(index, "depth", e.target.value)
+                    }
+                    className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                  />
+                </div>
+
+                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[10%]">
+                  <label className="font-medium text-sm mb-1">Qty</label>
+                  <input
+                    type="number"
+                    step="any"
                     placeholder="Qty"
                     value={mat.qty}
                     onChange={(e) =>
@@ -425,9 +499,9 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                 <button
                   type="button"
                   onClick={() => removeMaterial(index)}
-                  className="text-red-600 cursor-pointer mt-5 mr-2"
+                  className="text-red-600 cursor-pointer gap-1 flex items-center hover:underline"
                 >
-                  <FiTrash2 />
+                  <FiTrash2 /> Remove
                 </button>
               </div>
             ))}

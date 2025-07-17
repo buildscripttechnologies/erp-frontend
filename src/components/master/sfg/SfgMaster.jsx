@@ -96,6 +96,9 @@ const renderNestedMaterials = (
             {mat.qualityInspectionNeeded ? "Required" : "Not Required"}
           </td>
           <td className={`px-2 border-r ${border}`}>{mat.location}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.height}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.width}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.depth}</td>
           <td className={`px-2 rounded-br-sm`}>{mat.qty}</td>
         </tr>
 
@@ -103,7 +106,7 @@ const renderNestedMaterials = (
           isExpandedL2 &&
           (mat.rm?.length > 0 || mat.sfg?.length > 0) && (
             <tr>
-              <td colSpan="9" className="px-2 pb-2">
+              <td colSpan="12" className="px-2 pb-2">
                 <div className=" border border-yellow-500 rounded-sm">
                   <table className="w-full text-[11px] text-left rounded-sm overflow-hidden">
                     <thead className="bg-yellow-100 rounded-sm">
@@ -111,10 +114,10 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold rounded-tl-sm pl-18">
                           SKU Code
                         </th>
-                        <th className="px-2 font-semibold min-w-[220px]">
+                        <th className="px-2 font-semibold min-w-[150px]">
                           Item Name
                         </th>
-                        <th className="px-2 font-semibold min-w-[190px]">
+                        <th className="px-2 font-semibold min-w-[120px]">
                           Description
                         </th>
                         <th className="px-2 font-semibold">Type</th>
@@ -122,6 +125,9 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
+                        <th className="px-2 font-semibold">Height(cm)</th>
+                        <th className="px-2 font-semibold">Width(cm)</th>
+                        <th className="px-2 font-semibold">depth(cm)</th>
                         <th className="px-2 font-semibold rounded-tr-sm">
                           Qty
                         </th>
@@ -157,7 +163,7 @@ const renderNestedMaterials = (
           isExpandedL3 &&
           (mat.rm?.length > 0 || mat.sfg?.length > 0) && (
             <tr>
-              <td colSpan="9">
+              <td colSpan="12">
                 <div className="mt-2 border border-[#d8b76a]/30 rounded">
                   <table className="min-w-full text-sm text-left">
                     <thead className="bg-[#d8b76a]/20">
@@ -165,10 +171,10 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold rounded-sm pl-18">
                           SKU Code
                         </th>
-                        <th className="px-2 font-semibold min-w-[220px]">
+                        <th className="px-2 font-semibold min-w-[140px]">
                           Item Name
                         </th>
-                        <th className="px-2 font-semibold min-w-[190px]">
+                        <th className="px-2 font-semibold min-w-[120px]">
                           Description
                         </th>
                         <th className="px-2 font-semibold">Type</th>
@@ -176,6 +182,9 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
+                        <th className="px-2 font-semibold">Height(cm)</th>
+                        <th className="px-2 font-semibold">Width(cm)</th>
+                        <th className="px-2 font-semibold">depth(cm)</th>
                         <th className="px-2 font-semibold">Qty</th>
                       </tr>
                     </thead>
@@ -396,7 +405,7 @@ const SfgMaster = ({ isOpen }) => {
       {showAddSFG && (
         <AddSfgModal
           onClose={() => toogleAddSFG(showAddSFG)}
-          onAdded={fetchSFGs}
+          onAdded={() => (fetchSFGs(), toogleAddSFG(showAddSFG))}
         />
       )}
 
@@ -574,10 +583,10 @@ const SfgMaster = ({ isOpen }) => {
                                       <th className="px-2 font-semibold  pl-13">
                                         SKU Code
                                       </th>
-                                      <th className="px-2 font-semibold min-w-[220px]">
+                                      <th className="px-2 font-semibold min-w-[160px]">
                                         Item Name
                                       </th>
-                                      <th className="px-2 font-semibold min-w-[190px]">
+                                      <th className="px-2 font-semibold min-w-[120px]">
                                         Description
                                       </th>
                                       <th className="px-2 font-semibold">
@@ -594,6 +603,15 @@ const SfgMaster = ({ isOpen }) => {
                                       </th>
                                       <th className="px-2 font-semibold">
                                         Location
+                                      </th>
+                                      <th className="px-2 font-semibold">
+                                        Height(cm)
+                                      </th>
+                                      <th className="px-2 font-semibold">
+                                        Width(cm)
+                                      </th>
+                                      <th className="px-2 font-semibold">
+                                        depth(cm)
                                       </th>
                                       <th className="px-2 font-semibold">
                                         Qty

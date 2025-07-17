@@ -24,7 +24,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { path } from "framer-motion/client";
 
-export function Sidebar({ isOpen, setIsOpen }) {
+export function Sidebar({ isOpen }) {
   const [isMasterOpen, setIsMasterOpen] = useState(false);
   const navigate = useNavigate();
   const { logout } = useAuth();

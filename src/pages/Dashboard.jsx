@@ -2,18 +2,26 @@ import { cloneElement, useEffect, useState } from "react";
 import { Navbar } from "../components/Navbar";
 import { Sidebar } from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
+import { useLocation } from "react-router-dom";
 
 export default function Dashboard({ children }) {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  const { user } = useAuth();
 
   useEffect(() => {
-    // On mount, set sidebar state based on screen width
     const isMobile = window.innerWidth < 768;
-    setIsOpen(isMobile ? false : true); // closed on mobile, open on desktop
+    setIsOpen(isMobile ? false : true);
   }, []);
-  const toggleSidebar = () => setIsOpen((prev) => !prev);
 
-  const { user } = useAuth();
+  // Close sidebar on route change if mobile
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      setIsOpen(false);
+    }
+  }, [location.pathname]);
+  const toggleSidebar = () => setIsOpen((prev) => !prev);
 
   return (
     <>

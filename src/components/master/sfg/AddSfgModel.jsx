@@ -147,17 +147,17 @@ const AddSfgModal = ({ onClose, onAdded }) => {
           if (matched.type == "RM") {
             rm.push({
               rmid: matched.id,
-              height: mat.height,
-              width: mat.width,
-              depth: mat.depth,
+              height: Number(mat.height),
+              width: Number(mat.width),
+              depth: Number(mat.depth),
               qty: Number(mat.qty),
             });
           } else if (matched.type === "SFG") {
             sfg.push({
               sfgid: matched.id,
-              height: mat.height,
-              width: mat.width,
-              depth: mat.depth,
+              height: Number(mat.height),
+              width: Number(mat.width),
+              depth: Number(mat.depth),
               qty: Number(mat.qty),
             });
           }
@@ -171,8 +171,6 @@ const AddSfgModal = ({ onClose, onAdded }) => {
           materials: undefined,
         };
       });
-
-      console.log("transformed data sfg", transformedData);
 
       payload.append("sfgs", JSON.stringify(transformedData));
 
@@ -419,12 +417,13 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                       </div>
 
                       {/* Height */}
-                      <div className="flex flex-col w-[48%] sm:w-[30%] md:w-[14%]">
+                      <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
                         <label className="font-medium text-sm mb-1">
                           Height (cm)
                         </label>
                         <input
                           type="number"
+                          step="any"
                           placeholder="Height"
                           value={mat.height}
                           onChange={(e) =>
@@ -440,12 +439,13 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                       </div>
 
                       {/* Width */}
-                      <div className="flex flex-col w-[48%] sm:w-[30%] md:w-[14%]">
+                      <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
                         <label className="font-medium text-sm mb-1">
                           Width (cm)
                         </label>
                         <input
                           type="number"
+                          step="any"
                           placeholder="Width"
                           value={mat.width}
                           onChange={(e) =>
@@ -461,11 +461,12 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                       </div>
 
                       {/* Depth */}
-                      <div className="flex flex-col w-[48%] sm:w-[30%] md:w-[14%]">
+                      <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
                         <label className="font-medium text-sm mb-1">
                           Depth (cm)
                         </label>
                         <input
+                          step="any"
                           type="number"
                           placeholder="Depth"
                           value={mat.depth}
@@ -482,9 +483,10 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                       </div>
 
                       {/* Qty */}
-                      <div className="flex flex-col w-[48%] sm:w-[30%] md:w-[10%]">
+                      <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[10%]">
                         <label className="font-medium text-sm mb-1">Qty</label>
                         <input
+                          step="any"
                           type="number"
                           placeholder="Qty"
                           value={mat.qty}
