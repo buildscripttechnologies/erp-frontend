@@ -1,25 +1,25 @@
-// src/components/CustomerMaster.jsx
+// src/components/BOMMaster.jsx
 import React, { useEffect, useState } from "react";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
 import Dashboard from "../../../pages/Dashboard";
-import AddCustomerModal from "./AddCustomerModel";
 import TableSkeleton from "../../TableSkeleton";
 import ScrollLock from "../../ScrollLock";
 import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";
-import EditCustomerModal from "./EditCustomerModal";
-import CustomerDetailsSection from "./CustomerDetailsView";
+import BomDetailsSection from "./BomDetailsSection";
+import AddBomForm from "./AddBOMModel";
+import AddBomModal from "./AddBOMModel";
 
-const CustomerMaster = ({ isOpen }) => {
-  const [customers, setCustomers] = useState([]);
+const BomMaster = ({ isOpen }) => {
+  const [BOMs, setBOMs] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
-  const [editingCustomer, setEditingCustomer] = useState(null);
-  const [expandedCustomerId, setExpandedCustomerId] = useState(null);
+  const [editingBOM, setEditingBOM] = useState(null);
+  const [expandedBOMId, setExpandedBOMId] = useState(null);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -28,13 +28,11 @@ const CustomerMaster = ({ isOpen }) => {
     limit: 10,
   });
 
-  const fetchCustomers = async (page = 1, limit = pagination.limit) => {
+  const fetchBOMs = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `/customers/get-all?page=${page}&limit=${limit}`
-      );
-      setCustomers(res.data.data || []);
+      const res = await axios.get(`/boms/get-all?page=${page}&limit=${limit}`);
+      setBOMs(res.data.data || []);
       setPagination({
         currentPage: res.data.currentPage,
         totalPages: res.data.totalPages,
@@ -42,47 +40,44 @@ const CustomerMaster = ({ isOpen }) => {
         limit: res.data.limit,
       });
     } catch {
-      toast.error("Failed to fetch customers");
+      toast.error("Failed to fetch BOMs");
     } finally {
       setLoading(false);
     }
   };
 
-  ScrollLock(showModal || editingCustomer != null);
+  ScrollLock(showModal || editingBOM != null);
 
   useEffect(() => {
-    fetchCustomers();
+    fetchBOMs();
   }, []);
 
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
-    fetchCustomers(page);
+    fetchBOMs(page);
   };
 
-  const filtered = customers.filter(
+  const filtered = BOMs.filter(
     (c) =>
-      c.customerName.toLowerCase().includes(search.toLowerCase()) ||
-      c.customerCode.toLowerCase().includes(search.toLowerCase()) ||
-      c.aliasName.toLowerCase().includes(search.toLowerCase()) ||
-      c.natureOfBusiness.toLowerCase().includes(search.toLowerCase()) ||
-      c.city.toLowerCase().includes(search.toLowerCase()) ||
-      c.state.toLowerCase().includes(search.toLowerCase()) ||
-      c.country.toLowerCase().includes(search.toLowerCase()) ||
-      c.postalCode.includes(search)
+      c.partyName.toLowerCase().includes(search.toLowerCase()) ||
+      c.productName.toLowerCase().includes(search.toLowerCase()) ||
+      c.bomNo.toLowerCase().includes(search.toLowerCase()) ||
+      c.sampleNo.toLowerCase().includes(search.toLowerCase()) ||
+      c.createdBy?.fullName.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === true ? false : true;
     try {
-      const res = await axios.patch(`/customers/update/${id}`, {
+      const res = await axios.patch(`/boms/edit/${id}`, {
         isActive: newStatus,
       });
 
       if (res.data.status == 200) {
-        toast.success(`Customer status updated`);
+        toast.success(`BOM status updated`);
 
         // ✅ Update local state without refetch
-        setCustomers((prev) =>
+        setBOMs((prev) =>
           prev.map((c) => (c._id === id ? { ...c, isActive: newStatus } : c))
         );
       } else {
@@ -94,29 +89,41 @@ const CustomerMaster = ({ isOpen }) => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this Customer?"))
-      return;
+    if (!window.confirm("Are you sure you want to delete this BOM?")) return;
     try {
-      await axios.delete(`/customers/delete/${id}`);
-      toast.success("Customer deleted");
-      fetchCustomers();
-    } catch {
-      toast.error("Delete failed");
+      const res = await axios.patch(`/boms/edit/${id}`, {
+        isDeleted: true,
+      });
+
+      if (res.data.status == 200) {
+        toast.success(`BOM Deleted Successfully`);
+        fetchBOMs();
+      } else {
+        toast.error("Failed to Delete BOM");
+      }
+    } catch (err) {
+      toast.error("Failed to Delete BOM");
     }
   };
 
   return (
     <>
       {showModal && (
-        <AddCustomerModal
+        // <AddBomModal
+        //   onClose={() => setShowModal(false)}
+        //   onAdded={() => fetchBOMs(pagination.currentPage)}
+        // />
+        <AddBomModal
+          // rms={rawMaterials}
+          // sfgs={sfgList}
           onClose={() => setShowModal(false)}
-          onAdded={() => fetchCustomers(pagination.currentPage)}
+          onSuccess={fetchBOMs}
         />
       )}
 
       <div className="p-3 max-w-[99vw] mx-auto">
         <h2 className="text-2xl font-bold mb-4">
-          Customers{" "}
+          Bill Of Materials{" "}
           <span className="text-gray-500">({pagination.totalResults})</span>
         </h2>
 
@@ -125,7 +132,7 @@ const CustomerMaster = ({ isOpen }) => {
             <FiSearch className="absolute left-3 top-2.5 text-[#d8b76a]" />
             <input
               type="text"
-              placeholder="Search by Customer Code or Name..."
+              placeholder="Search by BOM Number or Partyname..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:outline-none"
@@ -135,28 +142,28 @@ const CustomerMaster = ({ isOpen }) => {
             onClick={() => setShowModal(true)}
             className="bg-[#d8b76a] hover:bg-[#b38a37]  justify-center text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
           >
-            <FiPlus /> Add Customer
+            <FiPlus /> Add BOM
           </button>
         </div>
 
         <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
           <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[98vw]`}`}>
-            <table className={"text-[11px] whitespace-nowrap min-w-[100vw] text-left"}>
+            <table
+              className={
+                "text-[11px] whitespace-nowrap min-w-[100vw] text-left"
+              }
+            >
               <thead className="bg-[#d8b76a] text-[#292926]">
                 <tr>
                   <th className="px-[8px] py-1.5 ">#</th>
                   <th className="px-[8px] ">Created At</th>
                   <th className="px-[8px] ">Updated At</th>
-                  <th className="px-[8px] ">Cust. Code</th>
-                  <th className="px-[8px] ">Cust. Name</th>
-                  <th className="px-[8px] ">Alias</th>
-                  <th className="px-[8px] ">NOB</th>
-                  <th className="px-[8px] ">Address</th>
-                  <th className="px-[8px] ">City</th>
-                  <th className="px-[8px] ">State</th>
-                  <th className="px-[8px] ">Country</th>
-                  <th className="px-[8px] ">Postal Code</th>
-                  <th className="px-[8px] ">GSTIN</th>
+                  <th className="px-[8px] ">Party Name</th>
+                  <th className="px-[8px] ">Order Qty</th>
+                  <th className="px-[8px] ">Product Name</th>
+                  <th className="px-[8px] ">Sample No.</th>
+                  <th className="px-[8px] ">BOM No.</th>
+                  <th className="px-[8px] ">Date</th>
                   <th className="px-[8px] ">Status</th>
                   <th className="px-[8px] ">Created By</th>
                   <th className="px-[8px] ">Actions</th>
@@ -166,17 +173,17 @@ const CustomerMaster = ({ isOpen }) => {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={Array(16).fill({})}
+                    columns={Array(12).fill({})}
                   />
                 ) : (
                   <>
-                    {filtered.map((c, i) => (
-                      <React.Fragment key={c._id}>
+                    {filtered.map((b, i) => (
+                      <React.Fragment key={b._id}>
                         <tr
                           className="border-t border-[#d8b76a] hover:bg-gray-50 cursor-pointer"
                           onClick={() =>
-                            setExpandedCustomerId(
-                              expandedCustomerId === c._id ? null : c._id
+                            setExpandedBOMId(
+                              expandedBOMId === b._id ? null : b._id
                             )
                           }
                         >
@@ -186,7 +193,7 @@ const CustomerMaster = ({ isOpen }) => {
                               1}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {new Date(c.createdAt).toLocaleString("en-IN", {
+                            {new Date(b.createdAt).toLocaleString("en-IN", {
                               day: "2-digit",
                               month: "short",
                               year: "numeric",
@@ -196,7 +203,7 @@ const CustomerMaster = ({ isOpen }) => {
                             })}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {new Date(c.updatedAt).toLocaleString("en-IN", {
+                            {new Date(b.updatedAt).toLocaleString("en-IN", {
                               day: "2-digit",
                               month: "short",
                               year: "numeric",
@@ -206,61 +213,56 @@ const CustomerMaster = ({ isOpen }) => {
                             })}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {c.customerCode || "-"}
+                            {b.partyName || "-"}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {c.customerName || "-"}
+                            {b.orderQty || "-"}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {c.aliasName || "-"}
+                            {b.productName || "-"}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {c.natureOfBusiness || "-"}
+                            {b.sampleNo || "-"}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {c.address || "-"}
+                            {b.bomNo || "-"}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {c.city || "-"}
-                          </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {c.state || "-"}
-                          </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {c.country || "-"}
-                          </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {c.postalCode || "-"}
-                          </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {c.gst || "-"}
+                            {new Date(b.date).toLocaleString("en-IN", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
                             <Toggle
-                              checked={c.isActive}
+                              checked={b.isActive}
                               onChange={() =>
-                                handleToggleStatus(c._id, c.isActive)
+                                handleToggleStatus(b._id, b.isActive)
                               }
                             />
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {c.createdBy?.fullName || "-"}
+                            {b.createdBy?.fullName || "-"}
                           </td>
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2">
                             <FiEdit
-                              onClick={() => setEditingCustomer(c)}
+                              onClick={() => setEditingBOM(b)}
                               className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
                             />
                             <FiTrash2
-                              onClick={() => handleDelete(c._id)}
+                              onClick={() => handleDelete(b._id)}
                               className="cursor-pointer text-[#d8b76a] hover:text-red-600"
                             />
                           </td>
                         </tr>
-                        {expandedCustomerId === c._id && (
+                        {expandedBOMId === b._id && (
                           <tr className="">
                             <td colSpan="100%">
-                              <CustomerDetailsSection customerData={c} />
+                              <BomDetailsSection bomData={b} />
                             </td>
                           </tr>
                         )}
@@ -272,7 +274,7 @@ const CustomerMaster = ({ isOpen }) => {
                           colSpan="16"
                           className="text-center py-4 text-gray-500"
                         >
-                          No customers found.
+                          No BOMs found.
                         </td>
                       </tr>
                     )}
@@ -282,16 +284,16 @@ const CustomerMaster = ({ isOpen }) => {
             </table>
           </div>
         </div>
-        {editingCustomer && (
-          <EditCustomerModal
-            customer={editingCustomer}
-            onClose={() => setEditingCustomer(null)}
+        {/* {editingBOM && (
+          <EditBOMModal
+            BOM={editingBOM}
+            onClose={() => setEditingBOM(null)}
             onUpdated={() => {
-              fetchCustomers(); // re-fetch or refresh list
-              setEditingCustomer(null);
+              fetchBOMs(); // re-fetch or refresh list
+              setEditingBOM(null);
             }}
           />
-        )}
+        )} */}
 
         <PaginationControls
           currentPage={pagination.currentPage}
@@ -300,11 +302,11 @@ const CustomerMaster = ({ isOpen }) => {
           totalResults={pagination.totalResults}
           onEntriesChange={(limit) => {
             setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-            fetchCustomers(1, limit);
+            fetchBOMs(1, limit);
           }}
           onPageChange={(page) => {
             setPagination((prev) => ({ ...prev, currentPage: page }));
-            fetchCustomers(page, pagination.limit);
+            fetchBOMs(page, pagination.limit);
           }}
         />
       </div>
@@ -312,4 +314,4 @@ const CustomerMaster = ({ isOpen }) => {
   );
 };
 
-export default CustomerMaster;
+export default BomMaster;

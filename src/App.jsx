@@ -22,6 +22,7 @@ import Dashboard from "./pages/Dashboard";
 import CustomerMaster from "./components/master/customer/CustomerMaster";
 import PwaInstallPrompt from "./components/PWAInstallPrompt";
 import { useEffect, useState } from "react";
+import BOMMaster from "./components/master/bom/BomMaster";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -202,6 +203,18 @@ const App = () => {
               isAuthenticated ? (
                 <Dashboard>
                   <CustomerMaster />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+          <Route
+            path="/bom-master"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <BOMMaster />
                 </Dashboard>
               ) : (
                 <Navigate to="/login" />

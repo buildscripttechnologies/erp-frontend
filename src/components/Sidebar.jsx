@@ -43,6 +43,7 @@ export function Sidebar({ isOpen }) {
     { label: "FG Master", icon: FaCube, path: "/fg-master" },
     { label: "Vendor Master", icon: FaIndustry, path: "/vendor-master" },
     { label: "Customer Master", icon: FaUserFriends, path: "/customer-master" },
+    { label: "BOM Master", icon: FaUserFriends, path: "/bom-master" },
   ];
 
   // const handleLogout = () => {

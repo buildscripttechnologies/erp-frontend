@@ -1,0 +1,123 @@
+import React from "react";
+
+const BomDetailsSection = ({ bomData }) => {
+  const formatDate = (date) =>
+    new Date(date).toLocaleString("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+
+  return (
+    <div className="bg-white border border-[#d8b76a] rounded shadow p-4 mx-2 mb-2 text-[11px] text-[#292926]">
+      <h2 className="text-[14px] text-[#d8b76a] font-bold underline underline-offset-4 mb-2">
+        BOM Details
+      </h2>
+
+      <table className="w-full text-[11px] border border-[#d8b76a] mb-4 rounded">
+        <tbody>
+          <tr className="border-b border-[#d8b76a]">
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
+              Party Name
+            </td>
+            <td className="px-2 py-1 border-r border-[#d8b76a]">
+              {bomData.partyName || "-"}
+            </td>
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
+              Sample No.
+            </td>
+            <td className="px-2 py-1 border-r border-[#d8b76a]">
+              {bomData.sampleNo || "-"}
+            </td>
+          </tr>
+          <tr className="border-b border-[#d8b76a]">
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
+              Order Qty
+            </td>
+            <td className="px-2 py-1 border-r border-[#d8b76a]">
+              {bomData.orderQty || "-"}
+            </td>
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
+              BOM No.
+            </td>
+            <td className="px-2 py-1">{bomData.bomNo || "-"}</td>
+          </tr>
+          <tr className="border-b border-[#d8b76a]">
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
+              Product Name
+            </td>
+            <td className="px-2 py-1 border-r border-[#d8b76a]">
+              {bomData.productName || "-"}
+            </td>
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
+              Date
+            </td>
+            <td className="px-2 py-1">{formatDate(bomData.date)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Product Details Table */}
+      <h3 className="font-bold text-[#d8b76a] text-[14px] underline underline-offset-4 mb-2">
+        Product Details (Raw Material / SFG)
+      </h3>
+      <table className="w-full mb-4 text-[11px] border text-left">
+        <thead className="bg-[#d8b76a]/70">
+          <tr>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">S. No.</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Sku Code</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Item Name</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Type</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Height(cm)</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Width(cm)</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Depth(cm)</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Quantity</th>
+            {/* <th className="px-2 py-1 border-r border-[#d8b76a]">UOM</th> */}
+          </tr>
+        </thead>
+        <tbody>
+          {bomData.productDetails?.length > 0 ? (
+            bomData.productDetails.map((item, idx) => (
+              <tr key={idx} className="border-b border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {idx + 1}
+                </td>
+                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {item.skuCode || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {item.itemName || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {item.type}
+                </td>
+                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {item.height}
+                </td>
+                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {item.width}
+                </td>
+                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {item.depth}
+                </td>
+                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {item.qty}
+                </td>
+                {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {item.itemId?.UOM?.unit || "-"}
+                </td> */}
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td className="px-2 py-1 text-center" colSpan={5}>
+                No product details available.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default BomDetailsSection;
