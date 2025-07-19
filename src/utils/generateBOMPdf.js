@@ -77,6 +77,7 @@ export const generateBOM = (sfgData) => {
   //   });
 
   // Flatten Components (RM and nested SFGs)
+  
   const components = [
     ...(sfgData.rm || []).map((item) => ({
       ...item,

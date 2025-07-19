@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+
+
 .scrollbar-hide {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;     /* Firefox */
@@ -53,4 +55,17 @@
 
 .custom-select:hover {
   border-color: #b89d4f;
+}
+
+
+.override-colors * {
+  color: black !important;
+  background-color: white !important;
+}
+
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }

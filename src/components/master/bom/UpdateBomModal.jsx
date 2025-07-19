@@ -6,15 +6,17 @@ import CreatableSelect from "react-select/creatable";
 import { FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 
-const AddBomModal = ({ onClose, onSuccess }) => {
+const UpdateBomModal = ({ onClose, onSuccess, bom }) => {
   const [form, setForm] = useState({
-    partyName: "",
-    productName: "",
-    orderQty: "",
-    date: new Date().toISOString().split("T")[0],
+    partyName: bom.partyName || "",
+    productName: bom.productName || "",
+    orderQty: bom.orderQty || "",
+    date: bom.date?.split("T")[0] || new Date().toISOString().split("T")[0],
   });
 
-  const [productDetails, setProductDetails] = useState([]);
+  const [productDetails, setProductDetails] = useState(
+    bom.productDetails || []
+  );
   const [rms, setRms] = useState([]);
   const [sfgs, setSfgs] = useState([]);
   const [fgs, setFgs] = useState([]);
@@ -31,23 +33,27 @@ const AddBomModal = ({ onClose, onSuccess }) => {
           axios.get("/customers/get-all?limit=1000"),
         ]);
 
-        const rawMaterials = (rmRes.data.rawMaterials || []).map((item) => ({
-          ...item,
-          type: "RM",
-        }));
-        const sfgItems = (sfgRes.data.data || []).map((item) => ({
-          ...item,
-          type: "SFG",
-        }));
+        setRms(
+          (rmRes.data.rawMaterials || []).map((item) => ({
+            ...item,
+            type: "RM",
+          }))
+        );
 
-        setRms(rawMaterials);
-        setSfgs(sfgItems);
+        setSfgs(
+          (sfgRes.data.data || []).map((item) => ({
+            ...item,
+            type: "SFG",
+          }))
+        );
+
         setFgs(fgRes.data.data || []);
         setCustomers(customerRes.data.data || []);
       } catch {
         toast.error("Failed to load dropdown data");
       }
     };
+
     fetchDropdownData();
   }, []);
 
@@ -68,21 +74,6 @@ const AddBomModal = ({ onClose, onSuccess }) => {
     })),
   ];
 
-  const handleAddComponent = (selected) => {
-    setProductDetails([
-      ...productDetails,
-      {
-        itemId: "",
-        type: "",
-        qty: "",
-        height: "",
-        width: "",
-        depth: "",
-        label: selected.label,
-      },
-    ]);
-  };
-
   const updateComponent = (index, field, value) => {
     const updated = [...productDetails];
     updated[index][field] = value;
@@ -95,6 +86,21 @@ const AddBomModal = ({ onClose, onSuccess }) => {
     setProductDetails(updated);
   };
 
+  const handleAddComponent = () => {
+    setProductDetails([
+      ...productDetails,
+      {
+        itemId: "",
+        type: "",
+        qty: "",
+        height: "",
+        width: "",
+        depth: "",
+        label: "",
+      },
+    ]);
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
 
@@ -103,7 +109,6 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       return toast.error("Please fill all required fields");
     }
 
-    // Check for empty RM/SFG row
     const hasEmptyComponent = productDetails.some((comp) => {
       return (
         !comp.itemId ||
@@ -125,12 +130,12 @@ const AddBomModal = ({ onClose, onSuccess }) => {
         productDetails: productDetails.map(({ label, ...rest }) => rest),
       };
 
-      await axios.post("/boms/add", payload);
-      toast.success("BOM added successfully");
+      await axios.patch(`/boms/update/${bom._id}`, payload);
+      toast.success("BOM updated successfully");
       onSuccess();
       onClose();
     } catch (err) {
-      toast.error("Failed to add BOM");
+      toast.error("Failed to update BOM");
       console.error(err);
     } finally {
       setLoading(false);
@@ -142,7 +147,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-lg border border-[#d8b76a] text-[#292926]">
         {/* Header */}
         <div className="flex justify-between items-center sticky top-0 bg-white z-10 pb-2">
-          <h2 className="text-xl font-semibold">Add Bill of Materials</h2>
+          <h2 className="text-xl font-semibold">Update Bill of Materials</h2>
           <button
             onClick={onClose}
             className="text-black hover:text-red-500 font-bold text-xl cursor-pointer"
@@ -151,7 +156,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
           </button>
         </div>
 
-        {/* Form */}
+        {/* Form Fields */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <CreatableSelect
             styles={{
@@ -159,9 +164,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                 ...base,
                 borderColor: "#d8b76a",
                 boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
-                "&:hover": {
-                  borderColor: "#d8b76a",
-                },
+                "&:hover": { borderColor: "#d8b76a" },
               }),
             }}
             options={customers.map((c) => ({
@@ -184,9 +187,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                 ...base,
                 borderColor: "#d8b76a",
                 boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
-                "&:hover": {
-                  borderColor: "#d8b76a",
-                },
+                "&:hover": { borderColor: "#d8b76a" },
               }),
             }}
             options={fgs.map((fg) => ({
@@ -219,29 +220,11 @@ const AddBomModal = ({ onClose, onSuccess }) => {
           />
         </div>
 
-        {/* Components Section */}
+        {/* RM/SFG Components */}
         <div>
           <h3 className="font-bold text-[14px] mb-2 text-[#d8b76a] underline">
             RM/SFG Components
           </h3>
-
-          {/* <div className="flex flex-col mb-4">
-            <label className="text-[12px] font-semibold mb-[4px] text-[#292926]">
-              Add RM/SFG Component
-            </label>
-            <Select
-              options={materialOptions}
-              onChange={handleAddComponent}
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  borderColor: "#d8b76a",
-                  minHeight: "36px",
-                  fontSize: "12px",
-                }),
-              }}
-            />
-          </div> */}
 
           <div className="flex flex-col gap-4">
             {productDetails.map((comp, index) => (
@@ -255,7 +238,6 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                       Component
                     </label>
                     <Select
-                      required
                       value={materialOptions.find(
                         (opt) => opt.value === comp.itemId
                       )}
@@ -272,9 +254,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                           boxShadow: state.isFocused
                             ? "0 0 0 1px #d8b76a"
                             : "none",
-                          "&:hover": {
-                            borderColor: "#d8b76a",
-                          },
+                          "&:hover": { borderColor: "#d8b76a" },
                         }),
                       }}
                     />
@@ -312,7 +292,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
 
             <button
               type="button"
-              onClick={() => handleAddComponent({ label: "", value: "" })}
+              onClick={handleAddComponent}
               className="bg-[#d8b76a] hover:bg-[#d8b76a91] text-[#292926] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
             >
               + Add RM/SFG
@@ -325,7 +305,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
           <button
             disabled={loading}
             onClick={handleSubmit}
-            className="bg-[#d8b76a] text-black px-6 py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer"
+            className="bg-[#d8b76a] text-black px-6 py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer items-center"
           >
             {loading ? (
               <>
@@ -333,7 +313,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                 <ClipLoader size={20} color="#292926" />
               </>
             ) : (
-              "Save"
+              "Update"
             )}
           </button>
         </div>
@@ -342,4 +322,4 @@ const AddBomModal = ({ onClose, onSuccess }) => {
   );
 };
 
-export default AddBomModal;
+export default UpdateBomModal;

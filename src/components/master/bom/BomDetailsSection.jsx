@@ -51,7 +51,13 @@ const BomDetailsSection = ({ bomData }) => {
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
               Date
             </td>
-            <td className="px-2 py-1">{formatDate(bomData.date)}</td>
+            <td className="px-2 py-1">
+              {new Date(bomData.date).toLocaleString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+            </td>
           </tr>
         </tbody>
       </table>

@@ -3,14 +3,18 @@ import React, { useEffect, useState } from "react";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
-import Dashboard from "../../../pages/Dashboard";
 import TableSkeleton from "../../TableSkeleton";
 import ScrollLock from "../../ScrollLock";
 import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";
 import BomDetailsSection from "./BomDetailsSection";
-import AddBomForm from "./AddBOMModel";
 import AddBomModal from "./AddBOMModel";
+import UpdateBomModal from "./UpdateBomModal";
+import { FaFileDownload } from "react-icons/fa";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { useRef } from "react";
+import { generateBom } from "../../../utils/generateBom";
 
 const BomMaster = ({ isOpen }) => {
   const [BOMs, setBOMs] = useState([]);
@@ -106,21 +110,31 @@ const BomMaster = ({ isOpen }) => {
     }
   };
 
+  const handleDownloadPDF = async (bom) => {
+    setExpandedBOMId(bom._id); // ensure it's rendered
+    await new Promise((res) => setTimeout(res, 100)); // wait for rendering
+
+    const element = printRef.current;
+    if (!element) return toast.error("Unable to export PDF.");
+
+    const canvas = await html2canvas(element);
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "px",
+      format: "a4",
+    });
+
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`BOM_${bom.bomNo || "Details"}.pdf`);
+  };
+
   return (
     <>
-      {showModal && (
-        // <AddBomModal
-        //   onClose={() => setShowModal(false)}
-        //   onAdded={() => fetchBOMs(pagination.currentPage)}
-        // />
-        <AddBomModal
-          // rms={rawMaterials}
-          // sfgs={sfgList}
-          onClose={() => setShowModal(false)}
-          onSuccess={fetchBOMs}
-        />
-      )}
-
       <div className="p-3 max-w-[99vw] mx-auto">
         <h2 className="text-2xl font-bold mb-4">
           Bill Of Materials{" "}
@@ -158,13 +172,13 @@ const BomMaster = ({ isOpen }) => {
                   <th className="px-[8px] py-1.5 ">#</th>
                   <th className="px-[8px] ">Created At</th>
                   <th className="px-[8px] ">Updated At</th>
-                  <th className="px-[8px] ">Party Name</th>
-                  <th className="px-[8px] ">Order Qty</th>
-                  <th className="px-[8px] ">Product Name</th>
                   <th className="px-[8px] ">Sample No.</th>
                   <th className="px-[8px] ">BOM No.</th>
+                  <th className="px-[8px] ">Party Name</th>
+                  <th className="px-[8px] ">Product Name</th>
+                  <th className="px-[8px] ">Order Qty</th>
                   <th className="px-[8px] ">Date</th>
-                  <th className="px-[8px] ">Status</th>
+                  {/* <th className="px-[8px] ">Status</th> */}
                   <th className="px-[8px] ">Created By</th>
                   <th className="px-[8px] ">Actions</th>
                 </tr>
@@ -173,7 +187,7 @@ const BomMaster = ({ isOpen }) => {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={Array(12).fill({})}
+                    columns={Array(11).fill({})}
                   />
                 ) : (
                   <>
@@ -213,42 +227,44 @@ const BomMaster = ({ isOpen }) => {
                             })}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {b.partyName || "-"}
-                          </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {b.orderQty || "-"}
-                          </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {b.productName || "-"}
-                          </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
                             {b.sampleNo || "-"}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
                             {b.bomNo || "-"}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
+                            {b.partyName || "-"}
+                          </td>
+
+                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                            {b.productName || "-"}
+                          </td>
+                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                            {b.orderQty || "-"}
+                          </td>
+                          <td className="px-[8px] border-r border-[#d8b76a] ">
                             {new Date(b.date).toLocaleString("en-IN", {
                               day: "2-digit",
                               month: "short",
                               year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: true,
                             })}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          {/* <td className="px-[8px] border-r border-[#d8b76a] ">
                             <Toggle
                               checked={b.isActive}
                               onChange={() =>
                                 handleToggleStatus(b._id, b.isActive)
                               }
                             />
-                          </td>
+                          </td> */}
                           <td className="px-[8px] border-r border-[#d8b76a] ">
                             {b.createdBy?.fullName || "-"}
                           </td>
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2">
+                            <FaFileDownload
+                              onClick={() => generateBom(b)}
+                              className="cursor-pointer text-[#d8b76a] hover:text-green-600"
+                            />
                             <FiEdit
                               onClick={() => setEditingBOM(b)}
                               className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
@@ -284,16 +300,23 @@ const BomMaster = ({ isOpen }) => {
             </table>
           </div>
         </div>
-        {/* {editingBOM && (
-          <EditBOMModal
-            BOM={editingBOM}
+        {editingBOM && (
+          <UpdateBomModal
+            bom={editingBOM}
             onClose={() => setEditingBOM(null)}
-            onUpdated={() => {
+            onSuccess={() => {
               fetchBOMs(); // re-fetch or refresh list
               setEditingBOM(null);
             }}
           />
-        )} */}
+        )}
+
+        {showModal && (
+          <AddBomModal
+            onClose={() => setShowModal(false)}
+            onSuccess={fetchBOMs}
+          />
+        )}
 
         <PaginationControls
           currentPage={pagination.currentPage}
