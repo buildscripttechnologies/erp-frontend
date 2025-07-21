@@ -158,66 +158,86 @@ const UpdateBomModal = ({ onClose, onSuccess, bom }) => {
 
         {/* Form Fields */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          <CreatableSelect
-            styles={{
-              control: (base, state) => ({
-                ...base,
-                borderColor: "#d8b76a",
-                boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
-                "&:hover": { borderColor: "#d8b76a" },
-              }),
-            }}
-            options={customers.map((c) => ({
-              label: c.customerName,
-              value: c.customerName.trim(),
-            }))}
-            placeholder="Select or Type Customer"
-            onChange={(e) => setForm({ ...form, partyName: e?.value })}
-            onCreateOption={(val) => setForm({ ...form, partyName: val })}
-            value={
-              form.partyName
-                ? { label: form.partyName, value: form.partyName }
-                : null
-            }
-          />
+          <div>
+            <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              Party Name
+            </label>
+            <CreatableSelect
+              styles={{
+                control: (base, state) => ({
+                  ...base,
+                  borderColor: "#d8b76a",
+                  boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
+                  "&:hover": { borderColor: "#d8b76a" },
+                }),
+              }}
+              options={customers.map((c) => ({
+                label: c.customerName,
+                value: c.customerName.trim(),
+              }))}
+              placeholder="Select or Type Customer"
+              onChange={(e) => setForm({ ...form, partyName: e?.value })}
+              onCreateOption={(val) => setForm({ ...form, partyName: val })}
+              value={
+                form.partyName
+                  ? { label: form.partyName, value: form.partyName }
+                  : null
+              }
+            />
+          </div>
 
-          <CreatableSelect
-            styles={{
-              control: (base, state) => ({
-                ...base,
-                borderColor: "#d8b76a",
-                boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
-                "&:hover": { borderColor: "#d8b76a" },
-              }),
-            }}
-            options={fgs.map((fg) => ({
-              label: fg.itemName,
-              value: fg.itemName.trim(),
-            }))}
-            placeholder="Select or Type FG Product"
-            onChange={(e) => setForm({ ...form, productName: e?.value })}
-            onCreateOption={(val) => setForm({ ...form, productName: val })}
-            value={
-              form.productName
-                ? { label: form.productName, value: form.productName }
-                : null
-            }
-          />
+          <div>
+            <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              Product Name
+            </label>
+            <CreatableSelect
+              styles={{
+                control: (base, state) => ({
+                  ...base,
+                  borderColor: "#d8b76a",
+                  boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
+                  "&:hover": { borderColor: "#d8b76a" },
+                }),
+              }}
+              options={fgs.map((fg) => ({
+                label: fg.itemName,
+                value: fg.itemName.trim(),
+              }))}
+              placeholder="Select or Type FG Product"
+              onChange={(e) => setForm({ ...form, productName: e?.value })}
+              onCreateOption={(val) => setForm({ ...form, productName: val })}
+              value={
+                form.productName
+                  ? { label: form.productName, value: form.productName }
+                  : null
+              }
+            />
+          </div>
 
-          <input
-            type="number"
-            placeholder="Order Qty"
-            className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-            value={form.orderQty}
-            onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
-          />
+          <div className="flex flex-col">
+            <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              Order Qty
+            </label>
+            <input
+              type="number"
+              placeholder="Order Qty"
+              className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+              value={form.orderQty}
+              onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
+            />
+          </div>
 
-          <input
-            type="date"
-            className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-            value={form.date}
-            onChange={(e) => setForm({ ...form, date: e.target.value })}
-          />
+          <div className="flex flex-col">
+            <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              Date
+            </label>
+            <input
+              type="date"
+              className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+              value={form.date}
+              onChange={(e) => setForm({ ...form, date: e.target.value })}
+            />
+          </div>
         </div>
 
         {/* RM/SFG Components */}
@@ -232,8 +252,8 @@ const UpdateBomModal = ({ onClose, onSuccess, bom }) => {
                 key={index}
                 className="border border-[#d8b76a] rounded p-3 flex flex-col gap-2"
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
-                  <div className="flex flex-col">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
+                  <div className="flex flex-col md:col-span-2">
                     <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
                       Component
                     </label>

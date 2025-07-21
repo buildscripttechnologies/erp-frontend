@@ -1,25 +1,56 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { getBase64ImageWithSize } from "./convertImageToBase64";
 
-export const generateBom = (bomData) => {
-  const doc = new jsPDF("landscape");
+export const generateBom = async (bomData) => {
+  const doc = new jsPDF("portrait");
   const margin = 10;
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
 
-  // Draw BOM Details
+  // ✅ Load logo once
+  const {
+    base64: logoBase64,
+    width: logoW,
+    height: logoH,
+  } = await getBase64ImageWithSize("/images/logo.png", 60, 60); // watermark + top-right
+  const {
+    base64: watermarkBase64,
+    width: wmWidth,
+    height: wmHeight,
+  } = await getBase64ImageWithSize("/images/logo.png", 100, 100); // adjust max size as needed
+
+  // ✅ Watermark setup (function to reuse on every page)
+  const addWatermark = () => {
+    doc.setGState(new doc.GState({ opacity: 0.05 }));
+    doc.addImage(
+      watermarkBase64,
+      "PNG",
+      (pageWidth - wmWidth) / 2,
+      (pageHeight - wmHeight) / 2,
+      wmWidth,
+      wmHeight
+    );
+    doc.setGState(new doc.GState({ opacity: 1 }));
+  };
+
+  // First page watermark
+  addWatermark();
+
+  // Title
   doc.setFontSize(14);
   doc.setTextColor("#d8b76a");
   doc.setFont("helvetica", "bold");
-  doc.text("BOM Details", margin, 15);
+  doc.text(`${bomData.bomNo + " Details"}`, pageWidth / 2, 20, {
+    align: "center",
+  });
 
   doc.setFontSize(10);
   doc.setTextColor("#000");
-  doc.setFont("helvetica", "normal");
 
-  const detailRows = [
+  const details = [
     ["Party Name", bomData.partyName || ""],
     ["Product Name", bomData.productName || ""],
-
     ["Order Qty", bomData.orderQty || ""],
     ["BOM No.", bomData.bomNo || ""],
     ["Sample No.", bomData.sampleNo || ""],
@@ -33,30 +64,19 @@ export const generateBom = (bomData) => {
     ],
   ];
 
-  // Split into two columns
-  const leftCol = detailRows.slice(0, 3);
-  const rightCol = detailRows.slice(3);
-
-  let y = 22;
-  leftCol.forEach(([label, value]) => {
-    doc.text(`${label}:`, margin, y);
-    doc.text(value.toString(), margin + 40, y);
+  let y = 35;
+  details.forEach(([label, value]) => {
+    doc.setFont("helvetica", "bold");
+    doc.text(`${label}`, margin, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(`: ${value}`, margin + 27, y);
     y += 7;
   });
 
-  y = 22;
-  rightCol.forEach(([label, value]) => {
-    doc.text(`${label}:`, pageWidth / 2 + 10, y);
-    doc.text(value.toString(), pageWidth / 2 + 50, y);
-    y += 7;
-  });
-
-  // Product Table Heading
-  doc.setTextColor("#d8b76a");
   doc.setFont("helvetica", "bold");
-  doc.text("Product Details (Raw Material / SFG)", margin, y + 10);
+  doc.setTextColor("#d8b76a");
+  doc.text("Product Details", margin, y + 10);
 
-  // Table
   const tableBody = (bomData.productDetails || []).map((item, index) => [
     index + 1,
     item.skuCode || "",
@@ -96,7 +116,24 @@ export const generateBom = (bomData) => {
       fontSize: 9,
     },
     margin: { left: margin, right: margin },
+
+    // ✅ Add watermark to every page
+    didDrawPage: () => {
+      addWatermark();
+      doc.addImage(
+        logoBase64,
+        "PNG",
+        pageWidth - logoW - margin,
+        margin + 12,
+        logoW,
+        logoH
+      );
+    },
   });
 
-  doc.save(`BOM-${bomData.sampleNo || "Details"}.pdf`);
+  // doc.save(`${bomData.bomNo + "_" + bomData.partyName || "Details"}.pdf`);
+
+  const pdfBlob = doc.output("blob");
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  return blobUrl;
 };

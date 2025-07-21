@@ -15,6 +15,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useRef } from "react";
 import { generateBom } from "../../../utils/generateBom";
+import { generateBomLP } from "../../../utils/generateBomLP";
 
 const BomMaster = ({ isOpen }) => {
   const [BOMs, setBOMs] = useState([]);
@@ -63,10 +64,10 @@ const BomMaster = ({ isOpen }) => {
 
   const filtered = BOMs.filter(
     (c) =>
-      c.partyName.toLowerCase().includes(search.toLowerCase()) ||
-      c.productName.toLowerCase().includes(search.toLowerCase()) ||
-      c.bomNo.toLowerCase().includes(search.toLowerCase()) ||
-      c.sampleNo.toLowerCase().includes(search.toLowerCase()) ||
+      c.partyName?.toLowerCase().includes(search.toLowerCase()) ||
+      c.productName?.toLowerCase().includes(search.toLowerCase()) ||
+      c.bomNo?.toLowerCase().includes(search.toLowerCase()) ||
+      c.sampleNo?.toLowerCase().includes(search.toLowerCase()) ||
       c.createdBy?.fullName.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -110,27 +111,70 @@ const BomMaster = ({ isOpen }) => {
     }
   };
 
-  const handleDownloadPDF = async (bom) => {
-    setExpandedBOMId(bom._id); // ensure it's rendered
-    await new Promise((res) => setTimeout(res, 100)); // wait for rendering
+  const handlePreviewBom = async (bomData) => {
+    try {
+      const blobUrl = await generateBomLP(bomData);
 
-    const element = printRef.current;
-    if (!element) return toast.error("Unable to export PDF.");
+      // Open a new tab with preview and print/download buttons
+      const printWindow = window.open("", "_blank");
 
-    const canvas = await html2canvas(element);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "px",
-      format: "a4",
-    });
+      const html = `
+        <html>
+          <head>
+            <title>BOM Preview</title>
+            <style>
+              body { margin: 0; font-family: sans-serif; }
+              .controls {
+                padding: 10px;
+                background-color: #292926;
+                color: #d8b76a;
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+              }
+              .controls button {
+                padding: 6px 12px;
+                font-size: 14px;
+                border: none;
+                cursor: pointer;
+                background-color: #d8b76a;
+                color: #292926;
+                border-radius: 4px;
+              }
+              iframe {
+                width: 100%;
+                height: calc(100vh - 50px);
+                border: none;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="controls">
+              <button onclick="document.getElementById('pdfFrame').contentWindow.print()">🖨️ Print</button>
+              <button onclick="downloadPdf()">⬇️ Download</button>
+            </div>
+            <iframe id="pdfFrame" src="${blobUrl}"></iframe>
+            <script>
+              function downloadPdf() {
+                const link = document.createElement('a');
+                link.href = '${blobUrl}';
+                link.download = '${
+                  bomData.bomNo + "_" + bomData.partyName || "Details"
+                }.pdf';
+                link.click();
+              }
+            </script>
+          </body>
+        </html>
+      `;
 
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`BOM_${bom.bomNo || "Details"}.pdf`);
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+    } catch (err) {
+      console.error("Error generating BOM PDF preview:", err);
+      toast.error("Failed to generate PDF preview.");
+    }
   };
 
   return (
@@ -262,7 +306,7 @@ const BomMaster = ({ isOpen }) => {
                           </td>
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2">
                             <FaFileDownload
-                              onClick={() => generateBom(b)}
+                              onClick={() => handlePreviewBom(b)}
                               className="cursor-pointer text-[#d8b76a] hover:text-green-600"
                             />
                             <FiEdit
