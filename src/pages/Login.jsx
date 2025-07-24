@@ -21,10 +21,9 @@ const Login = () => {
       const res = await axios.post("/auth/login", { identifier, password });
 
       const { token, status, user } = res.data;
-      
 
       if (status == 203) {
-        toast.error("Please verify your email first.");
+        toast.success("Please verify your email first.");
         navigate("/verify-otp", {
           state: {
             email: user.email,
@@ -34,11 +33,11 @@ const Login = () => {
         return;
       }
       if (status === 206) {
-        toast.error("Please verify your email for 2FA.");
+        toast.success("Please verify your email for 2FA.");
         navigate("/verify-otp", {
           state: {
             email: user.email,
-            purpose: "2FA",
+            purpose: "2fa",
           },
         });
         return;

@@ -4,6 +4,7 @@ import axios from "../utils/axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ClipLoader } from "react-spinners";
+import { useAuth } from "../context/AuthContext";
 
 const VerifyOtp = () => {
   const [otp, setOtp] = useState("");
@@ -15,9 +16,11 @@ const VerifyOtp = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { login } = useAuth();
+
   useEffect(() => {
     if (location.state) {
-      console.log("State : ", location.state);
+      // console.log("State : ", location.state);
 
       setEmail(location.state.email || "");
       setPurpose(location.state.purpose || "");
@@ -44,9 +47,16 @@ const VerifyOtp = () => {
     try {
       const res = await axios.post("/otp/verify", { email, otp, purpose });
 
-      if (res.data.token) localStorage.setItem("token", res.data.token);
+      const { token, status, user } = res.data;
 
-      if (res.data.status === 200) {
+      console.log("token,user", token, user);
+
+      // if (res.data.token) localStorage.setItem("token", res.data.token);
+
+      // toast.success("Login successful!");
+
+      if (status === 200) {
+        login(token, user);
         toast.success("OTP verified successfully!");
         navigate("/dashboard");
       } else {
