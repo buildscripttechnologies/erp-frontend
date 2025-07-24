@@ -286,7 +286,7 @@ const AddVendorModal = ({ onClose, onAdded }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-2">
-      <div className="bg-white w-full max-w-[98vw] max-h-[88vh] overflow-y-auto rounded-md border border-[#d8b76a] text-xs relative scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-gray-100 p-3">
+      <div className="bg-white w-full max-h-[88vh] overflow-y-auto rounded-md border border-[#d8b76a] text-xs relative scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-gray-100 p-3">
         <button
           onClick={onClose}
           className="absolute right-3 top-3 text-sm text-gray-700 hover:text-red-600 cursor-pointer"
@@ -438,18 +438,18 @@ const AddVendorModal = ({ onClose, onAdded }) => {
 
                 {/* Contact Persons */}
                 <div className="mt-4 w-full">
-                  <div className="font-semibold text-[13px] mb-1 text-[#d8b76a]">
+                  <div className="font-semibold text-[14px] mb-1 text-[#d8b76a] underline">
                     Contact Persons
                   </div>
 
                   {/* Header (hide on mobile) */}
-                  <div className="hidden md:grid grid-cols-5 text-[11px] font-semibold bg-[#d8b76a]/80 px-2 py-1 rounded">
+                  {/* <div className="hidden text-left md:grid grid-cols-6 text-[11px] font-semibold bg-[#d8b76a]/80 px-2 py-1 rounded">
                     <div>Name</div>
                     <div>Designation</div>
                     <div>Phone</div>
                     <div>Email</div>
                     <div>Info</div>
-                  </div>
+                  </div> */}
 
                   {/* Rows */}
                   {contacts.map((c, i) => (
@@ -458,46 +458,81 @@ const AddVendorModal = ({ onClose, onAdded }) => {
                       className="flex flex-col gap-2 mt-2 w-full md:flex-row md:items-center"
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 w-full">
-                        <input
-                          name="contactPerson"
-                          value={c.contactPerson}
-                          placeholder="Name"
-                          onChange={(e) => handleContactChange(vendorIdx, i, e)}
-                          className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
-                        />
-                        <input
-                          name="designation"
-                          value={c.designation}
-                          placeholder="Designation"
-                          onChange={(e) => handleContactChange(vendorIdx, i, e)}
-                          className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
-                        />
-                        <input
-                          name="phone"
-                          value={c.phone}
-                          placeholder="Phone"
-                          onChange={(e) => handleContactChange(vendorIdx, i, e)}
-                          className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
-                        />
-                        <input
-                          name="email"
-                          value={c.email}
-                          placeholder="Email"
-                          onChange={(e) => handleContactChange(vendorIdx, i, e)}
-                          className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
-                        />
-                        <input
-                          name="information"
-                          value={c.information}
-                          placeholder="Info"
-                          onChange={(e) => handleContactChange(vendorIdx, i, e)}
-                          className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
-                        />
+                        <div className="flex flex-col">
+                          <label className="text-[11px] font-medium text-[#292926] mb-1">
+                            Name
+                          </label>
+                          <input
+                            name="contactPerson"
+                            value={c.contactPerson}
+                            placeholder="Name"
+                            onChange={(e) =>
+                              handleContactChange(vendorIdx, i, e)
+                            }
+                            className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <label className="text-[11px] font-medium text-[#292926] mb-1">
+                            Designation
+                          </label>
+                          <input
+                            name="designation"
+                            value={c.designation}
+                            placeholder="Designation"
+                            onChange={(e) =>
+                              handleContactChange(vendorIdx, i, e)
+                            }
+                            className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <label className="text-[11px] font-medium text-[#292926] mb-1">
+                            Phone
+                          </label>
+                          <input
+                            name="phone"
+                            value={c.phone}
+                            placeholder="Phone"
+                            onChange={(e) =>
+                              handleContactChange(vendorIdx, i, e)
+                            }
+                            className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <label className="text-[11px] font-medium text-[#292926] mb-1">
+                            Email
+                          </label>
+                          <input
+                            name="email"
+                            value={c.email}
+                            placeholder="Email"
+                            onChange={(e) =>
+                              handleContactChange(vendorIdx, i, e)
+                            }
+                            className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <label className="text-[11px] font-medium text-[#292926] mb-1">
+                            Information
+                          </label>
+                          <input
+                            name="information"
+                            value={c.information}
+                            placeholder="Info"
+                            onChange={(e) =>
+                              handleContactChange(vendorIdx, i, e)
+                            }
+                            className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
+                          />
+                        </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => removeContact(vendorIdx, i)}
-                        className="self-start flex gap-1 items-center  text-red-600  text-sm rounded cursor-pointer hover:underline"
+                        className="self-start flex gap-1 items-center  mt-5 text-red-600  text-sm rounded cursor-pointer hover:underline"
                       >
                         <FiTrash2 /> Remove
                       </button>
@@ -515,19 +550,19 @@ const AddVendorModal = ({ onClose, onAdded }) => {
 
                 {/* Materials */}
                 <div className="mt-6 w-full">
-                  <div className="font-semibold text-[13px] mb-1 text-[#d8b76a]">
+                  <div className="font-semibold text-[14px] mb-1 text-[#d8b76a] underline">
                     Raw Materials
                   </div>
 
                   {/* Header (hidden on small screens) */}
-                  <div className="hidden md:grid grid-cols-6 text-[11px] font-semibold bg-[#d8b76a]/80 px-2 py-1 rounded">
+                  {/* <div className="hidden text-left md:grid grid-cols-6 text-[11px] font-semibold bg-[#d8b76a]/80 px-2 py-1 rounded">
                     <div>Item</div>
                     <div>Delivery</div>
                     <div>MOQ</div>
                     <div>UOM</div>
                     <div>Rate</div>
                     <div>Index</div>
-                  </div>
+                  </div> */}
 
                   {/* Rows */}
                   {materials.map((m, i) => (
@@ -535,117 +570,159 @@ const AddVendorModal = ({ onClose, onAdded }) => {
                       key={i}
                       className="flex flex-col gap-2 mt-2 w-full md:flex-row md:items-center"
                     >
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-2 w-full">
-                        <Select
-                          options={materialOptions}
-                          placeholder="Select Material"
-                          value={materialOptions.find(
-                            (opt) =>
-                              opt.value === m.itemId && opt.type === m.type
-                          )}
-                          onChange={(selected) => {
-                            handleMaterialChange(
-                              vendorIdx,
-                              i,
-                              "itemId",
-                              selected?.value || ""
-                            );
-                            handleMaterialChange(
-                              vendorIdx,
-                              i,
-                              "type",
-                              selected?.type || ""
-                            );
-                          }}
-                          styles={{
-                            control: (base, state) => ({
-                              ...base,
-                              borderColor: "#d8b76a",
-                              boxShadow: state.isFocused
-                                ? "0 0 0 1px #d8b76a"
-                                : "none",
-                              "&:hover": { borderColor: "#d8b76a" },
-                            }),
-                          }}
-                          isClearable
-                          className="text-[12px]"
-                        />
-                        <input
-                          value={m.deliveryDays}
-                          onChange={(e) =>
-                            handleMaterialChange(
-                              vendorIdx,
-                              i,
-                              "deliveryDays",
-                              e.target.value
-                            )
-                          }
-                          className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
-                          placeholder="Days"
-                        />
-                        <input
-                          value={m.moq}
-                          onChange={(e) =>
-                            handleMaterialChange(
-                              vendorIdx,
-                              i,
-                              "moq",
-                              e.target.value
-                            )
-                          }
-                          className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
-                          placeholder="MOQ"
-                        />
-                        <select
-                          value={m.uomId}
-                          onChange={(e) =>
-                            handleMaterialChange(
-                              vendorIdx,
-                              i,
-                              "uomId",
-                              e.target.value
-                            )
-                          }
-                          className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none cursor-pointer"
-                        >
-                          <option value="">UOM</option>
-                          {uoms.map((u) => (
-                            <option key={u._id} value={u._id}>
-                              {u.unitName}
-                            </option>
-                          ))}
-                        </select>
-                        <input
-                          value={m.rate}
-                          onChange={(e) =>
-                            handleMaterialChange(
-                              vendorIdx,
-                              i,
-                              "rate",
-                              e.target.value
-                            )
-                          }
-                          className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
-                          placeholder="Rate"
-                        />
-                        <input
-                          value={m.preferenceIndex}
-                          onChange={(e) =>
-                            handleMaterialChange(
-                              vendorIdx,
-                              i,
-                              "preferenceIndex",
-                              e.target.value
-                            )
-                          }
-                          className="border rounded px-2 py-[6px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
-                          placeholder="Index"
-                        />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-2 w-full">
+                        <div className="flex flex-col md:col-span-2">
+                          <label className="text-[11px] font-medium text-[#292926] mb-1">
+                            Item
+                          </label>
+                          <Select
+                            options={materialOptions}
+                            placeholder="Select Material"
+                            value={materialOptions.find(
+                              (opt) =>
+                                opt.value === m.itemId && opt.type === m.type
+                            )}
+                            onChange={(selected) => {
+                              handleMaterialChange(
+                                vendorIdx,
+                                i,
+                                "itemId",
+                                selected?.value || ""
+                              );
+                              handleMaterialChange(
+                                vendorIdx,
+                                i,
+                                "type",
+                                selected?.type || ""
+                              );
+                            }}
+                            styles={{
+                              control: (base, state) => ({
+                                ...base,
+                                borderColor: "#d8b76a",
+                                boxShadow: state.isFocused
+                                  ? "0 0 0 1px #d8b76a"
+                                  : "none",
+                                "&:hover": { borderColor: "#d8b76a" },
+                                // minHeight: "6px", // 🔸 Set desired height
+                                // height: "30px",
+                              }),
+                              // valueContainer: (provided) => ({
+                              //   ...provided,
+                              //   height: "30px",
+                              //   padding: "0 6px",
+                              // }),
+                              // indicatorsContainer: (provided) => ({
+                              //   ...provided,
+                              //   height: "30px",
+                              // }),
+                            }}
+                            isClearable
+                            className="text-[12px] "
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <label className="text-[11px] font-medium text-[#292926] mb-1">
+                            Delivery
+                          </label>
+                          <input
+                            value={m.deliveryDays}
+                            onChange={(e) =>
+                              handleMaterialChange(
+                                vendorIdx,
+                                i,
+                                "deliveryDays",
+                                e.target.value
+                              )
+                            }
+                            className="border rounded px-2 py-[10px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
+                            placeholder="Days"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <label className="text-[11px] font-medium text-[#292926] mb-1">
+                            MOQ
+                          </label>
+                          <input
+                            value={m.moq}
+                            onChange={(e) =>
+                              handleMaterialChange(
+                                vendorIdx,
+                                i,
+                                "moq",
+                                e.target.value
+                              )
+                            }
+                            className="border rounded px-2 py-[10px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
+                            placeholder="MOQ"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <label className="text-[11px] font-medium text-[#292926] mb-1">
+                            UOM
+                          </label>
+                          <select
+                            value={m.uomId}
+                            onChange={(e) =>
+                              handleMaterialChange(
+                                vendorIdx,
+                                i,
+                                "uomId",
+                                e.target.value
+                              )
+                            }
+                            className="border rounded px-2 py-[9px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none cursor-pointer"
+                          >
+                            <option value="">UOM</option>
+                            {uoms.map((u) => (
+                              <option key={u._id} value={u._id}>
+                                {u.unitName}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="flex flex-col">
+                          <label className="text-[11px] font-medium text-[#292926] mb-1">
+                            Rate
+                          </label>
+                          <input
+                            value={m.rate}
+                            onChange={(e) =>
+                              handleMaterialChange(
+                                vendorIdx,
+                                i,
+                                "rate",
+                                e.target.value
+                              )
+                            }
+                            className="border rounded px-2 py-[10px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
+                            placeholder="Rate"
+                          />
+                        </div>
+
+                        <div className="flex flex-col">
+                          <label className="text-[11px] font-medium text-[#292926] mb-1">
+                            Index
+                          </label>
+                          <input
+                            value={m.preferenceIndex}
+                            onChange={(e) =>
+                              handleMaterialChange(
+                                vendorIdx,
+                                i,
+                                "preferenceIndex",
+                                e.target.value
+                              )
+                            }
+                            className="border rounded px-2 py-[10px] text-[12px] border-[#d8b76a] focus:border-2 focus:outline-none"
+                            placeholder="Index"
+                          />
+                        </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => removeMaterial(vendorIdx, i)}
-                        className="self-start flex gap-1 items-center mt-1 text-red-600  text-sm rounded cursor-pointer hover:underline"
+                        className="self-start flex gap-1 items-center mt-6 text-red-600  text-sm rounded cursor-pointer hover:underline"
                       >
                         <FiTrash2 /> Remove
                       </button>

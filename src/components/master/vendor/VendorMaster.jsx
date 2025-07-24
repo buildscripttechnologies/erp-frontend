@@ -279,7 +279,7 @@ const VendorMaster = ({ isOpen }) => {
                             </span>
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
-                            {v.createdBy.fullName || "-"}
+                            {v.createdBy?.fullName || "-"}
                           </td>
                           <td className="px-2 mt-1.5 text-sm  flex gap-2">
                             <FiEdit

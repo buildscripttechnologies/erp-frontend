@@ -24,6 +24,7 @@ import ScrollLock from "../ScrollLock.js";
 import PaginationControls from "../PaginationControls.jsx";
 import { ClipLoader } from "react-spinners";
 import { span } from "framer-motion/client";
+import AttachmentsModal2 from "../AttachmentsModal2.jsx";
 
 // export const baseurl = "http://localhost:5000";
 
@@ -575,7 +576,7 @@ const RmMaster = ({ isOpen }) => {
                         )}
 
                         {openAttachments && (
-                          <AttachmentsModal
+                          <AttachmentsModal2
                             attachments={openAttachments}
                             onClose={() => setOpenAttachments(null)}
                           />

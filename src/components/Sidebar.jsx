@@ -41,6 +41,7 @@ export function Sidebar({ isOpen }) {
     },
     { label: "SFG Master", icon: FaLayerGroup, path: "/sfg-master" },
     { label: "FG Master", icon: FaCube, path: "/fg-master" },
+    { label: "Sample Master", icon: FaUserFriends, path: "/sample-master" },
     { label: "BOM Master", icon: FaUserFriends, path: "/bom-master" },
     { label: "Vendor Master", icon: FaIndustry, path: "/vendor-master" },
     { label: "Customer Master", icon: FaUserFriends, path: "/customer-master" },
