@@ -4,11 +4,13 @@ import axios from "../utils/axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ClipLoader } from "react-spinners";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const Register = () => {
   const navigate = useNavigate();
   const [userTypes, setUserTypes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -94,17 +96,31 @@ const Register = () => {
           className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-3 focus:border-[#b38a37] focus:outline-none transition duration-200"
           required
         />
+        <div className="relative w-full">
+          <input
+            type={showPassword ? "text" : "password"}
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+            placeholder="Password"
+            className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-3 focus:border-[#b38a37] focus:outline-none transition duration-200"
+            required
+          />
+          <button
+            type="button"
+            className="absolute right-2 top-2.5 text-[#272723]"
+            onClick={() => setShowPassword((prev) => !prev)}
+            tabIndex={-1}
+          >
+            {showPassword ? (
+              <FiEyeOff className="text-[#d8b76a]" size={20} />
+            ) : (
+              <FiEye className="text-[#d8b76a]" size={20} />
+            )}
+          </button>
+        </div>
 
-        <input
-          type="password"
-          value={formData.password}
-          onChange={(e) =>
-            setFormData({ ...formData, password: e.target.value })
-          }
-          placeholder="Password"
-          className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-3 focus:border-[#b38a37] focus:outline-none transition duration-200"
-          required
-        />
         <input
           type="number"
           value={formData.mobile}

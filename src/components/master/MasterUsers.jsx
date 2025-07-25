@@ -7,6 +7,8 @@ import {
   FiUnlock,
   FiUserCheck,
   FiUserX,
+  FiEyeOff,
+  FiEye,
 } from "react-icons/fi";
 
 import Dashboard from "../../pages/Dashboard";
@@ -33,6 +35,7 @@ export default function MasterUsers() {
   const [editUserId, setEditUserId] = useState(null);
   const [loading, setLoading] = useState(false);
   // const [access, setAccess] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [userTypesLoaded, setUserTypesLoaded] = useState(false);
 
@@ -322,26 +325,47 @@ export default function MasterUsers() {
                         >
                           {label}
                         </label>
-                        <input
-                          id={field}
-                          type={
-                            field === "email"
-                              ? "email"
-                              : field === "password"
-                              ? "password"
-                              : "text"
-                          }
-                          placeholder={label}
-                          value={formData[field]}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              [field]: e.target.value,
-                            })
-                          }
-                          className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none"
-                          required={!editMode || field !== "password"}
-                        />
+                        <div className="relative w-full">
+                          <input
+                            id={field}
+                            type={
+                              field === "email"
+                                ? "email"
+                                : field === "password"
+                                ? showPassword
+                                  ? "text"
+                                  : "password"
+                                : "text"
+                            }
+                            placeholder={label}
+                            value={formData[field]}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                [field]: e.target.value,
+                              })
+                            }
+                            className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none"
+                            required={!editMode || field !== "password"}
+                          />
+                          {field == "password" && (
+                            <button
+                              type="button"
+                              className="absolute right-2 top-2.5 text-[#272723]"
+                              onClick={() => setShowPassword((prev) => !prev)}
+                              tabIndex={-1}
+                            >
+                              {showPassword ? (
+                                <FiEyeOff
+                                  className="text-[#d8b76a]"
+                                  size={20}
+                                />
+                              ) : (
+                                <FiEye className="text-[#d8b76a]" size={20} />
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     );
                   }

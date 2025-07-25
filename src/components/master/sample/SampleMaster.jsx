@@ -11,6 +11,7 @@ import AddSampleModal from "./AddSampleModel";
 import SampleDetailsSection from "./SampleDetailsSection";
 import UpdateSampleModal from "./UpdateSampleMaster";
 import { generateSample } from "../../../utils/generateSample";
+import AttachmentsModal2 from "../../AttachmentsModal2";
 
 const SampleMaster = ({ isOpen }) => {
   const [Samples, setSamples] = useState([]);
@@ -19,7 +20,7 @@ const SampleMaster = ({ isOpen }) => {
   const [showModal, setShowModal] = useState(false);
   const [editingSample, setEditingSample] = useState(null);
   const [expandedSampleId, setExpandedSampleId] = useState(null);
-
+  const [openAttachments, setOpenAttachments] = useState(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -216,6 +217,7 @@ const SampleMaster = ({ isOpen }) => {
                   <th className="px-[8px] ">Date</th>
                   {/* <th className="px-[8px] ">Status</th> */}
                   <th className="px-[8px] ">Created By</th>
+                  <th className="px-[8px] ">Attachments</th>
                   <th className="px-[8px] ">Actions</th>
                 </tr>
               </thead>
@@ -292,6 +294,25 @@ const SampleMaster = ({ isOpen }) => {
                           </td> */}
                           <td className="px-[8px] border-r border-[#d8b76a] ">
                             {b.createdBy?.fullName || "-"}
+                          </td>
+                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                            {Array.isArray(b.file) && b.file.length > 0 ? (
+                              <button
+                                onClick={() => setOpenAttachments(b.file)}
+                                className="cursor-pointer hover:text-[#d8b76a] hover:underline text-center items-center justify-center"
+                              >
+                                View
+                              </button>
+                            ) : (
+                              "-"
+                            )}
+
+                            {openAttachments && (
+                              <AttachmentsModal2
+                                attachments={openAttachments}
+                                onClose={() => setOpenAttachments(null)}
+                              />
+                            )}
                           </td>
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2">
                             <FaFileDownload

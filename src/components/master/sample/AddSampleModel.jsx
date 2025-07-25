@@ -20,6 +20,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
   const [fgs, setFgs] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [files, setFiles] = useState([]);
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -103,7 +104,6 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
       return toast.error("Please fill all required fields");
     }
 
-    // Check for empty RM/SFG row
     const hasEmptyComponent = productDetails.some((comp) => {
       return (
         !comp.itemId ||
@@ -120,20 +120,31 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
     }
 
     try {
-      const payload = {
+      const formData = new FormData();
+
+      const data = {
         ...form,
         productDetails: productDetails.map(({ label, ...rest }) => rest),
       };
 
-      console.log("payload", payload);
+      formData.append("data", JSON.stringify(data));
 
-      await axios.post("/samples/add", payload);
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      await axios.post("/samples/add", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       toast.success("Sample added successfully");
       onSuccess();
       onClose();
     } catch (err) {
-      toast.error("Failed to add Sample");
       console.error(err);
+      toast.error("Failed to add Sample");
     } finally {
       setLoading(false);
     }
@@ -238,6 +249,17 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
               className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
               value={form.date}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
+            />
+          </div>
+          <div className="flex flex-col sm:col-span-2">
+            <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              Upload Files
+            </label>
+            <input
+              type="file"
+              multiple
+              onChange={(e) => setFiles([...e.target.files])}
+              className="p-1 border border-[#d8b76a] rounded text-sm"
             />
           </div>
         </div>

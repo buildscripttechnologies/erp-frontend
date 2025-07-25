@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
+import Select from "react-select";
 
 const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
   const [formData, setFormData] = useState(rawMaterial);
@@ -87,6 +88,11 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
     }
   };
 
+  const locationOptions = locations.map((l) => ({
+    value: l.locationId,
+    label: l.locationId,
+  }));
+
   return (
     <div className="fixed inset-0  backdrop-blur-xs  flex items-center justify-center z-50">
       <div className="bg-white w-full max-w-[92vw] sm:max-w-3xl rounded-lg p-6  border overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
@@ -164,20 +170,41 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
 
           {/* Location */}
           <div>
-            <label className="block mb-1 font-medium">Location</label>
-            <select
-              type="text"
-              value={formData.location}
-              onChange={(e) => handleChange("location", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
-            >
-              <option value="">Select</option>
-              {locations.map((l) => (
-                <option key={l._id} value={l.locationId}>
-                  {l.locationId}
-                </option>
-              ))}
-            </select>
+            <label className="block mb-1 font-medium text-[#292926]">
+              Location
+            </label>
+            <Select
+              options={locationOptions}
+              value={
+                locationOptions.find(
+                  (opt) => opt.value === formData.location
+                ) || null
+              }
+              onChange={(selectedOption) =>
+                handleChange("location", selectedOption?.value || "")
+              }
+              placeholder="Select"
+              isSearchable
+              styles={{
+                control: (base, state) => ({
+                  ...base,
+                  backgroundColor: "white",
+                  borderColor: "#d8b76a",
+                  borderWidth: "1px",
+                  boxShadow: state.isFocused ? "0 0 0 2px #b38a37" : "none",
+                  "&:hover": {
+                    borderColor: "#b38a37",
+                  },
+
+                  fontSize: "0.875rem", // text-sm
+                  borderRadius: "0.25rem", // rounded
+                }),
+                menu: (base) => ({
+                  ...base,
+                  zIndex: 100,
+                }),
+              }}
+            />
           </div>
 
           {/* Base Qty */}

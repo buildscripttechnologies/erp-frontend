@@ -24,6 +24,8 @@ import PwaInstallPrompt from "./components/PWAInstallPrompt";
 import { useEffect, useState } from "react";
 import BOMMaster from "./components/master/bom/BomMaster";
 import SampleMaster from "./components/master/sample/SampleMaster";
+import PurchaseOrder from "./components/purchase/PurchaseOrder";
+import POApproval from "./components/purchase/POApproval";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -89,6 +91,33 @@ const App = () => {
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/change-password" element={<ChangePassword />} />
+
+          <Route
+            path="/purchase-order"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <PurchaseOrder />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
+          <Route
+            path="/purchase-order-approval"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <POApproval />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
           <Route
             path="/dashboard"
             element={

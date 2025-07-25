@@ -13,6 +13,7 @@ import UpdateFgModal from "./UpdateFgModal";
 import AddFgModal from "./AddFgModal";
 
 import { FaCircleArrowDown, FaCircleArrowUp } from "react-icons/fa6";
+import AttachmentsModal2 from "../../AttachmentsModal2";
 
 const renderNestedMaterials = (
   materials,
@@ -528,7 +529,7 @@ const FgMaster = ({ isOpen }) => {
                           )}
 
                           {openAttachments && (
-                            <AttachmentsModal
+                            <AttachmentsModal2
                               attachments={openAttachments}
                               onClose={() => setOpenAttachments(null)}
                             />

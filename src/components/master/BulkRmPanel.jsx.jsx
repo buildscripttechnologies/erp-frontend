@@ -6,6 +6,8 @@ import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import { ClipLoader } from "react-spinners";
 
+import Select from "react-select";
+
 const BulkRmPanel = ({ onClose }) => {
   const [rows, setRows] = useState([]);
   const [uoms, setUoms] = useState([]);
@@ -119,6 +121,10 @@ const BulkRmPanel = ({ onClose }) => {
       setLoading(false);
     }
   };
+  const locationOptions = locations.map((l) => ({
+    value: l.locationId,
+    label: l.locationId,
+  }));
 
   return (
     <div className="fixed inset-0  backdrop-blur-xs  flex items-center justify-center z-50">
@@ -226,20 +232,41 @@ const BulkRmPanel = ({ onClose }) => {
                   <label className="text-xs font-semibold text-[#292926]">
                     Location
                   </label>
-                  <select
-                    value={rm.location}
-                    onChange={(e) =>
-                      handleChange(index, "location", e.target.value)
+                  <Select
+                    options={locationOptions}
+                    value={
+                      locationOptions.find(
+                        (opt) => opt.value === rm.location
+                      ) || null
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
-                  >
-                    <option value="">Select Location</option>
-                    {locations.map((l) => (
-                      <option key={l._id} value={l.locationId}>
-                        {l.locationId}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(selectedOption) =>
+                      handleChange(
+                        index,
+                        "location",
+                        selectedOption?.value || ""
+                      )
+                    }
+                    placeholder="Select Location"
+                    isSearchable
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: "#d8b76a",
+                        boxShadow: state.isFocused
+                          ? "0 0 0 2px #b38a37"
+                          : "none",
+                        "&:hover": {
+                          borderColor: "#b38a37",
+                        },
+                        padding: "2px",
+                        fontSize: "0.875rem", // text-sm
+                      }),
+                      menu: (base) => ({
+                        ...base,
+                        zIndex: 9999,
+                      }),
+                    }}
+                  />
                 </div>
 
                 <div>
