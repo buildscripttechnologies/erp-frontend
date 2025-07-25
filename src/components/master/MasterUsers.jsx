@@ -307,7 +307,7 @@ export default function MasterUsers() {
                 ×
               </button>
               <h3 className="text-lg font-bold text-[#d8b76a] mb-4">
-                Add New User
+                {editMode ? "Update User" : "Add New User"}
               </h3>
               <form className="space-y-4" onSubmit={handleSubmit}>
                 {["fullName", "username", "email", "password", "mobile"].map(
