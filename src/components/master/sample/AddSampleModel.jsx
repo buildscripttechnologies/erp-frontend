@@ -155,7 +155,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
       <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-lg border border-[#d8b76a] text-[#292926]">
         {/* Header */}
         <div className="flex justify-between items-center sticky top-0 bg-white z-10 pb-2">
-          <h2 className="text-xl font-semibold">Add Bill of Materials</h2>
+          <h2 className="text-xl font-semibold">Add Sample Product</h2>
           <button
             onClick={onClose}
             className="text-black hover:text-red-500 font-bold text-xl cursor-pointer"
@@ -251,7 +251,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
               onChange={(e) => setForm({ ...form, date: e.target.value })}
             />
           </div>
-          <div className="flex flex-col sm:col-span-2">
+          <div className="flex flex-col ">
             <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
               Upload Files
             </label>
@@ -259,7 +259,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
               type="file"
               multiple
               onChange={(e) => setFiles([...e.target.files])}
-              className="p-1 border border-[#d8b76a] rounded text-sm"
+              className="block text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
             />
           </div>
         </div>

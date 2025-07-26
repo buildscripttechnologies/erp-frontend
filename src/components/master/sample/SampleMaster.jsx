@@ -48,7 +48,7 @@ const SampleMaster = ({ isOpen }) => {
     }
   };
 
-  ScrollLock(showModal || editingSample != null);
+  ScrollLock(showModal || editingSample != null || openAttachments != null);
 
   useEffect(() => {
     fetchSamples();

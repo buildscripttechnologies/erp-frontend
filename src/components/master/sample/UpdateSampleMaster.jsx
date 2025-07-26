@@ -23,6 +23,10 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [newFiles, setNewFiles] = useState([]);
+  const [existingFiles, setExistingFiles] = useState(Sample.file || []);
+  const [deletedFiles, setDeletedFiles] = useState([]);
+
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
@@ -125,12 +129,28 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
     }
 
     try {
+      const formData = new FormData();
+
       const payload = {
         ...form,
         productDetails: productDetails.map(({ label, ...rest }) => rest),
+        deletedFiles,
       };
 
-      await axios.patch(`/Samples/update/${Sample._id}`, payload);
+      console.log("deleted files", deletedFiles);
+
+      formData.append("data", JSON.stringify(payload));
+
+      newFiles.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      await axios.patch(`/samples/update/${Sample._id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       toast.success("Sample updated successfully");
       onSuccess();
       onClose();
@@ -144,10 +164,10 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-lg border border-[#d8b76a] text-[#292926]">
+      <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto px-6 pb-6  space-y-6 shadow-lg border border-[#d8b76a] text-[#292926]">
         {/* Header */}
-        <div className="flex justify-between items-center sticky top-0 bg-white z-10 pb-2">
-          <h2 className="text-xl font-semibold">Update Bill of Materials</h2>
+        <div className="flex justify-between items-center sticky top-0 bg-white z-10 pb-2 pt-4">
+          <h2 className="text-xl font-semibold">Update Sample Product</h2>
           <button
             onClick={onClose}
             className="text-black hover:text-red-500 font-bold text-xl cursor-pointer"
@@ -239,6 +259,52 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
               onChange={(e) => setForm({ ...form, date: e.target.value })}
             />
           </div>
+          <div className="flex flex-col">
+            <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              Upload New Files
+            </label>
+            <input
+              type="file"
+              multiple
+              onChange={(e) => setNewFiles([...e.target.files])}
+              className="block text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="font-bold text-[14px] mb-1 text-[#d8b76a] underline">
+            Existing Files
+          </h3>
+          {existingFiles.length === 0 && (
+            <p className="text-sm text-gray-500">No files uploaded.</p>
+          )}
+
+          {existingFiles.map((file, idx) => (
+            <div
+              key={idx}
+              className="flex justify-between items-center bg-gray-100 px-3 py-1 rounded text-sm"
+            >
+              <a
+                href={file.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#292926] underline break-all"
+              >
+                {file.fileName}
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setDeletedFiles([...deletedFiles, file]);
+                  setExistingFiles(existingFiles.filter((_, i) => i !== idx));
+                }}
+                className="text-red-500 flex items-center gap-0.5 text-xs hover:underline cursor-pointer"
+              >
+                <FiTrash2 /> Remove
+              </button>
+            </div>
+          ))}
         </div>
 
         {/* RM/SFG Components */}

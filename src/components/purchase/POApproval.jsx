@@ -483,10 +483,11 @@ const SfgMaster = ({ isOpen }) => {
           />
         </div>
         <button
+          disabled
           onClick={() => toogleAddSFG(showAddSFG)}
-          className="w-full sm:w-auto justify-center bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
+          className="w-full sm:w-auto justify-center bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-not-allowed"
         >
-          <FiPlus /> Add SFG
+          <FiPlus /> Add PO
         </button>
       </div>
       {showAddSFG && (

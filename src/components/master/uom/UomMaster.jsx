@@ -87,9 +87,9 @@ const UomMaster = () => {
 
   const filteredUoms = uoms.filter(
     (u) =>
-      u.unitName.toLowerCase().includes(search.toLowerCase()) ||
-      u.unitDescription.toLowerCase().includes(search.toLowerCase()) ||
-      u.createdBy.fullName.toLowerCase().includes(search.toLocaleLowerCase())
+      u.unitName?.toLowerCase().includes(search.toLowerCase()) ||
+      u.unitDescription?.toLowerCase().includes(search.toLowerCase()) ||
+      u.createdBy?.fullName.toLowerCase().includes(search.toLocaleLowerCase())
   );
 
   const goToPage = (page) => {

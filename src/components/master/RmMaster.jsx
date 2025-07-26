@@ -457,6 +457,7 @@ const RmMaster = ({ isOpen }) => {
                   "GST",
                   "Stock Qty",
                   "Stock Uom",
+                  "Total Rate",
                   "Attachment",
                   "Status",
                   "Created By",
@@ -547,7 +548,7 @@ const RmMaster = ({ isOpen }) => {
                         {rm.moq}
                       </td>
                       <td className="px-2 border-r border-r-[#d8b76a]">
-                        {rm.rate}
+                        ₹{rm.rate || "0"}
                       </td>
                       <td className="px-2 border-r border-r-[#d8b76a]">
                         {rm.purchaseUOM || "-"}
@@ -560,6 +561,9 @@ const RmMaster = ({ isOpen }) => {
                       </td>
                       <td className="px-2 border-r border-r-[#d8b76a] ">
                         {rm.stockUOM || "-"}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a] ">
+                        ₹{rm.totalRate || "0"}
                       </td>
 
                       <td className="text-center items-center justify-center border-r border-r-[#d8b76a]">

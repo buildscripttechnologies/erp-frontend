@@ -52,6 +52,7 @@ const BulkRmPanel = ({ onClose }) => {
         pkgQty: "",
         moq: "",
         rate: "",
+        totalRate: "",
         purchaseUOM: "",
         stockQty: "",
         stockUOM: "",
@@ -65,6 +66,11 @@ const BulkRmPanel = ({ onClose }) => {
     setRows((prev) => {
       const updated = [...prev];
       updated[index][field] = value;
+
+      const rate = parseFloat(updated[index].rate) || 0;
+      const stockQty = parseFloat(updated[index].stockQty) || 0;
+      updated[index].totalRate = rate * stockQty;
+
       return updated;
     });
   };
@@ -96,6 +102,8 @@ const BulkRmPanel = ({ onClose }) => {
       "rawMaterials",
       JSON.stringify(rows.map(({ attachments, ...rest }) => rest))
     );
+
+    console.log("formdata", rows);
 
     rows.forEach((rm, i) => {
       Array.from(rm.attachments).forEach((file) => {
@@ -405,6 +413,14 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) => handleFileChange(index, e.target.files)}
                     className=" block w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-2.5 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
                   />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-red-600">
+                    Total Rate
+                  </label>
+                  <div className="w-full px-4 py-2 text-red-600 border border-red-600 rounded bg-gray-50">
+                    ₹ {parseFloat(rm.totalRate || 0).toFixed(2)}
+                  </div>
                 </div>
               </div>
 

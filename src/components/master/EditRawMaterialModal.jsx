@@ -37,7 +37,21 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
   }, []);
 
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    const updatedForm = {
+      ...formData,
+      [field]: value,
+    };
+
+    // Update totalRate if rate or stockQty changes
+    if (field === "rate" || field === "stockQty") {
+      const stockQty = Number(
+        field === "stockQty" ? value : updatedForm.stockQty
+      );
+      const rate = Number(field === "rate" ? value : updatedForm.rate);
+      updatedForm.totalRate = (stockQty * rate).toFixed(2);
+    }
+
+    setFormData(updatedForm);
   };
 
   const handleUpdate = async (e) => {
@@ -96,9 +110,22 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
   return (
     <div className="fixed inset-0  backdrop-blur-xs  flex items-center justify-center z-50">
       <div className="bg-white w-full max-w-[92vw] sm:max-w-3xl rounded-lg p-6  border overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
-        <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">
-          Edit Raw Material
-        </h2>
+        <div className="flex flex-col sm:flex-row sm:justify-between  mb-4">
+          <h2 className="w-full text-xl font-bold  text-[#d8b76a] flex justify-center sm:justify-start">
+            Edit Raw Material
+          </h2>
+          {/* <div className="w-full flex flex-wrap items-center justify-center">
+            <label className="text-base font-semibold text-red-600 mr-2">
+              Total Rate (Rate x Stock Qty) :{" "}
+            </label>
+            <span className="text-red-600 font-semibold text-sm">
+              ₹{" "}
+              {(Number(formData.stockQty) * Number(formData.rate) || 0).toFixed(
+                2
+              )}
+            </span>
+          </div> */}
+        </div>
         <form
           onSubmit={handleUpdate}
           className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-[#292926]"
@@ -120,6 +147,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
             <label className="block mb-1 font-medium">Description</label>
             <input
               type="text"
+              placeholder="Description"
               value={formData.description}
               onChange={(e) => handleChange("description", e.target.value)}
               className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
@@ -131,6 +159,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
             <label className="block mb-1 font-medium">HSN / SAC</label>
             <input
               type="text"
+              placeholder="HSN / SAC"
               value={formData.hsnOrSac}
               onChange={(e) => handleChange("hsnOrSac", e.target.value)}
               className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
@@ -212,6 +241,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
             <label className="block mb-1 font-medium">Base Quantity</label>
             <input
               type="number"
+              placeholder="Base Quantity"
               value={formData.baseQty}
               onChange={(e) => handleChange("baseQty", e.target.value)}
               className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
@@ -223,6 +253,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
             <label className="block mb-1 font-medium">Package Quantity</label>
             <input
               type="number"
+              placeholder="Package Quantity"
               value={formData.pkgQty}
               onChange={(e) => handleChange("pkgQty", e.target.value)}
               className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
@@ -236,6 +267,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
             </label>
             <input
               type="number"
+              placeholder="Minimum Order Quantity"
               value={formData.moq}
               onChange={(e) => handleChange("moq", e.target.value)}
               className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
@@ -247,6 +279,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
             <label className="block mb-1 font-medium">Rate</label>
             <input
               type="number"
+              placeholder="Rate"
               value={formData.rate}
               onChange={(e) => handleChange("rate", e.target.value)}
               className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
@@ -275,6 +308,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
             <label className="block mb-1 font-medium">GST (%)</label>
             <input
               type="number"
+              placeholder="GST(%)"
               value={formData.gst}
               onChange={(e) => handleChange("gst", e.target.value)}
               className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
@@ -286,6 +320,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
             <label className="block mb-1 font-medium">Stock Quantity</label>
             <input
               type="number"
+              placeholder="Stock Quantiy"
               value={formData.stockQty}
               onChange={(e) => handleChange("stockQty", e.target.value)}
               className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
@@ -308,10 +343,23 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
               ))}
             </select>
           </div>
+          <div className="mt-1">
+            <label className="text-base font-semibold text-red-600 mr-2">
+              Total Rate :
+            </label>
+            <span className="text-red-600 font-semibold text-sm">
+              ₹{" "}
+              {(Number(formData.stockQty) * Number(formData.rate) || 0).toFixed(
+                2
+              )}
+            </span>
+          </div>
 
           <div className="col-span-full">
             <label className="block mb-2 font-medium">
-              Existing Attachments
+              {formData.attachments.length != 0
+                ? "Existing Attachments"
+                : "No Existing Attachments"}
             </label>
             <ul className="space-y-1 text-sm text-[#292926]">
               {formData.attachments?.map((att, index) =>
