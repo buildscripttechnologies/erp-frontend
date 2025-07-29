@@ -16,8 +16,11 @@ import jsPDF from "jspdf";
 import { useRef } from "react";
 import { generateBom } from "../../../utils/generateBom";
 import { generateBomLP } from "../../../utils/generateBomLP";
+import { useAuth } from "../../../context/AuthContext";
 
 const BomMaster = ({ isOpen }) => {
+  const { hasPermission } = useAuth();
+
   const [BOMs, setBOMs] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,6 +40,10 @@ const BomMaster = ({ isOpen }) => {
     setLoading(true);
     try {
       const res = await axios.get(`/boms/get-all?page=${page}&limit=${limit}`);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       setBOMs(res.data.data || []);
       setPagination({
         currentPage: res.data.currentPage,
@@ -77,6 +84,10 @@ const BomMaster = ({ isOpen }) => {
       const res = await axios.patch(`/boms/edit/${id}`, {
         isActive: newStatus,
       });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       if (res.data.status == 200) {
         toast.success(`BOM status updated`);
@@ -99,6 +110,10 @@ const BomMaster = ({ isOpen }) => {
       const res = await axios.patch(`/boms/edit/${id}`, {
         isDeleted: true,
       });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       if (res.data.status == 200) {
         toast.success(`BOM Deleted Successfully`);
@@ -196,12 +211,14 @@ const BomMaster = ({ isOpen }) => {
               className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:outline-none"
             />
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-[#d8b76a] hover:bg-[#b38a37]  justify-center text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
-          >
-            <FiPlus /> Add BOM
-          </button>
+          {hasPermission("BOM", "write") && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-[#d8b76a] hover:bg-[#b38a37]  justify-center text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
+            >
+              <FiPlus /> Add BOM
+            </button>
+          )}
         </div>
 
         <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
@@ -304,19 +321,27 @@ const BomMaster = ({ isOpen }) => {
                           <td className="px-[8px] border-r border-[#d8b76a] ">
                             {b.createdBy?.fullName || "-"}
                           </td>
-                          <td className="px-[8px] pt-1.5 text-sm  flex gap-2">
+                          <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-[#d8b76a]">
                             <FaFileDownload
                               onClick={() => handlePreviewBom(b)}
                               className="cursor-pointer text-[#d8b76a] hover:text-green-600"
                             />
-                            <FiEdit
-                              onClick={() => setEditingBOM(b)}
-                              className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
-                            />
-                            <FiTrash2
-                              onClick={() => handleDelete(b._id)}
-                              className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                            />
+                            {hasPermission("BOM", "update") ? (
+                              <FiEdit
+                                onClick={() => setEditingBOM(b)}
+                                className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                              />
+                            ) : (
+                              "-"
+                            )}
+                            {hasPermission("BOM", "delete") ? (
+                              <FiTrash2
+                                onClick={() => handleDelete(b._id)}
+                                className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                              />
+                            ) : (
+                              "-"
+                            )}
                           </td>
                         </tr>
                         {expandedBOMId === b._id && (

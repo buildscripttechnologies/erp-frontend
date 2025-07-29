@@ -13,7 +13,9 @@ const availableModules = [
   "BOM",
   "Vendor",
   "Customer",
-  "Role"
+  "Role",
+  "User",
+  "Dashboard"
 ];
 
 const availableActions = ["read", "write", "update", "delete"];
@@ -60,9 +62,18 @@ export default function UserPermissionForm({
       const res = await axios.patch(`/users/update-user-permission/${userId}`, {
         permissions,
       });
-      toast.success(res.data.message || "Permissions updated successfully");
-      if (fetchUsers) fetchUsers();
-      onClose();
+      console.log("res", res.data);
+
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        onClose();
+        return;
+      }
+      if (res.data.status == 200) {
+        toast.success(res.data.message || "Permissions updated successfully");
+        if (fetchUsers) fetchUsers();
+        onClose();
+      }
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.message || "Error updating permissions");
@@ -98,31 +109,31 @@ export default function UserPermissionForm({
                     </option>
                   ))}
                 </select>
-                <button
-                  type="button"
-                  onClick={() => handleRemove(index)}
-                  className="text-red-600 text-sm flex items-center gap-1 hover:underline cursor-pointer"
-                >
-                  <FiTrash2 size={16} /> Remove
-                </button>
+                <div className="flex flex-wrap gap-4">
+                  {availableActions.map((action) => (
+                    <label
+                      key={action}
+                      className="flex items-center space-x-2 text-sm capitalize"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={perm.actions.includes(action)}
+                        onChange={() => handleActionToggle(index, action)}
+                        className="accent-[#d8b76a]"
+                      />
+                      <span>{action}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
-              <div className="flex flex-wrap gap-4">
-                {availableActions.map((action) => (
-                  <label
-                    key={action}
-                    className="flex items-center space-x-2 text-sm capitalize"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={perm.actions.includes(action)}
-                      onChange={() => handleActionToggle(index, action)}
-                      className="accent-[#d8b76a]"
-                    />
-                    <span>{action}</span>
-                  </label>
-                ))}
-              </div>
+              <button
+                type="button"
+                onClick={() => handleRemove(index)}
+                className="text-red-600 text-sm flex items-center gap-1 hover:underline cursor-pointer"
+              >
+                <FiTrash2 size={16} /> Remove
+              </button>
             </div>
           ))}
 

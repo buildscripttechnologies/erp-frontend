@@ -254,7 +254,11 @@ const AddVendorModal = ({ onClose, onAdded }) => {
           }),
       }));
 
-      await axios.post("/vendors/add-many", { vendors: payload });
+      let res = await axios.post("/vendors/add-many", { vendors: payload });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("Vendors added successfully");
       onClose();
       onAdded();

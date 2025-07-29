@@ -9,8 +9,10 @@ import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";
 import UpdateLocationModal from "./UpdateLocationModal";
 import { Tooltip } from "react-tooltip";
+import { useAuth } from "../../../context/AuthContext";
 
 const LocationMaster = () => {
+  const { hasPermission } = useAuth();
   const [locations, setLocations] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState(null);
@@ -30,7 +32,6 @@ const LocationMaster = () => {
         `/locations/get-all?page=${page}&limit=${limit}&isActive=all`
       );
       setLocations(res.data.data || []);
-      console.log("locations", locations);
 
       setPagination({
         currentPage: res.data.currentPage,
@@ -53,7 +54,11 @@ const LocationMaster = () => {
     if (!window.confirm("Are you sure you want to delete this location?"))
       return;
     try {
-      await axios.delete(`/locations/delete-location/${id}`);
+      let res = await axios.delete(`/locations/delete-location/${id}`);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("Location deleted");
       fetchLocations();
     } catch {
@@ -78,11 +83,14 @@ const LocationMaster = () => {
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === true ? false : true;
     try {
-      const res = await axios.patch(`/locations/update-location/${id}`, {
+      let res = await axios.patch(`/locations/update-location/${id}`, {
         isActive: newStatus,
       });
 
-      console.log("res");
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       if (res.data.status == 200) {
         toast.success(`Location status updated`);
@@ -120,13 +128,15 @@ const LocationMaster = () => {
           />
         </div>
 
-        <button
-          onClick={() => setFormOpen(!formOpen)}
-          className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
-        >
-          <FiPlus />
-          {formOpen ? "Close Form" : "Add Location"}
-        </button>
+        {hasPermission("Location", "write") && (
+          <button
+            onClick={() => setFormOpen(!formOpen)}
+            className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
+          >
+            <FiPlus />
+            {formOpen ? "Close Form" : "Add Location"}
+          </button>
+        )}
       </div>
 
       {formOpen && (
@@ -214,19 +224,27 @@ const LocationMaster = () => {
                     <td className="px-4  border-r border-[#d8b76a] hidden md:table-cell">
                       {loc.createdBy?.fullName || "-"}
                     </td>
-                    <td className="px-4 mt-1.5 flex gap-3 text-sm  items-center">
-                      <FiEdit
-                        data-tooltip-id="statusTip"
-                        data-tooltip-content="Edit"
-                        onClick={() => setEditingLocation(loc)}
-                        className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
-                      />
-                      <FiTrash2
-                        data-tooltip-id="statusTip"
-                        data-tooltip-content="Delete"
-                        className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                        onClick={() => handleDelete(loc._id)}
-                      />
+                    <td className="px-4 mt-1.5 flex gap-3 text-sm  items-center text-[#d8b76a]">
+                      {hasPermission("Location", "update") ? (
+                        <FiEdit
+                          data-tooltip-id="statusTip"
+                          data-tooltip-content="Edit"
+                          onClick={() => setEditingLocation(loc)}
+                          className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                        />
+                      ) : (
+                        "-"
+                      )}
+                      {hasPermission("Location", "update") ? (
+                        <FiTrash2
+                          data-tooltip-id="statusTip"
+                          data-tooltip-content="Delete"
+                          className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                          onClick={() => handleDelete(loc._id)}
+                        />
+                      ) : (
+                        "-"
+                      )}
                       <Tooltip
                         id="statusTip"
                         place="top"
@@ -242,7 +260,10 @@ const LocationMaster = () => {
                 ))}
                 {filteredLocations.length === 0 && (
                   <tr>
-                    <td colSpan="10" className="text-center py-3  text-gray-500">
+                    <td
+                      colSpan="10"
+                      className="text-center py-3  text-gray-500"
+                    >
                       No locations found.
                     </td>
                   </tr>
@@ -260,7 +281,6 @@ const LocationMaster = () => {
         />
       )}
 
-      
       <PaginationControls
         currentPage={pagination.currentPage}
         totalPages={pagination.totalPages}

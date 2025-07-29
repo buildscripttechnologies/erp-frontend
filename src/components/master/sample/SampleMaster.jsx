@@ -12,8 +12,11 @@ import SampleDetailsSection from "./SampleDetailsSection";
 import UpdateSampleModal from "./UpdateSampleMaster";
 import { generateSample } from "../../../utils/generateSample";
 import AttachmentsModal2 from "../../AttachmentsModal2";
+import { useAuth } from "../../../context/AuthContext";
 
 const SampleMaster = ({ isOpen }) => {
+  const { hasPermission } = useAuth();
+
   const [Samples, setSamples] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,6 +37,10 @@ const SampleMaster = ({ isOpen }) => {
       const res = await axios.get(
         `/samples/get-all?page=${page}&limit=${limit}`
       );
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       setSamples(res.data.data || []);
       setPagination({
         currentPage: res.data.currentPage,
@@ -93,6 +100,10 @@ const SampleMaster = ({ isOpen }) => {
     if (!window.confirm("Are you sure you want to delete this Sample?")) return;
     try {
       const res = await axios.delete(`/samples/delete/${id}`);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       if (res.data.status == 200) {
         toast.success(`Sample Deleted Successfully`);
@@ -190,12 +201,14 @@ const SampleMaster = ({ isOpen }) => {
               className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:outline-none"
             />
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-[#d8b76a] hover:bg-[#b38a37]  justify-center text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
-          >
-            <FiPlus /> Add Sample
-          </button>
+          {hasPermission("Sample", "write") && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-[#d8b76a] hover:bg-[#b38a37]  justify-center text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
+            >
+              <FiPlus /> Add Sample
+            </button>
+          )}
         </div>
 
         <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
@@ -314,19 +327,27 @@ const SampleMaster = ({ isOpen }) => {
                               />
                             )}
                           </td>
-                          <td className="px-[8px] pt-1.5 text-sm  flex gap-2">
+                          <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-[#d8b76a]">
                             <FaFileDownload
                               onClick={() => handlePreviewSample(b)}
                               className="cursor-pointer text-[#d8b76a] hover:text-green-600"
                             />
-                            <FiEdit
-                              onClick={() => setEditingSample(b)}
-                              className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
-                            />
-                            <FiTrash2
-                              onClick={() => handleDelete(b._id)}
-                              className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                            />
+                            {hasPermission("Sample", "update") ? (
+                              <FiEdit
+                                onClick={() => setEditingSample(b)}
+                                className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                              />
+                            ) : (
+                              "-"
+                            )}
+                            {hasPermission("Sample", "delete") ? (
+                              <FiTrash2
+                                onClick={() => handleDelete(b._id)}
+                                className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                              />
+                            ) : (
+                              "-"
+                            )}
                           </td>
                         </tr>
                         {expandedSampleId === b._id && (

@@ -31,7 +31,11 @@ const AddUomModal = ({ onClose, onAdded }) => {
     setLoading(true);
 
     try {
-      await axios.post("/uoms/add-many", formList);
+      let res = await axios.post("/uoms/add-many", formList);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("UOMs added successfully");
       onClose();
       onAdded(); // Refresh table
@@ -55,7 +59,7 @@ const AddUomModal = ({ onClose, onAdded }) => {
             >
               <div>
                 <label className="block text-sm font-semibold text-[#292926]">
-                  Unit Name 
+                  Unit Name
                   {/* <span className="text-red-500">*</span> */}
                 </label>
                 <input

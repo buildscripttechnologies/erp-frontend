@@ -23,6 +23,10 @@ const UpdateLocationModal = ({ location, onClose, onUpdated }) => {
 
     try {
       await axios.patch(`/locations/update-location/${location._id}`, formData);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("Location updated successfully");
       onClose();
       onUpdated();

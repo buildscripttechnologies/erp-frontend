@@ -188,6 +188,10 @@ const AddFgModal = ({ onClose, onAdded }) => {
       });
 
       const res = await axios.post("/fgs/add-many", payload);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       onAdded();
       toast.success("FGs added successfully");

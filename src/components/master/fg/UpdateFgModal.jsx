@@ -169,7 +169,11 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         form.file.forEach((file) => payload.append("files", file));
       }
 
-      await axios.patch(`/fgs/edit/${fg.id}`, payload);
+      let res = await axios.patch(`/fgs/edit/${fg.id}`, payload);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("FG updated successfully");
       onUpdated();
     } catch (err) {

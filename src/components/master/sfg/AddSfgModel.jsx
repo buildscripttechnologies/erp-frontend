@@ -184,6 +184,10 @@ const AddSfgModal = ({ onClose, onAdded }) => {
       });
 
       await axios.post("/sfgs/add-many", payload);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("SFGs added successfully");
       onAdded();
     } catch (err) {

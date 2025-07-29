@@ -130,7 +130,11 @@ const UpdateBomModal = ({ onClose, onSuccess, bom }) => {
         productDetails: productDetails.map(({ label, ...rest }) => rest),
       };
 
-      await axios.patch(`/boms/update/${bom._id}`, payload);
+      let res = await axios.patch(`/boms/update/${bom._id}`, payload);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("BOM updated successfully");
       onSuccess();
       onClose();

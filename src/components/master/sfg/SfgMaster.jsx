@@ -15,6 +15,7 @@ import AttachmentsModal from "../../AttachmentsModal";
 import { Tooltip } from "react-tooltip";
 import { generateBOM } from "../../../utils/generateBOMPdf";
 import AttachmentsModal2 from "../../AttachmentsModal2";
+import { useAuth } from "../../../context/AuthContext";
 
 const renderNestedMaterials = (
   materials,
@@ -221,6 +222,8 @@ const renderNestedMaterials = (
 };
 
 const SfgMaster = ({ isOpen }) => {
+  const { hasPermission } = useAuth();
+
   const [sfgs, setSfgs] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -249,6 +252,10 @@ const SfgMaster = ({ isOpen }) => {
     setLoading(true);
     try {
       const res = await axios.get(`/sfgs/get-all?page=${page}&limit=${limit}`);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       setSfgs(res.data.data || []);
       setPagination({
         currentPage: res.data.currentPage,
@@ -318,6 +325,10 @@ const SfgMaster = ({ isOpen }) => {
       const res = await axios.patch(`/sfgs/update/${id}`, {
         status: newStatus,
       });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       if (res.data.status == 200) {
         toast.success(`SFG status updated`);
@@ -342,7 +353,10 @@ const SfgMaster = ({ isOpen }) => {
       const res = await axios.patch(`/sfgs/update/${id}`, {
         qualityInspectionNeeded: newValue,
       });
-
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       if (res.status === 200) {
         toast.success("Quality Inspection status updated");
 
@@ -368,6 +382,10 @@ const SfgMaster = ({ isOpen }) => {
     if (!window.confirm("Are you sure you want to delete this SFG ?")) return;
     try {
       const res = await axios.delete(`/sfgs/delete/${id}`);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       if (res.status == 200) {
         toast.success("SFG deleted successfully");
         fetchSFGs();
@@ -397,12 +415,14 @@ const SfgMaster = ({ isOpen }) => {
             className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
           />
         </div>
-        <button
-          onClick={() => toogleAddSFG(showAddSFG)}
-          className="w-full sm:w-auto justify-center bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
-        >
-          <FiPlus /> Add SFG
-        </button>
+        {hasPermission("SFG", "update") && (
+          <button
+            onClick={() => toogleAddSFG(showAddSFG)}
+            className="w-full sm:w-auto justify-center bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
+          >
+            <FiPlus /> Add SFG
+          </button>
+        )}
       </div>
       {showAddSFG && (
         <AddSfgModal
@@ -544,25 +564,34 @@ const SfgMaster = ({ isOpen }) => {
                         <td className="px-[8px]  border-r border-r-[#d8b76a]">
                           {sfg.createdBy?.fullName || "-"}
                         </td>
-                        <td className="px-[8px] pt-2 text-sm flex gap-2 border-r border-r-[#d8b76a]/30">
+                        <td className="px-[8px] pt-2 text-sm flex gap-2 border-r border-r-[#d8b76a]/30 text-[#d8b76a]">
                           <FaFileDownload
                             onClick={() => generateBOM(sfg)}
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Download"
                             className="cursor-pointer text-[#d8b76a] hover:text-green-600"
                           />
-                          <FiEdit
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Edit"
-                            className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
-                            onClick={() => setEditingSfg(sfg)}
-                          />
-                          <FiTrash2
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Delete"
-                            className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                            onClick={() => handleDelete(sfg.id)}
-                          />
+
+                          {hasPermission("SFG", "update") ? (
+                            <FiEdit
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Edit"
+                              className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                              onClick={() => setEditingSfg(sfg)}
+                            />
+                          ) : (
+                            "-"
+                          )}
+                          {hasPermission("SFG", "delete") ? (
+                            <FiTrash2
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Delete"
+                              className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                              onClick={() => handleDelete(sfg.id)}
+                            />
+                          ) : (
+                            "-"
+                          )}
                           <Tooltip
                             id="statusTip"
                             place="top"

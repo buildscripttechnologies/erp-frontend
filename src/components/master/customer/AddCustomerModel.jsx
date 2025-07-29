@@ -164,6 +164,10 @@ const AddCustomerModal = ({ onClose, onAdded }) => {
       };
 
       const res = await axios.post("/customers/add-many", payload);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       if (res.status === 201) {
         toast.success("Customer(s) added successfully");
         onClose();

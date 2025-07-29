@@ -126,6 +126,11 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       };
 
       await axios.post("/boms/add", payload);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        onClose();
+        return;
+      }
       toast.success("BOM added successfully");
       onSuccess();
       onClose();
