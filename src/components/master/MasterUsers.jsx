@@ -10,6 +10,7 @@ import {
   FiEyeOff,
   FiEye,
 } from "react-icons/fi";
+import { LuUserCog } from "react-icons/lu";
 
 import Dashboard from "../../pages/Dashboard";
 import { useEffect, useState } from "react";
@@ -22,6 +23,8 @@ import RoleSkeleton from "../RoleSkeleton";
 import AccessDeniedNotice from "../AccessDeniedNotice";
 import Toggle from "react-toggle";
 import PaginationControls from "../PaginationControls";
+import UserPermissionForm from "./UserPermissionForm";
+import ScrollLock from "../ScrollLock";
 
 export default function MasterUsers() {
   const navigate = useNavigate();
@@ -36,9 +39,13 @@ export default function MasterUsers() {
   const [loading, setLoading] = useState(false);
   // const [access, setAccess] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [showPermissionForm, setShowPermissionForm] = useState(false);
+  const [permissionUser, setPermissionUser] = useState(null); // null or user object
 
   const [userTypesLoaded, setUserTypesLoaded] = useState(false);
-
+  ScrollLock(
+    editUserId != null || editMode || showForm || permissionUser != null
+  );
   const [pagination, setPagination] = useState({
     totalResults: 0,
     totalPages: 1,
@@ -572,6 +579,12 @@ export default function MasterUsers() {
                             onClick={() => handleEdit(u)}
                             className="hover:text-blue-500 cursor-pointer"
                           />
+                          <LuUserCog
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="User Permission"
+                            onClick={() => setPermissionUser(u)}
+                            className="hover:text-red-500 cursor-pointer"
+                          />
                           <FiTrash2
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Delete User"
@@ -605,6 +618,16 @@ export default function MasterUsers() {
                             }}
                           />
                         </td>
+                        {permissionUser && (
+                          <UserPermissionForm
+                            userId={permissionUser.id}
+                            currentPermissions={
+                              permissionUser.permissions || []
+                            }
+                            onClose={() => setPermissionUser(null)}
+                            fetchUsers={fetchUsers}
+                          />
+                        )}
                       </tr>
                     ))}
                   </>

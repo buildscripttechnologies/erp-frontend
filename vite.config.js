@@ -46,9 +46,9 @@ export default defineConfig({
         // ✅ MOVE runtimeCaching INSIDE workbox
         runtimeCaching: [
           {
-            // urlPattern: /^http:\/\/localhost:5000\/api\/.*$/,
+            urlPattern: /^http:\/\/localhost:5000\/api\/.*$/,
             // urlPattern: /^https:\/\/erp-backend-joj6\.onrender\.com\/api\/.*$/,
-            urlPattern: /^https:\/\/api\.smartflow360\.com\/api\/.*$/,
+            // urlPattern: /^https:\/\/api\.smartflow360\.com\/api\/.*$/,
             handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",
