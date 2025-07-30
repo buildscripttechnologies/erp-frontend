@@ -10,7 +10,7 @@ import PaginationControls from "../../PaginationControls";
 import UpdateLocationModal from "./UpdateLocationModal";
 import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../../context/AuthContext";
-
+import { debounce } from "lodash";
 const LocationMaster = () => {
   const { hasPermission } = useAuth();
   const [locations, setLocations] = useState([]);
@@ -25,11 +25,21 @@ const LocationMaster = () => {
     limit: 10,
   });
 
+  useEffect(() => {
+    const debouncedSearch = debounce(() => {
+      fetchLocations(1); // Always fetch from page 1 for new search
+    }, 400); // 400ms delay
+
+    debouncedSearch();
+
+    return () => debouncedSearch.cancel(); // Cleanup on unmount/change
+  }, [search]); // Re-run on search change
+
   const fetchLocations = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/locations/get-all?page=${page}&limit=${limit}&isActive=all`
+        `/locations/get-all?page=${page}&limit=${limit}&search=${search}&isActive=all`
       );
       setLocations(res.data.data || []);
 
@@ -66,14 +76,14 @@ const LocationMaster = () => {
     }
   };
 
-  const filteredLocations = locations.filter(
-    (l) =>
-      l.locationId.toLowerCase().includes(search.toLowerCase()) ||
-      l.storeNo.toLowerCase().includes(search.toLowerCase()) ||
-      l.storeRno.toLowerCase().includes(search.toLowerCase()) ||
-      l.binNo.toLowerCase().includes(search.toLowerCase()) ||
-      l.createdBy?.fullName?.toLowerCase().includes(search.toLowerCase())
-  );
+  // const filteredLocations = locations.filter(
+  //   (l) =>
+  //     l.locationId.toLowerCase().includes(search.toLowerCase()) ||
+  //     l.storeNo.toLowerCase().includes(search.toLowerCase()) ||
+  //     l.storeRno.toLowerCase().includes(search.toLowerCase()) ||
+  //     l.binNo.toLowerCase().includes(search.toLowerCase()) ||
+  //     l.createdBy?.fullName?.toLowerCase().includes(search.toLowerCase())
+  // );
 
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
@@ -170,7 +180,7 @@ const LocationMaster = () => {
               />
             ) : (
               <>
-                {filteredLocations.map((loc, index) => (
+                {locations.map((loc, index) => (
                   <tr
                     key={loc._id}
                     className="border-t border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
@@ -258,7 +268,7 @@ const LocationMaster = () => {
                     </td>
                   </tr>
                 ))}
-                {filteredLocations.length === 0 && (
+                {locations.length === 0 && (
                   <tr>
                     <td
                       colSpan="10"

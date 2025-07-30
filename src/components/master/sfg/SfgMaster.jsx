@@ -17,6 +17,7 @@ import { generateBOM } from "../../../utils/generateBOMPdf";
 import AttachmentsModal2 from "../../AttachmentsModal2";
 import { useAuth } from "../../../context/AuthContext";
 
+import { debounce } from "lodash";
 const renderNestedMaterials = (
   materials,
   level = 1,
@@ -244,6 +245,16 @@ const SfgMaster = ({ isOpen }) => {
 
   ScrollLock(showAddSFG == true || editingSfg != null);
 
+  useEffect(() => {
+    const debouncedSearch = debounce(() => {
+      fetchSFGs(1); // Always fetch from page 1 for new search
+    }, 400); // 400ms delay
+
+    debouncedSearch();
+
+    return () => debouncedSearch.cancel(); // Cleanup on unmount/change
+  }, [search]); // Re-run on search change
+
   const toogleAddSFG = (prev) => {
     setShowAddSFG(!prev);
   };
@@ -251,7 +262,9 @@ const SfgMaster = ({ isOpen }) => {
   const fetchSFGs = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
-      const res = await axios.get(`/sfgs/get-all?page=${page}&limit=${limit}`);
+      const res = await axios.get(
+        `/sfgs/get-all?page=${page}&search=${search}&limit=${limit}`
+      );
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
@@ -279,21 +292,21 @@ const SfgMaster = ({ isOpen }) => {
     fetchSFGs(page);
   };
 
-  const filteredSFGs = sfgs.filter((sfg) => {
-    const query = search.toLowerCase();
-    return (
-      sfg.itemName?.toLowerCase().includes(query) ||
-      sfg.description?.toLowerCase().includes(query) ||
-      sfg.skuCode?.toLowerCase().includes(query) ||
-      sfg.hsnOrSac?.toLowerCase().includes(query) ||
-      sfg.type?.toLowerCase().includes(query) ||
-      sfg.basePrice == query ||
-      sfg.qualityInspection?.toLowerCase().includes(query) ||
-      sfg.location?.toLowerCase().includes(query) ||
-      sfg.gst?.toString().includes(query) ||
-      sfg.createdAt?.toLowerCase().includes(query)
-    );
-  });
+  // const filteredSFGs = sfgs.filter((sfg) => {
+  //   const query = search.toLowerCase();
+  //   return (
+  //     sfg.itemName?.toLowerCase().includes(query) ||
+  //     sfg.description?.toLowerCase().includes(query) ||
+  //     sfg.skuCode?.toLowerCase().includes(query) ||
+  //     sfg.hsnOrSac?.toLowerCase().includes(query) ||
+  //     sfg.type?.toLowerCase().includes(query) ||
+  //     sfg.basePrice == query ||
+  //     sfg.qualityInspection?.toLowerCase().includes(query) ||
+  //     sfg.location?.toLowerCase().includes(query) ||
+  //     sfg.gst?.toString().includes(query) ||
+  //     sfg.createdAt?.toLowerCase().includes(query)
+  //   );
+  // });
 
   const toggleL1 = (sfgId) => {
     if (expandedL1 === sfgId) {
@@ -463,7 +476,7 @@ const SfgMaster = ({ isOpen }) => {
                 />
               ) : (
                 <>
-                  {filteredSFGs.map((sfg, index) => (
+                  {sfgs.map((sfg, index) => (
                     <React.Fragment key={sfg.id}>
                       <tr
                         onClick={() => toggleL1(sfg.id)}
@@ -668,7 +681,7 @@ const SfgMaster = ({ isOpen }) => {
                         )}
                     </React.Fragment>
                   ))}
-                  {filteredSFGs.length === 0 && (
+                  {sfgs.length === 0 && (
                     <tr>
                       <td
                         colSpan="17"

@@ -27,6 +27,8 @@ import { span } from "framer-motion/client";
 import AttachmentsModal2 from "../AttachmentsModal2.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 
+import { debounce } from "lodash";
+
 // export const baseurl = "http://localhost:5000";
 
 const RmMaster = ({ isOpen }) => {
@@ -45,8 +47,31 @@ const RmMaster = ({ isOpen }) => {
   const [downloading, setDownloading] = useState(false);
   const [sampleDownloading, setSampleDownloading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uoms, setUoms] = useState([]);
 
   ScrollLock(editData != null || showBulkPanel || openAttachments != null);
+  useEffect(() => {
+    const fetchUOMs = async () => {
+      try {
+        const res = await axios.get("/uoms/all-uoms"); // your UOM endpoint
+        setUoms(res.data.data || []);
+      } catch (err) {
+        toast.error("Failed to load UOMs");
+      }
+    };
+
+    fetchUOMs();
+  }, []);
+
+  useEffect(() => {
+    const debouncedSearch = debounce(() => {
+      fetchRawMaterials(1); // Always fetch from page 1 for new search
+    }, 400); // 400ms delay
+
+    debouncedSearch();
+
+    return () => debouncedSearch.cancel(); // Cleanup on unmount/change
+  }, [search]); // Re-run on search change
 
   const toggleExportOptions = () => {
     setShowExportOptions((prev) => !prev);
@@ -132,21 +157,6 @@ const RmMaster = ({ isOpen }) => {
       setUploading(false);
     }
   };
-
-  const filteredData = rawMaterials.filter((rm) => {
-    const query = search.toLowerCase();
-    return (
-      rm.itemName?.toLowerCase().includes(query) ||
-      rm.skuCode?.toLowerCase().includes(query) ||
-      rm.hsnSac?.toLowerCase().includes(query) ||
-      rm.type?.toLowerCase().includes(query) ||
-      rm.qualityInspection?.toLowerCase().includes(query) ||
-      rm.location?.toLowerCase().includes(query) ||
-      rm.gst?.toString().includes(query) ||
-      rm.createdAt?.toLowerCase().includes(query) ||
-      new Date(rm.createdAt).toLocaleString().toLowerCase().includes(query)
-    );
-  });
 
   useEffect(() => {
     fetchRawMaterials(pagination.currentPage);
@@ -498,9 +508,9 @@ const RmMaster = ({ isOpen }) => {
                 <TableSkeleton rows={pagination.limit} columns={TableHeaders} />
               ) : (
                 <>
-                  {filteredData.map((rm, i) => (
+                  {rawMaterials.map((rm, i) => (
                     <tr
-                      key={rm._id}
+                      key={rm.id}
                       className="border-b text-[11px] whitespace-nowrap border-[#d8b76a] hover:bg-gray-50"
                     >
                       <td className="px-2 border-r border-r-[#d8b76a]">
@@ -633,6 +643,7 @@ const RmMaster = ({ isOpen }) => {
                               rawMaterial={editData}
                               onClose={() => setEditData(null)}
                               onUpdated={fetchRawMaterials}
+                              uoms={uoms}
                             />
                           )}
                           {hasPermission("RawMaterial", "update") ? (
@@ -659,7 +670,7 @@ const RmMaster = ({ isOpen }) => {
                       </td>
                     </tr>
                   ))}
-                  {filteredData.length === 0 && (
+                  {rawMaterials.length === 0 && (
                     <tr>
                       <td
                         colSpan="22"

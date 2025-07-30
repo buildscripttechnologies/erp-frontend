@@ -26,6 +26,7 @@ import PaginationControls from "../PaginationControls";
 import UserPermissionForm from "./UserPermissionForm";
 import ScrollLock from "../ScrollLock";
 import { useAuth } from "../../context/AuthContext";
+import { debounce } from "lodash";
 
 export default function MasterUsers() {
   const { hasPermission } = useAuth();
@@ -67,6 +68,16 @@ export default function MasterUsers() {
   });
 
   useEffect(() => {
+    const debouncedSearch = debounce(() => {
+      fetchUsers(1); // Always fetch from page 1 for new search
+    }, 400); // 400ms delay
+
+    debouncedSearch();
+
+    return () => debouncedSearch.cancel(); // Cleanup on unmount/change
+  }, [searchText]); // Re-run on search change
+
+  useEffect(() => {
     if (showForm) {
       document.body.style.overflow = "hidden";
     } else {
@@ -99,6 +110,7 @@ export default function MasterUsers() {
       const params = {
         page,
         limit,
+        searchText,
       };
       if (filterRole !== "All") {
         params.userType = filterRole;
@@ -310,15 +322,15 @@ export default function MasterUsers() {
   };
 
   // Client-side search
-  const filteredUsers = users.filter((user) => {
-    const q = searchText.toLowerCase();
-    return (
-      user.fullName?.toLowerCase().includes(q) ||
-      user.email?.toLowerCase().includes(q) ||
-      user.mobile?.toLowerCase().includes(q) ||
-      user.username?.toLowerCase().includes(q)
-    );
-  });
+  // const filteredUsers = users.filter((user) => {
+  //   const q = searchText.toLowerCase();
+  //   return (
+  //     user.fullName?.toLowerCase().includes(q) ||
+  //     user.email?.toLowerCase().includes(q) ||
+  //     user.mobile?.toLowerCase().includes(q) ||
+  //     user.username?.toLowerCase().includes(q)
+  //   );
+  // });
 
   const userTableHeaders = [
     { label: "#", className: "" },
@@ -559,7 +571,7 @@ export default function MasterUsers() {
                     rows={pagination.limit}
                     columns={userTableHeaders}
                   />
-                ) : filteredUsers.length == 0 ? (
+                ) : users.length == 0 ? (
                   <tr>
                     <td colSpan="9" className="text-center py-4 text-gray-500">
                       No Users found.
@@ -567,7 +579,7 @@ export default function MasterUsers() {
                   </tr>
                 ) : (
                   <>
-                    {filteredUsers.map((u, i) => (
+                    {users.map((u, i) => (
                       <tr
                         key={u.id}
                         className="border-b  border-[#d8b76a] hover:bg-gray-50"
@@ -589,7 +601,7 @@ export default function MasterUsers() {
                         </td>
                         <td className=" px-2 border-r  border-[#d8b76a] hidden lg:table-cell ">
                           <Toggle
-                            checked={u.isVerified}
+                            defaultChecked={u.isVerified}
                             onChange={() => toggleVerification(u)}
                           />
                         </td>
@@ -602,7 +614,7 @@ export default function MasterUsers() {
                         </td>
                         <td className=" px-2 border-r  border-[#d8b76a]">
                           <Toggle
-                            checked={u.status == "Active"}
+                            defaultChecked={u.status == "Active"}
                             onClick={() => handleToggleStatus(u)}
                           />
                         </td>

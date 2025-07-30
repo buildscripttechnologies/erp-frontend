@@ -125,7 +125,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
         productDetails: productDetails.map(({ label, ...rest }) => rest),
       };
 
-      await axios.post("/boms/add", payload);
+      let res = await axios.post("/boms/add", payload);
       if (res.data.status == 403) {
         toast.error(res.data.message);
         onClose();

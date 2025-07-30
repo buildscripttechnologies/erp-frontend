@@ -205,9 +205,9 @@ export function Sidebar({ isOpen }) {
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-40 h-full w-50 bg-white shadow-xl drop-shadow-xl transform ${
+      className={`fixed top-0 left-0 z-50 h-full w-50 bg-white shadow-xl drop-shadow-xl transform ${
         isOpen ? "translate-x-0" : "-translate-x-full"
-      } transition-transform duration-300 ease-in-out overflow-y-auto`}
+      } transition-transform duration-300 ease-in-out overflow-y-auto `}
     >
       <div className="flex h-15 justify-between bg-[#d8b76a]/50 items-center p-3">
         <img src="/images/logo4.png" alt="smartflow360 logo" />
