@@ -78,6 +78,10 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
         `/customers/update/${customer._id}`,
         payload
       );
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       if (res.status === 200) {
         toast.success("Customer updated successfully");
         onUpdated?.();

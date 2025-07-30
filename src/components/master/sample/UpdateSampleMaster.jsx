@@ -145,12 +145,15 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
         formData.append("files", file);
       });
 
-      await axios.patch(`/samples/update/${Sample._id}`, formData, {
+      let res = await axios.patch(`/samples/update/${Sample._id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("Sample updated successfully");
       onSuccess();
       onClose();

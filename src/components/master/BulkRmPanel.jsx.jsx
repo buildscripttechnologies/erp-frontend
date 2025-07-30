@@ -116,6 +116,10 @@ const BulkRmPanel = ({ onClose }) => {
 
     try {
       const res = await axios.post("/rms/add-many-rm", formData);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       if (res.status === 200 || res.status === 201) {
         toast.success("Raw materials added successfully");
         setRows([]);

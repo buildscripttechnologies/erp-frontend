@@ -10,8 +10,10 @@ import ScrollLock from "../../ScrollLock";
 import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";
 import { Tooltip } from "react-tooltip";
+import { useAuth } from "../../../context/AuthContext";
 
 const UomMaster = () => {
+  const { hasPermission } = useAuth();
   const [uoms, setUoms] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
   const [editUom, setEditUom] = useState(null);
@@ -32,13 +34,19 @@ const UomMaster = () => {
       const res = await axios.get(
         `/uoms/all-uoms?page=${page}&limit=${limit}&status="all"`
       );
-      setUoms(res.data.data || []);
-      setPagination({
-        currentPage: res.data.currentPage,
-        totalPages: res.data.totalPages,
-        totalResults: res.data.totalResults,
-        limit: res.data.limit,
-      });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
+      if (res.data.status == 200) {
+        setUoms(res.data.data || []);
+        setPagination({
+          currentPage: res.data.currentPage,
+          totalPages: res.data.totalPages,
+          totalResults: res.data.totalResults,
+          limit: res.data.limit,
+        });
+      }
     } catch {
       toast.error("Failed to fetch UOMs");
     } finally {
@@ -53,9 +61,15 @@ const UomMaster = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this UOM?")) return;
     try {
-      await axios.delete(`/uoms/delete-uom/${id}`);
-      toast.success("UOM deleted");
-      fetchUOMs();
+      let res = await axios.delete(`/uoms/delete-uom/${id}`);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
+      if (res.data.status == 200) {
+        toast.success("UOM deleted");
+        fetchUOMs();
+      }
     } catch {
       toast.error("Delete failed");
     }
@@ -67,6 +81,10 @@ const UomMaster = () => {
       const res = await axios.patch(`/uoms/update-uom/${id}`, {
         status: newStatus,
       });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       if (res.data.status == 200) {
         toast.success(`UOM status updated`);
@@ -130,13 +148,15 @@ const UomMaster = () => {
           />
         </div>
 
-        <button
-          onClick={() => setFormOpen(!formOpen)}
-          className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
-        >
-          <FiPlus />
-          {formOpen ? "Close Form" : "Add UOM"}
-        </button>
+        {hasPermission("User", "create") && (
+          <button
+            onClick={() => setFormOpen(!formOpen)}
+            className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
+          >
+            <FiPlus />
+            {formOpen ? "Close Form" : "Add UOM"}
+          </button>
+        )}
       </div>
 
       {formOpen && (
@@ -211,19 +231,27 @@ const UomMaster = () => {
                     <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
                       {uom.createdBy?.fullName || "-"}
                     </td>
-                    <td className="px-2 mt-1.5 flex gap-3 text-sm ">
-                      <FiEdit
-                        data-tooltip-id="statusTip"
-                        data-tooltip-content="Edit"
-                        className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
-                        onClick={() => setEditUom(uom)}
-                      />
-                      <FiTrash2
-                        data-tooltip-id="statusTip"
-                        data-tooltip-content="Delete"
-                        className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                        onClick={() => handleDelete(uom._id)}
-                      />
+                    <td className="px-2 mt-1.5 flex gap-3 text-sm text-[#d8b76a]">
+                      {hasPermission("UOM", "update") ? (
+                        <FiEdit
+                          data-tooltip-id="statusTip"
+                          data-tooltip-content="Edit"
+                          className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                          onClick={() => setEditUom(uom)}
+                        />
+                      ) : (
+                        "-"
+                      )}
+                      {hasPermission("UOM", "delete") ? (
+                        <FiTrash2
+                          data-tooltip-id="statusTip"
+                          data-tooltip-content="Delete"
+                          className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                          onClick={() => handleDelete(uom._id)}
+                        />
+                      ) : (
+                        "-"
+                      )}
                       <Tooltip
                         id="statusTip"
                         place="top"

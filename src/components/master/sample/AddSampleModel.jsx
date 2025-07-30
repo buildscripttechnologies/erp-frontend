@@ -133,11 +133,15 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
         formData.append("files", file);
       });
 
-      await axios.post("/samples/add", formData, {
+      let res = await axios.post("/samples/add", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       toast.success("Sample added successfully");
       onSuccess();

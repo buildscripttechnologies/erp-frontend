@@ -120,7 +120,11 @@ const UpdateVendorModal = ({
     };
 
     try {
-      await axios.patch(`/vendors/update/${vendorData._id}`, payload);
+      let res = await axios.patch(`/vendors/update/${vendorData._id}`, payload);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("Vendor updated successfully");
       onSuccess();
     } catch (err) {

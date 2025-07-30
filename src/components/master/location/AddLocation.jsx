@@ -41,6 +41,10 @@ const AddLocationModal = ({ onClose, onAdded }) => {
         toast.error("All Fields Are Required");
         return;
       }
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("Locations added successfully");
       onClose();
       onAdded();
@@ -57,111 +61,118 @@ const AddLocationModal = ({ onClose, onAdded }) => {
         <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">Add Locations</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-  {formList.map((item, index) => (
-    <div
-      key={index}
-      className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center border p-4 rounded border-[#d8b76a]"
-    >
-      <div className="flex flex-col">
-        <label className="mb-1 text-[#292926] font-medium">Location ID</label>
-        <input
-          type="text"
-          name="locationId"
-          placeholder="Location ID"
-          value={item.locationId}
-          onChange={(e) => handleChange(index, e)}
-          className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-          required
-        />
-      </div>
+          {formList.map((item, index) => (
+            <div
+              key={index}
+              className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center border p-4 rounded border-[#d8b76a]"
+            >
+              <div className="flex flex-col">
+                <label className="mb-1 text-[#292926] font-medium">
+                  Location ID
+                </label>
+                <input
+                  type="text"
+                  name="locationId"
+                  placeholder="Location ID"
+                  value={item.locationId}
+                  onChange={(e) => handleChange(index, e)}
+                  className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                  required
+                />
+              </div>
 
-      <div className="flex flex-col">
-        <label className="mb-1 text-[#292926] font-medium">Store No</label>
-        <input
-          type="text"
-          name="storeNo"
-          placeholder="Store No"
-          value={item.storeNo}
-          onChange={(e) => handleChange(index, e)}
-          className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-          required
-        />
-      </div>
+              <div className="flex flex-col">
+                <label className="mb-1 text-[#292926] font-medium">
+                  Store No
+                </label>
+                <input
+                  type="text"
+                  name="storeNo"
+                  placeholder="Store No"
+                  value={item.storeNo}
+                  onChange={(e) => handleChange(index, e)}
+                  className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                  required
+                />
+              </div>
 
-      <div className="flex flex-col">
-        <label className="mb-1 text-[#292926] font-medium">Store Rack No</label>
-        <input
-          type="text"
-          name="storeRno"
-          placeholder="Store Rack No"
-          value={item.storeRno}
-          onChange={(e) => handleChange(index, e)}
-          className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-          required
-        />
-      </div>
+              <div className="flex flex-col">
+                <label className="mb-1 text-[#292926] font-medium">
+                  Store Rack No
+                </label>
+                <input
+                  type="text"
+                  name="storeRno"
+                  placeholder="Store Rack No"
+                  value={item.storeRno}
+                  onChange={(e) => handleChange(index, e)}
+                  className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                  required
+                />
+              </div>
 
-      <div className="flex flex-col">
-        <label className="mb-1 text-[#292926] font-medium">Bin No</label>
-        <input
-          type="text"
-          name="binNo"
-          placeholder="Bin No"
-          value={item.binNo}
-          onChange={(e) => handleChange(index, e)}
-          className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-          required
-        />
-      </div>
+              <div className="flex flex-col">
+                <label className="mb-1 text-[#292926] font-medium">
+                  Bin No
+                </label>
+                <input
+                  type="text"
+                  name="binNo"
+                  placeholder="Bin No"
+                  value={item.binNo}
+                  onChange={(e) => handleChange(index, e)}
+                  className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                  required
+                />
+              </div>
 
-      <div className="flex gap-2 mt-6">
-        {formList.length > 1 && (
-          <button
-            type="button"
-            onClick={() => removeRow(index)}
-            className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded cursor-pointer"
-          >
-            <FiTrash2 />
-          </button>
-        )}
-        {index === formList.length - 1 && (
-          <button
-            type="button"
-            onClick={addRow}
-            className="bg-[#d8b76a] flex items-center gap-1 hover:bg-[#b38a37] text-[#292926] px-3 py-2 rounded cursor-pointer"
-          >
-            <FiPlus /> <span>Add Location</span>
-          </button>
-        )}
-      </div>
-    </div>
-  ))}
+              <div className="flex gap-2 mt-6">
+                {formList.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeRow(index)}
+                    className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded cursor-pointer"
+                  >
+                    <FiTrash2 />
+                  </button>
+                )}
+                {index === formList.length - 1 && (
+                  <button
+                    type="button"
+                    onClick={addRow}
+                    className="bg-[#d8b76a] flex items-center gap-1 hover:bg-[#b38a37] text-[#292926] px-3 py-2 rounded cursor-pointer"
+                  >
+                    <FiPlus /> <span>Add Location</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
 
-  <div className="flex justify-end gap-4 mt-4">
-    <button
-      type="button"
-      onClick={onClose}
-      className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded cursor-pointer"
-    >
-      Cancel
-    </button>
-    <button
-      type="submit"
-      disabled={loading}
-      className="px-6 py-2 bg-[#d8b76a] flex justify-center items-center hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded cursor-pointer"
-    >
-      {loading ? (
-        <>
-          <span className="mr-2">Saving...</span>
-          <ClipLoader size={20} color="#292926" />
-        </>
-      ) : (
-        "Save Locations"
-      )}
-    </button>
-  </div>
-</form>
-
+          <div className="flex justify-end gap-4 mt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2 bg-[#d8b76a] flex justify-center items-center hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded cursor-pointer"
+            >
+              {loading ? (
+                <>
+                  <span className="mr-2">Saving...</span>
+                  <ClipLoader size={20} color="#292926" />
+                </>
+              ) : (
+                "Save Locations"
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

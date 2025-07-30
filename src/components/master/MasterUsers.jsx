@@ -10,6 +10,7 @@ import {
   FiEyeOff,
   FiEye,
 } from "react-icons/fi";
+import { LuUserCog } from "react-icons/lu";
 
 import Dashboard from "../../pages/Dashboard";
 import { useEffect, useState } from "react";
@@ -22,8 +23,13 @@ import RoleSkeleton from "../RoleSkeleton";
 import AccessDeniedNotice from "../AccessDeniedNotice";
 import Toggle from "react-toggle";
 import PaginationControls from "../PaginationControls";
+import UserPermissionForm from "./UserPermissionForm";
+import ScrollLock from "../ScrollLock";
+import { useAuth } from "../../context/AuthContext";
 
 export default function MasterUsers() {
+  const { hasPermission } = useAuth();
+
   const navigate = useNavigate();
   const [filterRole, setFilterRole] = useState("All");
   const [userTypes, setUserTypes] = useState([]);
@@ -36,9 +42,13 @@ export default function MasterUsers() {
   const [loading, setLoading] = useState(false);
   // const [access, setAccess] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [showPermissionForm, setShowPermissionForm] = useState(false);
+  const [permissionUser, setPermissionUser] = useState(null); // null or user object
 
   const [userTypesLoaded, setUserTypesLoaded] = useState(false);
-
+  ScrollLock(
+    editUserId != null || editMode || showForm || permissionUser != null
+  );
   const [pagination, setPagination] = useState({
     totalResults: 0,
     totalPages: 1,
@@ -95,6 +105,11 @@ export default function MasterUsers() {
       }
 
       const res = await axios.get("/users/all-users", { params });
+
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       if (res.data.status === 200) {
         setUsers(res.data.users);
         setPagination({
@@ -103,8 +118,6 @@ export default function MasterUsers() {
           currentPage: res.data.pagination.currentPage,
           limit: res.data.pagination.limit,
         });
-
-        console.log("pagiantion", pagination);
 
         // setAccess(true);
         setLoading(false);
@@ -148,10 +161,21 @@ export default function MasterUsers() {
     setShowForm(false);
     try {
       if (editMode) {
-        await axios.patch(`/users/update-user/${editUserId}`, formData);
+        let res = await axios.patch(
+          `/users/update-user/${editUserId}`,
+          formData
+        );
+        if (res.data.status == 403) {
+          toast.error(res.data.message);
+          return;
+        }
         toast.success("User updated successfully.");
       } else {
-        await axios.post("/auth/register", formData);
+        let res = await axios.post("/auth/register", formData);
+        if (res.data.status == 403) {
+          toast.error(res.data.message);
+          return;
+        }
         toast.success("New User Added.");
       }
       setFormData({
@@ -189,7 +213,11 @@ export default function MasterUsers() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
-        await axios.delete(`/users/delete-user/${id}`);
+        let res = await axios.delete(`/users/delete-user/${id}`);
+        if (res.data.status == 403) {
+          toast.error(res.data.message);
+          return;
+        }
         toast.success("User deleted successfully.");
         fetchUsers();
       } catch (err) {
@@ -205,6 +233,11 @@ export default function MasterUsers() {
       const res = await axios.patch(`/users/update-user/${user.id}`, {
         status: newStatus,
       });
+
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       if (res.status === 200) {
         toast.success(
@@ -229,6 +262,10 @@ export default function MasterUsers() {
       const res = await axios.patch(`/users/update-user/${user.id}`, {
         isVerified: newVerification,
       });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       if (res.status === 200) {
         toast.success(
@@ -421,12 +458,14 @@ export default function MasterUsers() {
                 ({pagination.totalResults})
               </span>
             </h2>
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-[#d8b76a] text-[#292926] font-semibold px-3 py-1 rounded  items-center gap-2 hover:bg-[#d8b76a]/80  transition cursor-pointer hidden sm:flex"
-            >
-              <FiUserPlus /> Add User
-            </button>
+            {hasPermission("User", "create") && (
+              <button
+                onClick={() => setShowForm(true)}
+                className="bg-[#d8b76a] text-[#292926] font-semibold px-3 py-1 rounded  items-center gap-2 hover:bg-[#d8b76a]/80  transition cursor-pointer hidden sm:flex"
+              >
+                <FiUserPlus /> Add User
+              </button>
+            )}
           </div>
 
           {/* Filters */}
@@ -489,12 +528,14 @@ export default function MasterUsers() {
               )}
             </div>
           </div>
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-[#d8b76a] text-[#292926] w-full text-center justify-center font-semibold px-3 py-1 rounded flex items-center gap-2 hover:bg-[#d8b76a]/80  transition cursor-pointer mb-4 sm:hidden"
-          >
-            <FiUserPlus /> Add User
-          </button>
+          {hasPermission("User", "create") && (
+            <button
+              onClick={() => setShowForm(true)}
+              className="bg-[#d8b76a] text-[#292926] w-full text-center justify-center font-semibold px-3 py-1 rounded flex items-center gap-2 hover:bg-[#d8b76a]/80  transition cursor-pointer mb-4 sm:hidden"
+            >
+              <FiUserPlus /> Add User
+            </button>
+          )}
 
           {/* Table */}
           <div className="bg-white rounded border border-[#d8b76a]  overflow-x-auto">
@@ -566,18 +607,36 @@ export default function MasterUsers() {
                           />
                         </td>
                         <td className="pt-1 px-2 flex gap-2 text-sm items-center  text-[#d39c25]">
-                          <FiEdit
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Edit User"
-                            onClick={() => handleEdit(u)}
-                            className="hover:text-blue-500 cursor-pointer"
-                          />
-                          <FiTrash2
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Delete User"
-                            onClick={() => handleDelete(u.id)}
-                            className="hover:text-red-500 cursor-pointer"
-                          />
+                          {hasPermission("User", "update") ? (
+                            <FiEdit
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Edit User"
+                              onClick={() => handleEdit(u)}
+                              className="hover:text-blue-500 cursor-pointer"
+                            />
+                          ) : (
+                            "-"
+                          )}
+                          {hasPermission("User", "update") ? (
+                            <LuUserCog
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="User Permission"
+                              onClick={() => setPermissionUser(u)}
+                              className="hover:text-red-500 cursor-pointer"
+                            />
+                          ) : (
+                            "-"
+                          )}
+                          {hasPermission("User", "delete") ? (
+                            <FiTrash2
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Delete User"
+                              onClick={() => handleDelete(u.id)}
+                              className="hover:text-red-500 cursor-pointer"
+                            />
+                          ) : (
+                            "-"
+                          )}
 
                           {/* {u.status === "Active" ? (
                               <FiUserCheck
@@ -605,6 +664,16 @@ export default function MasterUsers() {
                             }}
                           />
                         </td>
+                        {permissionUser && (
+                          <UserPermissionForm
+                            userId={permissionUser.id}
+                            currentPermissions={
+                              permissionUser.permissions || []
+                            }
+                            onClose={() => setPermissionUser(null)}
+                            fetchUsers={fetchUsers}
+                          />
+                        )}
                       </tr>
                     ))}
                   </>

@@ -14,6 +14,7 @@ import AddFgModal from "./AddFgModal";
 
 import { FaCircleArrowDown, FaCircleArrowUp } from "react-icons/fa6";
 import AttachmentsModal2 from "../../AttachmentsModal2";
+import { useAuth } from "../../../context/AuthContext";
 
 const renderNestedMaterials = (
   materials,
@@ -222,6 +223,8 @@ const renderNestedMaterials = (
 };
 
 const FgMaster = ({ isOpen }) => {
+  const { hasPermission } = useAuth();
+
   const [fgs, setFgs] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -274,6 +277,10 @@ const FgMaster = ({ isOpen }) => {
     setLoading(true);
     try {
       const res = await axios.get(`/fgs/get-all?page=${page}&limit=${limit}`);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       setFgs(res.data.data || []);
       setPagination({
         currentPage: res.data.currentPage,
@@ -319,6 +326,10 @@ const FgMaster = ({ isOpen }) => {
       const res = await axios.patch(`/fgs/update/${id}`, {
         status: newStatus,
       });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       if (res.data.status == 200) {
         toast.success(`FG status updated`);
@@ -341,6 +352,10 @@ const FgMaster = ({ isOpen }) => {
       const res = await axios.patch(`/fgs/update/${id}`, {
         qualityInspectionNeeded: newValue,
       });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       if (res.status === 200) {
         toast.success("Quality Inspection status updated");
@@ -367,6 +382,10 @@ const FgMaster = ({ isOpen }) => {
     if (!window.confirm("Are you sure you want to delete this FG ?")) return;
     try {
       const res = await axios.delete(`/fgs/delete/${id}`);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       if (res.status == 200) {
         toast.success("FG deleted successfully");
         fetchFGs(); // reload list
@@ -396,12 +415,14 @@ const FgMaster = ({ isOpen }) => {
             className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
           />
         </div>
-        <button
-          onClick={() => toogleAddFG(showAddFG)}
-          className="w-full sm:w-auto justify-center bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
-        >
-          <FiPlus /> Add FG
-        </button>
+        {hasPermission("FG", "write") && (
+          <button
+            onClick={() => toogleAddFG(showAddFG)}
+            className="w-full sm:w-auto justify-center bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
+          >
+            <FiPlus /> Add FG
+          </button>
+        )}
       </div>
       {showAddFG && (
         <AddFgModal
@@ -538,16 +559,24 @@ const FgMaster = ({ isOpen }) => {
                         <td className="px-[8px] border-r border-[#d8b76a]">
                           {fg.createdBy?.fullName || "-"}
                         </td>
-                        <td className="px-[8px]  pt-2 text-sm flex gap-2">
+                        <td className="px-[8px]  pt-2 text-sm flex gap-2 text-[#d8b76a]">
                           <FaFileDownload className="cursor-pointer text-[#d8b76a] hover:text-green-600" />
-                          <FiEdit
-                            className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
-                            onClick={() => setEditingFg(fg)}
-                          />
-                          <FiTrash2
-                            className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                            onClick={() => handleDelete(fg.id)}
-                          />
+                          {hasPermission("FG", "update") ? (
+                            <FiEdit
+                              className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                              onClick={() => setEditingFg(fg)}
+                            />
+                          ) : (
+                            "-"
+                          )}
+                          {hasPermission("FG", "delete") ? (
+                            <FiTrash2
+                              className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                              onClick={() => handleDelete(fg.id)}
+                            />
+                          ) : (
+                            "-"
+                          )}
                         </td>
                       </tr>
                       {expandedL1 == fg.id &&

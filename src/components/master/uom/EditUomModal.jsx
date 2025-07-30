@@ -19,6 +19,10 @@ const EditUomModal = ({ uom, onClose, onUpdated }) => {
     setLoading(true);
     try {
       await axios.patch(`/uoms/update-uom/${uom._id}`, formData);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("UOM updated successfully");
       onUpdated();
       onClose();

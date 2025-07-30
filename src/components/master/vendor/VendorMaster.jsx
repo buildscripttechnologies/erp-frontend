@@ -12,8 +12,11 @@ import { Tooltip } from "react-tooltip";
 import UpdateVendorModal from "./UpdateVendorModal";
 import ViewVendorModal from "./VendorDetailsSection";
 import VendorDetailsSection from "./VendorDetailsSection";
+import { useAuth } from "../../../context/AuthContext";
 
 const VendorMaster = ({ isOpen }) => {
+  const { hasPermission } = useAuth();
+
   const [vendors, setVendors] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,6 +48,10 @@ const VendorMaster = ({ isOpen }) => {
       const res = await axios.get(
         `/vendors/get-all?page=${page}&limit=${limit}`
       );
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       setVendors(res.data.data || []);
       setPagination({
         currentPage: res.data.currentPage,
@@ -105,6 +112,10 @@ const VendorMaster = ({ isOpen }) => {
       const res = await axios.patch(`/vendors/update/${id}`, {
         isActive: newStatus,
       });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       if (res.data.status == 200) {
         toast.success(`Vendor status updated`);
@@ -124,7 +135,11 @@ const VendorMaster = ({ isOpen }) => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this Vendor?")) return;
     try {
-      await axios.delete(`/vendors/delete/${id}`);
+      let res = await axios.delete(`/vendors/delete/${id}`);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("Vendor deleted");
       fetchVendors();
     } catch {
@@ -161,12 +176,14 @@ const VendorMaster = ({ isOpen }) => {
               className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:outline-none"
             />
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-[#d8b76a]   hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <FiPlus /> Add Vendor
-          </button>
+          {hasPermission("Venodr", "write") && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-[#d8b76a]   hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <FiPlus /> Add Vendor
+            </button>
+          )}
         </div>
 
         <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
@@ -281,19 +298,27 @@ const VendorMaster = ({ isOpen }) => {
                           <td className="px-2 border-r border-[#d8b76a]">
                             {v.createdBy?.fullName || "-"}
                           </td>
-                          <td className="px-2 mt-1.5 text-sm  flex gap-2">
-                            <FiEdit
-                              onClick={() => handleEdit(v)}
-                              data-tooltip-id="statusTip"
-                              data-tooltip-content="Edit"
-                              className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
-                            />
-                            <FiTrash2
-                              data-tooltip-id="statusTip"
-                              data-tooltip-content="Delete"
-                              onClick={() => handleDelete(v._id)}
-                              className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                            />
+                          <td className="px-2 mt-1.5 text-sm  flex gap-2 text-[#d8b76a]">
+                            {hasPermission("Vendor", "update") ? (
+                              <FiEdit
+                                onClick={() => handleEdit(v)}
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Edit"
+                                className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                              />
+                            ) : (
+                              "-"
+                            )}
+                            {hasPermission("Vendor", "delete") ? (
+                              <FiTrash2
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Delete"
+                                onClick={() => handleDelete(v._id)}
+                                className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                              />
+                            ) : (
+                              "-"
+                            )}
                             <Tooltip
                               id="statusTip"
                               place="top"

@@ -25,10 +25,13 @@ import PaginationControls from "../PaginationControls.jsx";
 import { ClipLoader } from "react-spinners";
 import { span } from "framer-motion/client";
 import AttachmentsModal2 from "../AttachmentsModal2.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 // export const baseurl = "http://localhost:5000";
 
 const RmMaster = ({ isOpen }) => {
+  const { hasPermission } = useAuth();
+
   const [rawMaterials, setRawMaterials] = useState([]);
   const [editData, setEditData] = useState(null);
   const [search, setSearch] = useState("");
@@ -66,6 +69,10 @@ const RmMaster = ({ isOpen }) => {
           search, // if you have search
         },
       });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       setRawMaterials(res.data.rawMaterials || []);
       setPagination({
@@ -112,6 +119,10 @@ const RmMaster = ({ isOpen }) => {
     try {
       setUploading(true);
       const res = await axios.post("/rms/upload-rm-excel", formData);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("Raw materials uploaded");
       setFile(null);
       setUploading(false);
@@ -164,6 +175,10 @@ const RmMaster = ({ isOpen }) => {
       const res = await axios.patch(`/rms/update-rm/${id}`, {
         qualityInspectionNeeded: newValue,
       });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       if (res.status === 200) {
         toast.success("Quality Inspection status updated");
@@ -192,6 +207,10 @@ const RmMaster = ({ isOpen }) => {
       const res = await axios.patch(`/rms/update-rm/${id}`, {
         status: newStatus,
       });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
 
       if (res.status === 200) {
         toast.success(`Raw material status updated to ${newStatus}`);
@@ -422,12 +441,14 @@ const RmMaster = ({ isOpen }) => {
           />
           <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
         </div>
-        <button
-          onClick={() => setShowBulkPanel(true)}
-          className="w-full sm:w-40 justify-center bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer transition duration-200"
-        >
-          <FiPlus /> Add R.M.
-        </button>
+        {hasPermission("RawMaterial", "write") && (
+          <button
+            onClick={() => setShowBulkPanel(true)}
+            className="w-full sm:w-40 justify-center bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer transition duration-200"
+          >
+            <FiPlus /> Add R.M.
+          </button>
+        )}
       </div>
 
       {/* Table */}
@@ -597,12 +618,16 @@ const RmMaster = ({ isOpen }) => {
                       </td>
                       <td className="px-2 ">
                         <div className="flex items-center gap-2 text-base text-[#d39c25]">
-                          <FiEdit
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Edit"
-                            onClick={() => setEditData(rm)}
-                            className="hover:text-blue-500 cursor-pointer"
-                          />
+                          {hasPermission("RawMaterial", "update") ? (
+                            <FiEdit
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Edit"
+                              onClick={() => setEditData(rm)}
+                              className="hover:text-blue-500 cursor-pointer"
+                            />
+                          ) : (
+                            "-"
+                          )}
                           {editData && (
                             <EditRawMaterialModal
                               rawMaterial={editData}
@@ -610,12 +635,16 @@ const RmMaster = ({ isOpen }) => {
                               onUpdated={fetchRawMaterials}
                             />
                           )}
-                          <FiTrash2
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Delete"
-                            onClick={() => handleDelete(rm.id)}
-                            className="hover:text-red-500 cursor-pointer"
-                          />
+                          {hasPermission("RawMaterial", "update") ? (
+                            <FiTrash2
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Delete"
+                              onClick={() => handleDelete(rm.id)}
+                              className="hover:text-red-500 cursor-pointer"
+                            />
+                          ) : (
+                            "-"
+                          )}
                           <Tooltip
                             id="statusTip"
                             place="top"

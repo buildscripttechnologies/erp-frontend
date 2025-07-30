@@ -5,12 +5,13 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState(null);
-  const [authChecked, setAuthChecked] = useState(false); // NEW
+  const [authChecked, setAuthChecked] = useState(false);
   const [user, setUser] = useState({
     id: "",
     username: "",
-    userType: "",
     fullName: "",
+    userType: "",
+    permissions: [],
   });
 
   useEffect(() => {
@@ -22,9 +23,10 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(true);
     }
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
     }
-    setAuthChecked(true); // Only render after checking
+    setAuthChecked(true);
   }, []);
 
   const login = (token, user) => {
@@ -38,26 +40,48 @@ export const AuthProvider = ({ children }) => {
       username: user.username,
       fullName: user.fullName,
       userType: user.userType,
+      permissions: user.permissions || [], // ✅ include permissions
     });
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    setToken(null);
 
+    setToken(null);
     setIsAuthenticated(false);
     setUser({
       id: "",
       username: "",
       fullName: "",
       userType: "",
+      permissions: [],
     });
+  };
+
+  const hasPermission = (module, action) => {
+    if (!user) return false;
+    if (user.userType === "Admin") return true;
+
+    const permission = user.permissions?.find((p) => p.module === module);
+    if (!permission) return false;
+
+    return (
+      permission.actions.includes(action) || permission.actions.includes("*")
+    );
   };
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, token, login, logout, authChecked, user }}
+      value={{
+        isAuthenticated,
+        token,
+        login,
+        logout,
+        authChecked,
+        user,
+        hasPermission,
+      }}
     >
       {children}
     </AuthContext.Provider>

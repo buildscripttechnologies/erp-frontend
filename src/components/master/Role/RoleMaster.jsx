@@ -91,8 +91,8 @@ const RoleMaster = () => {
     }
   };
 
-  const filteredRoles = roles.filter((r) =>
-    r.name?.toLowerCase().includes(search.toLowerCase())
+  const filteredRoles = roles.filter(
+    (r) => r.name?.toLowerCase().includes(search.toLowerCase()) || ""
   );
 
   const userTableHeaders = [

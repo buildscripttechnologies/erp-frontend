@@ -171,6 +171,10 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
       }
 
       await axios.patch(`/sfgs/edit/${sfg.id}`, payload);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("SFG updated successfully");
       onUpdated();
     } catch (err) {

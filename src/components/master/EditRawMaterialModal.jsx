@@ -87,6 +87,12 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
           "Content-Type": "multipart/form-data",
         },
       });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        onUpdated();
+        onClose();
+        return;
+      }
 
       if (res.status === 200) {
         toast.success("Raw material updated");

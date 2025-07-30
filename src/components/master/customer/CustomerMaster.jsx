@@ -11,8 +11,11 @@ import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";
 import EditCustomerModal from "./EditCustomerModal";
 import CustomerDetailsSection from "./CustomerDetailsView";
+import { useAuth } from "../../../context/AuthContext";
 
 const CustomerMaster = ({ isOpen }) => {
+  const { hasPermission } = useAuth();
+
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,6 +37,10 @@ const CustomerMaster = ({ isOpen }) => {
       const res = await axios.get(
         `/customers/get-all?page=${page}&limit=${limit}`
       );
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       setCustomers(res.data.data || []);
       setPagination({
         currentPage: res.data.currentPage,
@@ -77,7 +84,10 @@ const CustomerMaster = ({ isOpen }) => {
       const res = await axios.patch(`/customers/update/${id}`, {
         isActive: newStatus,
       });
-
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       if (res.data.status == 200) {
         toast.success(`Customer status updated`);
 
@@ -97,7 +107,11 @@ const CustomerMaster = ({ isOpen }) => {
     if (!window.confirm("Are you sure you want to delete this Customer?"))
       return;
     try {
-      await axios.delete(`/customers/delete/${id}`);
+      let res = await axios.delete(`/customers/delete/${id}`);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
       toast.success("Customer deleted");
       fetchCustomers();
     } catch {
@@ -131,17 +145,23 @@ const CustomerMaster = ({ isOpen }) => {
               className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:outline-none"
             />
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-[#d8b76a] hover:bg-[#b38a37]  justify-center text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
-          >
-            <FiPlus /> Add Customer
-          </button>
+          {hasPermission("Customer", "write") && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-[#d8b76a] hover:bg-[#b38a37]  justify-center text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
+            >
+              <FiPlus /> Add Customer
+            </button>
+          )}
         </div>
 
         <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
           <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[98vw]`}`}>
-            <table className={"text-[11px] whitespace-nowrap min-w-[100vw] text-left"}>
+            <table
+              className={
+                "text-[11px] whitespace-nowrap min-w-[100vw] text-left"
+              }
+            >
               <thead className="bg-[#d8b76a] text-[#292926]">
                 <tr>
                   <th className="px-[8px] py-1.5 ">#</th>
@@ -246,15 +266,23 @@ const CustomerMaster = ({ isOpen }) => {
                           <td className="px-[8px] border-r border-[#d8b76a] ">
                             {c.createdBy?.fullName || "-"}
                           </td>
-                          <td className="px-[8px] pt-1.5 text-sm  flex gap-2">
-                            <FiEdit
-                              onClick={() => setEditingCustomer(c)}
-                              className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
-                            />
-                            <FiTrash2
-                              onClick={() => handleDelete(c._id)}
-                              className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                            />
+                          <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-[#d8b76a]">
+                            {hasPermission("Customer", "update") ? (
+                              <FiEdit
+                                onClick={() => setEditingCustomer(c)}
+                                className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                              />
+                            ) : (
+                              "-"
+                            )}
+                            {hasPermission("Customer", "delete") ? (
+                              <FiTrash2
+                                onClick={() => handleDelete(c._id)}
+                                className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                              />
+                            ) : (
+                              "-"
+                            )}
                           </td>
                         </tr>
                         {expandedCustomerId === c._id && (
