@@ -3,26 +3,31 @@ import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import Select from "react-select";
 
-const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
+const EditRawMaterialModal = ({
+  rawMaterial = [],
+  onClose,
+  onUpdated,
+  uoms,
+}) => {
   const [formData, setFormData] = useState(rawMaterial);
   const [loading, setLoading] = useState(false);
-  const [uoms, setUoms] = useState([]);
+  // const [uoms, setUoms] = useState([]);
   const [locations, setLocations] = useState([]);
   const [deletedAttachments, setDeletedAttachments] = useState([]);
   const [newAttachments, setNewAttachments] = useState([]);
 
-  useEffect(() => {
-    const fetchUOMs = async () => {
-      try {
-        const res = await axios.get("/uoms/all-uoms"); // your UOM endpoint
-        setUoms(res.data.data || []);
-      } catch (err) {
-        toast.error("Failed to load UOMs");
-      }
-    };
+  // useEffect(() => {
+  //   const fetchUOMs = async () => {
+  //     try {
+  //       const res = await axios.get("/uoms/all-uoms"); // your UOM endpoint
+  //       setUoms(res.data.data || []);
+  //     } catch (err) {
+  //       toast.error("Failed to load UOMs");
+  //     }
+  //   };
 
-    fetchUOMs();
-  }, []);
+  //   fetchUOMs();
+  // }, []);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -114,7 +119,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
   }));
 
   return (
-    <div className="fixed inset-0  backdrop-blur-xs  flex items-center justify-center z-50">
+    <div className="fixed inset-0  bg-gray-100/10 flex items-center justify-center z-50">
       <div className="bg-white w-full max-w-[92vw] sm:max-w-3xl rounded-lg p-6  border overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
         <div className="flex flex-col sm:flex-row sm:justify-between  mb-4">
           <h2 className="w-full text-xl font-bold  text-[#d8b76a] flex justify-center sm:justify-start">
@@ -378,7 +383,7 @@ const EditRawMaterialModal = ({ rawMaterial, onClose, onUpdated }) => {
                       href={att.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:underline text-blue-600"
+                      className="hover:underline text-blue-600 truncate"
                     >
                       {att.fileName}
                     </a>

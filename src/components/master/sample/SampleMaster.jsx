@@ -13,7 +13,7 @@ import UpdateSampleModal from "./UpdateSampleMaster";
 import { generateSample } from "../../../utils/generateSample";
 import AttachmentsModal2 from "../../AttachmentsModal2";
 import { useAuth } from "../../../context/AuthContext";
-
+import { debounce } from "lodash";
 const SampleMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
 
@@ -31,11 +31,21 @@ const SampleMaster = ({ isOpen }) => {
     limit: 10,
   });
 
+  useEffect(() => {
+    const debouncedSearch = debounce(() => {
+      fetchSamples(1); // Always fetch from page 1 for new search
+    }, 400); // 400ms delay
+
+    debouncedSearch();
+
+    return () => debouncedSearch.cancel(); // Cleanup on unmount/change
+  }, [search]); // Re-run on search change
+
   const fetchSamples = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/samples/get-all?page=${page}&limit=${limit}`
+        `/samples/get-all?page=${page}&search=${search}&limit=${limit}`
       );
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -66,13 +76,13 @@ const SampleMaster = ({ isOpen }) => {
     fetchSamples(page);
   };
 
-  const filtered = Samples.filter(
-    (c) =>
-      c.partyName?.toLowerCase().includes(search.toLowerCase()) ||
-      c.product?.name?.toLowerCase().includes(search.toLowerCase()) ||
-      c.sampleNo?.toLowerCase().includes(search.toLowerCase()) ||
-      c.createdBy?.fullName.toLowerCase().includes(search.toLowerCase())
-  );
+  // const filtered = Samples.filter(
+  //   (c) =>
+  //     c.partyName?.toLowerCase().includes(search.toLowerCase()) ||
+  //     c.product?.name?.toLowerCase().includes(search.toLowerCase()) ||
+  //     c.sampleNo?.toLowerCase().includes(search.toLowerCase()) ||
+  //     c.createdBy?.fullName.toLowerCase().includes(search.toLowerCase())
+  // );
 
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === true ? false : true;
@@ -242,7 +252,7 @@ const SampleMaster = ({ isOpen }) => {
                   />
                 ) : (
                   <>
-                    {filtered.map((b, i) => (
+                    {Samples.map((b, i) => (
                       <React.Fragment key={b._id}>
                         <tr
                           className="border-t border-[#d8b76a] hover:bg-gray-50 cursor-pointer"
@@ -359,7 +369,7 @@ const SampleMaster = ({ isOpen }) => {
                         )}
                       </React.Fragment>
                     ))}
-                    {filtered.length === 0 && (
+                    {Samples.length === 0 && (
                       <tr>
                         <td
                           colSpan="16"

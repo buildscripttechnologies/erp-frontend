@@ -11,7 +11,7 @@ import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";
 import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../../context/AuthContext";
-
+import { debounce } from "lodash";
 const UomMaster = () => {
   const { hasPermission } = useAuth();
   const [uoms, setUoms] = useState([]);
@@ -28,11 +28,21 @@ const UomMaster = () => {
 
   ScrollLock(formOpen || editUom != null);
 
+  useEffect(() => {
+    const debouncedSearch = debounce(() => {
+      fetchUOMs(1); // Always fetch from page 1 for new search
+    }, 400); // 400ms delay
+
+    debouncedSearch();
+
+    return () => debouncedSearch.cancel(); // Cleanup on unmount/change
+  }, [search]); // Re-run on search change
+
   const fetchUOMs = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/uoms/all-uoms?page=${page}&limit=${limit}&status="all"`
+        `/uoms/all-uoms?page=${page}&limit=${limit}&search=${search}&status="all"`
       );
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -103,12 +113,12 @@ const UomMaster = () => {
     }
   };
 
-  const filteredUoms = uoms.filter(
-    (u) =>
-      u.unitName?.toLowerCase().includes(search.toLowerCase()) ||
-      u.unitDescription?.toLowerCase().includes(search.toLowerCase()) ||
-      u.createdBy?.fullName.toLowerCase().includes(search.toLocaleLowerCase())
-  );
+  // const filteredUoms = uoms.filter(
+  //   (u) =>
+  //     u.unitName?.toLowerCase().includes(search.toLowerCase()) ||
+  //     u.unitDescription?.toLowerCase().includes(search.toLowerCase()) ||
+  //     u.createdBy?.fullName.toLowerCase().includes(search.toLocaleLowerCase())
+  // );
 
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
@@ -185,7 +195,7 @@ const UomMaster = () => {
               />
             ) : (
               <>
-                {filteredUoms.map((uom, index) => (
+                {uoms.map((uom, index) => (
                   <tr
                     key={uom._id}
                     className="border-t text-[11px] border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
@@ -265,7 +275,7 @@ const UomMaster = () => {
                     </td>
                   </tr>
                 ))}
-                {filteredUoms.length === 0 && (
+                {uoms.length === 0 && (
                   <tr>
                     <td colSpan="8" className="text-center py-4 text-gray-500">
                       No UOMs found.

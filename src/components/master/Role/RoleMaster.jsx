@@ -11,7 +11,7 @@ import ScrollLock from "../../ScrollLock";
 import PaginationControls from "../../PaginationControls";
 import { Tooltip } from "react-tooltip";
 import TableSkeleton from "../../TableSkeleton";
-
+import { debounce } from "lodash";
 const RoleMaster = () => {
   const [roles, setRoles] = useState([]);
   const [editData, setEditData] = useState(null);
@@ -28,11 +28,21 @@ const RoleMaster = () => {
 
   ScrollLock(showAddModal || editData != null);
 
+  useEffect(() => {
+    const debouncedSearch = debounce(() => {
+      fetchRoles(1); // Always fetch from page 1 for new search
+    }, 400); // 400ms delay
+
+    debouncedSearch();
+
+    return () => debouncedSearch.cancel(); // Cleanup on unmount/change
+  }, [search]); // Re-run on search change
+
   const fetchRoles = async (page = 1, limit = pagination.limit) => {
     try {
       setLoading(true);
       const res = await axios.get(
-        `/roles/all-roles/?page=${page}&limit=${limit}&status="all"`
+        `/roles/all-roles/?page=${page}&limit=${limit}&search=${search}&status="all"`
       );
       setRoles(res.data.roles);
       setPagination({
@@ -91,9 +101,9 @@ const RoleMaster = () => {
     }
   };
 
-  const filteredRoles = roles.filter(
-    (r) => r.name?.toLowerCase().includes(search.toLowerCase()) || ""
-  );
+  // const filteredRoles = roles.filter(
+  //   (r) => r.name?.toLowerCase().includes(search.toLowerCase()) || ""
+  // );
 
   const userTableHeaders = [
     { label: "#", className: "" },
@@ -155,14 +165,14 @@ const RoleMaster = () => {
                 rows={pagination.limit}
                 columns={userTableHeaders}
               />
-            ) : filteredRoles.length === 0 ? (
+            ) : roles.length === 0 ? (
               <tr>
                 <td colSpan="7" className="text-center py-4 text-gray-500">
                   No roles found.
                 </td>
               </tr>
             ) : (
-              filteredRoles.map((role, idx) => (
+              roles.map((role, idx) => (
                 <tr
                   key={role._id}
                   className="border-b border-[#d8b76a] hover:bg-gray-50"

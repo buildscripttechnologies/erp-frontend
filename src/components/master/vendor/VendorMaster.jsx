@@ -14,6 +14,8 @@ import ViewVendorModal from "./VendorDetailsSection";
 import VendorDetailsSection from "./VendorDetailsSection";
 import { useAuth } from "../../../context/AuthContext";
 
+import { debounce } from "lodash";
+
 const VendorMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
 
@@ -42,11 +44,21 @@ const VendorMaster = ({ isOpen }) => {
     limit: 10,
   });
 
+  useEffect(() => {
+    const debouncedSearch = debounce(() => {
+      fetchVendors(1); // Always fetch from page 1 for new search
+    }, 400); // 400ms delay
+
+    debouncedSearch();
+
+    return () => debouncedSearch.cancel(); // Cleanup on unmount/change
+  }, [search]); // Re-run on search change
+
   const fetchVendors = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/vendors/get-all?page=${page}&limit=${limit}`
+        `/vendors/get-all?page=${page}&search=${search}&limit=${limit}`
       );
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -95,16 +107,16 @@ const VendorMaster = ({ isOpen }) => {
     fetchVendors(page);
   };
 
-  const filtered = vendors.filter(
-    (v) =>
-      v.vendorName.toLowerCase().includes(search.toLowerCase()) ||
-      v.natureOfBusiness.toLowerCase().includes(search.toLowerCase()) ||
-      v.city.toLowerCase().includes(search.toLowerCase()) ||
-      v.state.toLowerCase().includes(search.toLowerCase()) ||
-      v.venderCode.toLowerCase().includes(search.toLowerCase()) ||
-      v.country.toLowerCase().includes(search.toLowerCase()) ||
-      v.postalCode.toLowerCase().includes(search.toLowerCase())
-  );
+  // const filtered = vendors.filter(
+  //   (v) =>
+  //     v.vendorName.toLowerCase().includes(search.toLowerCase()) ||
+  //     v.natureOfBusiness.toLowerCase().includes(search.toLowerCase()) ||
+  //     v.city.toLowerCase().includes(search.toLowerCase()) ||
+  //     v.state.toLowerCase().includes(search.toLowerCase()) ||
+  //     v.venderCode.toLowerCase().includes(search.toLowerCase()) ||
+  //     v.country.toLowerCase().includes(search.toLowerCase()) ||
+  //     v.postalCode.toLowerCase().includes(search.toLowerCase())
+  // );
 
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === true ? false : true;
@@ -216,7 +228,7 @@ const VendorMaster = ({ isOpen }) => {
                   />
                 ) : (
                   <>
-                    {filtered.map((v, i) => (
+                    {vendors.map((v, i) => (
                       <Fragment key={v._id}>
                         <tr
                           onClick={() =>
@@ -340,7 +352,7 @@ const VendorMaster = ({ isOpen }) => {
                         )}
                       </Fragment>
                     ))}
-                    {filtered.length === 0 && (
+                    {vendors.length === 0 && (
                       <tr>
                         <td
                           colSpan="15"

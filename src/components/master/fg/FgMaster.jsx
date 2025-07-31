@@ -15,7 +15,7 @@ import AddFgModal from "./AddFgModal";
 import { FaCircleArrowDown, FaCircleArrowUp } from "react-icons/fa6";
 import AttachmentsModal2 from "../../AttachmentsModal2";
 import { useAuth } from "../../../context/AuthContext";
-
+import { debounce } from "lodash";
 const renderNestedMaterials = (
   materials,
   level = 1,
@@ -245,6 +245,16 @@ const FgMaster = ({ isOpen }) => {
 
   ScrollLock(showAddFG == true || editingFg != null);
 
+  useEffect(() => {
+    const debouncedSearch = debounce(() => {
+      fetchFGs(1); // Always fetch from page 1 for new search
+    }, 400); // 400ms delay
+
+    debouncedSearch();
+
+    return () => debouncedSearch.cancel(); // Cleanup on unmount/change
+  }, [search]); // Re-run on search change
+
   const toogleAddFG = (prev) => {
     setShowAddFG(!prev);
   };
@@ -276,7 +286,9 @@ const FgMaster = ({ isOpen }) => {
   const fetchFGs = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
-      const res = await axios.get(`/fgs/get-all?page=${page}&limit=${limit}`);
+      const res = await axios.get(
+        `/fgs/get-all?page=${page}&search=${search}&limit=${limit}`
+      );
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
@@ -304,21 +316,21 @@ const FgMaster = ({ isOpen }) => {
     fetchFGs(page);
   };
 
-  const filteredFGs = fgs.filter((fg) => {
-    const query = search.toLowerCase();
-    return (
-      fg.itemName?.toLowerCase().includes(query) ||
-      fg.description?.toLowerCase().includes(query) ||
-      fg.skuCode?.toLowerCase().includes(query) ||
-      fg.hsnOrSac?.toLowerCase().includes(query) ||
-      fg.type?.toLowerCase().includes(query) ||
-      fg.basePrice == query ||
-      fg.qualityInspection?.toLowerCase().includes(query) ||
-      fg.location?.toLowerCase().includes(query) ||
-      fg.gst?.toString().includes(query) ||
-      fg.createdAt?.toLowerCase().includes(query)
-    );
-  });
+  // const filteredFGs = fgs.filter((fg) => {
+  //   const query = search.toLowerCase();
+  //   return (
+  //     fg.itemName?.toLowerCase().includes(query) ||
+  //     fg.description?.toLowerCase().includes(query) ||
+  //     fg.skuCode?.toLowerCase().includes(query) ||
+  //     fg.hsnOrSac?.toLowerCase().includes(query) ||
+  //     fg.type?.toLowerCase().includes(query) ||
+  //     fg.basePrice == query ||
+  //     fg.qualityInspection?.toLowerCase().includes(query) ||
+  //     fg.location?.toLowerCase().includes(query) ||
+  //     fg.gst?.toString().includes(query) ||
+  //     fg.createdAt?.toLowerCase().includes(query)
+  //   );
+  // });
 
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
@@ -462,7 +474,7 @@ const FgMaster = ({ isOpen }) => {
                 />
               ) : (
                 <>
-                  {filteredFGs.map((fg, index) => (
+                  {fgs.map((fg, index) => (
                     <React.Fragment key={fg.id}>
                       <tr
                         onClick={() => toggleL1(fg.id)}
@@ -643,7 +655,7 @@ const FgMaster = ({ isOpen }) => {
                         )}
                     </React.Fragment>
                   ))}
-                  {filteredFGs.length === 0 && (
+                  {fgs.length === 0 && (
                     <tr>
                       <td
                         colSpan="16"

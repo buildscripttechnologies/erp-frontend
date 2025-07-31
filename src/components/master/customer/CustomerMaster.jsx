@@ -13,6 +13,8 @@ import EditCustomerModal from "./EditCustomerModal";
 import CustomerDetailsSection from "./CustomerDetailsView";
 import { useAuth } from "../../../context/AuthContext";
 
+import { debounce } from "lodash";
+
 const CustomerMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
 
@@ -31,11 +33,21 @@ const CustomerMaster = ({ isOpen }) => {
     limit: 10,
   });
 
+  useEffect(() => {
+    const debouncedSearch = debounce(() => {
+      fetchCustomers(1); // Always fetch from page 1 for new search
+    }, 400); // 400ms delay
+
+    debouncedSearch();
+
+    return () => debouncedSearch.cancel(); // Cleanup on unmount/change
+  }, [search]); // Re-run on search change
+
   const fetchCustomers = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/customers/get-all?page=${page}&limit=${limit}`
+        `/customers/get-all?page=${page}&search=${search}&limit=${limit}`
       );
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -66,17 +78,17 @@ const CustomerMaster = ({ isOpen }) => {
     fetchCustomers(page);
   };
 
-  const filtered = customers.filter(
-    (c) =>
-      c.customerName.toLowerCase().includes(search.toLowerCase()) ||
-      c.customerCode.toLowerCase().includes(search.toLowerCase()) ||
-      c.aliasName.toLowerCase().includes(search.toLowerCase()) ||
-      c.natureOfBusiness.toLowerCase().includes(search.toLowerCase()) ||
-      c.city.toLowerCase().includes(search.toLowerCase()) ||
-      c.state.toLowerCase().includes(search.toLowerCase()) ||
-      c.country.toLowerCase().includes(search.toLowerCase()) ||
-      c.postalCode.includes(search)
-  );
+  // const filtered = customers.filter(
+  //   (c) =>
+  //     c.customerName?.toLowerCase().includes(search.toLowerCase()) ||
+  //     c.customerCode?.toLowerCase().includes(search.toLowerCase()) ||
+  //     c.aliasName?.toLowerCase().includes(search.toLowerCase()) ||
+  //     c.natureOfBusiness?.toLowerCase().includes(search.toLowerCase()) ||
+  //     c.city?.toLowerCase().includes(search.toLowerCase()) ||
+  //     c.state?.toLowerCase().includes(search.toLowerCase()) ||
+  //     c.country?.toLowerCase().includes(search.toLowerCase()) ||
+  //     c.postalCode?.includes(search)
+  // );
 
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === true ? false : true;
@@ -190,7 +202,7 @@ const CustomerMaster = ({ isOpen }) => {
                   />
                 ) : (
                   <>
-                    {filtered.map((c, i) => (
+                    {customers.map((c, i) => (
                       <React.Fragment key={c._id}>
                         <tr
                           className="border-t border-[#d8b76a] hover:bg-gray-50 cursor-pointer"
@@ -294,7 +306,7 @@ const CustomerMaster = ({ isOpen }) => {
                         )}
                       </React.Fragment>
                     ))}
-                    {filtered.length === 0 && (
+                    {customers.length === 0 && (
                       <tr>
                         <td
                           colSpan="16"

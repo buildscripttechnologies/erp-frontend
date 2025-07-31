@@ -32,13 +32,13 @@ export default function Dashboard({ children }) {
         user={user}
       />
 
-      <div className="flex min-h-[91.7vh]  w-full bg-gradient-to-r from-white to-[#d8b76a]/10 overflow-auto ">
+      <div className="flex min-h-screen pt-15  w-full bg-gradient-to-r from-white to-[#d8b76a]/10  ">
         {/* Sidebar */}
         <Sidebar isOpen={isOpen} setIsOpen={toggleSidebar} />
 
         {/* Main Content */}
         <main
-          className={`flex-1 transition-all duration-300 ease-in-out ${
+          className={`flex-1 transition-all overflow-auto duration-300 ease-in-out ${
             isOpen ? "ml-50 " : "ml-0"
           }`}
         >
