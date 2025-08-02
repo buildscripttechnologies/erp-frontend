@@ -14,6 +14,9 @@ import { generateSample } from "../../../utils/generateSample";
 import AttachmentsModal2 from "../../AttachmentsModal2";
 import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
+
+import { useRef } from "react";
+
 const SampleMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
 
@@ -31,7 +34,13 @@ const SampleMaster = ({ isOpen }) => {
     limit: 10,
   });
 
+  const hasMountedRef = useRef(false);
+
   useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return; // skip first debounce on mount
+    }
     const debouncedSearch = debounce(() => {
       fetchSamples(1); // Always fetch from page 1 for new search
     }, 400); // 400ms delay

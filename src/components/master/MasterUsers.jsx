@@ -27,6 +27,7 @@ import UserPermissionForm from "./UserPermissionForm";
 import ScrollLock from "../ScrollLock";
 import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
+import { useRef } from "react";
 
 export default function MasterUsers() {
   const { hasPermission } = useAuth();
@@ -47,6 +48,7 @@ export default function MasterUsers() {
   const [permissionUser, setPermissionUser] = useState(null); // null or user object
 
   const [userTypesLoaded, setUserTypesLoaded] = useState(false);
+  const hasMountedRef = useRef(false);
   ScrollLock(
     editUserId != null || editMode || showForm || permissionUser != null
   );
@@ -68,6 +70,10 @@ export default function MasterUsers() {
   });
 
   useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return; // skip first debounce on mount
+    }
     const debouncedSearch = debounce(() => {
       fetchUsers(1); // Always fetch from page 1 for new search
     }, 400); // 400ms delay

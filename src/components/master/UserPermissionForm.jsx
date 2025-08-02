@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 const availableModules = [
   "UOM",
   "RawMaterial",
+  "Stock",
   "Location",
   "SFG",
   "FG",
@@ -15,7 +16,7 @@ const availableModules = [
   "Customer",
   "Role",
   "User",
-  "Dashboard"
+  "Dashboard",
 ];
 
 const availableActions = ["read", "write", "update", "delete"];

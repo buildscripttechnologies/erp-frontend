@@ -170,7 +170,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         form.file.forEach((file) => payload.append("files", file));
       }
 
-      await axios.patch(`/sfgs/edit/${sfg.id}`, payload);
+      let res = await axios.patch(`/sfgs/edit/${sfg.id}`, payload);
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;

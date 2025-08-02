@@ -28,6 +28,7 @@ import AttachmentsModal2 from "../AttachmentsModal2.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 import { debounce } from "lodash";
+import { useRef } from "react";
 
 // export const baseurl = "http://localhost:5000";
 
@@ -49,6 +50,8 @@ const RmMaster = ({ isOpen }) => {
   const [uploading, setUploading] = useState(false);
   const [uoms, setUoms] = useState([]);
 
+  const hasMountedRef = useRef(false);
+
   ScrollLock(editData != null || showBulkPanel || openAttachments != null);
   useEffect(() => {
     const fetchUOMs = async () => {
@@ -64,6 +67,10 @@ const RmMaster = ({ isOpen }) => {
   }, []);
 
   useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return; // skip first debounce on mount
+    }
     const debouncedSearch = debounce(() => {
       fetchRawMaterials(1); // Always fetch from page 1 for new search
     }, 400); // 400ms delay

@@ -12,6 +12,8 @@ import PaginationControls from "../../PaginationControls";
 import { Tooltip } from "react-tooltip";
 import TableSkeleton from "../../TableSkeleton";
 import { debounce } from "lodash";
+import { useRef } from "react";
+
 const RoleMaster = () => {
   const [roles, setRoles] = useState([]);
   const [editData, setEditData] = useState(null);
@@ -25,10 +27,14 @@ const RoleMaster = () => {
     totalResults: 0,
     limit: 10,
   });
-
+  const hasMountedRef = useRef(false);
   ScrollLock(showAddModal || editData != null);
 
   useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return; // skip first debounce on mount
+    }
     const debouncedSearch = debounce(() => {
       fetchRoles(1); // Always fetch from page 1 for new search
     }, 400); // 400ms delay

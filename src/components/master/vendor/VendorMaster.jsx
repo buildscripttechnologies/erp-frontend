@@ -13,6 +13,8 @@ import UpdateVendorModal from "./UpdateVendorModal";
 import ViewVendorModal from "./VendorDetailsSection";
 import VendorDetailsSection from "./VendorDetailsSection";
 import { useAuth } from "../../../context/AuthContext";
+import { useRef } from "react";
+
 
 import { debounce } from "lodash";
 
@@ -31,6 +33,8 @@ const VendorMaster = ({ isOpen }) => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [expandedVendorId, setExpandedVendorId] = useState(null);
 
+  const hasMountedRef = useRef(false);
+
   // Function to open modal
   const handleEdit = (vendor) => {
     setSelectedVendor(vendor); // vendor object from the list
@@ -45,6 +49,10 @@ const VendorMaster = ({ isOpen }) => {
   });
 
   useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return; // skip first debounce on mount
+    }
     const debouncedSearch = debounce(() => {
       fetchVendors(1); // Always fetch from page 1 for new search
     }, 400); // 400ms delay

@@ -1,25 +1,27 @@
 import React, { useEffect, useState } from "react";
-import axios from "../../../utils/axios";
+import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
-import Dashboard from "../../../pages/Dashboard";
-import AddUomModal from "./AddUomModal";
-import EditUomModal from "./EditUomModal";
-import TableSkeleton from "../../TableSkeleton";
-import ScrollLock from "../../ScrollLock";
+
+import AddStockModal from "./AddStock";
+// import EditstockModal from "./EditstockModal";
+import TableSkeleton from "../TableSkeleton";
+import ScrollLock from "../ScrollLock";
 import Toggle from "react-toggle";
-import PaginationControls from "../../PaginationControls";
+import PaginationControls from "../PaginationControls";
 import { Tooltip } from "react-tooltip";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
+import BarcodeModal from "./BarcodeModal";
+import LabelPrint from "./LabelPrint";
 
 import { useRef } from "react";
 
-const UomMaster = () => {
+const StockRegister = () => {
   const { hasPermission } = useAuth();
-  const [uoms, setUoms] = useState([]);
+  const [stocks, setstocks] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
-  const [editUom, setEditUom] = useState(null);
+  const [editstock, setEditstock] = useState(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -28,8 +30,25 @@ const UomMaster = () => {
     totalResults: 0,
     limit: 10,
   });
+
+  const [selectedStock, setSelectedStock] = useState(null);
+  const [barcodeModalOpen, setBarcodeModalOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
   const hasMountedRef = useRef(false);
-  ScrollLock(formOpen || editUom != null);
+
+  const handleViewBarcodes = (stock) => {
+    setSelectedStock(stock); // this should include barcode list
+    setBarcodeModalOpen(true);
+  };
+
+  ScrollLock(
+    formOpen ||
+      editstock != null ||
+      barcodeModalOpen ||
+      selectedStock != null ||
+      showModal
+  );
 
   useEffect(() => {
     if (!hasMountedRef.current) {
@@ -37,7 +56,7 @@ const UomMaster = () => {
       return; // skip first debounce on mount
     }
     const debouncedSearch = debounce(() => {
-      fetchUOMs(1); // Always fetch from page 1 for new search
+      fetchstocks(1); // Always fetch from page 1 for new search
     }, 400); // 400ms delay
 
     debouncedSearch();
@@ -45,18 +64,18 @@ const UomMaster = () => {
     return () => debouncedSearch.cancel(); // Cleanup on unmount/change
   }, [search]); // Re-run on search change
 
-  const fetchUOMs = async (page = 1, limit = pagination.limit) => {
+  const fetchstocks = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/uoms/all-uoms?page=${page}&limit=${limit}&search=${search}&status="all"`
+        `/stocks/get-all?page=${page}&limit=${limit}&search=${search}&status="all"`
       );
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
       }
       if (res.data.status == 200) {
-        setUoms(res.data.data || []);
+        setstocks(res.data.data || []);
         setPagination({
           currentPage: res.data.currentPage,
           totalPages: res.data.totalPages,
@@ -65,62 +84,62 @@ const UomMaster = () => {
         });
       }
     } catch {
-      toast.error("Failed to fetch UOMs");
+      toast.error("Failed to fetch stocks");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUOMs();
+    fetchstocks();
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this UOM?")) return;
+    if (!window.confirm("Are you sure you want to delete this stock?")) return;
     try {
-      let res = await axios.delete(`/uoms/delete-uom/${id}`);
+      let res = await axios.delete(`/stocks/delete/${id}`);
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
       }
       if (res.data.status == 200) {
-        toast.success("UOM deleted");
-        fetchUOMs();
+        toast.success("stock deleted");
+        fetchstocks();
       }
     } catch {
       toast.error("Delete failed");
     }
   };
 
-  const handleToggleStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === true ? false : true;
-    try {
-      const res = await axios.patch(`/uoms/update-uom/${id}`, {
-        status: newStatus,
-      });
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
+  //   const handleToggleStatus = async (id, currentStatus) => {
+  //     const newStatus = currentStatus === true ? false : true;
+  //     try {
+  //       const res = await axios.patch(`/stocks/update-stock/${id}`, {
+  //         status: newStatus,
+  //       });
+  //       if (res.data.status == 403) {
+  //         toast.error(res.data.message);
+  //         return;
+  //       }
 
-      if (res.data.status == 200) {
-        toast.success(`UOM status updated`);
+  //       if (res.data.status == 200) {
+  //         toast.success(`stock status updated`);
 
-        // ✅ Update local state without refetch
-        setUoms((prev) =>
-          prev.map((uom) =>
-            uom._id === id ? { ...uom, status: newStatus } : uom
-          )
-        );
-      } else {
-        toast.error("Failed to update status");
-      }
-    } catch (err) {
-      toast.error("Failed to update status");
-    }
-  };
+  //         // ✅ Update local state without refetch
+  //         setstocks((prev) =>
+  //           prev.map((stock) =>
+  //             stock._id === id ? { ...stock, status: newStatus } : stock
+  //           )
+  //         );
+  //       } else {
+  //         toast.error("Failed to update status");
+  //       }
+  //     } catch (err) {
+  //       toast.error("Failed to update status");
+  //     }
+  //   };
 
-  // const filteredUoms = uoms.filter(
+  // const filteredstocks = stocks.filter(
   //   (u) =>
   //     u.unitName?.toLowerCase().includes(search.toLowerCase()) ||
   //     u.unitDescription?.toLowerCase().includes(search.toLowerCase()) ||
@@ -129,20 +148,22 @@ const UomMaster = () => {
 
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
-    fetchUOMs(page);
+    fetchstocks(page);
   };
 
   useEffect(() => {
-    fetchUOMs(1);
+    fetchstocks(1);
   }, []);
 
-  const uomTableHeaders = [
+  const stockTableHeaders = [
     { label: "#", className: "" },
     { label: "Created At	", className: "hidden md:table-cell" },
     { label: "Updated At	", className: "hidden md:table-cell" },
-    { label: "UOM", className: "" },
-    { label: "Description", className: "" },
-    { label: "Satus", className: "" },
+    { label: "Item Name", className: "" },
+    { label: "Type", className: "" },
+    { label: "Barcodes", className: "" },
+    // { label: "Description", className: "" },
+    // { label: "Satus", className: "" },
     { label: "Created By	", className: "hidden md:table-cell" },
     { label: "Actions", className: "" },
   ];
@@ -150,7 +171,7 @@ const UomMaster = () => {
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Units of Measure <span className="text-gray-500">({uoms.length})</span>
+        Stock Register <span className="text-gray-500">({stocks.length})</span>
       </h2>
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
@@ -171,13 +192,16 @@ const UomMaster = () => {
             className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
           >
             <FiPlus />
-            {formOpen ? "Close Form" : "Add UOM"}
+            {formOpen ? "Close Form" : "Add stock"}
           </button>
         )}
       </div>
 
       {formOpen && (
-        <AddUomModal onClose={() => setFormOpen(false)} onAdded={fetchUOMs} />
+        <AddStockModal
+          onClose={() => setFormOpen(false)}
+          onAdded={fetchstocks}
+        />
       )}
 
       <div className="overflow-x-auto rounded border border-[#d8b76a] shadow-sm">
@@ -187,9 +211,12 @@ const UomMaster = () => {
               <th className="px-2 py-1.5 ">#</th>
               <th className="px-2 py-1.5  hidden md:table-cell">Created At</th>
               <th className="px-2 py-1.5  hidden md:table-cell">Updated At</th>
-              <th className="px-2 py-1.5 ">UOM</th>
-              <th className="px-2 py-1.5 ">Description</th>
-              <th className="px-2 py-1.5 ">Status</th>
+              <th className="px-2 py-1.5 ">Item Name</th>
+              <th className="px-2 py-1.5 ">Sku Code</th>
+              <th className="px-2 py-1.5 ">Type</th>
+              <th className="px-2 py-1.5 ">Barcodes</th>
+              {/* <th className="px-2 py-1.5 ">Description</th> */}
+              {/* <th className="px-2 py-1.5 ">Status</th> */}
               <th className="px-2 py-1.5  hidden md:table-cell">Created By</th>
               <th className="px-2 py-1.5">Actions</th>
             </tr>
@@ -198,13 +225,13 @@ const UomMaster = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={uomTableHeaders}
+                columns={stockTableHeaders}
               />
             ) : (
               <>
-                {uoms.map((uom, index) => (
+                {stocks.map((stock, index) => (
                   <tr
-                    key={uom._id}
+                    key={stock._id}
                     className="border-t text-[11px] border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
                   >
                     <td className="px-2 border-r border-[#d8b76a]">
@@ -214,7 +241,7 @@ const UomMaster = () => {
                         1}
                     </td>
                     <td className="px-2 hidden md:table-cell  border-r border-[#d8b76a]">
-                      {new Date(uom.createdAt).toLocaleString("en-IN", {
+                      {new Date(stock.createdAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
@@ -224,7 +251,7 @@ const UomMaster = () => {
                       })}
                     </td>
                     <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
-                      {new Date(uom.updatedAt).toLocaleString("en-IN", {
+                      {new Date(stock.updatedAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
@@ -234,37 +261,62 @@ const UomMaster = () => {
                       })}
                     </td>
                     <td className="px-2  border-r border-[#d8b76a]">
-                      {uom.unitName}
+                      {stock.itemName}
                     </td>
                     <td className="px-2  border-r border-[#d8b76a]">
-                      {uom.unitDescription || "-"}
+                      {stock.skuCode}
                     </td>
                     <td className="px-2  border-r border-[#d8b76a]">
+                      {stock.type || "-"}
+                    </td>
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      <button
+                        onClick={() => handleViewBarcodes(stock)}
+                        className="text-[#d8b76a] hover:underline text-[11px] cursor-pointer"
+                      >
+                        View Barcodes
+                      </button>
+                      {barcodeModalOpen && selectedStock && (
+                        <LabelPrint
+                          stock={selectedStock}
+                          onClose={() => setBarcodeModalOpen(false)}
+                        />
+                      )}
+                      {/* {barcodeModalOpen && selectedStock && (
+                        <BarcodeModal
+                          stock={selectedStock}
+                          onClose={() => setBarcodeModalOpen(false)}
+                        />
+                      )} */}
+                    </td>
+                    {/* <td className="px-2  border-r border-[#d8b76a]">
                       <Toggle
-                        checked={uom.status}
-                        onChange={() => handleToggleStatus(uom._id, uom.status)}
+                        checked={stock.status}
+                        onChange={() =>
+                          handleToggleStatus(stock._id, stock.status)
+                        }
                       />
-                    </td>
+                    </td> */}
                     <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
-                      {uom.createdBy?.fullName || "-"}
+                      {stock.createdBy?.fullName || "-"}
                     </td>
-                    <td className="px-2 mt-1.5 flex gap-3 text-sm text-[#d8b76a]">
-                      {hasPermission("UOM", "update") ? (
+                    <td className="px-2 py-1 flex gap-3 text-sm text-[#d8b76a]">
+                      {/* {hasPermission("stock", "update") ? (
                         <FiEdit
                           data-tooltip-id="statusTip"
                           data-tooltip-content="Edit"
                           className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
-                          onClick={() => setEditUom(uom)}
+                          onClick={() => setEditstock(stock)}
                         />
                       ) : (
                         "-"
-                      )}
-                      {hasPermission("UOM", "delete") ? (
+                      )} */}
+                      {hasPermission("stock", "delete") ? (
                         <FiTrash2
                           data-tooltip-id="statusTip"
                           data-tooltip-content="Delete"
                           className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                          onClick={() => handleDelete(uom._id)}
+                          onClick={() => handleDelete(stock._id)}
                         />
                       ) : (
                         "-"
@@ -282,10 +334,10 @@ const UomMaster = () => {
                     </td>
                   </tr>
                 ))}
-                {uoms.length === 0 && (
+                {stocks.length === 0 && (
                   <tr>
                     <td colSpan="8" className="text-center py-4 text-gray-500">
-                      No UOMs found.
+                      No stocks found.
                     </td>
                   </tr>
                 )}
@@ -295,11 +347,11 @@ const UomMaster = () => {
         </table>
       </div>
 
-      {editUom && (
-        <EditUomModal
-          uom={editUom}
-          onClose={() => setEditUom(null)}
-          onUpdated={fetchUOMs}
+      {editstock && (
+        <EditstockModal
+          stock={editstock}
+          onClose={() => setEditstock(null)}
+          onUpdated={fetchstocks}
         />
       )}
 
@@ -310,15 +362,15 @@ const UomMaster = () => {
         totalResults={pagination.totalResults}
         onEntriesChange={(limit) => {
           setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-          fetchUOMs(1, limit);
+          fetchstocks(1, limit);
         }}
         onPageChange={(page) => {
           setPagination((prev) => ({ ...prev, currentPage: page }));
-          fetchUOMs(page, pagination.limit);
+          fetchstocks(page, pagination.limit);
         }}
       />
     </div>
   );
 };
 
-export default UomMaster;
+export default StockRegister;

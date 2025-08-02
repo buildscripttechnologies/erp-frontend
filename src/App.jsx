@@ -26,6 +26,7 @@ import BOMMaster from "./components/master/bom/BomMaster";
 import SampleMaster from "./components/master/sample/SampleMaster";
 import PurchaseOrder from "./components/purchase/PurchaseOrder";
 import POApproval from "./components/purchase/POApproval";
+import StockRegister from "./components/stockRegister/StockRegister";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -92,6 +93,18 @@ const App = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/change-password" element={<ChangePassword />} />
 
+          <Route
+            path="/stock-register"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <StockRegister />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
           <Route
             path="/purchase-order"
             element={
