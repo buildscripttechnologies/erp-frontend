@@ -10,9 +10,11 @@ const LabelPrint = ({ stock, onClose }) => {
     documentTitle: `Labels - ${stock.itemName}`,
   });
 
+  
+
   return (
     <div className="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center p-4">
-      <div className="bg-white p-4 rounded-lg  w-full max-w-xl overflow-y-auto shadow-xl border border-[#d8b76a]">
+      <div className="bg-white p-4 rounded-lg  w-full max-w-md overflow-y-auto shadow-xl border border-[#d8b76a]">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-[#d8b76a]">
             Print Labels for: {stock.itemName}
@@ -27,14 +29,14 @@ const LabelPrint = ({ stock, onClose }) => {
 
         <div
           ref={printRef}
-          className="grid grid-cols-1 md:grid-cols-1 gap-4 print:grid-cols-1 max-h-[75vh] overflow-auto"
+          className="grid grid-cols-1  print:grid-cols-1 max-h-[75vh] overflow-auto max-w-[110mm]"
         >
           {(stock.barcodes || []).map((barcodeObj, idx) => (
             <div
               key={idx}
-              className="printLabel print-rotate p-1 rounded  text-[10px] flex flex-col justify-between"
+              className="printLabel print-rotate p-1 rounded max-w-[105mm] h-[70mm] text-[10px] flex flex-col"
             >
-              <table className="w-full text-[10px] border border-collapse mb-1">
+              <table className=" text-[10px] w-[100mm] h-[65mm]  border border-collapse mb-1">
                 <tbody>
                   <tr>
                     <td className="border px-1 py-0.5 font-semibold">

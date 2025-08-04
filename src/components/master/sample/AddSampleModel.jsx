@@ -34,7 +34,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
 
         const rawMaterials = (rmRes.data.rawMaterials || []).map((item) => ({
           ...item,
-          type: "RM",
+          type: "RawMaterial",
         }));
         const sfgItems = (sfgRes.data.data || []).map((item) => ({
           ...item,
@@ -76,6 +76,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
         itemId: "",
         type: "",
         qty: "",
+        partName: "",
         height: "",
         width: "",
         depth: "",
@@ -107,10 +108,11 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
     const hasEmptyComponent = productDetails.some((comp) => {
       return (
         !comp.itemId ||
-        comp.qty === "" ||
+        // comp.qty === "" ||
         comp.height === "" ||
         comp.width === "" ||
-        comp.depth === ""
+        comp.depth === "" ||
+        comp.partName === ""
       );
     });
 
@@ -132,6 +134,8 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
       files.forEach((file) => {
         formData.append("files", file);
       });
+
+      // console.log("data", data);
 
       let res = await axios.post("/samples/add", formData, {
         headers: {
@@ -220,13 +224,39 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                 value: fg.itemName.trim(),
               }))}
               placeholder="Select or Type FG Product"
-              onChange={(e) => setForm({ ...form, productName: e?.value })}
               onCreateOption={(val) => setForm({ ...form, productName: val })}
               value={
                 form.productName
                   ? { label: form.productName, value: form.productName }
                   : null
               }
+              // onChange={(e) => setForm({ ...form, productName: e?.value })}
+              onChange={(e) => {
+                const selectedFG = fgs.find((fg) => fg.itemName === e?.value);
+                setForm({ ...form, productName: e?.value });
+
+                if (!selectedFG) return;
+
+                const allDetails = [
+                  ...(selectedFG.rm || []),
+                  ...(selectedFG.sfg || []),
+                ];
+
+                const enrichedDetails = allDetails.map((item) => ({
+                  itemId: item.id,
+                  type: item.type,
+                  qty: item.qty || "",
+                  height: item.height || "",
+                  width: item.width || "",
+                  depth: item.depth || "",
+                  label: `${item.skuCode}: ${item.itemName}${
+                    item.description ? ` - ${item.description}` : ""
+                  }`,
+                  partName: "",
+                }));
+
+                setProductDetails(enrichedDetails);
+              }}
             />
           </div>
 
@@ -331,15 +361,29 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                     />
                   </div>
 
+                  {/* <div className="flex flex-col">
+                    <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                      Part Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Part Name"
+                      className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                      value={comp["partName"]}
+                      onChange={(e) =>
+                        updateComponent(index, field, e.target.value)
+                      }
+                    />
+                  </div> */}
                   {/* Height, Width, Depth, Qty Fields */}
-                  {["height", "width", "depth", "qty"].map((field) => (
+                  {["partName", "height", "width", "depth"].map((field) => (
                     <div className="flex flex-col" key={field}>
                       <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                        {field}(cm)
+                        {field != "partName" ? `${field}(Inch)` : field}
                       </label>
                       <input
-                        type="number"
-                        placeholder={`${field}(cm)`}
+                        type={field == "partName" ? "text" : "number"}
+                        placeholder={`${field}`}
                         className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
                         value={comp[field]}
                         onChange={(e) =>

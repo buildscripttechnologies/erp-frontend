@@ -76,19 +76,50 @@
 }
 
 
-@media print {
-  .label {
-    width: 8in;
-    height: 4in;
+/* @media print {
+  .printLabel {
+    width: 100mm;
+    height: 65mm;
     page-break-inside: avoid;
     break-inside: avoid;
     margin: 0;
     padding: 4px;
   }
 
+ @page {
+    size: 100vw 100vh;
+    margin: 0;
+  }
   
 }
 .printLabel {
   page-break-inside: avoid;
   break-inside: avoid;
+} */
+
+
+@media print {
+  .printLabel {
+    page-break-after: always;
+    break-after: always;
+  }
+
+  .printLabel:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  /* Optional cleanup */
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Hide the modal frame and buttons during printing */
+  .print-controls,
+  .backdrop-blur-sm,
+  .bg-white.rounded-lg.shadow-xl {
+    box-shadow: none !important;
+    border: none !important;
+  }
 }

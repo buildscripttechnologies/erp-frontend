@@ -27,16 +27,16 @@ const UpdateBomModal = ({ onClose, onSuccess, bom }) => {
     const fetchDropdownData = async () => {
       try {
         const [rmRes, sfgRes, fgRes, customerRes] = await Promise.all([
-          axios.get("/rms/rm?limit=1000"),
-          axios.get("/sfgs/get-all?limit=1000"),
-          axios.get("/fgs/get-all?limit=1000"),
-          axios.get("/customers/get-all?limit=1000"),
+          axios.get("/rms/rm?limit=10000"),
+          axios.get("/sfgs/get-all?limit=10000"),
+          axios.get("/fgs/get-all?limit=10000"),
+          axios.get("/customers/get-all?limit=10000"),
         ]);
 
         setRms(
           (rmRes.data.rawMaterials || []).map((item) => ({
             ...item,
-            type: "RM",
+            type: "RawMaterial",
           }))
         );
 
@@ -97,6 +97,7 @@ const UpdateBomModal = ({ onClose, onSuccess, bom }) => {
         width: "",
         depth: "",
         label: "",
+        partName: "",
       },
     ]);
   };
@@ -112,10 +113,11 @@ const UpdateBomModal = ({ onClose, onSuccess, bom }) => {
     const hasEmptyComponent = productDetails.some((comp) => {
       return (
         !comp.itemId ||
-        comp.qty === "" ||
+        // comp.qty === "" ||
         comp.height === "" ||
         comp.width === "" ||
-        comp.depth === ""
+        comp.depth === "" ||
+        comp.partName === ""
       );
     });
 
@@ -208,13 +210,39 @@ const UpdateBomModal = ({ onClose, onSuccess, bom }) => {
                 value: fg.itemName.trim(),
               }))}
               placeholder="Select or Type FG Product"
-              onChange={(e) => setForm({ ...form, productName: e?.value })}
               onCreateOption={(val) => setForm({ ...form, productName: val })}
               value={
                 form.productName
                   ? { label: form.productName, value: form.productName }
                   : null
               }
+              // onChange={(e) => setForm({ ...form, productName: e?.value })}
+              onChange={(e) => {
+                const selectedFG = fgs.find((fg) => fg.itemName === e?.value);
+                setForm({ ...form, productName: e?.value });
+
+                if (!selectedFG) return;
+
+                const allDetails = [
+                  ...(selectedFG.rm || []),
+                  ...(selectedFG.sfg || []),
+                ];
+
+                const enrichedDetails = allDetails.map((item) => ({
+                  itemId: item.id,
+                  type: item.type,
+                  qty: item.qty || "",
+                  height: item.height || "",
+                  width: item.width || "",
+                  depth: item.depth || "",
+                  label: `${item.skuCode}: ${item.itemName}${
+                    item.description ? ` - ${item.description}` : ""
+                  }`,
+                  partName: "",
+                }));
+
+                setProductDetails(enrichedDetails);
+              }}
             />
           </div>
 
@@ -284,14 +312,14 @@ const UpdateBomModal = ({ onClose, onSuccess, bom }) => {
                     />
                   </div>
 
-                  {["height", "width", "depth", "qty"].map((field) => (
+                  {["partName", "height", "width", "depth"].map((field) => (
                     <div className="flex flex-col" key={field}>
                       <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                        {field}(cm)
+                        {field != "partName" ? `${field}(Inch)` : field}
                       </label>
                       <input
-                        type="number"
-                        placeholder={`${field}(cm)`}
+                        type={field == "partName" ? "text" : "number"}
+                        placeholder={field}
                         className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
                         value={comp[field]}
                         onChange={(e) =>

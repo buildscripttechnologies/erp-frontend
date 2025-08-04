@@ -7,6 +7,7 @@ import { ClipLoader } from "react-spinners";
 const AddStockModal = ({ onClose, onAdded }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [stockQty, setStockQty] = useState("");
+  const [conversionFactor, setConversionFactor] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [uoms, setUoms] = useState([]);
@@ -45,6 +46,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
         itemId: selectedItem.value,
         itemType: selectedItem.type,
         stockQty: parseFloat(stockQty),
+        conversionFactor: conversionFactor,
       };
 
       const res = await axios.post("/stocks/add", payload);
@@ -108,18 +110,35 @@ const AddStockModal = ({ onClose, onAdded }) => {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-[#292926] mb-1">
-              Stock Quantity
-            </label>
-            <input
-              type="number"
-              value={stockQty}
-              onChange={(e) => setStockQty(e.target.value)}
-              className="w-full p-2 border border-[#d8b76a] rounded focus:border-[#d8b76a] focus:ring-1 focus:ring-[#d8b76a] focus:outline-none transition duration-200"
-              required
-              min={0}
-            />
+          <div className="flex flex-wrap gap-5">
+            <div className="w-[48%]">
+              <label className="block text-sm font-semibold text-[#292926] mb-1">
+                Stock Quantity
+              </label>
+              <input
+                type="number"
+                placeholder="Stock Quantity"
+                value={stockQty}
+                onChange={(e) => setStockQty(e.target.value)}
+                className="w-full p-2 border border-[#d8b76a] rounded focus:border-[#d8b76a] focus:ring-1 focus:ring-[#d8b76a] focus:outline-none transition duration-200"
+                required
+                min={0}
+              />
+            </div>
+            <div className="w-[48%]">
+              <label className="block text-sm font-semibold text-[#292926] mb-1">
+                Conversion Factor
+              </label>
+              <input
+                type="number"
+                placeholder="Conversion Factor"
+                value={conversionFactor}
+                onChange={(e) => setConversionFactor(e.target.value)}
+                className="w-full p-2 border border-[#d8b76a] rounded focus:border-[#d8b76a] focus:ring-1 focus:ring-[#d8b76a] focus:outline-none transition duration-200"
+                required
+                min={0}
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-4 mt-4">
