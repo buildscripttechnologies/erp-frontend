@@ -67,10 +67,10 @@ const AddVendorModal = ({ onClose, onAdded }) => {
     const fetchDropdowns = async () => {
       try {
         const [uomRes, rmRes, sfgRes, fgRes] = await Promise.all([
-          axios.get("/uoms/all-uoms?limit=1000"),
-          axios.get("/rms/rm?limit=1000"),
-          axios.get("/sfgs/get-all?limit=1000"),
-          axios.get("/fgs/get-all?limit=1000"),
+          axios.get("/uoms/all-uoms?limit=10000"),
+          axios.get("/rms/rm?limit=10000"),
+          axios.get("/sfgs/get-all?limit=10000"),
+          axios.get("/fgs/get-all?limit=10000"),
         ]);
         setUoms(uomRes.data.data || []);
         setRms(rmRes.data.rawMaterials || []);

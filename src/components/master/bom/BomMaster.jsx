@@ -1,5 +1,5 @@
 // src/components/BOMMaster.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, } from "react";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
@@ -18,6 +18,8 @@ import { generateBom } from "../../../utils/generateBom";
 import { generateBomLP } from "../../../utils/generateBomLP";
 import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
+
+
 const BomMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
 
@@ -36,7 +38,14 @@ const BomMaster = ({ isOpen }) => {
     limit: 10,
   });
 
+  const hasMountedRef = useRef(false);
+
   useEffect(() => {
+
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return; // skip first debounce on mount
+    }
     const debouncedSearch = debounce(() => {
       fetchBOMs(1); // Always fetch from page 1 for new search
     }, 400); // 400ms delay

@@ -11,6 +11,9 @@ import UpdateLocationModal from "./UpdateLocationModal";
 import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
+
+import { useRef } from "react";
+
 const LocationMaster = () => {
   const { hasPermission } = useAuth();
   const [locations, setLocations] = useState([]);
@@ -24,8 +27,12 @@ const LocationMaster = () => {
     totalResults: 0,
     limit: 10,
   });
-
+  const hasMountedRef = useRef(false);
   useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return; // skip first debounce on mount
+    }
     const debouncedSearch = debounce(() => {
       fetchLocations(1); // Always fetch from page 1 for new search
     }, 400); // 400ms delay

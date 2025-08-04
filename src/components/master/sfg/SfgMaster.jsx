@@ -18,6 +18,9 @@ import AttachmentsModal2 from "../../AttachmentsModal2";
 import { useAuth } from "../../../context/AuthContext";
 
 import { debounce } from "lodash";
+
+import { useRef } from "react";
+
 const renderNestedMaterials = (
   materials,
   level = 1,
@@ -243,9 +246,16 @@ const SfgMaster = ({ isOpen }) => {
     limit: 10,
   });
 
+  const hasMountedRef = useRef(false);
+
   ScrollLock(showAddSFG == true || editingSfg != null);
 
   useEffect(() => {
+
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return; // skip first debounce on mount
+    }
     const debouncedSearch = debounce(() => {
       fetchSFGs(1); // Always fetch from page 1 for new search
     }, 400); // 400ms delay

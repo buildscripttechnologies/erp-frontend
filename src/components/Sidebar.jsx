@@ -56,6 +56,7 @@ export function Sidebar({ isOpen }) {
     {
       icon: FiClipboard,
       label: "Stock Register",
+      path: "/stock-register",
       module: "Dashboard",
       action: "read",
     },

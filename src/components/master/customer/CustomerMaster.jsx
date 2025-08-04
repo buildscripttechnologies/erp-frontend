@@ -12,6 +12,7 @@ import PaginationControls from "../../PaginationControls";
 import EditCustomerModal from "./EditCustomerModal";
 import CustomerDetailsSection from "./CustomerDetailsView";
 import { useAuth } from "../../../context/AuthContext";
+import { useRef } from "react";
 
 import { debounce } from "lodash";
 
@@ -33,7 +34,13 @@ const CustomerMaster = ({ isOpen }) => {
     limit: 10,
   });
 
+  const hasMountedRef = useRef(false);
+
   useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return; // skip first debounce on mount
+    }
     const debouncedSearch = debounce(() => {
       fetchCustomers(1); // Always fetch from page 1 for new search
     }, 400); // 400ms delay
