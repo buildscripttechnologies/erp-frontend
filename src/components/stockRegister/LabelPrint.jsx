@@ -10,8 +10,6 @@ const LabelPrint = ({ stock, onClose }) => {
     documentTitle: `Labels - ${stock.itemName}`,
   });
 
-  
-
   return (
     <div className="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center p-4">
       <div className="bg-white p-4 rounded-lg  w-full max-w-md overflow-y-auto shadow-xl border border-[#d8b76a]">
@@ -105,7 +103,7 @@ const LabelPrint = ({ stock, onClose }) => {
                       Item Qty.
                     </td>
                     <td className="border px-1 py-0.5">
-                      {stock.stockQty || "----------"}
+                      {stock.conversionFactor || "----------"}
                     </td>
                     <td className="border px-1 py-0.5 font-semibold">
                       Item Color

@@ -433,7 +433,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     {/* Height */}
                     <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
                       <label className="font-medium text-sm mb-1">
-                        Height (cm)
+                        Height (Inch)
                       </label>
                       <input
                         type="number"
@@ -454,7 +454,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     {/* Width */}
                     <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
                       <label className="font-medium text-sm mb-1">
-                        Width (cm)
+                        Width (Inch)
                       </label>
                       <input
                         type="number"
@@ -475,7 +475,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     {/* Depth */}
                     <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
                       <label className="font-medium text-sm mb-1">
-                        Depth (cm)
+                        Depth (Inch)
                       </label>
                       <input
                         type="number"

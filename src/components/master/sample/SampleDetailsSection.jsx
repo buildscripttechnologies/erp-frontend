@@ -7,6 +7,8 @@ const SampleDetailsSection = ({ SampleData }) => {
       timeStyle: "short",
     });
 
+  // console.log("sampledata", SampleData);
+
   return (
     <div className="bg-white border border-[#d8b76a] rounded shadow p-4 mx-2 mb-2 text-[11px] text-[#292926]">
       <h2 className="text-[14px] text-[#d8b76a] font-bold underline underline-offset-4 mb-2">
@@ -62,10 +64,17 @@ const SampleDetailsSection = ({ SampleData }) => {
             <th className="px-2 py-1 border-r border-[#d8b76a]">Sku Code</th>
             <th className="px-2 py-1 border-r border-[#d8b76a]">Item Name</th>
             <th className="px-2 py-1 border-r border-[#d8b76a]">Type</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Height(cm)</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Width(cm)</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Depth(cm)</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Quantity</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Part Name</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">
+              Height (Inch)
+            </th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">
+              Width (Inch)
+            </th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">
+              Depth (Inch)
+            </th>
+            {/* <th className="px-2 py-1 border-r border-[#d8b76a]">Quantity</th> */}
             {/* <th className="px-2 py-1 border-r border-[#d8b76a]">UOM</th> */}
           </tr>
         </thead>
@@ -83,20 +92,23 @@ const SampleDetailsSection = ({ SampleData }) => {
                   {item.itemName || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.type}
+                  {item.type || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.height}
+                  {item.partName || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.width}
+                  {item.height || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.depth}
+                  {item.width || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.qty}
+                  {item.depth || "-"}
                 </td>
+                {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {item.qty || "-"}
+                </td> */}
                 {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.itemId?.UOM?.unit || "-"}
                 </td> */}
@@ -104,7 +116,7 @@ const SampleDetailsSection = ({ SampleData }) => {
             ))
           ) : (
             <tr>
-              <td className="px-2 py-1 text-center" colSpan={5}>
+              <td className="px-2 py-1 text-center" colSpan={8}>
                 No product details available.
               </td>
             </tr>

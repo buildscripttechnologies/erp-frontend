@@ -54,7 +54,7 @@ const BulkRmPanel = ({ onClose }) => {
         rate: "",
         totalRate: "",
         purchaseUOM: "",
-        stockQty: "",
+        stockQty: 0,
         stockUOM: "",
         gst: "",
         attachments: [],
@@ -377,13 +377,14 @@ const BulkRmPanel = ({ onClose }) => {
                     Stock Qty
                   </label>
                   <input
+                  disabled
                     type="number"
                     placeholder="Stock Qty"
                     value={rm.stockQty}
                     onChange={(e) =>
                       handleChange(index, "stockQty", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] cursor-not-allowed"
                   />
                 </div>
 

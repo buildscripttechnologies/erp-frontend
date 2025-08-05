@@ -339,11 +339,13 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                   {["partName", "height", "width", "depth"].map((field) => (
                     <div className="flex flex-col" key={field}>
                       <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                        {field != "partName" ? `${field}(Inch)` : field}
+                        {field == "partName" ? "Part Name" : `${field} (Inch)`}
                       </label>
                       <input
                         type={field == "partName" ? "text" : "number"}
-                        placeholder={field}
+                        placeholder={
+                          field == "partName" ? "Item Part Name" : `${field}`
+                        }
                         className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
                         value={comp[field]}
                         onChange={(e) =>

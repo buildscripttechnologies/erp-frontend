@@ -443,7 +443,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                 {/* Height */}
                 <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
                   <label className="font-medium text-sm mb-1">
-                    Height (cm)
+                    Height (Inch)
                   </label>
                   <input
                     type="number"
@@ -459,7 +459,9 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
 
                 {/* Width */}
                 <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                  <label className="font-medium text-sm mb-1">Width (cm)</label>
+                  <label className="font-medium text-sm mb-1">
+                    Width (Inch)
+                  </label>
                   <input
                     type="number"
                     step="any"
@@ -474,7 +476,9 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
 
                 {/* Depth */}
                 <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                  <label className="font-medium text-sm mb-1">Depth (cm)</label>
+                  <label className="font-medium text-sm mb-1">
+                    Depth (Inch)
+                  </label>
                   <input
                     type="number"
                     step="any"

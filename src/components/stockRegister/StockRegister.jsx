@@ -14,6 +14,7 @@ import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
 import BarcodeModal from "./BarcodeModal";
 import LabelPrint from "./LabelPrint";
+import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
 
@@ -31,9 +32,32 @@ const StockRegister = () => {
     limit: 10,
   });
 
+  const [filters, setFilters] = useState({
+    type: "",
+    uom: "",
+    fromDate: "",
+    toDate: "",
+  });
+
+  const handleResetFilters = () => {
+    setFilters({
+      type: "",
+      uom: "",
+      fromDate: "",
+      toDate: "",
+    });
+    // call API without filters
+  };
+
+  useEffect(() => {
+    fetchstocks();
+  }, [filters]);
+
   const [selectedStock, setSelectedStock] = useState(null);
   const [barcodeModalOpen, setBarcodeModalOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
+  const [uoms, setUoms] = useState([]);
 
   const hasMountedRef = useRef(false);
 
@@ -67,9 +91,18 @@ const StockRegister = () => {
   const fetchstocks = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `/stocks/get-all?page=${page}&limit=${limit}&search=${search}&status="all"`
-      );
+      const queryParams = new URLSearchParams({
+        page,
+        limit,
+        search,
+        status: "all",
+        type: filters.type,
+        uom: filters.uom,
+        fromDate: filters.fromDate,
+        toDate: filters.toDate,
+      });
+
+      const res = await axios.get(`/stocks/get-all?${queryParams.toString()}`);
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
@@ -153,7 +186,17 @@ const StockRegister = () => {
 
   useEffect(() => {
     fetchstocks(1);
+    fetchUoms();
   }, []);
+
+  const fetchUoms = async () => {
+    try {
+      const res = await axios.get("/uoms/all-uoms");
+      setUoms(res.data.data || []);
+    } catch {
+      toast.error("Failed to load UOMs");
+    }
+  };
 
   const stockTableHeaders = [
     { label: "#", className: "" },
@@ -174,16 +217,82 @@ const StockRegister = () => {
         Stock Register <span className="text-gray-500">({stocks.length})</span>
       </h2>
 
-      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
+      <div className="flex flex-wrap gap-4 items-stretch sm:items-center justify-between mb-6">
         <div className="relative w-full sm:w-80">
           <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
           <input
             type="text"
-            placeholder="Search Unit of Measure"
+            placeholder="Search Stock"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
           />
+        </div>
+        <div className="flex flex-wrap gap-4 items-center ">
+          <select
+            value={filters.type}
+            onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+          >
+            <option value="">All Types</option>
+            <option value="RM">RM</option>
+            <option value="SFG">SFG</option>
+            <option value="FG">FG</option>
+          </select>
+
+          <select
+            value={filters.uom}
+            onChange={(e) => setFilters({ ...filters, uom: e.target.value })}
+            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+          >
+            <option value="">All UOM</option>
+            {uoms.map((u) => (
+              <option key={u._id} value={u.unitName}>
+                {u.unitName}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="date"
+            value={filters.fromDate}
+            onChange={(e) =>
+              setFilters({ ...filters, fromDate: e.target.value })
+            }
+            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+          />
+
+          <input
+            type="date"
+            value={filters.toDate}
+            onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
+            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+          />
+
+          {/* <button
+            disabled={
+              filters.type == "" &&
+              filters.fromDate == "" &&
+              filters.toDate == "" &&
+              filters.uom == ""
+            }
+            onClick={() => fetchstocks(1)}
+            className="bg-[#d8b76a] hover:bg-[#b38a37] disabled:hover:bg-[#d8b76a]/50 disabled:bg-[#d8b76a]/50 disabled:cursor-not-allowed text-[#292926] font-semibold px-4 py-1.5 rounded transition duration-200 cursor-pointer"
+          >
+            Apply Filters
+          </button> */}
+          <button
+            disabled={
+              filters.type == "" &&
+              filters.fromDate == "" &&
+              filters.toDate == "" &&
+              filters.uom == ""
+            }
+            onClick={handleResetFilters}
+            className="bg-[#d8b76a] hover:bg-[#b38a37] disabled:hover:bg-[#d8b76a]/50 disabled:bg-[#d8b76a]/50 disabled:cursor-not-allowed text-[#292926] font-semibold px-4 py-1.5 rounded transition duration-200 cursor-pointer"
+          >
+            Reset Filters
+          </button>
         </div>
 
         {hasPermission("User", "create") && (
@@ -211,12 +320,15 @@ const StockRegister = () => {
               <th className="px-2 py-1.5 ">#</th>
               <th className="px-2 py-1.5  hidden md:table-cell">Created At</th>
               <th className="px-2 py-1.5  hidden md:table-cell">Updated At</th>
-              <th className="px-2 py-1.5 ">Item Name</th>
-              <th className="px-2 py-1.5 ">Sku Code</th>
               <th className="px-2 py-1.5 ">Type</th>
-              <th className="px-2 py-1.5 ">Barcodes</th>
-              {/* <th className="px-2 py-1.5 ">Description</th> */}
-              {/* <th className="px-2 py-1.5 ">Status</th> */}
+              <th className="px-2 py-1.5 ">Sku Code</th>
+              <th className="px-2 py-1.5 ">Item Name</th>
+              <th className="px-2 py-1.5 ">Description</th>
+              <th className="px-2 py-1.5 ">Stock UOM</th>
+              <th className="px-2 py-1.5 ">Stock Qty</th>
+              <th className="px-2 py-1.5 ">Available Qty</th>
+              <th className="px-2 py-1.5 ">Used Qty</th>
+              <th className="px-2 py-1.5 ">Damaged Qty</th>
               <th className="px-2 py-1.5  hidden md:table-cell">Created By</th>
               <th className="px-2 py-1.5">Actions</th>
             </tr>
@@ -225,7 +337,7 @@ const StockRegister = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={stockTableHeaders}
+                columns={Array(13).fill({})}
               />
             ) : (
               <>
@@ -261,56 +373,46 @@ const StockRegister = () => {
                       })}
                     </td>
                     <td className="px-2  border-r border-[#d8b76a]">
-                      {stock.itemName}
+                      {stock.type || "-"}
                     </td>
                     <td className="px-2  border-r border-[#d8b76a]">
                       {stock.skuCode}
                     </td>
                     <td className="px-2  border-r border-[#d8b76a]">
-                      {stock.type || "-"}
+                      {stock.itemName}
                     </td>
                     <td className="px-2  border-r border-[#d8b76a]">
+                      {stock.description || "-"}
+                    </td>
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {stock.stockUOM?.unitName || "-"}
+                    </td>
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {stock.stockQty}
+                    </td>
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {/* {stock.availableQty || 0} */}0
+                    </td>
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {/* {stock.usedQty || 0} */}0
+                    </td>
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {/* {stock.damagedQty || 0} */}0
+                    </td>
+
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {" "}
+                      {stock.createdBy?.fullName || "-"}
+                    </td>
+
+                    <td className="px-2 py-1 flex gap-3 text-sm text-[#d8b76a]">
                       <button
                         onClick={() => handleViewBarcodes(stock)}
                         className="text-[#d8b76a] hover:underline text-[11px] cursor-pointer"
                       >
-                        View Barcodes
+                        <FaBarcode />
                       </button>
-                      {barcodeModalOpen && selectedStock && (
-                        <LabelPrint
-                          stock={selectedStock}
-                          onClose={() => setBarcodeModalOpen(false)}
-                        />
-                      )}
-                      {/* {barcodeModalOpen && selectedStock && (
-                        <BarcodeModal
-                          stock={selectedStock}
-                          onClose={() => setBarcodeModalOpen(false)}
-                        />
-                      )} */}
-                    </td>
-                    {/* <td className="px-2  border-r border-[#d8b76a]">
-                      <Toggle
-                        checked={stock.status}
-                        onChange={() =>
-                          handleToggleStatus(stock._id, stock.status)
-                        }
-                      />
-                    </td> */}
-                    <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
-                      {stock.createdBy?.fullName || "-"}
-                    </td>
-                    <td className="px-2 py-1 flex gap-3 text-sm text-[#d8b76a]">
-                      {/* {hasPermission("stock", "update") ? (
-                        <FiEdit
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Edit"
-                          className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
-                          onClick={() => setEditstock(stock)}
-                        />
-                      ) : (
-                        "-"
-                      )} */}
+
                       {hasPermission("stock", "delete") ? (
                         <FiTrash2
                           data-tooltip-id="statusTip"
@@ -336,7 +438,7 @@ const StockRegister = () => {
                 ))}
                 {stocks.length === 0 && (
                   <tr>
-                    <td colSpan="8" className="text-center py-4 text-gray-500">
+                    <td colSpan="14" className="text-center py-4 text-gray-500">
                       No stocks found.
                     </td>
                   </tr>
@@ -347,11 +449,10 @@ const StockRegister = () => {
         </table>
       </div>
 
-      {editstock && (
-        <EditstockModal
-          stock={editstock}
-          onClose={() => setEditstock(null)}
-          onUpdated={fetchstocks}
+      {barcodeModalOpen && selectedStock && (
+        <LabelPrint
+          stock={selectedStock}
+          onClose={() => setBarcodeModalOpen(false)}
         />
       )}
 
