@@ -108,7 +108,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
     const hasEmptyComponent = productDetails.some((comp) => {
       return (
         !comp.itemId ||
-        // comp.qty === "" ||
+        comp.qty === "" ||
         comp.height === "" ||
         comp.width === "" ||
         comp.depth === "" ||
@@ -304,23 +304,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
             RM/SFG Components
           </h3>
 
-          {/* <div className="flex flex-col mb-4">
-            <label className="text-[12px] font-semibold mb-[4px] text-[#292926]">
-              Add RM/SFG Component
-            </label>
-            <Select
-              options={materialOptions}
-              onChange={handleAddComponent}
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  borderColor: "#d8b76a",
-                  minHeight: "36px",
-                  fontSize: "12px",
-                }),
-              }}
-            />
-          </div> */}
+         
 
           <div className="flex flex-col gap-4">
             {productDetails.map((comp, index) => (
@@ -328,7 +312,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                 key={index}
                 className="border border-[#d8b76a] rounded p-3 flex flex-col gap-2"
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
                   {/* Component Field - span 2 columns on medium+ screens */}
                   <div className="flex flex-col md:col-span-2">
                     <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
@@ -361,39 +345,36 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                     />
                   </div>
 
-                  {/* <div className="flex flex-col">
-                    <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                      Part Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Part Name"
-                      className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-                      value={comp["partName"]}
-                      onChange={(e) =>
-                        updateComponent(index, field, e.target.value)
-                      }
-                    />
-                  </div> */}
+                 
                   {/* Height, Width, Depth, Qty Fields */}
-                  {["partName", "height", "width", "depth"].map((field) => (
-                    <div className="flex flex-col" key={field}>
-                      <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                        {field == "partName" ? "Part Name" : `${field} (Inch)`}
-                      </label>
-                      <input
-                        type={field == "partName" ? "text" : "number"}
-                        placeholder={
-                          field == "partName" ? "Item Part Name" : `${field}`
-                        }
-                        className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-                        value={comp[field]}
-                        onChange={(e) =>
-                          updateComponent(index, field, e.target.value)
-                        }
-                      />
-                    </div>
-                  ))}
+                  {["partName", "height", "width", "depth", "qty"].map(
+                    (field) => (
+                      <div className="flex flex-col" key={field}>
+                        <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                          {field == "partName"
+                            ? "Part Name"
+                            : field == "qty"
+                            ? "Qty"
+                            : `${field} (Inch)`}
+                        </label>
+                        <input
+                          type={field == "partName" ? "text" : "number"}
+                          placeholder={
+                            field == "partName"
+                              ? "Item Part Name"
+                              : field == "qty"
+                              ? "qty"
+                              : `${field} (Inch)`
+                          }
+                          className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                          value={comp[field]}
+                          onChange={(e) =>
+                            updateComponent(index, field, e.target.value)
+                          }
+                        />
+                      </div>
+                    )
+                  )}
                 </div>
 
                 <div className="mt-2">

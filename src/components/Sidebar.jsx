@@ -97,7 +97,8 @@ export function Sidebar({ isOpen }) {
     {
       icon: FiBox,
       label: "Material Inward",
-      module: "Dashboard",
+      module: "Material Inward",
+      path: "/material-inward",
       action: "read",
     },
     {

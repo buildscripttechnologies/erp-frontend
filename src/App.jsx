@@ -27,6 +27,7 @@ import SampleMaster from "./components/master/sample/SampleMaster";
 import PurchaseOrder from "./components/purchase/PurchaseOrder";
 import POApproval from "./components/purchase/POApproval";
 import StockRegister from "./components/stockRegister/StockRegister";
+import MaterialInward from "./components/materialInward/MaterialInward";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -75,7 +76,7 @@ const App = () => {
   return (
     <>
       {showInstallPrompt && (
-        <PwaInstallPrompt
+        <PwaInstallPrompt 
           onInstall={handleInstallClick}
           onClose={handleClosePrompt}
         />
@@ -99,6 +100,18 @@ const App = () => {
               isAuthenticated ? (
                 <Dashboard>
                   <StockRegister />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+          <Route
+            path="/material-inward"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <MaterialInward />
                 </Dashboard>
               ) : (
                 <Navigate to="/login" />

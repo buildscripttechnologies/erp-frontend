@@ -19,6 +19,7 @@ const AddVendorModal = ({ onClose, onAdded }) => {
         city: "",
         postalCode: "",
         gst: "",
+        pan: "",
         factoryAddress: "",
         factoryCountry: "",
         factoryState: "",
@@ -161,6 +162,7 @@ const AddVendorModal = ({ onClose, onAdded }) => {
           city: "",
           postalCode: "",
           gst: "",
+          pan: "",
 
           factoryAddress: "",
           factoryCountry: "",
@@ -212,6 +214,7 @@ const AddVendorModal = ({ onClose, onAdded }) => {
         city: form.city,
         postalCode: form.postalCode,
         gst: form.gst,
+        pan: form.pan,
         factoryAddress: form.factoryAddress,
         factoryCountry: form.factoryCountry,
         factoryState: form.factoryState,
@@ -367,6 +370,7 @@ const AddVendorModal = ({ onClose, onAdded }) => {
 
                     ["Postal Code", "postalCode"],
                     ["GSTIN", "gst"],
+                    ["PAN", "pan"],
                     ["Factory Address", "factoryAddress"],
                     [
                       "Factory Country",
@@ -407,7 +411,7 @@ const AddVendorModal = ({ onClose, onAdded }) => {
                   ].map(([label, name, options]) => (
                     <div
                       key={name}
-                      className="flex flex-col min-w-[150px] flex-1"
+                      className="flex flex-col max-w-[150px] flex-1"
                     >
                       <label className="mb-[1px] text-[11px] font-medium text-[#292926]">
                         {label}
@@ -445,15 +449,6 @@ const AddVendorModal = ({ onClose, onAdded }) => {
                   <div className="font-semibold text-[14px] mb-1 text-[#d8b76a] underline">
                     Contact Persons
                   </div>
-
-                  {/* Header (hide on mobile) */}
-                  {/* <div className="hidden text-left md:grid grid-cols-6 text-[11px] font-semibold bg-[#d8b76a]/80 px-2 py-1 rounded">
-                    <div>Name</div>
-                    <div>Designation</div>
-                    <div>Phone</div>
-                    <div>Email</div>
-                    <div>Info</div>
-                  </div> */}
 
                   {/* Rows */}
                   {contacts.map((c, i) => (
@@ -558,16 +553,6 @@ const AddVendorModal = ({ onClose, onAdded }) => {
                     Raw Materials
                   </div>
 
-                  {/* Header (hidden on small screens) */}
-                  {/* <div className="hidden text-left md:grid grid-cols-6 text-[11px] font-semibold bg-[#d8b76a]/80 px-2 py-1 rounded">
-                    <div>Item</div>
-                    <div>Delivery</div>
-                    <div>MOQ</div>
-                    <div>UOM</div>
-                    <div>Rate</div>
-                    <div>Index</div>
-                  </div> */}
-
                   {/* Rows */}
                   {materials.map((m, i) => (
                     <div
@@ -608,7 +593,7 @@ const AddVendorModal = ({ onClose, onAdded }) => {
                                   ? "0 0 0 1px #d8b76a"
                                   : "none",
                                 "&:hover": { borderColor: "#d8b76a" },
-                                // minHeight: "6px", // 🔸 Set desired height
+                                // minHeight: "6px", //  Set desired height
                                 // height: "30px",
                               }),
                               // valueContainer: (provided) => ({

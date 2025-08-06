@@ -242,6 +242,7 @@ const UpdateVendorModal = ({
 
                     ["Postal Code", "postalCode"],
                     ["GSTIN", "gst"],
+                    ["PAN", "pan"],
                     ["Factory Address", "factoryAddress"],
                     [
                       "Factory Country",
@@ -282,7 +283,7 @@ const UpdateVendorModal = ({
                   ].map(([label, name, options]) => (
                     <div
                       key={name}
-                      className="flex flex-col min-w-[150px] flex-1"
+                      className="flex flex-col max-w-[150px] flex-1"
                     >
                       <label className="mb-[1px] text-[11px] font-medium text-[#292926]">
                         {label}

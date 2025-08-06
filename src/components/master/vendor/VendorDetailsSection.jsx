@@ -5,6 +5,8 @@ const VendorDetailsSection = ({ vendorData }) => {
       timeStyle: "short",
     });
 
+  console.log("vendordata", vendorData);
+
   return (
     <div className="bg-white border border-[#d8b76a] rounded shadow p-4 mx-2 mb-2 text-[11px] text-[#292926]">
       <h2 className="text-[14px] text-[#d8b76a] font-bold underline underline-offset-4 mb-2">

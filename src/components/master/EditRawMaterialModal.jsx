@@ -164,6 +164,26 @@ const EditRawMaterialModal = ({
               className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
             />
           </div>
+          <div>
+            <label className="block mb-1 font-medium">Item Category</label>
+            <input
+              type="text"
+              placeholder="Item Category"
+              value={formData.itemCategory}
+              onChange={(e) => handleChange("itemCategory", e.target.value)}
+              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Item Color</label>
+            <input
+              type="text"
+              placeholder="Item Color"
+              value={formData.itemColor}
+              onChange={(e) => handleChange("itemColor", e.target.value)}
+              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+            />
+          </div>
 
           {/* HSN/SAC */}
           <div>
@@ -330,11 +350,12 @@ const EditRawMaterialModal = ({
           <div>
             <label className="block mb-1 font-medium">Stock Quantity</label>
             <input
+              disabled
               type="number"
               placeholder="Stock Quantiy"
               value={formData.stockQty}
               onChange={(e) => handleChange("stockQty", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] disabled:cursor-not-allowed"
             />
           </div>
 

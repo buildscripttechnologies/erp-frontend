@@ -95,7 +95,7 @@ const LabelPrint = ({ stock, onClose }) => {
                       Item Category
                     </td>
                     <td className="border px-1 py-0.5">
-                      {stock.category || "----------"}
+                      {stock.itemCategory || "----------"}
                     </td>
                   </tr>
                   <tr>
@@ -109,12 +109,18 @@ const LabelPrint = ({ stock, onClose }) => {
                       Item Color
                     </td>
                     <td className="border px-1 py-0.5">
-                      {stock.color || "----------"}
+                      {stock.itemColor || "----------"}
                     </td>
                   </tr>
                   <tr>
-                    <td className="border px-1 py-0.5 font-semibold">LLPII</td>
-                    <td colSpan={3} className=" py-0.5">
+                    <td className=" flex items-center justify-center py-auto font-semibold">
+                      <img
+                        src="/images/logo.png"
+                        className="w-12 filter brightness-0 saturate-100"
+                        alt=""
+                      />
+                    </td>
+                    <td colSpan={3} className="border border-l py-0.5">
                       <Barcode
                         value={barcodeObj.barcode}
                         height={40}

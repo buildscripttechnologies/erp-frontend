@@ -160,6 +160,7 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
               ],
               ["Postal Code", "postalCode"],
               ["GSTIN", "gst"],
+              ["PAN", "pan"],
               // ["Bank Name", "bankName"],
               // ["Branch", "branch"],
               // ["IFSC Code", "ifscCode"],

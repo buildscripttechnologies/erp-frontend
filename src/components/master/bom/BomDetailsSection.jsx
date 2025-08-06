@@ -83,7 +83,7 @@ const BomDetailsSection = ({ bomData }) => {
             <th className="px-2 py-1 border-r border-[#d8b76a]">
               Depth (Inch)
             </th>
-            {/* <th className="px-2 py-1 border-r border-[#d8b76a]">Quantity</th> */}
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Quantity</th>
             {/* <th className="px-2 py-1 border-r border-[#d8b76a]">UOM</th> */}
           </tr>
         </thead>
@@ -115,9 +115,9 @@ const BomDetailsSection = ({ bomData }) => {
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.depth || "-"}
                 </td>
-                {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.qty || "-"}
-                </td> */}
+                </td>
                 {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.itemId?.UOM?.unit || "-"}
                 </td> */}

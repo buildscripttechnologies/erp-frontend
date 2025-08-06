@@ -131,7 +131,7 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
     const hasEmptyComponent = productDetails.some((comp) => {
       return (
         !comp.itemId ||
-        // comp.qty === "" ||
+        comp.qty === "" ||
         comp.height === "" ||
         comp.width === "" ||
         comp.depth === "" ||
@@ -365,7 +365,7 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
                 key={index}
                 className="border border-[#d8b76a] rounded p-3 flex flex-col gap-2"
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
                   <div className="flex flex-col md:col-span-2">
                     <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
                       Component
@@ -393,15 +393,23 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
                     />
                   </div>
 
-                  {["partName", "height", "width", "depth"].map((field) => (
+                  {["partName", "height", "width", "depth","qty"].map((field) => (
                     <div className="flex flex-col" key={field}>
                       <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                        {field == "partName" ? "Part Name" : `${field} (Inch)`}
+                        {field == "partName"
+                          ? "Part Name"
+                          : field == "qty"
+                          ? "Qty"
+                          : `${field} (Inch)`}{" "}
                       </label>
                       <input
                         type={field == "partName" ? "text" : "number"}
                         placeholder={
-                          field == "partName" ? "Item Part Name" : `${field}`
+                          field == "partName"
+                            ? "Item Part Name"
+                            : field == "qty"
+                            ? "qty"
+                            : `${field} (Inch)`
                         }
                         className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
                         value={comp[field]}
