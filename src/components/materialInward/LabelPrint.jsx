@@ -103,7 +103,7 @@ const LabelPrint = ({ stock, onClose }) => {
                       Item Qty.
                     </td>
                     <td className="border px-1 py-0.5">
-                      {stock.conversionFactor || "----------"}
+                      {barcodeObj.qty || "----------"}
                     </td>
                     <td className="border px-1 py-0.5 font-semibold">
                       Item Color
@@ -113,7 +113,7 @@ const LabelPrint = ({ stock, onClose }) => {
                     </td>
                   </tr>
                   <tr>
-                    <td className=" flex items-center justify-center py-auto font-semibold">
+                    <td className=" flex items-center justify-center  py-1.5 font-semibold">
                       <img
                         src="/images/logo.png"
                         className="w-12 filter brightness-0 saturate-100"

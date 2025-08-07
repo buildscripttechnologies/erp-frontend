@@ -204,21 +204,29 @@ const StockRegister = () => {
             ))}
           </select>
 
-          <input
-            type="date"
-            value={filters.fromDate}
-            onChange={(e) =>
-              setFilters({ ...filters, fromDate: e.target.value })
-            }
-            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
-          />
+          <div>
+            <label htmlFor="From Date">From : </label>
+            <input
+              type="date"
+              value={filters.fromDate}
+              onChange={(e) =>
+                setFilters({ ...filters, fromDate: e.target.value })
+              }
+              className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+            />
+          </div>
 
-          <input
-            type="date"
-            value={filters.toDate}
-            onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
-            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
-          />
+          <div>
+            <label htmlFor="To Date">To : </label>
+            <input
+              type="date"
+              value={filters.toDate}
+              onChange={(e) =>
+                setFilters({ ...filters, toDate: e.target.value })
+              }
+              className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+            />
+          </div>
 
           {/* <button
             disabled={
