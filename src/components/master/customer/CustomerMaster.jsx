@@ -196,6 +196,7 @@ const CustomerMaster = ({ isOpen }) => {
                   <th className="px-[8px] ">Country</th>
                   <th className="px-[8px] ">Postal Code</th>
                   <th className="px-[8px] ">GSTIN</th>
+                  <th className="px-[8px] ">PAN</th>
                   <th className="px-[8px] ">Status</th>
                   <th className="px-[8px] ">Created By</th>
                   <th className="px-[8px] ">Actions</th>
@@ -273,6 +274,9 @@ const CustomerMaster = ({ isOpen }) => {
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
                             {c.gst || "-"}
+                          </td>
+                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                            {c.pan || "-"}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
                             <Toggle

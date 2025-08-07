@@ -3,6 +3,7 @@ import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
 
+import AddStockModal from "./AddStock";
 // import EditstockModal from "./EditstockModal";
 import TableSkeleton from "../TableSkeleton";
 import ScrollLock from "../ScrollLock";
@@ -11,11 +12,13 @@ import PaginationControls from "../PaginationControls";
 import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
+import BarcodeModal from "./BarcodeModal";
+import LabelPrint from "./LabelPrint";
 import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
 
-const StockRegister = () => {
+const MaterialInward = () => {
   const { hasPermission } = useAuth();
   const [stocks, setstocks] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -99,9 +102,7 @@ const StockRegister = () => {
         toDate: filters.toDate,
       });
 
-      const res = await axios.get(
-        `/stocks/get-all-merged?${queryParams.toString()}`
-      );
+      const res = await axios.get(`/stocks/get-all?${queryParams.toString()}`);
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
@@ -143,6 +144,41 @@ const StockRegister = () => {
     }
   };
 
+  //   const handleToggleStatus = async (id, currentStatus) => {
+  //     const newStatus = currentStatus === true ? false : true;
+  //     try {
+  //       const res = await axios.patch(`/stocks/update-stock/${id}`, {
+  //         status: newStatus,
+  //       });
+  //       if (res.data.status == 403) {
+  //         toast.error(res.data.message);
+  //         return;
+  //       }
+
+  //       if (res.data.status == 200) {
+  //         toast.success(`stock status updated`);
+
+  //         // ✅ Update local state without refetch
+  //         setstocks((prev) =>
+  //           prev.map((stock) =>
+  //             stock._id === id ? { ...stock, status: newStatus } : stock
+  //           )
+  //         );
+  //       } else {
+  //         toast.error("Failed to update status");
+  //       }
+  //     } catch (err) {
+  //       toast.error("Failed to update status");
+  //     }
+  //   };
+
+  // const filteredstocks = stocks.filter(
+  //   (u) =>
+  //     u.unitName?.toLowerCase().includes(search.toLowerCase()) ||
+  //     u.unitDescription?.toLowerCase().includes(search.toLowerCase()) ||
+  //     u.createdBy?.fullName.toLowerCase().includes(search.toLocaleLowerCase())
+  // );
+
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
     fetchstocks(page);
@@ -162,10 +198,23 @@ const StockRegister = () => {
     }
   };
 
+  const stockTableHeaders = [
+    { label: "#", className: "" },
+    { label: "Created At	", className: "hidden md:table-cell" },
+    { label: "Updated At	", className: "hidden md:table-cell" },
+    { label: "Item Name", className: "" },
+    { label: "Type", className: "" },
+    { label: "Barcodes", className: "" },
+    // { label: "Description", className: "" },
+    // { label: "Satus", className: "" },
+    { label: "Created By	", className: "hidden md:table-cell" },
+    { label: "Actions", className: "" },
+  ];
+
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Stock <span className="text-gray-500">({stocks.length})</span>
+        Material Inward <span className="text-gray-500">({stocks.length})</span>
       </h2>
 
       <div className="flex flex-wrap gap-4 items-stretch sm:items-center justify-between mb-6">
@@ -173,7 +222,7 @@ const StockRegister = () => {
           <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
           <input
             type="text"
-            placeholder="Search Stock"
+            placeholder="Search Material"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
@@ -245,6 +294,16 @@ const StockRegister = () => {
             Reset Filters
           </button>
         </div>
+
+        {hasPermission("Material Inward", "create") && (
+          <button
+            onClick={() => setFormOpen(!formOpen)}
+            className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
+          >
+            <FiPlus />
+            {formOpen ? "Close Form" : "Inward"}
+          </button>
+        )}
       </div>
 
       {formOpen && (
@@ -259,20 +318,26 @@ const StockRegister = () => {
           <thead className="bg-[#d8b76a]  text-[#292926] text-left whitespace-nowrap">
             <tr>
               <th className="px-2 py-1.5 ">#</th>
+              <th className="px-2 py-1.5  hidden md:table-cell">Created At</th>
+              <th className="px-2 py-1.5  hidden md:table-cell">Updated At</th>
               <th className="px-2 py-1.5 ">Type</th>
               <th className="px-2 py-1.5 ">Sku Code</th>
               <th className="px-2 py-1.5 ">Item Name</th>
               <th className="px-2 py-1.5 ">Description</th>
               <th className="px-2 py-1.5 ">Stock UOM</th>
               <th className="px-2 py-1.5 ">Stock Qty</th>
+              <th className="px-2 py-1.5 ">Available Qty</th>
+              <th className="px-2 py-1.5 ">Used Qty</th>
               <th className="px-2 py-1.5 ">Damaged Qty</th>
+              <th className="px-2 py-1.5  hidden md:table-cell">Created By</th>
+              <th className="px-2 py-1.5">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(8).fill({})}
+                columns={Array(13).fill({})}
               />
             ) : (
               <>
@@ -287,7 +352,26 @@ const StockRegister = () => {
                         index +
                         1}
                     </td>
-
+                    <td className="px-2 hidden md:table-cell  border-r border-[#d8b76a]">
+                      {new Date(stock.createdAt).toLocaleString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
+                    </td>
+                    <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
+                      {new Date(stock.updatedAt).toLocaleString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
+                    </td>
                     <td className="px-2  border-r border-[#d8b76a]">
                       {stock.type || "-"}
                     </td>
@@ -306,9 +390,61 @@ const StockRegister = () => {
                     <td className="px-2  border-r border-[#d8b76a]">
                       {stock.stockQty}
                     </td>
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {/* {stock.availableQty || 0} */}0
+                    </td>
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {/* {stock.usedQty || 0} */}0
+                    </td>
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {/* {stock.damagedQty || 0} */}0
+                    </td>
 
                     <td className="px-2  border-r border-[#d8b76a]">
-                      {stock.damagedQty || 0}
+                      {" "}
+                      {stock.createdBy?.fullName || "-"}
+                    </td>
+
+                    <td className="px-2 py-1 flex gap-3 text-sm text-[#d8b76a]">
+                      <button
+                        onClick={() => handleViewBarcodes(stock)}
+                        className="text-[#d8b76a] hover:underline text-[11px] cursor-pointer"
+                      >
+                        <FaBarcode
+                          data-tooltip-id="statusTip"
+                          data-tooltip-content="View Barcodes"
+                        />
+                      </button>
+                      {hasPermission("Material Inward", "update") ? (
+                        <FiEdit
+                          data-tooltip-id="statusTip"
+                          data-tooltip-content="Edit"
+                          className="hover:text-blue-500 cursor-pointer"
+                        />
+                      ) : (
+                        "-"
+                      )}
+
+                      {hasPermission("Material Inward", "delete") ? (
+                        <FiTrash2
+                          data-tooltip-id="statusTip"
+                          data-tooltip-content="Delete"
+                          className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                          onClick={() => handleDelete(stock._id)}
+                        />
+                      ) : (
+                        "-"
+                      )}
+                      <Tooltip
+                        id="statusTip"
+                        place="top"
+                        style={{
+                          backgroundColor: "#292926",
+                          color: "#d8b76a",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                        }}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -325,12 +461,12 @@ const StockRegister = () => {
         </table>
       </div>
 
-      {/* {barcodeModalOpen && selectedStock && (
+      {barcodeModalOpen && selectedStock && (
         <LabelPrint
           stock={selectedStock}
           onClose={() => setBarcodeModalOpen(false)}
         />
-      )} */}
+      )}
 
       <PaginationControls
         currentPage={pagination.currentPage}
@@ -350,4 +486,4 @@ const StockRegister = () => {
   );
 };
 
-export default StockRegister;
+export default MaterialInward;

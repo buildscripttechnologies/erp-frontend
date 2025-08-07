@@ -483,6 +483,8 @@ const RmMaster = ({ isOpen }) => {
                   "SKU Code",
                   "Item Name",
                   "Description",
+                  "Item Category",
+                  "Item Color",
                   "HSN/SAC",
                   "Type",
                   "Qual. Insp.",
@@ -554,6 +556,12 @@ const RmMaster = ({ isOpen }) => {
                       </td>
                       <td className="px-2 border-r border-r-[#d8b76a]">
                         {rm.description || "-"}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.itemCategory || "-"}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.itemColor || "-"}
                       </td>
                       <td className="px-2 border-r border-r-[#d8b76a]">
                         {rm.hsnOrSac}

@@ -12,7 +12,7 @@ const CustomerDetailsSection = ({ customerData }) => {
       </h2>
       <table className="w-full text-[11px] border border-[#d8b76a] mb-4 rounded ">
         <tbody className="rounded">
-          <tr className="border-b border-[#d8b76a]">
+          {/* <tr className="border-b border-[#d8b76a]">
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
               Bank Name
             </td>
@@ -37,7 +37,7 @@ const CustomerDetailsSection = ({ customerData }) => {
             <td className="px-2 py-1 border-r border-[#d8b76a]">
               {customerData.agentName || "-"}
             </td>
-          </tr>
+          </tr> */}
           <tr className="border-b  border-[#d8b76a]">
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1  border-r border-[#d8b76a]">
               Payment Terms

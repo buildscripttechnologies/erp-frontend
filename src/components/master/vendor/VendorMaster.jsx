@@ -15,7 +15,6 @@ import VendorDetailsSection from "./VendorDetailsSection";
 import { useAuth } from "../../../context/AuthContext";
 import { useRef } from "react";
 
-
 import { debounce } from "lodash";
 
 const VendorMaster = ({ isOpen }) => {
@@ -34,7 +33,7 @@ const VendorMaster = ({ isOpen }) => {
   const [expandedVendorId, setExpandedVendorId] = useState(null);
 
   const hasMountedRef = useRef(false);
-
+  ScrollLock(showModal || showUpdateModal);
   // Function to open modal
   const handleEdit = (vendor) => {
     setSelectedVendor(vendor); // vendor object from the list
@@ -102,8 +101,6 @@ const VendorMaster = ({ isOpen }) => {
       toast.error("Failed to fetch dropdown metadata");
     }
   };
-
-  ScrollLock(showModal);
 
   useEffect(() => {
     fetchVendors();
@@ -223,6 +220,7 @@ const VendorMaster = ({ isOpen }) => {
                   <th className="px-2 py-1.5">Country</th>
                   <th className="px-2 py-1.5">Postal Code</th>
                   <th className="px-2 py-1.5">GSTIN</th>
+                  <th className="px-2 py-1.5">PAN</th>
                   <th className="px-1 py-1.5">Status</th>
                   <th className="px-2 py-1.5">Created By</th>
                   <th className="px-2 py-1.5">Actions</th>
@@ -232,7 +230,7 @@ const VendorMaster = ({ isOpen }) => {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={Array(15).fill({})}
+                    columns={Array(16).fill({})}
                   />
                 ) : (
                   <>
@@ -304,6 +302,9 @@ const VendorMaster = ({ isOpen }) => {
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
                             {v.gst || "-"}
+                          </td>
+                          <td className="px-2 border-r border-[#d8b76a]">
+                            {v.pan || "-"}
                           </td>
                           <td className="px-2 border-r border-[#d8b76a]">
                             <span className="rounded">

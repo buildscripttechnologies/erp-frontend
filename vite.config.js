@@ -49,6 +49,8 @@ export default defineConfig({
             // urlPattern: /^http:\/\/localhost:5000\/api\/.*$/,
             // urlPattern: /^https:\/\/backend-45z3\.onrender\.com\/api\/.*$/,
             urlPattern: /^https:\/\/api\.smartflow360\.com\/api\/.*$/,
+            // urlPattern: /^https:\/\/api\.smartflow360\.com\/api\/.*$/,
+            //urlPattern: /^https:\/\/backend-45z3\.onrender\.com\/api\/.*$/,
 
             handler: "NetworkFirst",
             options: {

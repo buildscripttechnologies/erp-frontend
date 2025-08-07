@@ -19,6 +19,7 @@ const AddCustomerModal = ({ onClose, onAdded }) => {
         city: "",
         postalCode: "",
         gst: "",
+        pan: "",
         bankName: "",
         branch: "",
         ifscCode: "",
@@ -83,10 +84,11 @@ const AddCustomerModal = ({ onClose, onAdded }) => {
           city: "",
           postalCode: "",
           gst: "",
-          bankName: "",
-          branch: "",
-          ifscCode: "",
-          agentName: "",
+          pan: "",
+          // bankName: "",
+          // branch: "",
+          // ifscCode: "",
+          // agentName: "",
           paymentTerms: "",
           leadCompetitor: "",
           transportationTime: "",
@@ -178,6 +180,46 @@ const AddCustomerModal = ({ onClose, onAdded }) => {
     }
   };
 
+  const fillDeliveryDetails = (setIdx) => {
+    const updated = [...customerSets];
+    const form = updated[setIdx].form;
+    const firstContact = updated[setIdx].contacts[0] || {
+      contactPerson: "",
+      phone: "",
+      email: "",
+    };
+
+    if (updated[setIdx].locations.length === 0) {
+      updated[setIdx].locations.push({
+        consigneeName: "",
+        consigneeAddress: "",
+        country: "",
+        state: "",
+        city: "",
+        pinCode: "",
+        gstinOfConsignee: "",
+        storeIncharge: "",
+        contactNo: "",
+        email: "",
+      });
+    }
+
+    updated[setIdx].locations[0] = {
+      consigneeName: firstContact.contactPerson || "",
+      consigneeAddress: form.address || "",
+      country: form.country || "",
+      state: form.state || "",
+      city: form.city || "",
+      pinCode: form.postalCode || "",
+      gstinOfConsignee: form.gst || "",
+      storeIncharge: firstContact.contactPerson || "",
+      contactNo: firstContact.phone || "",
+      email: firstContact.email || "",
+    };
+
+    setCustomerSets(updated);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-2">
       <div className="bg-white w-full max-w-[95vw] max-h-[90vh] overflow-y-auto rounded-md border border-[#d8b76a] text-xs relative scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-gray-100 p-3">
@@ -225,7 +267,7 @@ const AddCustomerModal = ({ onClose, onAdded }) => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {[
-                    ["Customer Name", "customerName"],
+                    ["Party Name", "customerName"],
                     ["Alias Name", "aliasName"],
                     ["Nature Of Business", "natureOfBusiness"],
                     ["Address", "address"],
@@ -249,10 +291,11 @@ const AddCustomerModal = ({ onClose, onAdded }) => {
                     ],
                     ["Postal Code", "postalCode"],
                     ["GSTIN", "gst"],
-                    ["Bank Name", "bankName"],
-                    ["Branch", "branch"],
-                    ["IFSC Code", "ifscCode"],
-                    ["Agent Name", "agentName"],
+                    ["PAN", "pan"],
+                    // ["Bank Name", "bankName"],
+                    // ["Branch", "branch"],
+                    // ["IFSC Code", "ifscCode"],
+                    // ["Agent Name", "agentName"],
                     ["Payment Terms", "paymentTerms"],
                     ["Lead Competitor", "leadCompetitor"],
                     ["Transportation Time", "transportationTime"],
@@ -339,11 +382,19 @@ const AddCustomerModal = ({ onClose, onAdded }) => {
                   </button>
                 </div>
 
-                <div className="mt-4">
-                  <h3 className="font-bold text-[14px] mb-2 text-[#d8b76a] underline">
-                    Delivery Locations
-                  </h3>
-
+                <div className="mt-4 ">
+                  <div className="flex flex-wrap items-center  text-[#d8b76a] text-[14px] mb-2 gap-2">
+                    <h3 className="  font-bold underline">
+                      Delivery Locations
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => fillDeliveryDetails(idx)}
+                      className=" bg-[#d8b76a] text-[#292926] px-3 py-1.5 items-center rounded text-xs hover:bg-[#d8b76a]/80 transition cursor-pointer"
+                    >
+                      Same As Above
+                    </button>
+                  </div>
                   {set.locations.map((l, i) => {
                     const countries = Country.getAllCountries().map((c) => ({
                       value: c.isoCode,

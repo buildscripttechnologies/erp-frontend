@@ -132,9 +132,9 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
-                        <th className="px-2 font-semibold">Height(cm)</th>
-                        <th className="px-2 font-semibold">Width(cm)</th>
-                        <th className="px-2 font-semibold">depth(cm)</th>
+                        <th className="px-2 font-semibold">Height (Inch)</th>
+                        <th className="px-2 font-semibold">Width (Inch)</th>
+                        <th className="px-2 font-semibold">depth (Inch)</th>
                         <th className="px-2 font-semibold rounded-tr-sm">
                           Qty
                         </th>
@@ -189,9 +189,9 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
-                        <th className="px-2 font-semibold">Height(cm)</th>
-                        <th className="px-2 font-semibold">Width(cm)</th>
-                        <th className="px-2 font-semibold">depth(cm)</th>
+                        <th className="px-2 font-semibold">Height (Inch)</th>
+                        <th className="px-2 font-semibold">Width (Inch)</th>
+                        <th className="px-2 font-semibold">depth (Inch)</th>
                         <th className="px-2 font-semibold">Qty</th>
                       </tr>
                     </thead>
@@ -251,7 +251,6 @@ const SfgMaster = ({ isOpen }) => {
   ScrollLock(showAddSFG == true || editingSfg != null);
 
   useEffect(() => {
-
     if (!hasMountedRef.current) {
       hasMountedRef.current = true;
       return; // skip first debounce on mount
@@ -660,13 +659,13 @@ const SfgMaster = ({ isOpen }) => {
                                         Location
                                       </th>
                                       <th className="px-2 font-semibold">
-                                        Height(cm)
+                                        Height (Inch)
                                       </th>
                                       <th className="px-2 font-semibold">
-                                        Width(cm)
+                                        Width (Inch)
                                       </th>
                                       <th className="px-2 font-semibold">
-                                        depth(cm)
+                                        depth (Inch)
                                       </th>
                                       <th className="px-2 font-semibold">
                                         Qty

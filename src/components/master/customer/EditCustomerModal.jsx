@@ -96,6 +96,32 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
   const states = State.getStatesOfCountry(form.country || "");
   const cities = City.getCitiesOfState(form.country || "", form.state || "");
 
+  const fillDeliveryDetails = (index) => {
+    const updated = [...locations];
+    const firstContact = contacts[0] || {
+      contactPerson: "",
+      phone: "",
+      email: "",
+    };
+
+    const loc = { ...updated[index] };
+
+    // Only fill if fields are empty
+    loc.consigneeName = firstContact.contactPerson || "";
+    loc.storeIncharge = firstContact.contactPerson || "";
+    loc.consigneeAddress = form.address || "";
+    loc.country = form.country || "";
+    loc.state = form.state || "";
+    loc.city = form.city || "";
+    loc.pinCode = form.postalCode || "";
+    loc.gstinOfConsignee = form.gst || "";
+    loc.contactNo = firstContact.phone || "";
+    loc.email = firstContact.email || "";
+
+    updated[index] = loc;
+    setLocations(updated);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-2">
       <div className="bg-white w-full max-w-[95vw] max-h-[90vh] overflow-y-auto rounded-md border border-[#d8b76a] text-xs relative scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-gray-100 p-3">
@@ -113,7 +139,7 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {/* map through same fields as in AddCustomerModal */}
             {[
-              ["Customer Name", "customerName"],
+              ["Party Name", "customerName"],
               ["Alias Name", "aliasName"],
               ["Nature Of Business", "natureOfBusiness"],
               ["Address", "address"],
@@ -134,10 +160,11 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
               ],
               ["Postal Code", "postalCode"],
               ["GSTIN", "gst"],
-              ["Bank Name", "bankName"],
-              ["Branch", "branch"],
-              ["IFSC Code", "ifscCode"],
-              ["Agent Name", "agentName"],
+              ["PAN", "pan"],
+              // ["Bank Name", "bankName"],
+              // ["Branch", "branch"],
+              // ["IFSC Code", "ifscCode"],
+              // ["Agent Name", "agentName"],
               ["Payment Terms", "paymentTerms"],
               ["Lead Competitor", "leadCompetitor"],
               ["Transportation Time", "transportationTime"],
@@ -225,9 +252,16 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
 
           {/* Delivery Locations */}
           <div className="mt-4">
-            <h3 className="font-bold text-[14px] mb-2 text-[#d8b76a] underline">
-              Delivery Locations
-            </h3>
+            <div className="flex flex-wrap items-center  text-[#d8b76a] text-[14px] mb-2 gap-2">
+              <h3 className="  font-bold underline">Delivery Locations</h3>
+              <button
+                type="button"
+                onClick={() => fillDeliveryDetails(0)}
+                className=" bg-[#d8b76a] text-[#292926] px-3 py-1.5 items-center rounded text-xs hover:bg-[#d8b76a]/80 transition cursor-pointer"
+              >
+                Same As Above
+              </button>
+            </div>
             {locations.map((l, i) => {
               const states = State.getStatesOfCountry(l.country || "").map(
                 (s) => ({ value: s.isoCode, label: s.name })

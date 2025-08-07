@@ -7,6 +7,8 @@ import { ClipLoader } from "react-spinners";
 const AddStockModal = ({ onClose, onAdded }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [stockQty, setStockQty] = useState("");
+  const [conversionFactor, setConversionFactor] = useState("");
+  const [damagedQty, setDamagedQty] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [uoms, setUoms] = useState([]);
@@ -45,6 +47,8 @@ const AddStockModal = ({ onClose, onAdded }) => {
         itemId: selectedItem.value,
         itemType: selectedItem.type,
         stockQty: parseFloat(stockQty),
+        conversionFactor: conversionFactor,
+        damagedQty: damagedQty,
       };
 
       const res = await axios.post("/stocks/add", payload);
@@ -79,7 +83,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white w-[92vw] max-w-xl rounded-lg p-6 border border-[#d8b76a]">
-        <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">Add Stock</h2>
+        <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">Inward</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -108,18 +112,49 @@ const AddStockModal = ({ onClose, onAdded }) => {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-[#292926] mb-1">
-              Stock Quantity
-            </label>
-            <input
-              type="number"
-              value={stockQty}
-              onChange={(e) => setStockQty(e.target.value)}
-              className="w-full p-2 border border-[#d8b76a] rounded focus:border-[#d8b76a] focus:ring-1 focus:ring-[#d8b76a] focus:outline-none transition duration-200"
-              required
-              min={0}
-            />
+          <div className="flex flex-wrap gap-5">
+            <div className="w-[30%]">
+              <label className="block text-sm font-semibold text-[#292926] mb-1">
+                Stock Quantity
+              </label>
+              <input
+                type="number"
+                placeholder="Stock Quantity"
+                value={stockQty}
+                onChange={(e) => setStockQty(e.target.value)}
+                className="w-full p-2 border border-[#d8b76a] rounded focus:border-[#d8b76a] focus:ring-1 focus:ring-[#d8b76a] focus:outline-none transition duration-200"
+                required
+                min={0}
+              />
+            </div>
+            <div className="w-[30%]">
+              <label className="block text-sm font-semibold text-[#292926] mb-1">
+                Conversion Factor
+              </label>
+              <input
+                type="number"
+                placeholder="Conversion Factor"
+                value={conversionFactor}
+                onChange={(e) => setConversionFactor(e.target.value)}
+                className="w-full p-2 border border-[#d8b76a] rounded focus:border-[#d8b76a] focus:ring-1 focus:ring-[#d8b76a] focus:outline-none transition duration-200"
+                required
+                min={0}
+              />
+            </div>
+            <div className="w-[30%]">
+              <label className="block text-sm font-semibold text-[#292926] mb-1">
+                Damaged Quantity
+              </label>
+              <input
+                type="number"
+                placeholder="Damaged Quantiy"
+                value={damagedQty}
+                onChange={(e) => setDamagedQty(e.target.value)}
+                className="w-full p-2 border border-[#d8b76a] rounded focus:border-[#d8b76a] focus:ring-1 focus:ring-[#d8b76a] focus:outline-none transition duration-200"
+                required
+                min={0}
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-4 mt-4">
@@ -134,7 +169,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
                   <ClipLoader size={20} color="#292926" />
                 </>
               ) : (
-                "Save Stock"
+                "Save"
               )}
             </button>
             <button

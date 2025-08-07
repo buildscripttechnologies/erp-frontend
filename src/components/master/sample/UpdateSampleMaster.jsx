@@ -5,8 +5,11 @@ import toast from "react-hot-toast";
 import CreatableSelect from "react-select/creatable";
 import { FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
+import { sample } from "lodash";
 
 const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
+  // console.log("sample", Sample);
+
   const [form, setForm] = useState({
     partyName: Sample.partyName || "",
     productName: Sample.product?.name || "",
@@ -31,16 +34,16 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
     const fetchDropdownData = async () => {
       try {
         const [rmRes, sfgRes, fgRes, customerRes] = await Promise.all([
-          axios.get("/rms/rm?limit=1000"),
-          axios.get("/sfgs/get-all?limit=1000"),
-          axios.get("/fgs/get-all?limit=1000"),
-          axios.get("/customers/get-all?limit=1000"),
+          axios.get("/rms/rm?limit=10000"),
+          axios.get("/sfgs/get-all?limit=10000"),
+          axios.get("/fgs/get-all?limit=10000"),
+          axios.get("/customers/get-all?limit=10000"),
         ]);
 
         setRms(
           (rmRes.data.rawMaterials || []).map((item) => ({
             ...item,
-            type: "RM",
+            type: "RawMaterial",
           }))
         );
 
@@ -78,7 +81,18 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
     })),
   ];
 
+  // useEffect(() => {
+  //   setProductDetails(
+  //     (Sample.productDetails || []).map((comp) => ({
+  //       ...comp,
+  //       partName: comp.partName || "",
+  //     }))
+  //   );
+  // }, [Sample]);
+
   const updateComponent = (index, field, value) => {
+    console.log(index, field, value);
+
     const updated = [...productDetails];
     updated[index][field] = value;
     setProductDetails(updated);
@@ -101,6 +115,7 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
         width: "",
         depth: "",
         label: "",
+        partName: "", // ADD THIS
       },
     ]);
   };
@@ -119,7 +134,8 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
         comp.qty === "" ||
         comp.height === "" ||
         comp.width === "" ||
-        comp.depth === ""
+        comp.depth === "" ||
+        comp.partName === ""
       );
     });
 
@@ -137,7 +153,8 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
         deletedFiles,
       };
 
-      console.log("deleted files", deletedFiles);
+      // console.log("deleted files", deletedFiles);
+      // console.log("pd", payload.productDetails);
 
       formData.append("data", JSON.stringify(payload));
 
@@ -227,13 +244,39 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
                 value: fg.itemName.trim(),
               }))}
               placeholder="Select or Type FG Product"
-              onChange={(e) => setForm({ ...form, productName: e?.value })}
               onCreateOption={(val) => setForm({ ...form, productName: val })}
               value={
                 form.productName
                   ? { label: form.productName, value: form.productName }
                   : null
               }
+              // onChange={(e) => setForm({ ...form, productName: e?.value })}
+              onChange={(e) => {
+                const selectedFG = fgs.find((fg) => fg.itemName === e?.value);
+                setForm({ ...form, productName: e?.value });
+
+                if (!selectedFG) return;
+
+                const allDetails = [
+                  ...(selectedFG.rm || []),
+                  ...(selectedFG.sfg || []),
+                ];
+
+                const enrichedDetails = allDetails.map((item) => ({
+                  itemId: item.id,
+                  type: item.type,
+                  qty: item.qty || "",
+                  height: item.height || "",
+                  width: item.width || "",
+                  depth: item.depth || "",
+                  label: `${item.skuCode}: ${item.itemName}${
+                    item.description ? ` - ${item.description}` : ""
+                  }`,
+                  partName: "",
+                }));
+
+                setProductDetails(enrichedDetails);
+              }}
             />
           </div>
 
@@ -322,7 +365,7 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
                 key={index}
                 className="border border-[#d8b76a] rounded p-3 flex flex-col gap-2"
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
                   <div className="flex flex-col md:col-span-2">
                     <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
                       Component
@@ -350,14 +393,24 @@ const UpdateSampleModal = ({ onClose, onSuccess, Sample }) => {
                     />
                   </div>
 
-                  {["height", "width", "depth", "qty"].map((field) => (
+                  {["partName", "height", "width", "depth","qty"].map((field) => (
                     <div className="flex flex-col" key={field}>
                       <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                        {field}(cm)
+                        {field == "partName"
+                          ? "Part Name"
+                          : field == "qty"
+                          ? "Qty"
+                          : `${field} (Inch)`}{" "}
                       </label>
                       <input
-                        type="number"
-                        placeholder={`${field}(cm)`}
+                        type={field == "partName" ? "text" : "number"}
+                        placeholder={
+                          field == "partName"
+                            ? "Item Part Name"
+                            : field == "qty"
+                            ? "qty"
+                            : `${field} (Inch)`
+                        }
                         className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
                         value={comp[field]}
                         onChange={(e) =>

@@ -73,9 +73,16 @@ const BomDetailsSection = ({ bomData }) => {
             <th className="px-2 py-1 border-r border-[#d8b76a]">Sku Code</th>
             <th className="px-2 py-1 border-r border-[#d8b76a]">Item Name</th>
             <th className="px-2 py-1 border-r border-[#d8b76a]">Type</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Height(cm)</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Width(cm)</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Depth(cm)</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Part Name</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">
+              Height (Inch)
+            </th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">
+              Width (Inch)
+            </th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">
+              Depth (Inch)
+            </th>
             <th className="px-2 py-1 border-r border-[#d8b76a]">Quantity</th>
             {/* <th className="px-2 py-1 border-r border-[#d8b76a]">UOM</th> */}
           </tr>
@@ -94,19 +101,22 @@ const BomDetailsSection = ({ bomData }) => {
                   {item.itemName || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.type}
+                  {item.type || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.height}
+                  {item.partName || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.width}
+                  {item.height || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.depth}
+                  {item.width || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.qty}
+                  {item.depth || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {item.qty || "-"}
                 </td>
                 {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.itemId?.UOM?.unit || "-"}
@@ -115,7 +125,7 @@ const BomDetailsSection = ({ bomData }) => {
             ))
           ) : (
             <tr>
-              <td className="px-2 py-1 text-center" colSpan={5}>
+              <td className="px-2 py-1 text-center" colSpan={8}>
                 No product details available.
               </td>
             </tr>
