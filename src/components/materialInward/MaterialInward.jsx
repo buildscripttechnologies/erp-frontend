@@ -340,6 +340,7 @@ const MaterialInward = () => {
               <th className="px-2 py-1.5 ">Available Qty</th>
               <th className="px-2 py-1.5 ">Used Qty</th>
               <th className="px-2 py-1.5 ">Damaged Qty</th>
+              <th className="px-2 py-1.5 ">Quality Approved</th>
               <th className="px-2 py-1.5 ">Inward By</th>
               <th className="px-2 py-1.5">Actions</th>
             </tr>
@@ -410,9 +411,15 @@ const MaterialInward = () => {
                     <td className="px-2  border-r border-[#d8b76a]">
                       {stock.damagedQty || 0}
                     </td>
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {stock.qualityApproved ? (
+                        <span className="text-green-600">Approved</span>
+                      ) : (
+                        <span className="text-red-600">Not Approved</span>
+                      )}
+                    </td>
 
                     <td className="px-2  border-r border-[#d8b76a]">
-                      {" "}
                       {stock.createdBy?.fullName || "-"}
                     </td>
 
