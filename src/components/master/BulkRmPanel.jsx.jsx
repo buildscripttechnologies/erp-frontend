@@ -42,10 +42,11 @@ const BulkRmPanel = ({ onClose }) => {
     setRows((prev) => [
       ...prev,
       {
+        skuCode: "",
         itemName: "",
         description: "",
-        itemCategory:"",
-        itemColor:"",
+        itemCategory: "",
+        itemColor: "",
         hsnOrSac: "",
         type: "RM",
         qualityInspectionNeeded: "Required",
@@ -180,6 +181,20 @@ const BulkRmPanel = ({ onClose }) => {
                 Item {index + 1}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-[#292926]">
+                    Sku Code
+                  </label>
+                  <input
+                    required
+                    placeholder="Sku Code"
+                    value={rm.skuCode}
+                    onChange={(e) =>
+                      handleChange(index, "skuCode", e.target.value)
+                    }
+                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                  />
+                </div>
                 <div>
                   <label className="text-xs font-semibold text-[#292926]">
                     Item Name
