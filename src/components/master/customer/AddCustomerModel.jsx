@@ -205,7 +205,7 @@ const AddCustomerModal = ({ onClose, onAdded }) => {
     }
 
     updated[setIdx].locations[0] = {
-      consigneeName: firstContact.contactPerson || "",
+      consigneeName: form.customerName || "",
       consigneeAddress: form.address || "",
       country: form.country || "",
       state: form.state || "",

@@ -13,6 +13,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
 
   const [formList, setFormList] = useState([
     {
+      skuCode: "",
       itemName: "",
       description: "",
       hsnOrSac: "",
@@ -95,6 +96,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
     setFormList([
       ...formList,
       {
+        skuCode: "",
         itemName: "",
         description: "",
         hsnOrSac: "",
@@ -183,7 +185,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
         }
       });
 
-      await axios.post("/sfgs/add-many", payload);
+      let res = await axios.post("/sfgs/add-many", payload);
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
@@ -210,6 +212,18 @@ const AddSfgModal = ({ onClose, onAdded }) => {
               className="space-y-4 border border-[#d8b76a] p-4 rounded"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="flex flex-col">
+                  <label className="font-medium">Sku Code</label>
+                  <input
+                    type="text"
+                    name="skuCode"
+                    placeholder="Sku Code"
+                    value={item.skuCode}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    required
+                  />
+                </div>
                 <div className="flex flex-col">
                   <label className="font-medium">Item Name</label>
                   <input

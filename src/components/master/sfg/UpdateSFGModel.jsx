@@ -68,6 +68,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
       });
 
       setForm({
+        skuCode: sfg.skuCode || "",
         itemName: sfg.itemName || "",
         description: sfg.description || "",
         hsnOrSac: sfg.hsnOrSac || "",
@@ -145,6 +146,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
       });
 
       const data = {
+        skuCode: form.skuCode,
         itemName: form.itemName,
         description: form.description,
         hsnOrSac: form.hsnOrSac,
@@ -197,6 +199,18 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">Edit SFG Item</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="flex flex-col">
+              <label className="font-semibold">Sku Code</label>
+              <input
+                disabled
+                name="skuCode"
+                placeholder="Sku Code"
+                value={form.skuCode}
+                onChange={handleChange}
+                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+                required
+              />
+            </div>
             <div className="flex flex-col">
               <label className="font-semibold">Item Name</label>
               <input
