@@ -204,21 +204,29 @@ const StockRegister = () => {
             ))}
           </select>
 
-          <input
-            type="date"
-            value={filters.fromDate}
-            onChange={(e) =>
-              setFilters({ ...filters, fromDate: e.target.value })
-            }
-            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
-          />
+          <div>
+            <label htmlFor="From Date">From : </label>
+            <input
+              type="date"
+              value={filters.fromDate}
+              onChange={(e) =>
+                setFilters({ ...filters, fromDate: e.target.value })
+              }
+              className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+            />
+          </div>
 
-          <input
-            type="date"
-            value={filters.toDate}
-            onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
-            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
-          />
+          <div>
+            <label htmlFor="To Date">To : </label>
+            <input
+              type="date"
+              value={filters.toDate}
+              onChange={(e) =>
+                setFilters({ ...filters, toDate: e.target.value })
+              }
+              className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+            />
+          </div>
 
           {/* <button
             disabled={
@@ -266,6 +274,7 @@ const StockRegister = () => {
               <th className="px-2 py-1.5 ">Stock UOM</th>
               <th className="px-2 py-1.5 ">Stock Qty</th>
               <th className="px-2 py-1.5 ">Damaged Qty</th>
+              <th className="px-2 py-1.5 ">MOQ</th>
             </tr>
           </thead>
           <tbody>
@@ -306,10 +315,11 @@ const StockRegister = () => {
                     <td className="px-2  border-r border-[#d8b76a]">
                       {stock.stockQty}
                     </td>
-
                     <td className="px-2  border-r border-[#d8b76a]">
                       {stock.damagedQty || 0}
                     </td>
+
+                    <td className="px-2 ">{stock.moq || 0}</td>
                   </tr>
                 ))}
                 {stocks.length === 0 && (

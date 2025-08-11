@@ -8,17 +8,17 @@ const AuthLayout = ({ children }) => {
     <div className="min-h-screen w-full overflow-hidden flex flex-col md:flex-row bg-gradient-to-r from-white  to-[#d8b76a]">
       {/* Left Panel */}
       <motion.div
-        className=" md:flex md:w-1/2 items-center justify-center sm:mt-[-5%] px-10 bg-opacity-40 text-center"
+        className=" md:flex md:w-1/2 items-center justify-center mt-5 sm:mt-0  px-10 bg-opacity-40 text-center"
         initial={{ opacity: 0, x: -100 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 1 }}
       >
         <div className="max-w-2xl">
-          <div className="relative mb-[-40px] sm:mb-[-80px] ">
+          <div className="relative  ">
             <img
               src="/images/logo.png"
               alt="SmartFlow360 Logo"
-              className="md:w-100 w-40 mx-auto "
+              className="md:w-60 w-40 mx-auto "
             />
           </div>
 

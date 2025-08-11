@@ -128,7 +128,8 @@ const MaterialInward = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this stock?")) return;
+    if (!window.confirm("Are you sure you want to delete this material?"))
+      return;
     try {
       let res = await axios.delete(`/stocks/delete/${id}`);
       if (res.data.status == 403) {
@@ -136,7 +137,7 @@ const MaterialInward = () => {
         return;
       }
       if (res.data.status == 200) {
-        toast.success("stock deleted");
+        toast.success("material deleted");
         fetchstocks();
       }
     } catch {
@@ -253,21 +254,29 @@ const MaterialInward = () => {
             ))}
           </select>
 
-          <input
-            type="date"
-            value={filters.fromDate}
-            onChange={(e) =>
-              setFilters({ ...filters, fromDate: e.target.value })
-            }
-            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
-          />
+          <div>
+            <label htmlFor="date from">From : </label>
+            <input
+              type="date"
+              value={filters.fromDate}
+              onChange={(e) =>
+                setFilters({ ...filters, fromDate: e.target.value })
+              }
+              className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+            />
+          </div>
 
-          <input
-            type="date"
-            value={filters.toDate}
-            onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
-            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
-          />
+          <div>
+            <label htmlFor="to date">To : </label>
+            <input
+              type="date"
+              value={filters.toDate}
+              onChange={(e) =>
+                setFilters({ ...filters, toDate: e.target.value })
+              }
+              className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+            />
+          </div>
 
           {/* <button
             disabled={
@@ -308,6 +317,8 @@ const MaterialInward = () => {
 
       {formOpen && (
         <AddStockModal
+          isOpen={formOpen}
+          setIsOpen={setFormOpen}
           onClose={() => setFormOpen(false)}
           onAdded={fetchstocks}
         />
@@ -329,7 +340,8 @@ const MaterialInward = () => {
               <th className="px-2 py-1.5 ">Available Qty</th>
               <th className="px-2 py-1.5 ">Used Qty</th>
               <th className="px-2 py-1.5 ">Damaged Qty</th>
-              <th className="px-2 py-1.5  hidden md:table-cell">Created By</th>
+              <th className="px-2 py-1.5 ">Quality Approved</th>
+              <th className="px-2 py-1.5 ">Inward By</th>
               <th className="px-2 py-1.5">Actions</th>
             </tr>
           </thead>
@@ -397,11 +409,17 @@ const MaterialInward = () => {
                       {/* {stock.usedQty || 0} */}0
                     </td>
                     <td className="px-2  border-r border-[#d8b76a]">
-                      {/* {stock.damagedQty || 0} */}0
+                      {stock.damagedQty || 0}
+                    </td>
+                    <td className="px-2  border-r border-[#d8b76a]">
+                      {stock.qualityApproved ? (
+                        <span className="text-green-600">Approved</span>
+                      ) : (
+                        <span className="text-red-600">Not Approved</span>
+                      )}
                     </td>
 
                     <td className="px-2  border-r border-[#d8b76a]">
-                      {" "}
                       {stock.createdBy?.fullName || "-"}
                     </td>
 
