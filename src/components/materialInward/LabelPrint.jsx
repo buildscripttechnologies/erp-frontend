@@ -27,17 +27,17 @@ const LabelPrint = ({ stock, onClose }) => {
 
         <div
           ref={printRef}
-          className="grid grid-cols-1  print:grid-cols-1 max-h-[75vh] overflow-auto max-w-[110mm]"
+          className="grid grid-cols-1  print:grid-cols-1 max-h-[75vh] overflow-auto min-w-[150mm]"
         >
           {(stock.barcodes || []).map((barcodeObj, idx) => (
             <div
               key={idx}
               className="printLabel print-rotate p-1 rounded max-w-[105mm] h-[70mm] text-[10px] flex flex-col"
             >
-              <table className=" text-[10px] w-[100mm] h-[65mm]  border border-collapse mb-1">
+              <table className=" text-[10px] whitespace-nowrap w-[100mm] h-[65mm]  border border-collapse mb-1">
                 <tbody>
                   <tr>
-                    <td className="border px-1 py-0.5 font-semibold">
+                    <td className="border whitespace-nowrap px-1 py-0.5 font-semibold">
                       Party Name
                     </td>
                     <td colSpan={3} className="border px-1 py-0.5">
