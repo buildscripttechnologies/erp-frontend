@@ -54,8 +54,10 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
           itemId: r.id,
           height: r.height,
           width: r.width,
-          depth: r.depth,
+          // depth: r.depth,
           qty: r.qty,
+          rate: r.rate,
+          sqInchRate: r.sqInchRate,
         });
       });
       (fg.sfg || []).forEach((s) => {
@@ -63,8 +65,10 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
           itemId: s.id,
           height: s.height,
           width: s.width,
-          depth: s.depth,
+          // depth: s.depth,
           qty: s.qty,
+          rate: r.rate,
+          sqInchRate: r.sqInchRate,
         });
       });
 
@@ -78,24 +82,149 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         gst: fg.gst || "",
         status: fg.status || "Active",
         UOM: fg.uom || "",
+        height: fg.height,
+        width: fg.width,
+        depth: fg.depth,
+        stitching: fg.stitching,
+        printing: fg.printing,
+        others: fg.others,
+        unitRate: fg.unitRate,
+        unitB2BRate: fg.unitB2BRate,
+        unitD2CRate: fg.unitD2CRate,
+        // totalRate: fg.totalRate,
+        // totalB2BRate: fg.totalB2BRate,
+        // totalD2CRate: fg.totalD2CRate,
+        B2B: fg.B2B,
+        D2C: fg.D2C,
+        rejection: fg.rejection,
+        QC: fg.QC,
+        machineMaintainance: fg.machineMaintainance,
+        materialHandling: fg.materialHandling,
+        packaging: fg.packaging,
+        shipping: fg.shipping,
+        companyOverHead: fg.companyOverHead,
+        indirectExpense: fg.indirectExpense,
         file: [],
         materials: mappedMaterials,
       });
     }
   }, [fg]);
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: name === "file" ? Array.from(files) : value,
-    }));
+  const recalculateTotals = (updatedForm) => {
+    const {
+      qty,
+      rejection = 0,
+      QC = 0,
+      machineMaintainance = 0,
+      materialHandling = 0,
+      packaging = 0,
+      shipping = 0,
+      companyOverHead = 0,
+      indirectExpense = 0,
+      stitching = 0,
+      printing = 0,
+      others = 0,
+      B2B = 0,
+      D2C = 0,
+      materials = [],
+    } = updatedForm;
+
+    const p =
+      rejection +
+      QC +
+      machineMaintainance +
+      materialHandling +
+      packaging +
+      shipping +
+      companyOverHead +
+      indirectExpense;
+
+    const baseComponentRate = materials.reduce(
+      (sum, mat) => sum + (Number(mat.rate) || 0),
+      0
+    );
+
+    const totalR = baseComponentRate + stitching + printing + others;
+
+    const unitRate = totalR + totalR * (p / 100);
+    const unitB2BRate = totalR + (totalR * (p + B2B)) / 100;
+    const unitD2CRate = totalR + (totalR * (p + D2C)) / 100;
+
+    return {
+      ...updatedForm,
+      unitRate: Number(unitRate).toFixed(2),
+      unitB2BRate: Number(unitB2BRate).toFixed(2),
+      unitD2CRate: Number(unitD2CRate).toFixed(2),
+      // totalRate: Number(unitRate * qty).toFixed(2),
+      // totalB2BRate: Number(unitB2BRate * qty).toFixed(2),
+      // totalD2CRate: Number(unitD2CRate * qty).toFixed(2),
+    };
   };
 
-  const handleMaterialChange = (index, field, value) => {
-    const updated = [...form.materials];
-    updated[index][field] = value;
-    setForm((prev) => ({ ...prev, materials: updated }));
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    const numericFields = [
+      "height",
+      "width",
+      "qty",
+      "sqInchRate",
+      "rejection",
+      "QC",
+      "machineMaintainance",
+      "materialHandling",
+      "packaging",
+      "shipping",
+      "companyOverHead",
+      "indirectExpense",
+      "stitching",
+      "printing",
+      "others",
+      "B2B",
+      "D2C",
+    ];
+
+    setForm((prev) =>
+      recalculateTotals({
+        ...prev,
+        [name]:
+          name === "file"
+            ? Array.from(files)
+            : numericFields.includes(name)
+            ? Number(value) || 0
+            : value,
+      })
+    );
+  };
+
+  const handleMaterialChange = (matIndex, field, value) => {
+    const updatedMaterials = [...form.materials];
+
+    if (field === "itemId") {
+      let itm = components.find((item) => item.id === value);
+      if (itm) {
+        updatedMaterials[matIndex].itemId = value;
+        updatedMaterials[matIndex].sqInchRate = itm.sqInchRate || 1;
+      }
+    } else {
+      updatedMaterials[matIndex][field] = value;
+    }
+
+    let height = Number(updatedMaterials[matIndex].height) || 0;
+    let width = Number(updatedMaterials[matIndex].width) || 0;
+    let qty = Number(updatedMaterials[matIndex].qty) || 0;
+    let sqInchRate = Number(updatedMaterials[matIndex].sqInchRate) || 0;
+
+    updatedMaterials[matIndex].rate =
+      height && width && qty && sqInchRate
+        ? Number((height * width * qty * sqInchRate).toFixed(4))
+        : 0;
+
+    setForm((prev) =>
+      recalculateTotals({
+        ...prev,
+        materials: updatedMaterials,
+      })
+    );
   };
 
   const addMaterial = () => {
@@ -103,7 +232,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
       ...prev,
       materials: [
         ...prev.materials,
-        { itemId: "", height: "", width: "", depth: "", qty: "" },
+        { itemId: "", height: "", width: "", qty: "", rate: "" },
       ],
     }));
   };
@@ -131,16 +260,20 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
             rmid: match.id,
             height: Number(mat.height),
             width: Number(mat.width),
-            depth: Number(mat.depth),
+            // depth: Number(mat.depth),
             qty: Number(mat.qty),
+            rate: Number(mat.rate),
+            sqInchRate: Number(mat.sqInchRate),
           });
         } else {
           sfgNested.push({
             sfgid: match.id,
             height: Number(mat.height),
             width: Number(mat.width),
-            depth: Number(mat.depth),
+            // depth: Number(mat.depth),
             qty: Number(mat.qty),
+            rate: Number(mat.rate),
+            sqInchRate: Number(mat.sqInchRate),
           });
         }
       });
@@ -155,6 +288,28 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         status: form.status,
         gst: form.gst,
         UOM: form.UOM,
+        height: form.height,
+        width: form.width,
+        depth: form.depth,
+        stitching: form.stitching,
+        printing: form.printing,
+        others: form.others,
+        unitRate: form.unitRate,
+        unitB2BRate: form.unitB2BRate,
+        unitD2CRate: form.unitD2CRate,
+        totalRate: form.totalRate,
+        totalB2BRate: form.totalB2BRate,
+        totalD2CRate: form.totalD2CRate,
+        B2B: form.B2B,
+        D2C: form.D2C,
+        rejection: form.rejection,
+        QC: form.QC,
+        machineMaintainance: form.machineMaintainance,
+        materialHandling: form.materialHandling,
+        packaging: form.packaging,
+        shipping: form.shipping,
+        companyOverHead: form.companyOverHead,
+        indirectExpense: form.indirectExpense,
         rm,
         sfg: sfgNested,
         deletedFiles: deletedFileIds,
@@ -210,8 +365,8 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-      <div className="bg-white w-[95vw] max-w-4xl p-6 rounded-lg border border-[#d8b76a] overflow-y-auto max-h-[90vh]">
-        <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">Edit FG Item</h2>
+      <div className="bg-white w-[95vw] max-w-4xl p-6 rounded-lg border border-primary overflow-y-auto max-h-[90vh]">
+        <h2 className="text-xl font-bold mb-4 text-primary">Edit FG Item</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div className="flex flex-col">
@@ -222,7 +377,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                 placeholder="Sku Code"
                 value={form.skuCode}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
                 required
               />
             </div>
@@ -233,7 +388,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                 placeholder="Item Name"
                 value={form.itemName}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                 required
               />
             </div>
@@ -245,7 +400,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                 placeholder="HSN/SAC"
                 value={form.hsnOrSac}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               />
             </div>
 
@@ -256,7 +411,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                 placeholder="GST %"
                 value={form.gst}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded  focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded  focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               />
             </div>
 
@@ -266,7 +421,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                 name="UOM"
                 value={form.UOM}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               >
                 <option value={form.UOM}>{form.UOM}</option>
                 {uoms.map((u) => (
@@ -283,7 +438,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                 name="qualityInspectionNeeded"
                 value={form.qualityInspectionNeeded}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               >
                 <option value={true}>Required</option>
                 <option value={false}>Not-required</option>
@@ -296,7 +451,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                 name="location"
                 value={form.location}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               >
                 <option value="">Select Location</option>
                 {locations.map((l) => (
@@ -313,19 +468,16 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                 name="status"
                 value={form.status}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               >
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
               </select>
             </div>
 
-            <div></div>
-            <div></div>
-
             {/* Existing Files */}
-            <div className="mt-4 col-span-full">
-              <p className="font-semibold mb-2 text-[#292926]">
+            <div className=" col-span-full">
+              <p className="font-semibold mb-2 text-secondary">
                 Existing Files
               </p>
               {existingFiles.length === 0 && (
@@ -334,13 +486,13 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
               {existingFiles.map((file) => (
                 <div
                   key={file._id}
-                  className="flex justify-between items-center bg-[#fdf6e9] border border-[#d8b76a] rounded p-2 mb-2"
+                  className="flex justify-between items-center bg-[#fdf6e9] border border-primary rounded p-2 "
                 >
                   <a
                     href={file.fileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[#292926] underline"
+                    className="text-secondary underline"
                   >
                     {file.fileName}
                   </a>
@@ -361,15 +513,15 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
             </div>
 
             {/* Upload New Files */}
-            <div className="mt-4 col-span-full">
-              <label className="block font-semibold mb-2 text-[#292926]">
+            <div className=" col-span-full">
+              <label className="block font-semibold mb-2 text-secondary">
                 Upload New Files
               </label>
               <input
                 type="file"
                 multiple
                 onChange={(e) => setNewFiles(Array.from(e.target.files))}
-                className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-1 focus:ring-[#d8b76a] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
+                className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-secondary hover:file:bg-primary/10 file:cursor-pointer"
               />
             </div>
           </div>
@@ -380,8 +532,50 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
               value={form.description}
               onChange={handleChange}
               placeholder="Description"
-              className="w-full p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+              className="w-full p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
             />
+          </div>
+
+          <div className="flex-col">
+            <div>
+              <h2 className="font-semibold mb-1">Product Size</h2>
+            </div>
+            <div className="p-2 border border-primary rounded grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 ">
+              <div className="flex flex-col">
+                <label className="font-semibold mb-1">Height (Inch)</label>
+                <input
+                  type="number"
+                  name="height"
+                  placeholder="Height (Inch)"
+                  value={form.height}
+                  onChange={(e) => handleChange(e)}
+                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="font-semibold mb-1">Width (Inch)</label>
+                <input
+                  type="number"
+                  name="width"
+                  placeholder="Width (Inch)"
+                  value={form.width}
+                  onChange={(e) => handleChange(e)}
+                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="font-semibold mb-1">Depth (Inch)</label>
+                <input
+                  type="number"
+                  name="depth"
+                  placeholder="Depth (Inch)"
+                  value={form.depth}
+                  onChange={(e) => handleChange(e)}
+                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                />
+              </div>
+            </div>
           </div>
 
           <div>
@@ -389,7 +583,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
             {form.materials.map((mat, index) => (
               <div
                 key={index}
-                className="flex flex-wrap gap-3 mb-4 border p-3 rounded-md border-[#d8b76a]"
+                className="flex flex-wrap gap-3 mb-4 border p-3 rounded-md border-primary"
               >
                 <div className="w-full sm:w-[55%] md:w-[40%]">
                   <label className="font-medium">Material</label>
@@ -411,12 +605,12 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                         ...base,
                         padding: "2px",
                         borderRadius: "6px",
-                        borderColor: "#d8b76a",
+                        borderColor: "var(--color-primary)",
                         boxShadow: state.isFocused
-                          ? "0 0 0 1px #d8b76a"
+                          ? "0 0 0 1px var(--color-primary)"
                           : "none",
                         "&:hover": {
-                          borderColor: "#d8b76a",
+                          borderColor: "var(--color-primary)",
                         },
                       }),
                       // option: (base, state) => ({
@@ -467,7 +661,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                     onChange={(e) =>
                       handleMaterialChange(index, "height", e.target.value)
                     }
-                    className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                    className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                   />
                 </div>
 
@@ -484,24 +678,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                     onChange={(e) =>
                       handleMaterialChange(index, "width", e.target.value)
                     }
-                    className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-                  />
-                </div>
-
-                {/* Depth */}
-                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                  <label className="font-medium text-sm mb-1">
-                    Depth (Inch)
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    placeholder="Depth"
-                    value={mat.depth}
-                    onChange={(e) =>
-                      handleMaterialChange(index, "depth", e.target.value)
-                    }
-                    className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                    className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                   />
                 </div>
 
@@ -515,9 +692,25 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                     onChange={(e) =>
                       handleMaterialChange(index, "qty", e.target.value)
                     }
-                    className="p-2  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-1.5  border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   />
                 </div>
+
+                {/* Rate */}
+                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
+                  <label className="font-medium text-sm mb-1">Rate (₹)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="Rate"
+                    value={mat.rate}
+                    onChange={(e) =>
+                      handleMaterialChange(index, "rate", e.target.value)
+                    }
+                    className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                  />
+                </div>
+
                 <button
                   type="button"
                   onClick={() => removeMaterial(index)}
@@ -530,24 +723,216 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
             <button
               type="button"
               onClick={addMaterial}
-              className="bg-[#d8b76a] cursor-pointer hover:bg-[#d8b76a91] px-3 py-1 rounded flex items-center gap-1 mt-2"
+              className="bg-primary cursor-pointer hover:bg-[#d8b76a91] px-3 py-1 rounded flex items-center gap-1 mt-2"
             >
               <FiPlus /> Add RM/SFG
             </button>
+          </div>
+
+          <div className="bg-primary w-full h-[1px] my-2"></div>
+
+          {/* bottom fields */}
+          <div className="sm:text-[12px] grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">B2B (%)</label>
+              <input
+                type="number"
+                name="B2B"
+                placeholder="B2B"
+                value={form.B2B}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">D2C (%)</label>
+              <input
+                type="number"
+                name="D2C"
+                placeholder="D2C"
+                value={form.D2C}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Rejection (%)</label>
+              <input
+                type="number"
+                name="rejection"
+                placeholder="Rejection"
+                value={form.rejection}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">QC (%)</label>
+              <input
+                type="number"
+                name="QC"
+                placeholder="QC"
+                value={form.QC}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">
+                Machine Maintainance (%)
+              </label>
+              <input
+                type="number"
+                name="machineMaintainance"
+                placeholder="Machine Maintainance"
+                value={form.machineMaintainance}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">
+                Material Handling (%)
+              </label>
+              <input
+                type="number"
+                name="materialHandling"
+                placeholder="Material Handling"
+                value={form.materialHandling}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Packaging (%)</label>
+              <input
+                type="number"
+                name="packaging"
+                placeholder="Packaging"
+                value={form.packaging}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Shipping (%)</label>
+              <input
+                type="number"
+                name="shipping"
+                placeholder="Shipping"
+                value={form.shipping}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Company OverHead (%)</label>
+              <input
+                type="number"
+                name="companyOverHead"
+                placeholder="Company OverHead"
+                value={form.companyOverHead}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Indirect Expense (%)</label>
+              <input
+                type="number"
+                name="indirectExpense"
+                placeholder="Indirect Expense"
+                value={form.indirectExpense}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Stitching (₹)</label>
+              <input
+                type="number"
+                name="stitching"
+                placeholder="Stitching"
+                value={form.stitching}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                required
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Print/Emb (₹)</label>
+              <input
+                type="number"
+                name="printing"
+                placeholder="Print/Emb"
+                value={form.printing}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Others (₹)</label>
+              <input
+                type="number"
+                name="others"
+                placeholder="Others"
+                value={form.others}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Unit Rate (₹)</label>
+              <input
+                type="number"
+                name="unitRate"
+                placeholder="Unit Rate"
+                value={form.unitRate}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                required
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Unit B2B (₹)</label>
+              <input
+                type="number"
+                name="unitB2BRate"
+                placeholder="Unit B2B"
+                value={form.unitB2BRate}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Unit D2C (₹)</label>
+              <input
+                type="number"
+                name="unitD2CRate"
+                placeholder="Unit D2C"
+                value={form.unitD2CRate}
+                onChange={(e) => handleChange(index, e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-4 mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 bg-gray-300 cursor-pointer hover:bg-gray-400 text-[#292926] rounded"
+              className="px-5 py-2 bg-gray-300 cursor-pointer hover:bg-gray-400 text-secondary rounded"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#d8b76a] cursor-pointer flex justify-center items-center hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded"
+              className="px-6 py-2 bg-primary cursor-pointer flex justify-center items-center hover:bg-primary/80 text-secondary font-semibold rounded"
             >
               {loading ? (
                 <>

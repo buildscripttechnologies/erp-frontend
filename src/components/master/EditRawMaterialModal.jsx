@@ -56,6 +56,21 @@ const EditRawMaterialModal = ({
       updatedForm.totalRate = (stockQty * rate).toFixed(2);
     }
 
+    const rate = parseFloat(updatedForm.rate) || 0;
+    const stockQty = parseFloat(updatedForm.stockQty) || 0;
+    updatedForm.totalRate = rate * stockQty;
+
+    const category = updatedForm.itemCategory || "";
+
+    const panno = parseFloat(updatedForm.panno) || 0;
+
+    // Recalculate only if both values are present
+    if (rate && panno && category.toLowerCase() == "fabric") {
+      updatedForm.sqInchRate = Number(((rate / panno / 39) * 1.05).toFixed(4));
+    } else {
+      updatedForm.sqInchRate = 0;
+    }
+
     setFormData(updatedForm);
   };
 
@@ -385,6 +400,29 @@ const EditRawMaterialModal = ({
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Panno */}
+          <div>
+            <label className="block mb-1 font-medium">Panno</label>
+            <input
+              type="number"
+              placeholder="Panno"
+              value={formData.panno}
+              onChange={(e) => handleChange("panno", e.target.value)}
+              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] disabled:cursor-not-allowed"
+            />
+          </div>
+          {/* per SqInch Rate */}
+          <div>
+            <label className="block mb-1 font-medium">SqInch Rate</label>
+            <input
+              type="number"
+              placeholder="SqInch Rate"
+              value={formData.sqInchRate}
+              onChange={(e) => handleChange("sqInchRate", e.target.value)}
+              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] disabled:cursor-not-allowed"
+            />
           </div>
           <div className="mt-1">
             <label className="text-base font-semibold text-red-600 mr-2">

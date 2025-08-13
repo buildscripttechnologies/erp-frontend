@@ -17,12 +17,15 @@ import LabelPrint from "./LabelPrint";
 import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
+import UpdateStockModal from "./UpdateStockModal";
 
 const MaterialInward = () => {
   const { hasPermission } = useAuth();
   const [stocks, setstocks] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
   const [editstock, setEditstock] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editStockData, setEditStockData] = useState(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -68,10 +71,11 @@ const MaterialInward = () => {
 
   ScrollLock(
     formOpen ||
-      editstock != null ||
+      editStockData != null ||
       barcodeModalOpen ||
       selectedStock != null ||
-      showModal
+      showModal ||
+      editModalOpen
   );
 
   useEffect(() => {
@@ -438,6 +442,10 @@ const MaterialInward = () => {
                           data-tooltip-id="statusTip"
                           data-tooltip-content="Edit"
                           className="hover:text-blue-500 cursor-pointer"
+                          // onClick={() => {
+                          //   setEditStockData(stock);
+                          //   setEditModalOpen(true);
+                          // }}
                         />
                       ) : (
                         "-"
@@ -485,6 +493,14 @@ const MaterialInward = () => {
           onClose={() => setBarcodeModalOpen(false)}
         />
       )}
+      {/* {editModalOpen && (
+        <UpdateStockModal
+          isOpen={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          stockData={editStockData}
+          onUpdated={fetchstocks}
+        />
+      )} */}
 
       <PaginationControls
         currentPage={pagination.currentPage}

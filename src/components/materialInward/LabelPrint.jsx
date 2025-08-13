@@ -1,161 +1,120 @@
-import React, { useRef } from "react";
-import { useReactToPrint } from "react-to-print";
+import React, { useEffect } from "react";
 import Barcode from "react-barcode";
+import JsBarcode from "jsbarcode";
 
 const LabelPrint = ({ stock, onClose }) => {
-  const printRef = useRef();
+  useEffect(() => {
+    if (stock) {
+      handleDirectPrint();
+    }
+  }, [stock]);
 
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
-    documentTitle: `Labels - ${stock.itemName}`,
-  });
+  const handleDirectPrint = () => {
+    // Create a new popup window
+    const printWindow = window.open("", "_blank", "width=800,height=600");
 
-  return (
-    <div className="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center p-4">
-      <div className="bg-white p-4 rounded-lg  w-full max-w-md overflow-y-auto shadow-xl border border-[#d8b76a]">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-[#d8b76a]">
-            Print Labels for: {stock.itemName}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-red-600 text-2xl font-bold cursor-pointer"
-          >
-            ×
-          </button>
-        </div>
-
-        <div
-          ref={printRef}
-          className="grid grid-cols-1  print:grid-cols-1 max-h-[75vh] overflow-auto min-w-[150mm]"
-        >
-          {(stock.barcodes || []).map((barcodeObj, idx) => (
-            <div
-              key={idx}
-              className="printLabel print-rotate p-1 rounded max-w-[105mm] h-[70mm] text-[10px] flex flex-col"
-            >
-              <table className=" text-[10px] whitespace-nowrap w-[100mm] h-[65mm]  border border-collapse mb-1">
-                <tbody>
-                  <tr>
-                    <td className="border whitespace-nowrap px-1 py-0.5 font-semibold">
-                      Party Name
-                    </td>
-                    <td colSpan={3} className="border px-1 py-0.5">
-                      {stock.partyName || ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border px-1 py-0.5 font-semibold">
-                      Purchased Date
-                    </td>
-                    <td colSpan={3} className="border px-1 py-0.5">
-                      {stock.purchasedDate || ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border px-1 py-0.5 font-semibold">
-                      Purchased Bill No.
-                    </td>
-                    <td colSpan={3} className="border px-1 py-0.5">
-                      {stock.billNo || ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border px-1 py-0.5 font-semibold">
-                      Purc. Order No.
-                    </td>
-                    <td colSpan={3} className="border px-1 py-0.5">
-                      {stock.orderNo || ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border px-1 py-0.5 font-semibold">
-                      Purc. Order Date
-                    </td>
-                    <td colSpan={3} className="border px-1 py-0.5">
-                      {stock.orderDate || ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border px-1 py-0.5 font-semibold">
-                      Item Name
-                    </td>
-                    <td colSpan={3} className="border px-1 py-0.5">
-                      {stock.itemName || ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border px-1 py-0.5 font-semibold">
-                      Item Code
-                    </td>
-                    <td className="border px-1 py-0.5">
-                      {stock.skuCode || ""}
-                    </td>
-                    <td className="border px-1 py-0.5 font-semibold">
-                      Item Category
-                    </td>
-                    <td className="border px-1 py-0.5">
-                      {stock.itemCategory || "----------"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border px-1 py-0.5 font-semibold">
-                      Item Qty.
-                    </td>
-                    <td className="border px-1 py-0.5">
-                      {barcodeObj.qty || "----------"}
-                    </td>
-                    <td className="border px-1 py-0.5 font-semibold">
-                      Item Color
-                    </td>
-                    <td className="border px-1 py-0.5">
-                      {stock.itemColor || "----------"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className=" flex items-center justify-center  py-1.5 font-semibold">
-                      <img
-                        src="/images/logo.png"
-                        className="w-12 filter brightness-0 saturate-100"
-                        alt=""
-                      />
-                    </td>
-                    <td colSpan={3} className="border border-l py-0.5">
-                      <Barcode
-                        value={barcodeObj.barcode}
-                        height={40}
-                        width={1.2}
-                        fontSize={10}
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <div className="text-center mt-auto">
-                {/* <div className="text-center mt-1">{barcodeObj.barcode}</div> */}
+    // Create HTML content for printing
+    const htmlContent = `
+      <html>
+        <head>
+          <title>Labels - ${stock.itemName}</title>
+          <style>
+            @page { size: auto; margin: 5mm; }
+            body { font-family: Arial, sans-serif; font-size: 6px; }
+            table { border-collapse: collapse; width: 100mm; height: 65mm; }
+            td { border: 1px solid black; padding: 2px; white-space: nowrap; }
+            .label-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; }
+          </style>
+        </head>
+        <body>
+          ${stock.barcodes
+            .map(
+              (barcodeObj) => `
+              <div class="label-container">
+                <table>
+                  <tbody>
+                    <tr><td>Party Name</td><td colspan="3">${
+                      stock.partyName || ""
+                    }</td></tr>
+                    <tr><td>Purchased Date</td><td colspan="3">${
+                      stock.purchasedDate || ""
+                    }</td></tr>
+                    <tr><td>Purchased Bill No.</td><td colspan="3">${
+                      stock.billNo || ""
+                    }</td></tr>
+                    <tr><td>Purc. Order No.</td><td colspan="3">${
+                      stock.orderNo || ""
+                    }</td></tr>
+                    <tr><td>Purc. Order Date</td><td colspan="3">${
+                      stock.orderDate || ""
+                    }</td></tr>
+                    <tr><td>Item Name</td><td colspan="3">${
+                      stock.itemName || ""
+                    }</td></tr>
+                    <tr>
+                      <td>Item Code</td><td>${stock.skuCode || ""}</td>
+                      <td>Item Category</td><td>${
+                        stock.itemCategory || "----------"
+                      }</td>
+                    </tr>
+                    <tr>
+                      <td>Item Qty.</td><td>${
+                        barcodeObj.qty || "----------"
+                      }</td>
+                      <td>Item Color</td><td>${
+                        stock.itemColor || "----------"
+                      }</td>
+                    </tr>
+                    <tr>
+                      <td style="text-align:center;">
+                        <img src="/images/logo.png" style="width: 40px;" />
+                      </td>
+                      <td colspan="3" style="text-align:center;">
+                        <img src="${getBarcodeDataURL(barcodeObj.barcode)}" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-            </div>
-          ))}
-        </div>
+            `
+            )
+            .join("")}
+        </body>
+      </html>
+    `;
 
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            onClick={handlePrint}
-            className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-2 rounded  cursor-pointer"
-          >
-            Print Labels
-          </button>
-          <button
-            onClick={onClose}
-            className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded  cursor-pointer"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+    // Write and print
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+
+    // Give time for images/barcodes to load before printing
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    };
+  };
+
+  // Helper to generate barcode as image data URL
+  const getBarcodeDataURL = (barcodeValue) => {
+    const canvas = document.createElement("canvas");
+    // Set higher resolution for crispness
+    const scale = 5; // 3x scale for sharpness
+    canvas.width = 300 * scale; // width in pixels
+    canvas.height = 100 * scale; // height in pixels
+
+    const ctx = canvas.getContext("2d");
+    ctx.scale(scale, scale); // upscale drawing
+    JsBarcode(canvas, barcodeValue, {
+      width: 1,
+      height: 30,
+      fontSize: 10,
+      format: "CODE128",
+    });
+    return canvas.toDataURL("image/png");
+  };
+
+  return null; // No UI, just trigger print
 };
 
 export default LabelPrint;

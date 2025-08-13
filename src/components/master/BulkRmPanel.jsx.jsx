@@ -54,6 +54,8 @@ const BulkRmPanel = ({ onClose }) => {
         baseQty: "",
         pkgQty: "",
         moq: "",
+        panno: "",
+        sqInchRate: "",
         rate: "",
         totalRate: "",
         purchaseUOM: "",
@@ -73,6 +75,19 @@ const BulkRmPanel = ({ onClose }) => {
       const rate = parseFloat(updated[index].rate) || 0;
       const stockQty = parseFloat(updated[index].stockQty) || 0;
       updated[index].totalRate = rate * stockQty;
+
+      const category = updated[index].itemCategory || "";
+
+      const panno = parseFloat(updated[index].panno) || 0;
+
+      // Recalculate only if both values are present
+      if (rate && panno && category.toLowerCase() == "fabric") {
+        updated[index].sqInchRate = Number(
+          ((rate / panno / 39) * 1.05).toFixed(4)
+        );
+      } else {
+        updated[index].sqInchRate = 0;
+      }
 
       return updated;
     });
@@ -451,6 +466,34 @@ const BulkRmPanel = ({ onClose }) => {
                       </option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-[#292926]">
+                    Panno
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Panno"
+                    value={rm.panno}
+                    onChange={(e) =>
+                      handleChange(index, "panno", e.target.value)
+                    }
+                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-[#292926]">
+                    SqInch Rate
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="SqInch Rate"
+                    value={rm.sqInchRate}
+                    onChange={(e) =>
+                      handleChange(index, "sqInchRate", e.target.value)
+                    }
+                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                  />
                 </div>
 
                 <div>

@@ -18,6 +18,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
 
 import { useRef } from "react";
+import FgDetailSection from "./FgDetailSection";
 
 const renderNestedMaterials = (
   materials,
@@ -103,7 +104,7 @@ const renderNestedMaterials = (
           <td className={`px-2 border-r ${border}`}>{mat.location || "-"}</td>
           <td className={`px-2 border-r ${border}`}>{mat.height || "-"}</td>
           <td className={`px-2 border-r ${border}`}>{mat.width || "-"}</td>
-          <td className={`px-2 border-r ${border}`}>{mat.depth || "-"}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.rate || "-"}</td>
           <td className={`px-2 rounded-br-sm`}>{mat.qty || "-"}</td>
         </tr>
 
@@ -132,7 +133,7 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">Location</th>
                         <th className="px-2 font-semibold">Height (Inch)</th>
                         <th className="px-2 font-semibold">Width (Inch)</th>
-                        <th className="px-2 font-semibold">depth (Inch)</th>
+                        <th className="px-2 font-semibold">Rate (₹)</th>
                         <th className="px-2 font-semibold rounded-tr-sm">
                           Qty
                         </th>
@@ -189,7 +190,7 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">Location</th>
                         <th className="px-2 font-semibold">Height (Inch)</th>
                         <th className="px-2 font-semibold">Width (Inch)</th>
-                        <th className="px-2 font-semibold">depth (Inch)</th>
+                        <th className="px-2 font-semibold">Rate (₹)</th>
                         <th className="px-2 font-semibold rounded-tr-sm">
                           Qty
                         </th>
@@ -235,9 +236,9 @@ const FgMaster = ({ isOpen }) => {
   const [expandedL1, setExpandedL1] = useState(null); // Only one FG open
   const [expandedL2, setExpandedL2] = useState({}); // Multiple SFGs per FG
   const [expandedL3, setExpandedL3] = useState({}); // Multiple SFGs per SFG
-
   const [showAddFG, setShowAddFG] = useState(false);
   const [editingFg, setEditingFg] = useState(null);
+  const [expandedFgId, setExpandedFgId] = useState(null);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -428,19 +429,19 @@ const FgMaster = ({ isOpen }) => {
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
         <div className="relative w-full sm:w-80">
-          <FiSearch className="absolute left-3 top-2 text-[#d8b76a]" />
+          <FiSearch className="absolute left-3 top-2 text-primary" />
           <input
             type="text"
             placeholder="Search by SKU, Item Name, etc..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+            className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
           />
         </div>
         {hasPermission("FG", "write") && (
           <button
             onClick={() => toogleAddFG(showAddFG)}
-            className="w-full sm:w-auto justify-center bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
+            className="w-full sm:w-auto justify-center bg-primary hover:bg-[#b38a37] text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
           >
             <FiPlus /> Add FG
           </button>
@@ -453,10 +454,10 @@ const FgMaster = ({ isOpen }) => {
         />
       )}
 
-      <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
+      <div className="relative overflow-x-auto  overflow-y-auto rounded border border-primary shadow-sm">
         <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[98vw]`}`}>
           <table className={"text-[11px] whitespace-nowrap min-w-[100vw]"}>
-            <thead className="bg-[#d8b76a] text-[#292926] text-left ">
+            <thead className="bg-primary text-secondary text-left ">
               <tr>
                 <th className="px-[8px] py-1">#</th>
                 <th className="px-[8px] ">Created At</th>
@@ -470,6 +471,8 @@ const FgMaster = ({ isOpen }) => {
                 <th className="px-[8px] ">GST</th>
                 <th className="px-[8px] ">Type</th>
                 <th className="px-[8px] ">UOM</th>
+                <th className="px-[8px] ">Size</th>
+                <th className="px-[8px] ">Rate (₹)</th>
                 <th className="px-[8px] ">Status</th>
                 <th className="px-[8px] ">Files</th>
                 <th className="px-[8px] ">Created By</th>
@@ -480,23 +483,28 @@ const FgMaster = ({ isOpen }) => {
               {loading ? (
                 <TableSkeleton
                   rows={pagination.limit}
-                  columns={Array(16).fill({})}
+                  columns={Array(18).fill({})}
                 />
               ) : (
                 <>
                   {fgs.map((fg, index) => (
                     <React.Fragment key={fg.id}>
                       <tr
-                        onClick={() => toggleL1(fg.id)}
-                        className="border-t border-[#d8b76a] hover:bg-gray-50 cursor-pointer "
+                        onClick={() => {
+                          toggleL1(fg.id);
+                          setExpandedFgId(
+                            expandedFgId === fg.id ? null : fg.id
+                          ); // second function
+                        }}
+                        className="border-t border-primary hover:bg-gray-50 cursor-pointer "
                       >
-                        <td className="px-[8px] border-r border-[#d8b76a]">
+                        <td className="px-[8px] border-r border-primary">
                           {Number(pagination.currentPage - 1) *
                             Number(pagination.limit) +
                             index +
                             1}
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a]">
+                        <td className="px-[8px] border-r border-primary">
                           {new Date(fg.createdAt).toLocaleString("en-IN", {
                             day: "2-digit",
                             month: "short",
@@ -506,7 +514,7 @@ const FgMaster = ({ isOpen }) => {
                             hour12: true,
                           })}
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a]">
+                        <td className="px-[8px] border-r border-primary">
                           {new Date(fg.updatedAt).toLocaleString("en-IN", {
                             day: "2-digit",
                             month: "short",
@@ -516,19 +524,19 @@ const FgMaster = ({ isOpen }) => {
                             hour12: true,
                           })}
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a]">
+                        <td className="px-[8px] border-r border-primary">
                           {fg.skuCode}
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a] ">
+                        <td className="px-[8px] border-r border-primary ">
                           {fg.itemName}
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a] ">
+                        <td className="px-[8px] border-r border-primary ">
                           {fg.description || "-"}
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a]">
+                        <td className="px-[8px] border-r border-primary">
                           {fg.hsnOrSac || "-"}
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a]">
+                        <td className="px-[8px] border-r border-primary">
                           <Toggle
                             checked={fg.qualityInspectionNeeded}
                             onChange={() =>
@@ -539,19 +547,25 @@ const FgMaster = ({ isOpen }) => {
                             }
                           />
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a]">
+                        <td className="px-[8px] border-r border-primary">
                           {fg.location || "-"}
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a]">
+                        <td className="px-[8px] border-r border-primary">
                           {fg.gst}
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a]">
+                        <td className="px-[8px] border-r border-primary">
                           {fg.type}
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a]">
+                        <td className="px-[8px] border-r border-primary">
                           {fg.uom}
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a]">
+                        <td className="px-[8px] border-r border-primary">
+                          {fg.height + " x " + fg.width + " x " + fg.depth}
+                        </td>
+                        <td className="px-[8px] border-r border-primary">
+                          {fg.unitRate}
+                        </td>
+                        <td className="px-[8px] border-r border-primary">
                           <Toggle
                             checked={fg.status == "Active"}
                             onChange={() =>
@@ -559,11 +573,11 @@ const FgMaster = ({ isOpen }) => {
                             }
                           />
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a]">
+                        <td className="px-[8px] border-r border-primary">
                           {Array.isArray(fg.files) && fg.files.length > 0 ? (
                             <button
                               onClick={() => setOpenAttachments(fg.files)}
-                              className="cursor-pointer hover:text-[#d8b76a] hover:underline text-center items-center justify-center"
+                              className="cursor-pointer hover:text-primary hover:underline text-center items-center justify-center"
                             >
                               View
                             </button>
@@ -578,14 +592,14 @@ const FgMaster = ({ isOpen }) => {
                             />
                           )}
                         </td>
-                        <td className="px-[8px] border-r border-[#d8b76a]">
+                        <td className="px-[8px] border-r border-primary">
                           {fg.createdBy?.fullName || "-"}
                         </td>
-                        <td className="px-[8px]  pt-2 text-sm flex gap-2 text-[#d8b76a]">
-                          <FaFileDownload className="cursor-pointer text-[#d8b76a] hover:text-green-600" />
+                        <td className="px-[8px]  pt-2 text-sm flex gap-2 text-primary">
+                          <FaFileDownload className="cursor-pointer text-primary hover:text-green-600" />
                           {hasPermission("FG", "update") ? (
                             <FiEdit
-                              className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                              className="cursor-pointer text-primary hover:text-blue-600"
                               onClick={() => setEditingFg(fg)}
                             />
                           ) : (
@@ -593,7 +607,7 @@ const FgMaster = ({ isOpen }) => {
                           )}
                           {hasPermission("FG", "delete") ? (
                             <FiTrash2
-                              className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                              className="cursor-pointer text-primary hover:text-red-600"
                               onClick={() => handleDelete(fg.id)}
                             />
                           ) : (
@@ -604,7 +618,7 @@ const FgMaster = ({ isOpen }) => {
                       {expandedL1 == fg.id &&
                         (fg.rm.length !== 0 || fg.sfg.length !== 0) && (
                           <tr>
-                            <td colSpan="17" className="px-2">
+                            <td colSpan="18" className="px-2">
                               <div className="border border-green-600 rounded overflow-x-auto mb-2 ">
                                 <table className="min-w-full text-[11px] text-left rounded">
                                   <thead className="bg-green-100 rounded">
@@ -640,7 +654,7 @@ const FgMaster = ({ isOpen }) => {
                                         Width (Inch)
                                       </th>
                                       <th className="px-2 font-semibold">
-                                        Depth (Inch)
+                                        Rate (₹)
                                       </th>
                                       <th className="px-2 font-semibold">
                                         Qty
@@ -663,6 +677,13 @@ const FgMaster = ({ isOpen }) => {
                             </td>
                           </tr>
                         )}
+                      {expandedFgId == fg.id && (
+                        <tr className="">
+                          <td colSpan="100%">
+                            <FgDetailSection fgData={fg} />
+                          </td>
+                        </tr>
+                      )}
                     </React.Fragment>
                   ))}
                   {fgs.length === 0 && (
