@@ -160,7 +160,7 @@ const RmMaster = ({ isOpen }) => {
       setUploading(false);
       fetchRawMaterials(); // reload list
     } catch (err) {
-      toast.error("Upload failed");
+      toast.error(err.response?.data?.message);
       setUploading(false);
     }
   };
@@ -492,6 +492,8 @@ const RmMaster = ({ isOpen }) => {
                   "Base Qty",
                   "Pkg Qty",
                   "MOQ",
+                  "Panno",
+                  "SqInch Rate",
                   "Rate",
                   "Pur. Uom",
                   "GST",
@@ -514,7 +516,10 @@ const RmMaster = ({ isOpen }) => {
             </thead>
             <tbody>
               {loading ? (
-                <TableSkeleton rows={pagination.limit} columns={TableHeaders} />
+                <TableSkeleton
+                  rows={pagination.limit}
+                  columns={Array(27).fill({})}
+                />
               ) : (
                 <>
                   {rawMaterials.map((rm, i) => (
@@ -592,6 +597,12 @@ const RmMaster = ({ isOpen }) => {
                       </td>
                       <td className="px-2 border-r border-r-[#d8b76a]">
                         {rm.moq}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        {rm.panno || "0"}
+                      </td>
+                      <td className="px-2 border-r border-r-[#d8b76a]">
+                        ₹{rm.sqInchRate || "0"}
                       </td>
                       <td className="px-2 border-r border-r-[#d8b76a]">
                         ₹{rm.rate || "0"}

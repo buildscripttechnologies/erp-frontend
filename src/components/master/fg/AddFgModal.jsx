@@ -13,7 +13,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
 
   const [formList, setFormList] = useState([
     {
-      skuCode:"",
+      skuCode: "",
       itemName: "",
       description: "",
       hsnOrSac: "",
@@ -22,6 +22,29 @@ const AddFgModal = ({ onClose, onAdded }) => {
       gst: "",
       type: "FG",
       UOM: "",
+      height: 0,
+      width: 0,
+      depth: 0,
+      // qty: 1,
+      stitching: 0,
+      printing: 0,
+      others: 0,
+      unitRate: 0,
+      unitB2BRate: 0,
+      unitD2CRate: 0,
+      // totalRate: 0,
+      // totalB2BRate: 0,
+      // totalD2CRate: 0,
+      B2B: 0,
+      D2C: 0,
+      rejection: 2,
+      QC: 0.75,
+      machineMaintainance: 1.75,
+      materialHandling: 1.75,
+      packaging: 2,
+      shipping: 1,
+      companyOverHead: 4,
+      indirectExpense: 1.75,
       rm: [],
       sfg: [],
       file: [],
@@ -33,9 +56,9 @@ const AddFgModal = ({ onClose, onAdded }) => {
     const fetchDropdownData = async () => {
       try {
         const [uomRes, rmRes, sfgRes, locationRes] = await Promise.all([
-          axios.get("/uoms/all-uoms?limit=1000"),
-          axios.get("/rms/rm?limit=1000"),
-          axios.get("/sfgs/get-all?limit=1000"),
+          axios.get("/uoms/all-uoms"),
+          axios.get("/rms/rm"),
+          axios.get("/sfgs/get-all"),
           axios.get("/locations/get-all"),
         ]);
 
@@ -58,6 +81,58 @@ const AddFgModal = ({ onClose, onAdded }) => {
     fetchDropdownData();
   }, []);
 
+  // Shared calculation logic
+  const recalculateTotals = (updated, index) => {
+    const {
+      qty,
+      rejection = 0,
+      QC = 0,
+      machineMaintainance = 0,
+      materialHandling = 0,
+      packaging = 0,
+      shipping = 0,
+      companyOverHead = 0,
+      indirectExpense = 0,
+      stitching = 0,
+      printing = 0,
+      others = 0,
+      B2B = 0,
+      D2C = 0,
+      materials = [],
+    } = updated[index];
+
+    const p =
+      rejection +
+      QC +
+      machineMaintainance +
+      materialHandling +
+      packaging +
+      shipping +
+      companyOverHead +
+      indirectExpense;
+
+    const baseComponentRate = materials.reduce(
+      (sum, mat) => sum + (Number(mat.rate) || 0),
+      0
+    );
+
+    const totalR = baseComponentRate + stitching + printing + others;
+
+    const unitRate = totalR + totalR * (p / 100);
+    const unitB2BRate = totalR + (totalR * (p + B2B)) / 100;
+    const unitD2CRate = totalR + (totalR * (p + D2C)) / 100;
+
+    updated[index].unitRate = Number(unitRate).toFixed(2);
+    updated[index].unitB2BRate = Number(unitB2BRate).toFixed(2);
+    updated[index].unitD2CRate = Number(unitD2CRate).toFixed(2);
+    // updated[index].totalRate = Number(unitRate * qty).toFixed(2);
+    // updated[index].totalB2BRate = Number(unitB2BRate * qty).toFixed(2);
+    // updated[index].totalD2CRate = Number(unitD2CRate * qty).toFixed(2);
+
+    return updated;
+  };
+
+  // Input change handler
   const handleChange = (index, e) => {
     const updated = [...formList];
     const { name, value, files } = e.target;
@@ -65,18 +140,58 @@ const AddFgModal = ({ onClose, onAdded }) => {
     if (name === "file") {
       updated[index][name] = Array.from(files);
     } else {
-      updated[index][name] = value;
+      const numericFields = [
+        "height",
+        "width",
+        "qty",
+        "sqInchRate",
+        "rejection",
+        "QC",
+        "machineMaintainance",
+        "materialHandling",
+        "packaging",
+        "shipping",
+        "companyOverHead",
+        "indirectExpense",
+        "stitching",
+        "printing",
+        "others",
+        "B2B",
+        "D2C",
+      ];
+      updated[index][name] = numericFields.includes(name)
+        ? Number(value) || 0
+        : value;
     }
 
-    setFormList(updated);
+    setFormList(recalculateTotals(updated, index));
   };
 
+  // Material change handler
   const handleMaterialChange = (index, matIndex, field, value) => {
-    // console.log("mat", index, matIndex, field, value);
+    let updated = [...formList];
 
-    const updated = [...formList];
-    updated[index].materials[matIndex][field] = value;
-    setFormList(updated);
+    if (field === "itemId") {
+      let itm = components.find((item) => item.id === value);
+      if (itm) {
+        updated[index].materials[matIndex].itemId = value;
+        updated[index].materials[matIndex].sqInchRate = itm.sqInchRate || 1;
+      }
+    } else {
+      updated[index].materials[matIndex][field] = value;
+    }
+
+    let height = Number(updated[index].materials[matIndex].height) || 0;
+    let width = Number(updated[index].materials[matIndex].width) || 0;
+    let qty = Number(updated[index].materials[matIndex].qty) || 0;
+    let sqInchRate = Number(updated[index].materials[matIndex].sqInchRate) || 0;
+
+    updated[index].materials[matIndex].rate =
+      height && width && qty && sqInchRate
+        ? Number((height * width * qty * sqInchRate).toFixed(4))
+        : 0;
+
+    setFormList(recalculateTotals(updated, index));
   };
 
   const addMaterial = (index) => {
@@ -85,8 +200,10 @@ const AddFgModal = ({ onClose, onAdded }) => {
       itemId: "",
       height: "",
       width: "",
-      depth: "",
+      // depth: "",
       qty: "",
+      rate: "",
+      sqInchRate: "",
     });
 
     setFormList(updated);
@@ -102,7 +219,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
     setFormList([
       ...formList,
       {
-        skuCode:"",
+        skuCode: "",
         itemName: "",
         description: "",
         hsnOrSac: "",
@@ -111,6 +228,29 @@ const AddFgModal = ({ onClose, onAdded }) => {
         gst: "",
         type: "FG",
         UOM: "",
+        height: 0,
+        width: 0,
+        depth: 0,
+        // qty: 0,
+        stitching: 0,
+        printing: 0,
+        others: 0,
+        unitRate: 0,
+        unitB2BRate: 0,
+        unitD2CRate: 0,
+        totalRate: 0,
+        totalB2BRate: 0,
+        totalD2CRate: 0,
+        B2B: 0,
+        D2C: 0,
+        rejection: 2,
+        QC: 0.75,
+        machineMaintainance: 1.75,
+        materialHandling: 1.75,
+        packaging: 2,
+        shipping: 1,
+        companyOverHead: 4,
+        indirectExpense: 1.75,
         rm: [],
         sfg: [],
         file: [],
@@ -155,16 +295,20 @@ const AddFgModal = ({ onClose, onAdded }) => {
               rmid: matched.id,
               height: Number(mat.height),
               width: Number(mat.width),
-              depth: Number(mat.depth),
+              // depth: Number(mat.depth),
               qty: Number(mat.qty),
+              rate: Number(mat.rate),
+              sqInchRate: Number(mat.sqInchRate),
             });
           } else if (matched.type === "SFG") {
             sfg.push({
               sfgid: matched.id,
               height: Number(mat.height),
               width: Number(mat.width),
-              depth: Number(mat.depth),
+              // depth: Number(mat.depth),
               qty: Number(mat.qty),
+              rate: Number(mat.rate),
+              sqInchRate: Number(mat.sqInchRate),
             });
           }
         });
@@ -206,15 +350,15 @@ const AddFgModal = ({ onClose, onAdded }) => {
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white w-[95vw] max-w-6xl rounded-lg p-6 border border-[#d8b76a] overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
-        <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">
+      <div className="bg-white w-[95vw] max-w-6xl rounded-lg p-6 border border-primary overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-primary scrollbar-track-[#fdf6e9]">
+        <h2 className="text-xl font-bold mb-4 text-primary">
           Create Finished Goods BOM
         </h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           {formList.map((item, index) => (
             <div
               key={index}
-              className="space-y-4 border border-[#d8b76a] p-4 rounded"
+              className="space-y-4 border border-primary p-4 rounded"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="flex flex-col">
@@ -225,7 +369,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     placeholder="Sku Code"
                     value={item.skuCode}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                     required
                   />
                 </div>
@@ -237,7 +381,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     placeholder="Item Name"
                     value={item.itemName}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                     required
                   />
                 </div>
@@ -250,7 +394,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     placeholder="HSN/SAC"
                     value={item.hsnOrSac}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   />
                 </div>
 
@@ -262,7 +406,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     placeholder="GST %"
                     value={item.gst}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   />
                 </div>
 
@@ -272,7 +416,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     name="UOM"
                     value={item.UOM}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                     required
                   >
                     <option value="">Select UOM</option>
@@ -292,7 +436,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     name="qualityInspectionNeeded"
                     value={item.qualityInspectionNeeded}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   >
                     <option value="">Select Quality Inspection</option>
                     <option value={true}>Required</option>
@@ -306,7 +450,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     name="type"
                     value={item.type}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   >
                     <option value="">Select Type</option>
                     <option value="FG">FG</option>
@@ -319,7 +463,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     name="location"
                     value={item.location}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   >
                     <option value="">Select Location</option>
                     {locations.map((l) => (
@@ -330,6 +474,18 @@ const AddFgModal = ({ onClose, onAdded }) => {
                   </select>
                 </div>
 
+                {/* <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Qty</label>
+                  <input
+                    type="number"
+                    name="qty"
+                    placeholder="Qty"
+                    value={item.qty}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div> */}
+
                 <div className="flex flex-col">
                   <label className="font-semibold mb-1">Upload Files</label>
                   <input
@@ -337,7 +493,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     name="file"
                     multiple
                     onChange={(e) => handleChange(index, e)}
-                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-1 focus:ring-[#d8b76a] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
+                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-secondary hover:file:bg-primary/10 file:cursor-pointer"
                   />
                 </div>
               </div>
@@ -349,10 +505,53 @@ const AddFgModal = ({ onClose, onAdded }) => {
                   value={item.description}
                   onChange={(e) => handleChange(index, e)}
                   placeholder="Description (optional)"
-                  className="w-full p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                  className="w-full p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                 />
               </div>
 
+              <div className="flex-col">
+                <div>
+                  <h2 className="font-semibold mb-1">Product Size</h2>
+                </div>
+                <div className="p-2 border border-primary rounded grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 ">
+                  <div className="flex flex-col">
+                    <label className="font-semibold mb-1">Height (Inch)</label>
+                    <input
+                      type="number"
+                      name="height"
+                      placeholder="Height (Inch)"
+                      value={item.height}
+                      onChange={(e) => handleChange(index, e)}
+                      className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="font-semibold mb-1">Width (Inch)</label>
+                    <input
+                      type="number"
+                      name="width"
+                      placeholder="Width (Inch)"
+                      value={item.width}
+                      onChange={(e) => handleChange(index, e)}
+                      className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="font-semibold mb-1">Depth (Inch)</label>
+                    <input
+                      type="number"
+                      name="depth"
+                      placeholder="Depth (Inch)"
+                      value={item.depth}
+                      onChange={(e) => handleChange(index, e)}
+                      className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/*     List of Consumed Components  */}
               <div>
                 <p className="font-semibold mb-2">
                   List of Consumed Components
@@ -361,7 +560,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                 {item.materials.map((mat, matIndex) => (
                   <div
                     key={matIndex}
-                    className="flex flex-wrap gap-3 mb-4 border p-3 rounded-md border-[#d8b76a]"
+                    className="flex flex-wrap gap-3 mb-4 border p-3 rounded-md border-primary"
                   >
                     <div className="flex flex-col w-full sm:w-[55%] md:w-[40%]">
                       <label className="font-medium">Material</label>
@@ -407,12 +606,12 @@ const AddFgModal = ({ onClose, onAdded }) => {
                         styles={{
                           control: (base, state) => ({
                             ...base,
-                            borderColor: "#d8b76a",
+                            borderColor: "var(--color-primary)",
                             boxShadow: state.isFocused
-                              ? "0 0 0 1px #d8b76a"
+                              ? "0 0 0 1px var(--color-primary)"
                               : "none",
                             "&:hover": {
-                              borderColor: "#d8b76a",
+                              borderColor: "var(--color-primary)",
                             },
                           }),
                           // option: (base, state) => ({
@@ -461,7 +660,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                             e.target.value
                           )
                         }
-                        className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                        className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                       />
                     </div>
 
@@ -482,12 +681,12 @@ const AddFgModal = ({ onClose, onAdded }) => {
                             e.target.value
                           )
                         }
-                        className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                        className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                       />
                     </div>
 
                     {/* Depth */}
-                    <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
+                    {/* <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
                       <label className="font-medium text-sm mb-1">
                         Depth (Inch)
                       </label>
@@ -503,9 +702,9 @@ const AddFgModal = ({ onClose, onAdded }) => {
                             e.target.value
                           )
                         }
-                        className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                        className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                       />
-                    </div>
+                    </div> */}
 
                     <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[10%]">
                       <label className="font-medium">Qty</label>
@@ -521,7 +720,26 @@ const AddFgModal = ({ onClose, onAdded }) => {
                             e.target.value
                           )
                         }
-                        className="p-1.5 border border-[#d8b76a] rounded  focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                        className="p-1.5 border border-primary rounded  focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                      />
+                    </div>
+                    <div className="flex flex-col w-[47%] sm:w-[35%] md:w-[12%]">
+                      <label className="font-medium  whitespace-nowrap">
+                        Rate (₹)
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Rate"
+                        value={mat.rate}
+                        onChange={(e) =>
+                          handleMaterialChange(
+                            index,
+                            matIndex,
+                            "rate",
+                            e.target.value
+                          )
+                        }
+                        className="p-1.5 border border-primary rounded  focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                       />
                     </div>
 
@@ -537,10 +755,242 @@ const AddFgModal = ({ onClose, onAdded }) => {
                 <button
                   type="button"
                   onClick={() => addMaterial(index)}
-                  className="bg-[#d8b76a] hover:bg-[#d8b76a91] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer"
+                  className="bg-primary hover:bg-[#d8b76a91] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer"
                 >
                   <FiPlus /> Add RM/SFG
                 </button>
+              </div>
+
+              <div className="bg-primary w-full h-[1px] my-2"></div>
+
+              {/* bottom fields */}
+              <div className="sm:text-[12px] grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">B2B (%)</label>
+                  <input
+                    type="number"
+                    name="B2B"
+                    placeholder="B2B"
+                    value={item.B2B}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">D2C (%)</label>
+                  <input
+                    type="number"
+                    name="D2C"
+                    placeholder="D2C"
+                    value={item.D2C}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Rejection (%)</label>
+                  <input
+                    type="number"
+                    name="rejection"
+                    placeholder="Rejection"
+                    value={item.rejection}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">QC (%)</label>
+                  <input
+                    type="number"
+                    name="QC"
+                    placeholder="QC"
+                    value={item.QC}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">
+                    Machine Maintainance (%)
+                  </label>
+                  <input
+                    type="number"
+                    name="machineMaintainance"
+                    placeholder="Machine Maintainance"
+                    value={item.machineMaintainance}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">
+                    Material Handling (%)
+                  </label>
+                  <input
+                    type="number"
+                    name="materialHandling"
+                    placeholder="Material Handling"
+                    value={item.materialHandling}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Packaging (%)</label>
+                  <input
+                    type="number"
+                    name="packaging"
+                    placeholder="Packaging"
+                    value={item.packaging}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Shipping (%)</label>
+                  <input
+                    type="number"
+                    name="shipping"
+                    placeholder="Shipping"
+                    value={item.shipping}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">
+                    Company OverHead (%)
+                  </label>
+                  <input
+                    type="number"
+                    name="companyOverHead"
+                    placeholder="Company OverHead"
+                    value={item.companyOverHead}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">
+                    Indirect Expense (%)
+                  </label>
+                  <input
+                    type="number"
+                    name="indirectExpense"
+                    placeholder="Indirect Expense"
+                    value={item.indirectExpense}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Stitching (₹)</label>
+                  <input
+                    type="number"
+                    name="stitching"
+                    placeholder="Stitching"
+                    value={item.stitching}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Print/Emb (₹)</label>
+                  <input
+                    type="number"
+                    name="printing"
+                    placeholder="Print/Emb"
+                    value={item.printing}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Others (₹)</label>
+                  <input
+                    type="number"
+                    name="others"
+                    placeholder="Others"
+                    value={item.others}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Unit Rate (₹)</label>
+                  <input
+                    disabled
+                    type="number"
+                    name="unitRate"
+                    placeholder="Unit Rate"
+                    value={item.unitRate}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Unit B2B (₹)</label>
+                  <input
+                    disabled
+                    type="number"
+                    name="unitB2BRate"
+                    placeholder="Unit B2B"
+                    value={item.unitB2BRate}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Unit D2C (₹)</label>
+                  <input
+                    disabled
+                    type="number"
+                    name="unitD2CRate"
+                    placeholder="Unit D2C"
+                    value={item.unitD2CRate}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+                  />
+                </div>
+                {/* <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Total</label>
+                  <input
+                    type="number"
+                    name="totalRate"
+                    placeholder="Total Rate"
+                    value={item.totalRate}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div> */}
+                {/* <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Total B2B</label>
+                  <input
+                    type="number"
+                    name="totalB2BRate"
+                    placeholder="Total B2B Rate"
+                    value={item.totalB2BRate}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Total D2C</label>
+                  <input
+                    type="number"
+                    name="totalD2CRate"
+                    placeholder="Total D2C Rate"
+                    value={item.totalD2CRate}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div> */}
               </div>
 
               {formList.length > 1 && (
@@ -561,7 +1011,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
             <button
               type="button"
               onClick={addRow}
-              className="bg-[#d8b76a] px-4 py-2 rounded flex items-center gap-1 cursor-pointer"
+              className="bg-primary px-4 py-2 rounded flex items-center gap-1 cursor-pointer"
             >
               <FiPlus /> Add FG
             </button>
@@ -571,14 +1021,14 @@ const AddFgModal = ({ onClose, onAdded }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded cursor-pointer"
+              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-secondary rounded cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#d8b76a] flex justify-center items-center hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded cursor-pointer"
+              className="px-6 py-2 bg-primary flex justify-center items-center hover:bg-primary/80 text-secondary font-semibold rounded cursor-pointer"
             >
               {loading ? (
                 <>
