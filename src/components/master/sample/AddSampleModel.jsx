@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import CreatableSelect from "react-select/creatable";
 import { FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
+import { capitalize } from "lodash";
 
 const AddSampleModal = ({ onClose, onSuccess }) => {
   const [form, setForm] = useState({
@@ -12,39 +13,56 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
     productName: "",
     orderQty: 1,
     date: new Date().toISOString().split("T")[0],
+    height: 0,
+    width: 0,
+    depth: 0,
+    B2B: 0,
+    D2C: 0,
+    rejection: 2,
+    QC: 0.75,
+    machineMaintainance: 1.75,
+    materialHandling: 1.75,
+    packaging: 2,
+    shipping: 1,
+    companyOverHead: 4,
+    indirectExpense: 1.75,
+    stitching: 0,
+    printing: 0,
+    others: 0,
+    unitRate: 0,
+    unitB2BRate: 0,
+    unitD2CRate: 0,
   });
 
   const [productDetails, setProductDetails] = useState([]);
+  // const [selectedFg, setSelectedFg] = useState();
   const [rms, setRms] = useState([]);
   const [sfgs, setSfgs] = useState([]);
   const [fgs, setFgs] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState([]);
+  const [components, setComponents] = useState([]);
 
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
         const [rmRes, sfgRes, fgRes, customerRes] = await Promise.all([
-          axios.get("/rms/rm?limit=1000"),
-          axios.get("/sfgs/get-all?limit=1000"),
-          axios.get("/fgs/get-all?limit=1000"),
-          axios.get("/customers/get-all?limit=1000"),
+          axios.get("/rms/rm"),
+          axios.get("/sfgs/get-all"),
+          axios.get("/fgs/get-all"),
+          axios.get("/customers/get-all"),
         ]);
-
-        const rawMaterials = (rmRes.data.rawMaterials || []).map((item) => ({
-          ...item,
-          type: "RawMaterial",
-        }));
-        const sfgItems = (sfgRes.data.data || []).map((item) => ({
-          ...item,
-          type: "SFG",
-        }));
-
-        setRms(rawMaterials);
-        setSfgs(sfgItems);
+        setRms(
+          (rmRes.data.rawMaterials || []).map((i) => ({
+            ...i,
+            type: "RawMaterial",
+          }))
+        );
+        setSfgs((sfgRes.data.data || []).map((i) => ({ ...i, type: "SFG" })));
         setFgs(fgRes.data.data || []);
         setCustomers(customerRes.data.data || []);
+        setComponents([...rms, ...sfgs, ...fgs]);
       } catch {
         toast.error("Failed to load dropdown data");
       }
@@ -69,18 +87,96 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
     })),
   ];
 
-  const handleAddComponent = (selected) => {
-    setProductDetails([
-      ...productDetails,
+  const recalculateTotals = (
+    updatedForm = form,
+    updatedDetails = productDetails
+  ) => {
+    const {
+      rejection,
+      QC,
+      machineMaintainance,
+      materialHandling,
+      packaging,
+      shipping,
+      companyOverHead,
+      indirectExpense,
+      stitching,
+      printing,
+      others,
+      B2B,
+      D2C,
+    } = updatedForm;
+
+    const overheadPercent =
+      rejection +
+      QC +
+      machineMaintainance +
+      materialHandling +
+      packaging +
+      shipping +
+      companyOverHead +
+      indirectExpense;
+
+    console.log("overHead", overheadPercent);
+
+    const baseComponentRate = updatedDetails.reduce(
+      (sum, comp) => sum + (Number(comp.rate) || 0),
+      0
+    );
+    const totalR = baseComponentRate + stitching + printing + others;
+
+    const unitRate = totalR + (totalR * overheadPercent) / 100;
+    const unitB2BRate = totalR + (totalR * (overheadPercent + B2B)) / 100;
+    const unitD2CRate = totalR + (totalR * (overheadPercent + D2C)) / 100;
+
+    setForm((prev) => ({
+      ...prev,
+      ...updatedForm,
+      unitRate: unitRate.toFixed(2),
+      unitB2BRate: unitB2BRate.toFixed(2),
+      unitD2CRate: unitD2CRate.toFixed(2),
+    }));
+  };
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    const numericFields = [
+      "height",
+      "width",
+      "depth",
+      "qty",
+      "sqInchRate",
+      "rejection",
+      "QC",
+      "machineMaintainance",
+      "materialHandling",
+      "packaging",
+      "shipping",
+      "companyOverHead",
+      "indirectExpense",
+      "stitching",
+      "printing",
+      "others",
+      "B2B",
+      "D2C",
+    ];
+    const newValue = numericFields.includes(name) ? Number(value) || 0 : value;
+    recalculateTotals({ ...form, [name]: newValue }, productDetails);
+  };
+
+  const handleAddComponent = () => {
+    setProductDetails((prev) => [
+      ...prev,
       {
         itemId: "",
         type: "",
-        qty: "",
+        qty: 0,
         partName: "",
-        height: "",
-        width: "",
-        depth: "",
-        label: selected.label,
+        height: 0,
+        width: 0,
+        // depth: 0,
+        rate: 0,
+        label: "",
       },
     ]);
   };
@@ -88,64 +184,73 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
   const updateComponent = (index, field, value) => {
     const updated = [...productDetails];
     updated[index][field] = value;
+
+    if (field === "itemId") {
+      let itm = components.find((item) => item.id === value);
+      if (itm) {
+        updated[index].itemId = value;
+        updated[index].sqInchRate = itm.sqInchRate || 1;
+      }
+    } else {
+      updated[index].field = value;
+    }
+
+    let height = Number(updated[index].height) || 0;
+    let width = Number(updated[index].width) || 0;
+    let qty = Number(updated[index].qty) || 0;
+    let sqInchRate = Number(updated[index].sqInchRate) || 0;
+    console.log("sqInchRate", sqInchRate, updated[index]);
+
+    updated[index].rate =
+      height && width && qty && sqInchRate
+        ? Number((height * width * qty * sqInchRate).toFixed(4))
+        : 0;
+
+    // if (["height", "width", "qty", "sqInchRate"].includes(field)) {
+    //   const h = Number(updated[index].height) || 0;
+    //   const w = Number(updated[index].width) || 0;
+    //   const q = Number(updated[index].qty) || 0;
+    //   const ratePerSqIn = Number(updated[index].sqInchRate) || 1;
+    //   console.log("sqInchRate", ratePerSqIn, updated[index]);
+
+    //   updated[index].rate =
+    //     h && w && q ? Number((h * w * q * ratePerSqIn).toFixed(4)) : 0;
+    // }
+
     setProductDetails(updated);
+    recalculateTotals(form, updated);
   };
 
   const removeComponent = (index) => {
     const updated = [...productDetails];
     updated.splice(index, 1);
     setProductDetails(updated);
+    recalculateTotals(form, updated);
   };
 
   const handleSubmit = async () => {
     setLoading(true);
-
     if (!form.partyName || !form.productName || !form.orderQty) {
       setLoading(false);
       return toast.error("Please fill all required fields");
     }
-
-    const hasEmptyComponent = productDetails.some((comp) => {
-      return (
-        !comp.itemId ||
-        comp.qty === "" ||
-        comp.height === "" ||
-        comp.width === "" ||
-        comp.depth === "" ||
-        comp.partName === ""
-      );
-    });
-
-    if (hasEmptyComponent) {
+    const hasEmpty = productDetails.some(
+      (c) =>
+        !c.itemId || c.qty <= 0 || c.height <= 0 || c.width <= 0 || !c.partName
+    );
+    if (hasEmpty) {
       setLoading(false);
       return toast.error("Please fill or remove all incomplete RM/SFG rows");
     }
-
     try {
       const formData = new FormData();
+      formData.append("data", JSON.stringify({ ...form, productDetails }));
+      files.forEach((f) => formData.append("files", f));
 
-      const data = {
-        ...form,
-        productDetails: productDetails.map(({ label, ...rest }) => rest),
-      };
-
-      formData.append("data", JSON.stringify(data));
-
-      files.forEach((file) => {
-        formData.append("files", file);
+      const res = await axios.post("/samples/add", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-
-      // console.log("data", data);
-
-      let res = await axios.post("/samples/add", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
+      if (res.data.status === 403) return toast.error(res.data.message);
 
       toast.success("Sample added successfully");
       onSuccess();
@@ -234,7 +339,33 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                 // onChange={(e) => setForm({ ...form, productName: e?.value })}
                 onChange={(e) => {
                   const selectedFG = fgs.find((fg) => fg.itemName === e?.value);
-                  setForm({ ...form, productName: e?.value });
+                  // setForm({ ...form, productName: e?.value });
+
+                  setForm({
+                    ...form,
+                    productName: e?.value,
+                    height: selectedFG.height || 0,
+                    width: selectedFG.width || 0,
+                    depth: selectedFG.depth || 0,
+                    B2B: selectedFG.B2B || 0,
+                    D2C: selectedFG.D2C || 0,
+                    rejection: selectedFG.rejection || 2,
+                    QC: selectedFG.QC || 0.75,
+                    machineMaintainance: selectedFG.machineMaintainance || 1.75,
+                    materialHandling: selectedFG.materialHandling || 1.75,
+                    packaging: selectedFG.packaging || 2,
+                    shipping: selectedFG.shipping || 1,
+                    companyOverHead: selectedFG.companyOverHead || 4,
+                    indirectExpense: selectedFG.indirectExpense || 1.75,
+                    stitching: selectedFG.stitching || 0,
+                    printing: selectedFG.printing || 0,
+                    others: selectedFG.others || 0,
+                    unitRate: selectedFG.unitRate || 0,
+                    unitB2BRate: selectedFG.unitB2BRate || 0,
+                    unitD2CRate: selectedFG.unitD2CRate || 0,
+                  });
+
+                  console.log("selectedFG", selectedFG);
 
                   if (!selectedFG) return;
 
@@ -242,6 +373,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                     ...(selectedFG.rm || []),
                     ...(selectedFG.sfg || []),
                   ];
+                  // setSelectedFg(selectedFG);
 
                   const enrichedDetails = allDetails.map((item) => ({
                     itemId: item.id,
@@ -249,11 +381,13 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                     qty: item.qty || "",
                     height: item.height || "",
                     width: item.width || "",
-                    depth: item.depth || "",
+                    rate: item.rate || "",
+                    sqInchRate: item.sqInchRate || "",
+                    partName: item.partName || "",
+                    // depth: item.depth || "",
                     label: `${item.skuCode}: ${item.itemName}${
                       item.description ? ` - ${item.description}` : ""
                     }`,
-                    partName: "",
                   }));
 
                   setProductDetails(enrichedDetails);
@@ -299,9 +433,51 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
             </div>
           </div>
 
+          <div className="flex-col my-2">
+            <div>
+              <h2 className="font-semibold mb-1">Product Size</h2>
+            </div>
+            <div className="p-2 border text-[12px] border-primary rounded grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 ">
+              <div className="flex flex-col">
+                <label className="font-semibold mb-1">Height (Inch)</label>
+                <input
+                  type="number"
+                  name="height"
+                  placeholder="Height (Inch)"
+                  value={form.height}
+                  onChange={(e) => handleFormChange(e)}
+                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="font-semibold mb-1">Width (Inch)</label>
+                <input
+                  type="number"
+                  name="width"
+                  placeholder="Width (Inch)"
+                  value={form.width}
+                  onChange={(e) => handleFormChange(e)}
+                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="font-semibold mb-1">Depth (Inch)</label>
+                <input
+                  type="number"
+                  name="depth"
+                  placeholder="Depth (Inch)"
+                  value={form.depth}
+                  onChange={(e) => handleFormChange(e)}
+                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Components Section */}
           <div>
-            <h3 className="font-bold text-[14px] mb-2 text-[#d8b76a] underline">
+            <h3 className="font-bold text-[14px] my-2 text-[#d8b76a] underline">
               RM/SFG Components
             </h3>
 
@@ -345,14 +521,14 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                     </div>
 
                     {/* Height, Width, Depth, Qty Fields */}
-                    {["partName", "height", "width", "depth", "qty"].map(
+                    {["partName", "height", "width", "qty", "rate"].map(
                       (field) => (
                         <div className="flex flex-col" key={field}>
                           <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
                             {field == "partName"
                               ? "Part Name"
-                              : field == "qty"
-                              ? "Qty"
+                              : field == "qty" || field == "rate"
+                              ? capitalize(field)
                               : `${field} (Inch)`}
                           </label>
                           <input
@@ -360,8 +536,8 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                             placeholder={
                               field == "partName"
                                 ? "Item Part Name"
-                                : field == "qty"
-                                ? "qty"
+                                : field == "qty" || field == "rate"
+                                ? field
                                 : `${field} (Inch)`
                             }
                             className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
@@ -394,6 +570,201 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
               >
                 + Add RM/SFG
               </button>
+            </div>
+          </div>
+
+          <div className="bg-primary w-full h-[1px] my-5"></div>
+
+          {/* bottom fields */}
+          <div className="sm:text-[12px] mb-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">B2B (%)</label>
+              <input
+                type="number"
+                name="B2B"
+                placeholder="B2B"
+                value={form.B2B}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">D2C (%)</label>
+              <input
+                type="number"
+                name="D2C"
+                placeholder="D2C"
+                value={form.D2C}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Rejection (%)</label>
+              <input
+                type="number"
+                name="rejection"
+                placeholder="Rejection"
+                value={form.rejection}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">QC (%)</label>
+              <input
+                type="number"
+                name="QC"
+                placeholder="QC"
+                value={form.QC}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">
+                Machine Maintainance (%)
+              </label>
+              <input
+                type="number"
+                name="machineMaintainance"
+                placeholder="Machine Maintainance"
+                value={form.machineMaintainance}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">
+                Material Handling (%)
+              </label>
+              <input
+                type="number"
+                name="materialHandling"
+                placeholder="Material Handling"
+                value={form.materialHandling}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Packaging (%)</label>
+              <input
+                type="number"
+                name="packaging"
+                placeholder="Packaging"
+                value={form.packaging}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Shipping (%)</label>
+              <input
+                type="number"
+                name="shipping"
+                placeholder="Shipping"
+                value={form.shipping}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Company OverHead (%)</label>
+              <input
+                type="number"
+                name="companyOverHead"
+                placeholder="Company OverHead"
+                value={form.companyOverHead}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Indirect Expense (%)</label>
+              <input
+                type="number"
+                name="indirectExpense"
+                placeholder="Indirect Expense"
+                value={form.indirectExpense}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Stitching (₹)</label>
+              <input
+                type="number"
+                name="stitching"
+                placeholder="Stitching"
+                value={form.stitching}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                required
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Print/Emb (₹)</label>
+              <input
+                type="number"
+                name="printing"
+                placeholder="Print/Emb"
+                value={form.printing}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Others (₹)</label>
+              <input
+                type="number"
+                name="others"
+                placeholder="Others"
+                value={form.others}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Unit Rate (₹)</label>
+              <input
+                disabled
+                type="number"
+                name="unitRate"
+                placeholder="Unit Rate"
+                value={form.unitRate}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+                required
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Unit B2B (₹)</label>
+              <input
+                disabled
+                type="number"
+                name="unitB2BRate"
+                placeholder="Unit B2B"
+                value={form.unitB2BRate}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Unit D2C (₹)</label>
+              <input
+                disabled
+                type="number"
+                name="unitD2CRate"
+                placeholder="Unit D2C"
+                value={form.unitD2CRate}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+              />
             </div>
           </div>
 

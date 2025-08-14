@@ -25,16 +25,13 @@ const AddFgModal = ({ onClose, onAdded }) => {
       height: 0,
       width: 0,
       depth: 0,
-      // qty: 1,
       stitching: 0,
       printing: 0,
       others: 0,
       unitRate: 0,
       unitB2BRate: 0,
       unitD2CRate: 0,
-      // totalRate: 0,
-      // totalB2BRate: 0,
-      // totalD2CRate: 0,
+
       B2B: 0,
       D2C: 0,
       rejection: 2,
@@ -198,6 +195,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
     const updated = [...formList];
     updated[index].materials.push({
       itemId: "",
+      partName: "",
       height: "",
       width: "",
       // depth: "",
@@ -293,6 +291,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
           if (matched.type == "RM") {
             rm.push({
               rmid: matched.id,
+              partName: mat.partName,
               height: Number(mat.height),
               width: Number(mat.width),
               // depth: Number(mat.depth),
@@ -303,6 +302,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
           } else if (matched.type === "SFG") {
             sfg.push({
               sfgid: matched.id,
+              partName: mat.partName,
               height: Number(mat.height),
               width: Number(mat.width),
               // depth: Number(mat.depth),
@@ -560,7 +560,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                 {item.materials.map((mat, matIndex) => (
                   <div
                     key={matIndex}
-                    className="flex flex-wrap gap-3 mb-4 border p-3 rounded-md border-primary"
+                    className="flex sm:text-[12px] flex-wrap gap-3 mb-4 border p-3 rounded-md border-primary"
                   >
                     <div className="flex flex-col w-full sm:w-[55%] md:w-[40%]">
                       <label className="font-medium">Material</label>
@@ -645,7 +645,25 @@ const AddFgModal = ({ onClose, onAdded }) => {
 
                     {/* Height */}
                     <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                      <label className="font-medium text-sm mb-1">
+                      <label className="font-medium  ">Part Name</label>
+                      <input
+                        type="text"
+                        placeholder="Part Name"
+                        value={mat.partName}
+                        onChange={(e) =>
+                          handleMaterialChange(
+                            index,
+                            matIndex,
+                            "partName",
+                            e.target.value
+                          )
+                        }
+                        className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                      />
+                    </div>
+                    {/* Height */}
+                    <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[10%]">
+                      <label className="font-medium whitespace-nowrap">
                         Height (Inch)
                       </label>
                       <input
@@ -660,13 +678,13 @@ const AddFgModal = ({ onClose, onAdded }) => {
                             e.target.value
                           )
                         }
-                        className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                        className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                       />
                     </div>
 
                     {/* Width */}
-                    <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                      <label className="font-medium text-sm mb-1">
+                    <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[10%]">
+                      <label className="font-medium  whitespace-nowrap">
                         Width (Inch)
                       </label>
                       <input
@@ -681,7 +699,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                             e.target.value
                           )
                         }
-                        className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                        className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                       />
                     </div>
 
@@ -706,8 +724,10 @@ const AddFgModal = ({ onClose, onAdded }) => {
                       />
                     </div> */}
 
-                    <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[10%]">
-                      <label className="font-medium">Qty</label>
+                    <div className="flex flex-col w-[46.5%] sm:w-[20%] md:w-[7%]">
+                      <label className="font-medium whitespace-nowrap">
+                        Qty
+                      </label>
                       <input
                         type="number"
                         placeholder="Qty"
@@ -720,10 +740,10 @@ const AddFgModal = ({ onClose, onAdded }) => {
                             e.target.value
                           )
                         }
-                        className="p-1.5 border border-primary rounded  focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                        className="p-2 border border-primary rounded  focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                       />
                     </div>
-                    <div className="flex flex-col w-[47%] sm:w-[35%] md:w-[12%]">
+                    <div className="flex flex-col w-[47%] sm:w-[20%] md:w-[9.5%]">
                       <label className="font-medium  whitespace-nowrap">
                         Rate (₹)
                       </label>
@@ -739,14 +759,14 @@ const AddFgModal = ({ onClose, onAdded }) => {
                             e.target.value
                           )
                         }
-                        className="p-1.5 border border-primary rounded  focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                        className="p-2 border border-primary rounded  focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                       />
                     </div>
 
                     <button
                       type="button"
                       onClick={() => removeMaterial(index, matIndex)}
-                      className="text-red-600 cursor-pointer gap-1 items-center flex hover:underline"
+                      className="text-red-600 text-sm cursor-pointer gap-1 items-center flex hover:underline mt-3"
                     >
                       <FiTrash2 /> Remove
                     </button>

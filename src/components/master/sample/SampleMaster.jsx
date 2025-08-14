@@ -396,7 +396,7 @@ const SampleMaster = ({ isOpen }) => {
         </div>
         {editingSample && (
           <UpdateSampleModal
-            Sample={editingSample}
+            sampleData={editingSample}
             onClose={() => setEditingSample(null)}
             onSuccess={() => {
               fetchSamples(); // re-fetch or refresh list
