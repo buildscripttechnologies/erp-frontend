@@ -886,24 +886,26 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
             <div className="flex flex-col">
               <label className="font-semibold mb-1">Unit Rate (₹)</label>
               <input
+                disabled
                 type="number"
                 name="unitRate"
                 placeholder="Unit Rate"
                 value={form.unitRate}
                 onChange={(e) => handleChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
                 required
               />
             </div>
             <div className="flex flex-col">
               <label className="font-semibold mb-1">Unit B2B (₹)</label>
               <input
+                disabled
                 type="number"
                 name="unitB2BRate"
                 placeholder="Unit B2B"
                 value={form.unitB2BRate}
                 onChange={(e) => handleChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
                 required
               />
             </div>
@@ -911,12 +913,13 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
             <div className="flex flex-col">
               <label className="font-semibold mb-1">Unit D2C (₹)</label>
               <input
+                disabled
                 type="number"
                 name="unitD2CRate"
                 placeholder="Unit D2C"
                 value={form.unitD2CRate}
                 onChange={(e) => handleChange(index, e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
               />
             </div>
           </div>

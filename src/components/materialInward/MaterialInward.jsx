@@ -13,11 +13,13 @@ import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
 import BarcodeModal from "./BarcodeModal";
-import LabelPrint from "./LabelPrint";
+// import LabelPrint from "./LabelPrint";
 import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
 import UpdateStockModal from "./UpdateStockModal";
+import { makeLabelPdf } from "./makeStickerPdf";
+import { ClipLoader } from "react-spinners";
 
 const MaterialInward = () => {
   const { hasPermission } = useAuth();
@@ -28,6 +30,8 @@ const MaterialInward = () => {
   const [editStockData, setEditStockData] = useState(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
+  const [generatingId, setGeneratingId] = useState(null);
+
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -215,6 +219,22 @@ const MaterialInward = () => {
     { label: "Created By	", className: "hidden md:table-cell" },
     { label: "Actions", className: "" },
   ];
+
+  const handlePrint = async (stock) => {
+    if (!stock || !stock.barcodes?.length) {
+      alert("No barcode data available");
+      return;
+    }
+
+    try {
+      setGeneratingId(stock._id); // start loader only for this row
+      await makeLabelPdf(stock);
+    } catch (error) {
+      console.error("Error printing labels:", error);
+    } finally {
+      setGeneratingId(null); // stop loader
+    }
+  };
 
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
@@ -429,14 +449,20 @@ const MaterialInward = () => {
 
                     <td className="px-2 py-1 flex gap-3 text-sm text-[#d8b76a]">
                       <button
-                        onClick={() => handleViewBarcodes(stock)}
+                        disabled={generatingId === stock._id}
+                        onClick={() => handlePrint(stock)}
                         className="text-[#d8b76a] hover:underline text-[11px] cursor-pointer"
                       >
-                        <FaBarcode
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="View Barcodes"
-                        />
+                        {generatingId === stock._id ? (
+                          <ClipLoader size={11} color="primary" />
+                        ) : (
+                          <FaBarcode
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="View Barcodes"
+                          />
+                        )}
                       </button>
+
                       {hasPermission("Material Inward", "update") ? (
                         <FiEdit
                           data-tooltip-id="statusTip"

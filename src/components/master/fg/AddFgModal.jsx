@@ -28,14 +28,14 @@ const AddFgModal = ({ onClose, onAdded }) => {
       // qty: 1,
       stitching: 0,
       printing: 0,
-      others: 4,
+      others: 0,
       unitRate: 0,
       unitB2BRate: 0,
       unitD2CRate: 0,
       // totalRate: 0,
       // totalB2BRate: 0,
       // totalD2CRate: 0,
-      B2B: 30,
+      B2B: 0,
       D2C: 0,
       rejection: 2,
       QC: 0.75,
@@ -231,17 +231,17 @@ const AddFgModal = ({ onClose, onAdded }) => {
         height: 0,
         width: 0,
         depth: 0,
-        qty: 0,
+        // qty: 0,
         stitching: 0,
         printing: 0,
-        others: 4,
+        others: 0,
         unitRate: 0,
         unitB2BRate: 0,
         unitD2CRate: 0,
         totalRate: 0,
         totalB2BRate: 0,
         totalD2CRate: 0,
-        B2B: 30,
+        B2B: 0,
         D2C: 0,
         rejection: 2,
         QC: 0.75,
@@ -922,24 +922,26 @@ const AddFgModal = ({ onClose, onAdded }) => {
                 <div className="flex flex-col">
                   <label className="font-semibold mb-1">Unit Rate (₹)</label>
                   <input
+                    disabled
                     type="number"
                     name="unitRate"
                     placeholder="Unit Rate"
                     value={item.unitRate}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
                     required
                   />
                 </div>
                 <div className="flex flex-col">
                   <label className="font-semibold mb-1">Unit B2B (₹)</label>
                   <input
+                    disabled
                     type="number"
                     name="unitB2BRate"
                     placeholder="Unit B2B"
                     value={item.unitB2BRate}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
                     required
                   />
                 </div>
@@ -947,12 +949,13 @@ const AddFgModal = ({ onClose, onAdded }) => {
                 <div className="flex flex-col">
                   <label className="font-semibold mb-1">Unit D2C (₹)</label>
                   <input
+                    disabled
                     type="number"
                     name="unitD2CRate"
                     placeholder="Unit D2C"
                     value={item.unitD2CRate}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
                   />
                 </div>
                 {/* <div className="flex flex-col">
