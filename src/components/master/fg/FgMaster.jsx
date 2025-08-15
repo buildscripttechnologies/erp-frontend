@@ -104,7 +104,9 @@ const renderNestedMaterials = (
           <td className={`px-2 border-r ${border}`}>{mat.location || "-"}</td>
           <td className={`px-2 border-r ${border}`}>{mat.height || "-"}</td>
           <td className={`px-2 border-r ${border}`}>{mat.width || "-"}</td>
-          <td className={`px-2 border-r ${border}`}>{mat.rate || "-"}</td>
+          <td className={`px-2 border-r ${border}`}>
+            {Number(mat.rate).toFixed(2) || "-"}
+          </td>
           <td className={`px-2 rounded-br-sm`}>{mat.qty || "-"}</td>
         </tr>
 
@@ -563,7 +565,7 @@ const FgMaster = ({ isOpen }) => {
                           {fg.height + " x " + fg.width + " x " + fg.depth}
                         </td>
                         <td className="px-[8px] border-r border-primary">
-                          {fg.unitRate}
+                          {Number(fg.unitRate).toFixed(2)}
                         </td>
                         <td className="px-[8px] border-r border-primary">
                           <Toggle

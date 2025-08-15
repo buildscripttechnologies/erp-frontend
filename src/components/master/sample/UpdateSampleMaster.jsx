@@ -171,11 +171,28 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
 
     updated[index].rate =
       height && width && qty && sqInchRate
-        ? Number((height * width * qty * sqInchRate).toFixed(4))
+        ? Number((height * width * qty * sqInchRate).toFixed(2))
         : 0;
 
     setProductDetails(updated);
     recalculateTotals(form, updated);
+  };
+
+  const handleAddComponent = () => {
+    setProductDetails((prev) => [
+      ...prev,
+      {
+        itemId: "",
+        type: "",
+        qty: 0,
+        partName: "",
+        height: 0,
+        width: 0,
+        // depth: 0,
+        rate: 0,
+        label: "",
+      },
+    ]);
   };
 
   const removeComponent = (index) => {

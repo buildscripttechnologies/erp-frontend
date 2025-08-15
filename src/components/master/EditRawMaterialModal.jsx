@@ -60,13 +60,28 @@ const EditRawMaterialModal = ({
     const stockQty = parseFloat(updatedForm.stockQty) || 0;
     updatedForm.totalRate = rate * stockQty;
 
-    const category = updatedForm.itemCategory || "";
+    
 
+    const category = (updatedForm.itemCategory || "").toLowerCase();
     const panno = parseFloat(updatedForm.panno) || 0;
 
-    // Recalculate only if both values are present
-    if (rate && panno && category.toLowerCase() == "fabric") {
-      updatedForm.sqInchRate = Number(((rate / panno / 39) * 1.05).toFixed(4));
+    // Determine fabricRate
+    const fabricRate =
+      category.includes("cotton") || category.includes("canvas") ? 38 : 39;
+
+    console.log("fabric rate", fabricRate);
+
+    // Recalculate sqInchRate if category contains fabric/cotton/canvas
+    if (
+      rate &&
+      panno &&
+      (category.includes("fabric") ||
+        category.includes("cotton") ||
+        category.includes("canvas"))
+    ) {
+      updatedForm.sqInchRate = Number(
+        ((rate / panno / fabricRate) * 1.05).toFixed(2)
+      );
     } else {
       updatedForm.sqInchRate = 0;
     }

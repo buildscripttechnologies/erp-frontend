@@ -188,34 +188,19 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
     if (field === "itemId") {
       let itm = components.find((item) => item.id === value);
       if (itm) {
-        updated[index].itemId = value;
         updated[index].sqInchRate = itm.sqInchRate || 1;
       }
-    } else {
-      updated[index].field = value;
     }
 
     let height = Number(updated[index].height) || 0;
     let width = Number(updated[index].width) || 0;
     let qty = Number(updated[index].qty) || 0;
     let sqInchRate = Number(updated[index].sqInchRate) || 0;
-    console.log("sqInchRate", sqInchRate, updated[index]);
 
     updated[index].rate =
       height && width && qty && sqInchRate
-        ? Number((height * width * qty * sqInchRate).toFixed(4))
+        ? Number((height * width * qty * sqInchRate).toFixed(2))
         : 0;
-
-    // if (["height", "width", "qty", "sqInchRate"].includes(field)) {
-    //   const h = Number(updated[index].height) || 0;
-    //   const w = Number(updated[index].width) || 0;
-    //   const q = Number(updated[index].qty) || 0;
-    //   const ratePerSqIn = Number(updated[index].sqInchRate) || 1;
-    //   console.log("sqInchRate", ratePerSqIn, updated[index]);
-
-    //   updated[index].rate =
-    //     h && w && q ? Number((h * w * q * ratePerSqIn).toFixed(4)) : 0;
-    // }
 
     setProductDetails(updated);
     recalculateTotals(form, updated);
