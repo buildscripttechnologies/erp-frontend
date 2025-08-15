@@ -10,7 +10,7 @@ const SampleDetailsSection = ({ SampleData }) => {
   // console.log("sampledata", SampleData);
 
   return (
-    <div className="bg-white border border-[#d8b76a] rounded shadow p-4 mx-2 mb-2 text-[11px] text-[#292926]">
+    <div className="bg-white border border-[#d8b76a] rounded shadow pt-2 p-4 mx-2 mb-2 text-[11px] text-[#292926]">
       <h2 className="text-[14px] text-[#d8b76a] font-bold underline underline-offset-4 mb-2">
         Sample Details
       </h2>
@@ -71,10 +71,8 @@ const SampleDetailsSection = ({ SampleData }) => {
             <th className="px-2 py-1 border-r border-[#d8b76a]">
               Width (Inch)
             </th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">
-              Depth (Inch)
-            </th>
             <th className="px-2 py-1 border-r border-[#d8b76a]">Quantity</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Rate (₹)</th>
             {/* <th className="px-2 py-1 border-r border-[#d8b76a]">UOM</th> */}
           </tr>
         </thead>
@@ -104,10 +102,10 @@ const SampleDetailsSection = ({ SampleData }) => {
                   {item.width || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.depth || "-"}
+                  {item.qty || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.qty || "-"}
+                  {item.rate || "-"}
                 </td>
                 {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.itemId?.UOM?.unit || "-"}
@@ -121,6 +119,51 @@ const SampleDetailsSection = ({ SampleData }) => {
               </td>
             </tr>
           )}
+        </tbody>
+      </table>
+
+      <table className="w-full  text-[11px] border border-primary  rounded">
+        <tbody>
+          <tr className="border-b border-primary">
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Stitching (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {SampleData.stitching || "-"}
+            </td>
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Print/Emb (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {SampleData.printing || "-"}
+            </td>
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Others (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {SampleData.others || "-"}
+            </td>
+          </tr>
+          <tr className="border-b border-primary">
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Unit Rate (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {SampleData.unitRate || "-"}
+            </td>
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Unit B2B (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {SampleData.unitB2BRate || "-"}
+            </td>
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Unit D2C (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {SampleData.unitD2CRate || "-"}
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>

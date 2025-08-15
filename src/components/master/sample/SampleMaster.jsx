@@ -245,7 +245,7 @@ const SampleMaster = ({ isOpen }) => {
                   <th className="px-[8px] ">Sample No.</th>
                   <th className="px-[8px] ">Party Name</th>
                   <th className="px-[8px] ">Product Name</th>
-                  {/* <th className="px-[8px] ">Order Qty</th> */}
+                  <th className="px-[8px] ">Product Size</th>
                   <th className="px-[8px] ">Date</th>
                   {/* <th className="px-[8px] ">Status</th> */}
                   <th className="px-[8px] ">Created By</th>
@@ -306,9 +306,11 @@ const SampleMaster = ({ isOpen }) => {
                           <td className="px-[8px] border-r border-[#d8b76a] ">
                             {b.product?.name || "-"}
                           </td>
-                          {/* <td className="px-[8px] border-r border-[#d8b76a] ">
-                            {b.orderQty || "-"}
-                          </td> */}
+                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                            {`${b.height ?? 0} x ${b.width ?? 0} x ${
+                              b.depth ?? 0
+                            }`}
+                          </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
                             {new Date(b.date).toLocaleString("en-IN", {
                               day: "2-digit",
@@ -396,7 +398,7 @@ const SampleMaster = ({ isOpen }) => {
         </div>
         {editingSample && (
           <UpdateSampleModal
-            Sample={editingSample}
+            sampleData={editingSample}
             onClose={() => setEditingSample(null)}
             onSuccess={() => {
               fetchSamples(); // re-fetch or refresh list

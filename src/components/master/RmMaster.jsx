@@ -602,7 +602,7 @@ const RmMaster = ({ isOpen }) => {
                         {rm.panno || "0"}
                       </td>
                       <td className="px-2 border-r border-r-[#d8b76a]">
-                        ₹{rm.sqInchRate || "0"}
+                        ₹{(Number(rm.sqInchRate) || 0).toFixed(2)}
                       </td>
                       <td className="px-2 border-r border-r-[#d8b76a]">
                         ₹{rm.rate || "0"}

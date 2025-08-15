@@ -76,14 +76,25 @@ const BulkRmPanel = ({ onClose }) => {
       const stockQty = parseFloat(updated[index].stockQty) || 0;
       updated[index].totalRate = rate * stockQty;
 
-      const category = updated[index].itemCategory || "";
-
+      const category = (updated[index].itemCategory || "").toLowerCase();
       const panno = parseFloat(updated[index].panno) || 0;
 
-      // Recalculate only if both values are present
-      if (rate && panno && category.toLowerCase() == "fabric") {
+      // Determine fabricRate
+      const fabricRate =
+        category.includes("cotton") || category.includes("canvas") ? 38 : 39;
+
+      console.log("fabric rate", fabricRate);
+
+      // Recalculate sqInchRate if category contains fabric/cotton/canvas
+      if (
+        rate &&
+        panno &&
+        (category.includes("fabric") ||
+          category.includes("cotton") ||
+          category.includes("canvas"))
+      ) {
         updated[index].sqInchRate = Number(
-          ((rate / panno / 39) * 1.05).toFixed(4)
+          ((rate / panno / fabricRate) * 1.05).toFixed(2)
         );
       } else {
         updated[index].sqInchRate = 0;
