@@ -1,5 +1,5 @@
 // src/components/BOMMaster.jsx
-import React, { useEffect, useState, } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
@@ -18,7 +18,7 @@ import { generateBom } from "../../../utils/generateBom";
 import { generateBomLP } from "../../../utils/generateBomLP";
 import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
-
+import AttachmentsModal2 from "../../AttachmentsModal2";
 
 const BomMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -30,7 +30,7 @@ const BomMaster = ({ isOpen }) => {
   const [expandedRow, setExpandedRow] = useState(null);
   const [editingBOM, setEditingBOM] = useState(null);
   const [expandedBOMId, setExpandedBOMId] = useState(null);
-
+  const [openAttachments, setOpenAttachments] = useState(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -41,7 +41,6 @@ const BomMaster = ({ isOpen }) => {
   const hasMountedRef = useRef(false);
 
   useEffect(() => {
-
     if (!hasMountedRef.current) {
       hasMountedRef.current = true;
       return; // skip first debounce on mount
@@ -259,9 +258,11 @@ const BomMaster = ({ isOpen }) => {
                   <th className="px-[8px] ">Party Name</th>
                   <th className="px-[8px] ">Product Name</th>
                   <th className="px-[8px] ">Order Qty</th>
+                  <th className="px-[8px] ">Product Size</th>
                   <th className="px-[8px] ">Date</th>
                   {/* <th className="px-[8px] ">Status</th> */}
                   <th className="px-[8px] ">Created By</th>
+                  <th className="px-[8px] ">Attachments</th>
                   <th className="px-[8px] ">Actions</th>
                 </tr>
               </thead>
@@ -325,6 +326,12 @@ const BomMaster = ({ isOpen }) => {
                             {b.orderQty || "-"}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">
+                            {`${b.height ?? 0} x ${b.width ?? 0} x ${
+                              b.depth ?? 0
+                            }`}
+                          </td>
+
+                          <td className="px-[8px] border-r border-[#d8b76a] ">
                             {new Date(b.date).toLocaleString("en-IN", {
                               day: "2-digit",
                               month: "short",
@@ -341,6 +348,25 @@ const BomMaster = ({ isOpen }) => {
                           </td> */}
                           <td className="px-[8px] border-r border-[#d8b76a] ">
                             {b.createdBy?.fullName || "-"}
+                          </td>
+                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                            {Array.isArray(b.file) && b.file.length > 0 ? (
+                              <button
+                                onClick={() => setOpenAttachments(b.file)}
+                                className="cursor-pointer hover:text-[#d8b76a] hover:underline text-center items-center justify-center"
+                              >
+                                View
+                              </button>
+                            ) : (
+                              "-"
+                            )}
+
+                            {openAttachments && (
+                              <AttachmentsModal2
+                                attachments={openAttachments}
+                                onClose={() => setOpenAttachments(null)}
+                              />
+                            )}
                           </td>
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-[#d8b76a]">
                             <FaFileDownload

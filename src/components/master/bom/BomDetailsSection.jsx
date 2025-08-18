@@ -8,7 +8,7 @@ const BomDetailsSection = ({ bomData }) => {
     });
 
   return (
-    <div className="bg-white border border-[#d8b76a] rounded shadow p-4 mx-2 mb-2 text-[11px] text-[#292926]">
+    <div className="bg-white border border-[#d8b76a] rounded shadow pt-3 pb-4 px-4 mx-2 mb-2 text-[11px] text-[#292926]">
       <h2 className="text-[14px] text-[#d8b76a] font-bold underline underline-offset-4 mb-2">
         BOM Details
       </h2>
@@ -80,10 +80,8 @@ const BomDetailsSection = ({ bomData }) => {
             <th className="px-2 py-1 border-r border-[#d8b76a]">
               Width (Inch)
             </th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">
-              Depth (Inch)
-            </th>
             <th className="px-2 py-1 border-r border-[#d8b76a]">Quantity</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Rate (₹)</th>
             {/* <th className="px-2 py-1 border-r border-[#d8b76a]">UOM</th> */}
           </tr>
         </thead>
@@ -113,10 +111,10 @@ const BomDetailsSection = ({ bomData }) => {
                   {item.width || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.depth || "-"}
+                  {item.qty || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.qty || "-"}
+                  {item.rate || "-"}
                 </td>
                 {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.itemId?.UOM?.unit || "-"}
@@ -130,6 +128,71 @@ const BomDetailsSection = ({ bomData }) => {
               </td>
             </tr>
           )}
+        </tbody>
+      </table>
+
+      <table className="w-full  text-[11px] border border-primary  rounded">
+        <tbody>
+          <tr className="border-b border-primary">
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Stitching (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {bomData.stitching || "-"}
+            </td>
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Print/Emb (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {bomData.printing || "-"}
+            </td>
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Others (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {bomData.others || "-"}
+            </td>
+          </tr>
+          <tr className="border-b border-primary">
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Unit Rate (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {bomData.unitRate || "-"}
+            </td>
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Unit B2B (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {bomData.unitB2BRate || "-"}
+            </td>
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Unit D2C (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {bomData.unitD2CRate || "-"}
+            </td>
+          </tr>
+          <tr className="border-b border-primary">
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Total Rate (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {bomData.totalRate || "-"}
+            </td>
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Total B2B (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {bomData.totalB2BRate || "-"}
+            </td>
+            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
+              Total D2C (₹)
+            </td>
+            <td className="px-2 py-1 border-r border-primary">
+              {bomData.totalD2CRate || "-"}
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
