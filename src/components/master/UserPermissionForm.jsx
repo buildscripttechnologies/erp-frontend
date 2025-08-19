@@ -18,6 +18,7 @@ const availableModules = [
   "User",
   "Dashboard",
   "Material Inward",
+  "PO",
 ];
 
 const availableActions = ["read", "write", "update", "delete"];
