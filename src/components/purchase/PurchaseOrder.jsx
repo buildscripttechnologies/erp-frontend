@@ -135,7 +135,7 @@ const PurchaseOrder = ({ isOpen }) => {
           <FiSearch className="absolute left-3 top-2 text-primary" />
           <input
             type="text"
-            placeholder="Search by Order No, Vendor Name, etc..."
+            placeholder="Search by Order No, Vendor Name"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
@@ -157,14 +157,16 @@ const PurchaseOrder = ({ isOpen }) => {
       {editingPO && (
         <UpdatePO
           onClose={() => setEditingPO(null)}
-          onUpdate={() => (fetchPOs(), setEditingPO(null))}
+          onUpdated={() => (fetchPOs(), setEditingPO(null))}
           po={editingPO}
         />
       )}
 
       <div className="relative overflow-x-auto  overflow-y-auto rounded border border-primary shadow-sm">
         <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[98vw]`}`}>
-          <table className={"text-[11px] whitespace-nowrap min-w-[100vw]"}>
+          <table
+            className={"text-[11px] whitespace-nowrap min-w-[100vw] capitalize"}
+          >
             <thead className="bg-primary text-secondary text-left ">
               <tr>
                 <th className="px-[8px] py-1">#</th>
@@ -172,7 +174,7 @@ const PurchaseOrder = ({ isOpen }) => {
                 <th className="px-[8px] py-1">Purchase Order No</th>
                 <th className="px-[8px] py-1">Date</th>
                 <th className="px-[8px] py-1">Vendor Name</th>
-                <th className="px-[8px] py-1">Total Amount</th>
+                <th className="px-[8px] py-1">Total Amount (₹)</th>
                 <th className="px-[8px] py-1">Status</th>
                 <th className="px-[8px] py-1">Action</th>
               </tr>
@@ -215,9 +217,6 @@ const PurchaseOrder = ({ isOpen }) => {
                             day: "2-digit",
                             month: "short",
                             year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
                           })}
                         </td>
                         <td className="px-[8px]  border-r border-r-primary ">
@@ -228,7 +227,15 @@ const PurchaseOrder = ({ isOpen }) => {
                           {po.totalAmount || "-"}
                         </td>
 
-                        <td className="px-[8px]  border-r border-r-primary">
+                        <td
+                          className={`px-[8px] border-r font-semibold border-r-primary capitalize ${
+                            po.status == "pending"
+                              ? "text-yellow-600"
+                              : po.status == "rejected"
+                              ? "text-red-600"
+                              : "text-green-600"
+                          }`}
+                        >
                           {po.status}
                         </td>
                         <td className="px-[8px] pt-1 text-sm flex gap-2 border-r border-r-primary/30">
@@ -264,6 +271,16 @@ const PurchaseOrder = ({ isOpen }) => {
                       </tr>
                     </React.Fragment>
                   ))}
+                  {pos.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan="14"
+                        className="text-center py-4 text-gray-500"
+                      >
+                        No Purchase Order found.
+                      </td>
+                    </tr>
+                  )}
                 </>
               )}
             </tbody>
@@ -278,11 +295,11 @@ const PurchaseOrder = ({ isOpen }) => {
         totalResults={pagination.totalResults}
         onEntriesChange={(limit) => {
           setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-          fetchSFGs(1, limit);
+          fetchPOs(1, limit);
         }}
         onPageChange={(page) => {
           setPagination((prev) => ({ ...prev, currentPage: page }));
-          fetchSFGs(page, pagination.limit);
+          fetchPOs(page, pagination.limit);
         }}
       />
     </div>

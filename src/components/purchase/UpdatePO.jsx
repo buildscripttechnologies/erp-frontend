@@ -3,158 +3,167 @@ import toast from "react-hot-toast";
 import axios from "../../utils/axios";
 import Select from "react-select";
 import { ClipLoader } from "react-spinners";
-import { useMemo } from "react";
 import { FiTrash2 } from "react-icons/fi";
-import { FcApproval } from "react-icons/fc";
 
-const UpdatePO = ({ onClose, onUpdate, po }) => {
-  //   console.log("po", po);
-
-  const [selectedItem, setSelectedItem] = useState({
-    value: po.item._id,
-    label: `${po.item.skuCode} - ${po.item.itemName} - ${po.item.description}`,
-    type: "RM",
-    r: po.item,
-  });
-  const [selectedVendor, setSelectedVendor] = useState({
-    value: po.vendor._id,
-    label: `${po.vendor.venderCode} - ${po.vendor.vendorName} - ${po.vendor.natureOfBusiness}`,
-  });
-  const [orderQty, setOrderQty] = useState(po.orderQty);
-  const [moq, setMoq] = useState(po.item.moq);
-  const [date, setDate] = useState(po.date);
-  //   const [baseQty, setBaseQty] = useState("");
-  //   const [damagedQty, setDamagedQty] = useState("");
+const UpdatePO = ({ onClose, onUpdated, po }) => {
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedVendor, setSelectedVendor] = useState(null);
+  const [orderQty, setOrderQty] = useState("");
+  const [moq, setMoq] = useState(1);
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [loading, setLoading] = useState(false);
 
-  //   const [manualEntries, setManualEntries] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [rms, setRms] = useState([]);
-  //   const [sfgs, setSfgs] = useState([]);
-  //   const [fgs, setFgs] = useState([]);
-  // console.log("stock qty", stockQty);
+  const [itemDetails, setItemDetails] = useState(null);
 
-  const [itemDetails, setItemDetails] = useState(po.item);
+  // multiple items state
+  const [poItems, setPoItems] = useState([]);
 
-  const handleOrderQty = (e) => {
-    const value = e.target.value;
-    const numericValue = Number(value);
+  const totalAmount = poItems.reduce((sum, item) => sum + item.amount, 0);
 
-    // Check if the value is a number and is less than the MOQ
-    if (!isNaN(numericValue) && numericValue < moq && value !== "") {
-      setOrderQty(moq);
-    } else {
-      setOrderQty(value);
-    }
-  };
-
+  // fetch dropdowns
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
-        const [vendorRes, rmRes, sfgRes, fgRes] = await Promise.all([
+        const [vendorRes, rmRes] = await Promise.all([
           axios.get("/vendors/get-all"),
           axios.get("/rms/rm"),
         ]);
         setVendors(vendorRes.data.data || []);
         setRms(rmRes.data.rawMaterials || []);
       } catch {
-        toast.error("Failed to fetch UOM or RM data");
+        toast.error("Failed to fetch vendors or items");
       }
     };
     fetchDropdowns();
   }, []);
 
+  // pre-fill PO data
+  useEffect(() => {
+    if (po) {
+      setSelectedVendor({
+        value: po.vendor._id,
+        label: `${po.vendor.venderCode} - ${po.vendor.vendorName} - ${po.vendor.natureOfBusiness}`,
+      });
+      setDate(po.date?.split("T")[0] || new Date().toISOString().split("T")[0]);
+      setPoItems(
+        po.items.map((i) => ({
+          item: {
+            value: i.item._id,
+            label: `${i.item.skuCode} - ${i.item.itemName} - ${i.item.description}`,
+          },
+          orderQty: i.orderQty,
+          rate: i.rate,
+          amount: i.amount,
+          itemDetails: i.item,
+        }))
+      );
+    }
+  }, [po]);
+
+  // add item to list
+  const handleAddItem = () => {
+    if (!selectedItem || !selectedVendor || !orderQty) {
+      return toast.error("All fields are required before adding item");
+    }
+
+    if (orderQty < moq) {
+      return toast.error(`Minimum Order Qty is ${moq}`);
+    }
+
+    const rate = Number(itemDetails?.rate || 0);
+    const amount = Number(orderQty) * rate;
+
+    const newItem = {
+      item: selectedItem,
+      orderQty,
+      itemDetails,
+      rate,
+      amount,
+    };
+
+    setPoItems((prev) => [...prev, newItem]);
+
+    setSelectedItem(null);
+    setOrderQty("");
+    setItemDetails(null);
+    setMoq(1);
+  };
+
+  // remove item from list
+  const handleRemove = (index) => {
+    const updated = [...poItems];
+    updated.splice(index, 1);
+    setPoItems(updated);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // if (!selectedItem || !selectedVendor) return toast.error("All fields required");
+    if (poItems.length === 0) return toast.error("Add at least one item");
 
     setLoading(true);
-
-    // console.log("vendor", selectedVendor);
-    // console.log("item", selectedItem);
-
     try {
-      // const payload = {
-      //   itemId: selectedItem.value,
-      //   itemType: selectedItem.type,
-      //   stockQty: parseFloat(stockQty),
-      //   baseQty: baseQty,
-      //   damagedQty: damagedQty,
-      //   manualEntries: manualEntries.length > 0 ? manualEntries : undefined,
-      // };
       const payload = {
+        items: poItems.map((p) => ({
+          item: p.item.value,
+          orderQty: p.orderQty,
+          rate: p.rate,
+          amount: p.amount,
+        })),
         vendor: selectedVendor.value,
-        item: selectedItem.value,
-        orderQty: orderQty,
-        totalAmount: Number(orderQty) * Number(itemDetails.rate),
+        date: date,
+        totalAmount: totalAmount,
       };
 
-      //   console.log("payload", payload);
-
       const res = await axios.patch(`/pos/update/${po._id}`, payload);
-      //   console.log("res", res);
 
-      if (res.data.status == 403) {
+      if (res.data.status === 403) {
         toast.error(res.data.message);
         return;
       }
-      toast.success("Purchase Order Successfull");
+
+      toast.success("Purchase Order Updated Successfully");
       onClose();
-      onUpdate();
+      onUpdated();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Purchase Order failed");
+      toast.error(err.response?.data?.message || "Failed to update PO");
     } finally {
       setLoading(false);
     }
   };
 
-  let items = [
-    ...rms.map((r) => ({
-      value: r.id,
-      label: `${r.skuCode} - ${r.itemName} - ${r.description}`,
-      type: "RM",
-      r: r,
-    })),
-  ];
+  let items = rms.map((r) => ({
+    value: r.id,
+    label: `${r.skuCode} - ${r.itemName} - ${r.description}`,
+    r: r,
+  }));
 
-  let vendorsOptions = [
-    ...vendors.map((v) => ({
-      value: v._id,
-      label: `${v.venderCode} - ${v.vendorName} - ${v.natureOfBusiness}`,
-      v: v,
-    })),
-  ];
+  let vendorsOptions = vendors.map((v) => ({
+    value: v._id,
+    label: `${v.venderCode} - ${v.vendorName} - ${v.natureOfBusiness}`,
+    v: v,
+  }));
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white w-[92vw] max-w-xl rounded-lg p-6 border border-primary overflow-y-auto max-h-[90vh]">
-        <div className="flex  items-center justify-between">
-          <h2 className="text-xl font-bold mb-4 text-primary">Inward</h2>
-          {/* <button className="px-4 py-2 bg-primary cursor-pointer text-[#292926] rounded hover:bg-primary/80 font-semibold">
-            Inward by PO
-          </button> */}
-        </div>
+      <div className="bg-white w-[92vw] max-w-2xl rounded-lg p-6 border border-primary overflow-y-auto max-h-[90vh]">
+        <h2 className="text-xl font-bold mb-4 text-primary">
+          Update Purchase Order
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex justify-between gap-5">
-            <div className="w-[48%]">
+          {/* Item & Vendor Select */}
+          <div className="flex flex-wrap gap-5">
+            <div className="w-full sm:w-[48%]">
               <label className="block text-sm font-semibold text-[#292926] mb-1">
                 Select Item
               </label>
               <Select
                 options={items}
-                value={
-                  selectedItem
-                  // ? {
-                  //     label: selectedItem.itemName,
-                  //     value: selectedItem._id,
-                  //   }
-                  // : selectedItem
-                }
+                value={selectedItem}
                 onChange={(item) => {
                   setSelectedItem(item);
-
-                  // Extract the actual item object depending on type
                   const actualItem = item.r;
                   setItemDetails(actualItem);
                   if (actualItem) {
@@ -164,15 +173,9 @@ const UpdatePO = ({ onClose, onUpdate, po }) => {
                     setMoq(0);
                     setOrderQty("");
                   }
-
-                  // Auto-approve if no quality inspection is needed
-                  setQualityApproved(!actualItem.qualityInspectionNeeded);
                 }}
-                placeholder="item-name or SKU"
+                placeholder="Item Name or SKU"
                 isSearchable
-                className="react-select-container cursor-pointer"
-                classNamePrefix="react-select"
-                required
                 styles={{
                   control: (base, state) => ({
                     ...base,
@@ -183,28 +186,16 @@ const UpdatePO = ({ onClose, onUpdate, po }) => {
                 }}
               />
             </div>
-            <div className="w-[48%]">
+            <div className="w-full sm:w-[48%]">
               <label className="block text-sm font-semibold text-[#292926] mb-1">
                 Select Vendor
               </label>
               <Select
                 options={vendorsOptions}
                 value={selectedVendor}
-                onChange={(v) => {
-                  setSelectedVendor(v);
-
-                  // Extract the actual item object depending on type
-                  //   const actualItem = item.r || item.s || item.f;
-                  //   setItemDetails(actualItem);
-
-                  // Auto-approve if no quality inspection is needed
-                  //   setQualityApproved(!actualItem.qualityInspectionNeeded);
-                }}
-                placeholder="vendor-name or code"
+                onChange={(v) => setSelectedVendor(v)}
+                placeholder="Vendor Name or Code"
                 isSearchable
-                className="react-select-container cursor-pointer"
-                classNamePrefix="react-select"
-                required
                 styles={{
                   control: (base, state) => ({
                     ...base,
@@ -216,14 +207,15 @@ const UpdatePO = ({ onClose, onUpdate, po }) => {
               />
             </div>
           </div>
+
+          {/* Item details */}
           {itemDetails && (
             <div className="bg-gray-100 border border-primary rounded p-4 mt-3 text-sm space-y-1">
-              <div className="grid sm:grid-cols-2  ">
+              <div className="grid sm:grid-cols-2">
                 <div>
                   <strong className="mr-1">Purchase UOM:</strong>{" "}
                   {itemDetails.purchaseUOM}
                 </div>
-
                 <div className="flex sm:justify-end">
                   <strong className="mr-1">Stock Qty:</strong>
                   {itemDetails.stockQty || "—"}
@@ -243,57 +235,16 @@ const UpdatePO = ({ onClose, onUpdate, po }) => {
                   <strong className="mr-1">Rate: </strong>₹
                   {itemDetails.rate || "—"}
                 </div>
-
                 <div>
                   <strong className="mr-1">GST:</strong>{" "}
                   {`${itemDetails.gst ? itemDetails.gst + "%" : "—"}`}
                 </div>
               </div>
-
-              {/* <div className="mt-3">
-                  <div className="flex justify-between">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        disabled={!itemDetails.qualityInspectionNeeded}
-                        checked={qualityApproved}
-                        onChange={(e) => setQualityApproved(e.target.checked)}
-                      />
-                      Approve Quality
-                    </label>
-                    <div className="font-semibold mb-1">
-                      {itemDetails.qualityInspectionNeeded ? (
-                        <span className="text-red-600">
-                          {qualityApproved ? (
-                            <span className="text-green-600 flex items-center gap-1">
-                              <FcApproval /> Quality Approved
-                            </span>
-                          ) : (
-                            <span className="text-red-600 flex items-center gap-1">
-                              ⚠️ Requires Quality Inspection
-                            </span>
-                          )}
-                        </span>
-                      ) : (
-                        <span className="text-green-600">
-                          Don't Require Quality Inspection
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <textarea
-                    placeholder="Add quality notes (optional)"
-                    value={qualityNote}
-                    onChange={(e) => setQualityNote(e.target.value)}
-                    className="mt-2 w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
-                    rows={3}
-                  />
-                </div> */}
             </div>
           )}
 
-          <div className="flex flex-wrap gap-5">
+          {/* Qty & Date */}
+          <div className="flex flex-wrap justify-between gap-2">
             <div className="w-[48%]">
               <label className="block text-sm font-semibold text-black mb-1">
                 Order Qty
@@ -302,31 +253,106 @@ const UpdatePO = ({ onClose, onUpdate, po }) => {
                 type="number"
                 placeholder="Order Qty"
                 value={orderQty}
-                onChange={handleOrderQty}
-                className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
-                required
+                onChange={(e) => setOrderQty(e.target.value)}
+                className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
               />
               {moq > 0 && (
-                <p className="mt-1 text-xs text-gray-500">
-                  Minimum Order Quantity (MOQ): {moq}
-                </p>
+                <p className="mt-1 text-xs text-gray-500">MOQ: {moq}</p>
               )}
             </div>
-
             <div className="w-[48%]">
               <label className="block text-sm font-semibold text-black mb-1">
                 Date
               </label>
               <input
                 type="date"
-                placeholder="Date"
-                value={date ? new Date(date).toISOString().split("T")[0] : ""}
+                value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
+                className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
               />
             </div>
           </div>
 
+          <div className="flex flex-col gap-2 sm:flex-row justify-between">
+            {/* Add item button */}
+            <button
+              type="button"
+              onClick={handleAddItem}
+              className="px-4 py-1 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer"
+            >
+              Add Item
+            </button>
+            {/* Total Summary */}
+            {poItems.length > 0 && (
+              <div className="px-4 py-1 bg-primary text-[#292926] font-semibold rounded shadow-sm text-center">
+                Total Amount (₹): {totalAmount.toFixed(2)}
+              </div>
+            )}
+          </div>
+
+          {/* Items List */}
+          {poItems.length > 0 && (
+            <div className="mt-6 border-t border-primary pt-4">
+              <h3 className="text-lg font-bold text-primary mb-4">
+                Added Items
+              </h3>
+
+              <div className="space-y-4">
+                {poItems.map((p, i) => (
+                  <div
+                    key={i}
+                    className="bg-gray-50 border border-primary rounded-xl p-4 shadow-sm"
+                  >
+                    {/* Row Number */}
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-semibold text-primary">
+                        Item #{i + 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemove(i)}
+                        className="p-1.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800 transition"
+                      >
+                        <FiTrash2 size={16} />
+                      </button>
+                    </div>
+
+                    {/* Key → Value Pairs */}
+                    <div className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-[#292926]">
+                      <p>
+                        <span className="font-semibold text-primary">
+                          Item:{" "}
+                        </span>
+                        {p.item.label}
+                      </p>
+                      <div className="flex gap-3">
+                        <p>
+                          <span className="font-semibold text-primary">
+                            Order Qty:{" "}
+                          </span>
+                          {p.orderQty}
+                        </p>
+                        <p>
+                          <span className="font-semibold text-primary">
+                            Rate (₹):{" "}
+                          </span>
+                          {p.rate}
+                        </p>
+                        <p>
+                          <span className="font-semibold text-primary">
+                            Amount (₹):{" "}
+                          </span>
+                          <span className="font-semibold">{p.amount}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Final Save */}
           <div className="flex justify-end gap-4 mt-4">
             <button
               type="submit"
@@ -335,11 +361,11 @@ const UpdatePO = ({ onClose, onUpdate, po }) => {
             >
               {loading ? (
                 <>
-                  <span className="mr-2">Saving...</span>
+                  <span className="mr-2">Updating...</span>
                   <ClipLoader size={20} color="#292926" />
                 </>
               ) : (
-                "Save"
+                "Update"
               )}
             </button>
             <button

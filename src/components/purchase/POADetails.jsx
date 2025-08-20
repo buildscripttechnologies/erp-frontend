@@ -37,54 +37,60 @@ const POADetails = ({ PO }) => {
             </th>
             <th className="px-2 py-1 border-r border-primary">Purchase UOM</th>
             <th className="px-2 py-1 border-r border-primary">Rate (₹)</th>
-            {/* <th className="px-2 py-1 border-r border-primary">UOM</th> */}
+            <th className="px-2 py-1 border-r border-primary">Amount (₹)</th>
           </tr>
         </thead>
         <tbody>
-          {PO.item ? (
-            <tr className="border-b border-primary">
-              <td className="px-2 py-1 border-r border-primary">{1}</td>
-              <td className="px-2 py-1 border-r border-primary">
-                {PO.item.skuCode || "-"}
-              </td>
-              <td className="px-2 py-1 border-r border-primary">
-                {PO.item.itemName || "-"}
-              </td>
-              <td className="px-2 py-1 border-r border-primary">
-                {PO.item.description || "-"}
-              </td>
-              <td className="px-2 py-1 border-r border-primary">
-                {PO.item.itemCategory || "-"}
-              </td>
-              <td className="px-2 py-1 border-r border-primary">
-                {PO.item.itemColor || "-"}
-              </td>
-              <td className="px-2 py-1 border-r border-primary">
-                {PO.item.hsnOrSac || "-"}
-              </td>
-              <td className="px-2 py-1 border-r border-primary">
-                {PO.item.gst || "-"}
-              </td>
-              <td className="px-2 py-1 border-r border-primary">
-                {PO.item.stockQty || "-"}
-              </td>
-              <td className="px-2 py-1 border-r border-primary">
-                {PO.item.stockUOM?.unitName || "-"}
-              </td>
-
-              <td className="px-2 py-1 border-r border-primary">
-                {PO.orderQty || "-"}
-              </td>
-              <td className="px-2 py-1 border-r border-primary">
-                {PO.item.purchaseUOM?.unitName || "-"}
-              </td>
-              <td className="px-2 py-1 border-r border-primary">
-                {PO.item.rate || "-"}
-              </td>
-            </tr>
+          {PO.items?.length > 0 ? (
+            PO.items.map((poItem, index) => (
+              <tr key={index} className="border-b border-primary capitalize">
+                <td className="px-2 py-1 border-r border-primary">
+                  {index + 1}
+                </td>
+                <td className="px-2 py-1 border-r border-primary">
+                  {poItem.item?.skuCode || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-primary">
+                  {poItem.item?.itemName || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-primary">
+                  {poItem.item?.description || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-primary">
+                  {poItem.item?.itemCategory || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-primary">
+                  {poItem.item?.itemColor || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-primary">
+                  {poItem.item?.hsnOrSac || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-primary">
+                  {poItem.item?.gst || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-primary">
+                  {poItem.item?.stockQty || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-primary">
+                  {poItem.item?.stockUOM?.unitName || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-primary">
+                  {poItem.orderQty || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-primary">
+                  {poItem.item?.purchaseUOM?.unitName || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-primary">
+                  {poItem.rate || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-primary">
+                  {poItem.amount || "-"}
+                </td>
+              </tr>
+            ))
           ) : (
             <tr>
-              <td className="px-2 py-1 text-center" colSpan={8}>
+              <td className="px-2 py-1 text-center" colSpan={13}>
                 No product details available.
               </td>
             </tr>
