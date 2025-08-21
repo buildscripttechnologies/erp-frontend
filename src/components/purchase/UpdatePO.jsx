@@ -191,6 +191,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
                 Select Vendor
               </label>
               <Select
+                isDisabled={poItems.length > 0}
                 options={vendorsOptions}
                 value={selectedVendor}
                 onChange={(v) => setSelectedVendor(v)}
@@ -301,7 +302,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
                 {poItems.map((p, i) => (
                   <div
                     key={i}
-                    className="bg-gray-50 border border-primary rounded-xl p-4 shadow-sm"
+                    className="bg-gray-50 border border-primary rounded-lg p-4 shadow-sm"
                   >
                     {/* Row Number */}
                     <div className="flex justify-between items-center mb-2">

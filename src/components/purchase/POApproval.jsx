@@ -16,13 +16,14 @@ import { generateBOM } from "../../utils/generateBOMPdf";
 import { debounce } from "lodash";
 import AddPO from "./AddPO";
 import POADetails from "./POADetails";
+import PurchaseOrderBill from "./POBill";
 
 const POApprovel = ({ isOpen }) => {
   const [pos, setPos] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   // const [openAttachments, setOpenAttachments] = useState(null);
-
+  const [poBill, setPObill] = useState(null);
   const [showAddPO, setShowAddPO] = useState(false);
   const [editingPO, setEditingPO] = useState(null);
   const [expandedPOId, setExpandedPOId] = useState(null);
@@ -169,6 +170,7 @@ const POApprovel = ({ isOpen }) => {
                 <th className="px-[8px] py-1">Vendor Name</th>
                 <th className="px-[8px] py-1">Total Amount (₹)</th>
                 <th className="px-[8px] py-1">Status</th>
+                <th className="px-[8px] py-1">Created By</th>
                 <th className="px-[8px] py-1">Action</th>
               </tr>
             </thead>
@@ -176,7 +178,7 @@ const POApprovel = ({ isOpen }) => {
               {loading ? (
                 <TableSkeleton
                   rows={pagination.limit}
-                  columns={Array(10).fill({})}
+                  columns={Array(9).fill({})}
                 />
               ) : (
                 <>
@@ -225,15 +227,22 @@ const POApprovel = ({ isOpen }) => {
                         </td>
 
                         <td
-                          className={`px-[8px] border-r font-semibold border-r-primary capitalize ${
-                            po.status == "pending"
-                              ? "text-yellow-600"
-                              : po.status == "rejected"
-                              ? "text-red-600"
-                              : "text-green-600"
-                          }`}
+                          className={`px-[8px] border-r font-bold border-r-primary capitalize `}
                         >
-                          {po.status}
+                          <span
+                            className={`${
+                              po.status == "pending"
+                                ? "bg-yellow-200"
+                                : po.status == "rejected"
+                                ? "bg-red-200"
+                                : "bg-green-200"
+                            }  py-0.5 px-1 rounded`}
+                          >
+                            {po.status}
+                          </span>
+                        </td>
+                        <td className="px-[8px]  border-r border-r-primary">
+                          {po.createdBy?.fullName || "-"}
                         </td>
                         <td className="px-[8px] pt-1 text-sm flex gap-2 border-r border-r-primary/30">
                           <FaFileDownload
@@ -274,18 +283,18 @@ const POApprovel = ({ isOpen }) => {
                             </td>
                           </tr>
                           <tr className="">
-                            <td colSpan={6}></td>
-                            <td className="max-w-[70px] pb-2">
-                              <button className="px-4 py-1 mr-2  bg-green-200 hover:bg-green-300 text-[#292926] font-semibold rounded cursor-pointer">
+                            <td colSpan={7}></td>
+                            <td className="max-w-[70px] pb-2 font-bold">
+                              <button
+                                onClick={() => setPObill(po)}
+                                className="px-4 py-1 mr-2  bg-green-200 hover:bg-green-300 text-[#292926]  rounded cursor-pointer"
+                              >
                                 Approve
                               </button>
-                              <button className="px-4 py-1 bg-red-200 hover:bg-red-300 text-[#292926] font-semibold rounded cursor-pointer">
+                              <button className="px-4 py-1 bg-red-200 hover:bg-red-300 text-[#292926]  rounded cursor-pointer">
                                 Reject
                               </button>
                             </td>
-                            {/* <td>
-                              <button>Reject</button>
-                            </td> */}
                           </tr>
                         </>
                       )}
@@ -307,6 +316,10 @@ const POApprovel = ({ isOpen }) => {
           </table>
         </div>
       </div>
+
+      {poBill != null && (
+        <PurchaseOrderBill po={poBill} onClose={() => setPObill(null)} />
+      )}
 
       <PaginationControls
         currentPage={pagination.currentPage}

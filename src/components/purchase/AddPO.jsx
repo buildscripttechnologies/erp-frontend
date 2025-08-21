@@ -142,7 +142,7 @@ const AddPO = ({ onClose, onAdded }) => {
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white w-[92vw] max-w-2xl rounded-lg p-6 border border-primary overflow-y-auto max-h-[90vh]">
         <h2 className="text-xl font-bold mb-4 text-primary">
-          Add Purchase Order
+          Create Purchase Order
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -184,6 +184,7 @@ const AddPO = ({ onClose, onAdded }) => {
                 Select Vendor
               </label>
               <Select
+                isDisabled={poItems.length > 0}
                 options={vendorsOptions}
                 value={selectedVendor}
                 onChange={(v) => setSelectedVendor(v)}
@@ -294,7 +295,7 @@ const AddPO = ({ onClose, onAdded }) => {
                 {poItems.map((p, i) => (
                   <div
                     key={i}
-                    className="bg-gray-50 border border-primary rounded-xl p-4 shadow-sm"
+                    className="bg-gray-50 border border-primary rounded-lg p-4 shadow-sm"
                   >
                     {/* Row Number */}
                     <div className="flex justify-between items-center mb-2">

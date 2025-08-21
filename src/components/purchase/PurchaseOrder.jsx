@@ -145,7 +145,7 @@ const PurchaseOrder = ({ isOpen }) => {
           onClick={() => toogleAddPO(showAddPO)}
           className="w-full sm:w-auto justify-center bg-primary hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
         >
-          <FiPlus /> Add PO
+          <FiPlus /> Create PO
         </button>
       </div>
       {showAddPO && (
@@ -176,6 +176,7 @@ const PurchaseOrder = ({ isOpen }) => {
                 <th className="px-[8px] py-1">Vendor Name</th>
                 <th className="px-[8px] py-1">Total Amount (₹)</th>
                 <th className="px-[8px] py-1">Status</th>
+                <th className="px-[8px] py-1">Created By</th>
                 <th className="px-[8px] py-1">Action</th>
               </tr>
             </thead>
@@ -183,7 +184,7 @@ const PurchaseOrder = ({ isOpen }) => {
               {loading ? (
                 <TableSkeleton
                   rows={pagination.limit}
-                  columns={Array(10).fill({})}
+                  columns={Array(9).fill({})}
                 />
               ) : (
                 <>
@@ -228,15 +229,22 @@ const PurchaseOrder = ({ isOpen }) => {
                         </td>
 
                         <td
-                          className={`px-[8px] border-r font-semibold border-r-primary capitalize ${
-                            po.status == "pending"
-                              ? "text-yellow-600"
-                              : po.status == "rejected"
-                              ? "text-red-600"
-                              : "text-green-600"
-                          }`}
+                          className={`px-[8px] font-bold border-r border-r-primary capitalize `}
                         >
-                          {po.status}
+                          <span
+                            className={`${
+                              po.status == "pending"
+                                ? "bg-yellow-200"
+                                : po.status == "rejected"
+                                ? "bg-red-200"
+                                : "bg-green-200"
+                            }  py-0.5 px-1 rounded`}
+                          >
+                            {po.status}
+                          </span>
+                        </td>
+                        <td className="px-[8px]  border-r border-r-primary">
+                          {po.createdBy?.fullName || "-"}
                         </td>
                         <td className="px-[8px] pt-1 text-sm flex gap-2 border-r border-r-primary/30">
                           <FaFileDownload
