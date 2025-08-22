@@ -35,7 +35,7 @@ const POApprovel = ({ isOpen }) => {
   });
 
   const hasMountedRef = useRef(false);
-  ScrollLock(showAddPO == true || editingPO != null);
+  ScrollLock(showAddPO == true || editingPO != null || poBill != null);
 
   useEffect(() => {
     if (!hasMountedRef.current) {
