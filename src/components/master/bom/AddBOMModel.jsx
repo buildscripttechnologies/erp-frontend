@@ -86,6 +86,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       }`,
       value: rm.id,
       type: "RawMaterial",
+      sqInchRate: rm.sqInchRate || null,
     })),
     ...sfgs.map((sfg) => ({
       label: `${sfg.skuCode}: ${sfg.itemName}${
@@ -93,6 +94,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       }`,
       value: sfg.id,
       type: "SFG",
+      sqInchRate: sfg.sqInchRate || 1,
     })),
   ];
 
@@ -244,17 +246,15 @@ const AddBomModal = ({ onClose, onSuccess }) => {
     const updated = [...productDetails];
     updated[index][field] = value;
 
-    if (field === "itemId") {
-      let itm = components.find((item) => item.id === value);
-      if (itm) {
-        updated[index].sqInchRate = itm.sqInchRate || 1;
-      }
+    if (field === "sqInchRate") {
+      updated[index].sqInchRate = value;
+      // console.log("sq in rate", updated[index].sqInchRate);
     }
 
     let height = Number(updated[index].height) || 0;
     let width = Number(updated[index].width) || 0;
     let qty = Number(updated[index].qty) || 0;
-    let sqInchRate = Number(updated[index].sqInchRate) || 0;
+    let sqInchRate = Number(updated[index].sqInchRate) || null;
 
     updated[index].rate =
       height && width && qty && sqInchRate
@@ -430,7 +430,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                     itemId: item.itemId || item.id || "",
                     type: item.type,
                     baseQty: item.qty || 0,
-                    qty: item.qty || "",
+                    qty: item.qty || 0,
                     height: item.height || "",
                     width: item.width || "",
                     rate: item.rate || "",
@@ -595,6 +595,11 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                               updateComponent(index, "itemId", e.value);
                               updateComponent(index, "type", e.type);
                               updateComponent(index, "label", e.label);
+                              updateComponent(
+                                index,
+                                "sqInchRate",
+                                e.sqInchRate
+                              );
                             }}
                             styles={{
                               control: (base, state) => ({
