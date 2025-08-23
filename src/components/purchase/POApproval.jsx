@@ -17,6 +17,7 @@ import { debounce } from "lodash";
 import AddPO from "./AddPO";
 import POADetails from "./POADetails";
 import PurchaseOrderBill from "./POBill";
+import { generateLPPO } from "./generateLPPO";
 
 const POApprovel = ({ isOpen }) => {
   const [pos, setPos] = useState([]);
@@ -122,6 +123,28 @@ const POApprovel = ({ isOpen }) => {
       }
     } catch {
       toast.error("Delete failed");
+    }
+  };
+
+  const handleDownload = async (po) => {
+    try {
+      // If response already has a blob
+
+      let p = await generateLPPO(po);
+      const blob = p.blob;
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = po.poNo + " Details";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      // cleanup
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
     }
   };
 
@@ -246,7 +269,7 @@ const POApprovel = ({ isOpen }) => {
                         </td>
                         <td className="px-[8px] pt-1 text-sm flex gap-2 border-r border-r-primary/30">
                           <FaFileDownload
-                            onClick={() => generateBOM(po)}
+                            onClick={() => handleDownload(po)}
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Download"
                             className="cursor-pointer text-primary hover:text-green-600"

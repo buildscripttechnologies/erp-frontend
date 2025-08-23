@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { generatePOPdf } from "./generatePOPdf";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
+import { generateLPPO } from "./generateLPPO";
+import { FaArrowCircleRight, FaRegArrowAltCircleRight } from "react-icons/fa";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
@@ -24,7 +26,13 @@ export default function PurchaseOrderBill({ po, onClose }) {
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
-    if (po) setPdfUrl(generatePOPdf(po, true));
+    async function setUrl() {
+      if (po) {
+        let p = await generateLPPO(po);
+        setPdfUrl(p.url);
+      }
+    }
+    setUrl();
   }, [po]);
 
   const renderPage = useCallback(
@@ -223,12 +231,13 @@ export default function PurchaseOrderBill({ po, onClose }) {
         <div className="mt-6 border-t border-gray-200 pt-6 space-y-4">
           <label className="flex items-center gap-3 cursor-pointer">
             <input
+              disabled={finalConfirmed}
               type="checkbox"
               checked={confirmed}
               onChange={(e) => setConfirmed(e.target.checked)}
-              className="w-6 h-6 accent-primary"
+              className="w-4 h-4 accent-primary"
             />
-            <span className="text-gray-700 font-medium sm:text-lg text-sm">
+            <span className="text-gray-700 font-medium text-sm">
               I confirm that all details are correct
             </span>
           </label>
@@ -270,7 +279,9 @@ export default function PurchaseOrderBill({ po, onClose }) {
                   : "bg-gray-400 cursor-not-allowed"
               }`}
               style={{ left: `${sliderPos}px` }}
-            ></div>
+            >
+              <FaRegArrowAltCircleRight className="text-2xl " />
+            </div>
           </div>
         </div>
 

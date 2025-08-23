@@ -2,7 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export const generatePOPdf = (po) => {
-  const doc = new jsPDF("l"); // landscape
+  const doc = new jsPDF("p"); // landscape
 
   // --- Header Info ---
   doc.setFontSize(14);
@@ -16,16 +16,16 @@ export const generatePOPdf = (po) => {
 
   // --- Table Headers ---
   const headers = [
-    "S.No",
+    "No",
     "SKU Code",
-    "Item Name",
-    "Item Description",
-    "Item Category",
-    "Item Color",
+    "Name",
+    "Description",
+    "Category",
+    "Color",
     "HSN",
     "GST",
-    "Order Qty",
-    "Pur. UOM",
+    "Qty",
+    "UOM",
     "Rate",
     "Amount",
   ];
@@ -64,14 +64,14 @@ export const generatePOPdf = (po) => {
     columnStyles: {
       0: { cellWidth: 12 }, // S.No
       1: { cellWidth: 30 }, // SKU
-      2: { cellWidth: 35 }, // Item Name
-      3: { cellWidth: 50 }, // Description
-      //   4: { cellWidth: 25 }, // HSN
-      //   5: { cellWidth: 20 }, // GST
-      //   6: { cellWidth: 25 }, // Qty
-      //   7: { cellWidth: 25 }, // UOM
-      //   8: { cellWidth: 25 }, // Rate
-      //   9: { cellWidth: 30 }, // Amount
+      2: { cellWidth: 15 }, // Item Name
+      3: { cellWidth: 30 }, // Description
+      //   //   4: { cellWidth: 25 }, // HSN
+      //   //   5: { cellWidth: 20 }, // GST
+      //   //   6: { cellWidth: 25 }, // Qty
+      //   //   7: { cellWidth: 25 }, // UOM
+      //   //   8: { cellWidth: 25 }, // Rate
+      //   //   9: { cellWidth: 30 }, // Amount
     },
     theme: "grid",
   });
