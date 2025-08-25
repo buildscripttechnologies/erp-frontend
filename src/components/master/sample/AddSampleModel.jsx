@@ -77,6 +77,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
       }`,
       value: rm.id,
       type: "RawMaterial",
+      sqInchRate: rm.sqInchRate,
     })),
     ...sfgs.map((sfg) => ({
       label: `${sfg.skuCode}: ${sfg.itemName}${
@@ -84,6 +85,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
       }`,
       value: sfg.id,
       type: "SFG",
+      sqInchRate: sfg.sqInchRate || 1,
     })),
   ];
 
@@ -185,22 +187,24 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
     const updated = [...productDetails];
     updated[index][field] = value;
 
-    if (field === "itemId") {
-      let itm = components.find((item) => item.id === value);
-      if (itm) {
-        updated[index].sqInchRate = itm.sqInchRate || 1;
-      }
+    // console.log("index field value", index, field, value);
+
+    if (field === "sqInchRate") {
+      updated[index].sqInchRate = value;
+      // console.log("sq in rate", updated[index].sqInchRate);
     }
 
     let height = Number(updated[index].height) || 0;
     let width = Number(updated[index].width) || 0;
     let qty = Number(updated[index].qty) || 0;
-    let sqInchRate = Number(updated[index].sqInchRate) || 0;
+    let sqInchRate = Number(updated[index].sqInchRate) || null;
+
+    console.log("sq rate", sqInchRate);
 
     updated[index].rate =
       height && width && qty && sqInchRate
         ? Number((height * width * qty * sqInchRate).toFixed(2))
-        : 0;
+        : null;
 
     setProductDetails(updated);
     recalculateTotals(form, updated);
@@ -418,6 +422,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
             </div>
           </div>
 
+          {/* Product Size */}
           <div className="flex-col my-2">
             <div>
               <h2 className="font-semibold mb-1">Product Size</h2>
@@ -489,6 +494,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                           updateComponent(index, "itemId", e.value);
                           updateComponent(index, "type", e.type);
                           updateComponent(index, "label", e.label);
+                          updateComponent(index, "sqInchRate", e.sqInchRate);
                         }}
                         styles={{
                           control: (base, state) => ({

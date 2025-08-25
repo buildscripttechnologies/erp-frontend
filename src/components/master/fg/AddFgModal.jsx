@@ -172,7 +172,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
       let itm = components.find((item) => item.id === value);
       if (itm) {
         updated[index].materials[matIndex].itemId = value;
-        updated[index].materials[matIndex].sqInchRate = itm.sqInchRate || 1;
+        updated[index].materials[matIndex].sqInchRate = itm.sqInchRate || null;
       }
     } else {
       updated[index].materials[matIndex][field] = value;
