@@ -29,23 +29,27 @@ export const generateLPPO = async (po) => {
   };
 
   // Letterpad image
-  const backgroundBase64 = await getBase64ImageFromPDF("/lp.pdf", 0);
-  const addLetterPad = () => {
-    doc.addImage(backgroundBase64, "PNG", 0, 0, pageWidth, pageHeight);
+  const lpFirstPage = await getBase64ImageFromPDF("/lp2.pdf", 0);
+  const lpLastPage = await getBase64ImageFromPDF("/lp2.pdf", 1);
+
+  const addLetterPad = (isLast = false) => {
+    const img = isLast ? lpLastPage : lpFirstPage;
+    doc.addImage(img, "PNG", 0, 0, pageWidth, pageHeight);
   };
 
   // ---------- 1) PRE-MEASURE VENDOR/PO BLOCK (no drawing yet) ----------
   // We’ll reserve vertical space on page 1 so the table never overlaps it.
-  const details = [
+  const vendorDetails = [
     ["Vendor Name : ", po.vendor.vendorName || ""],
-    [
-      "Address : ",
-      `${po.vendor.address || ""}, ${po.vendor.city || ""}, ${
-        po.vendor.state || ""
-      } - ${po.vendor.postalCode || ""}`,
-    ],
+    ["Vendor Code : ", po.vendor.venderCode || ""],
+    ["Address : ", formatAddress(po.vendor)],
     ["PAN : ", po.vendor.pan || ""],
     ["GST : ", po.vendor.gst || ""],
+    ["Price Terms : ", po.vendor.priceTerms || ""],
+    ["Payment Terms : ", po.vendor.paymentTerms || ""],
+  ];
+
+  const poDetails = [
     ["PO No. : ", po.poNo || ""],
     [
       "Date : ",
@@ -55,12 +59,24 @@ export const generateLPPO = async (po) => {
         year: "numeric",
       }),
     ],
-    ["Price Terms : ", po.vendor.priceTerms || ""],
-    ["Payment Terms : ", po.vendor.paymentTerms || ""],
+    [
+      "Delivery Date : ",
+      new Date(po.deliveryDate || Date.now()).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+    ],
+    [
+      "Expiry Date : ",
+      new Date(po.expiryDate || Date.now()).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+    ],
+    ["Address : ", po.address || ""],
   ];
-  const half = Math.ceil(details.length / 2);
-  const leftDetails = details.slice(0, half);
-  const rightDetails = details.slice(half);
 
   const lineH = 6;
   const vendorStartY = CONTENT_TOP + 2; // a tiny gap below the top content line
@@ -80,11 +96,11 @@ export const generateLPPO = async (po) => {
 
     const colWidth = pageWidth / 2 - margin * 2;
 
-    leftDetails.forEach(([label, value]) => {
+    vendorDetails.forEach(([label, value]) => {
       const lines = measureOne(label, value, colWidth);
       leftY += lines * lineH;
     });
-    rightDetails.forEach(([label, value]) => {
+    poDetails.forEach(([label, value]) => {
       const lines = measureOne(label, value, colWidth);
       rightY += lines * lineH;
     });
@@ -105,9 +121,9 @@ export const generateLPPO = async (po) => {
       "NAME",
       "DESCRIPTION",
       "CATEGORY",
-      "COLOR",
+
       "HSN",
-      "GST",
+
       "QTY",
       "UOM",
       "RATE",
@@ -121,9 +137,9 @@ export const generateLPPO = async (po) => {
     (item.item?.itemName || "").toUpperCase(),
     (item.item?.description || "").toUpperCase(),
     (item.item?.itemCategory || "").toUpperCase(),
-    (item.item?.itemColor || "").toUpperCase(),
+
     (item.item?.hsnOrSac || "").toUpperCase(),
-    item.item?.gst ? `${item.item.gst}%` : "",
+
     String(item.orderQty || 0).toUpperCase(),
     (item.item?.purchaseUOM?.unitName || "").toUpperCase(),
     String(item.rate || 0).toUpperCase(),
@@ -152,67 +168,129 @@ export const generateLPPO = async (po) => {
       lineColor: colors.gold,
       lineWidth: 0.1,
     },
-    willDrawPage: () => {
-      // Draw background BEFORE any table content on each page
-      addLetterPad();
+    willDrawPage: (data) => {
+      if (data.pageNumber === 1) {
+        addLetterPad(false); // first page
+      } else {
+        addLetterPad(false); // middle pages also use first page template
+      }
     },
   });
 
   // Where table ended on the LAST page
-  const finalY =
+  let finalY =
     (doc.lastAutoTable && doc.lastAutoTable.finalY) || CONTENT_TOP + 35;
 
   // ---------- 3) DRAW TOTALS + AMOUNT IN WORDS (on the last page) ----------
-  const totalAmount = (po.items || []).reduce(
-    (sum, item) => sum + (item.amount || 0),
-    0
-  );
-  const totalTax = (po.items || []).reduce(
-    (sum, item) => sum + ((item.amount || 0) * (item.item?.gst || 0)) / 100,
-    0
-  );
-  const totalAfterTax = totalAmount + totalTax;
+  const gstSummary = getGstSummary(po.items, po.vendor.state, "GJ");
+  const halfWidth = (pageWidth - margin * 2) / 2;
+  autoTable(doc, {
+    startY: finalY + 10,
+    margin: { left: margin },
+    tableWidth: halfWidth - 5,
+    theme: "grid",
+    head: [["GST Slab", "IGST", "CGST", "SGST"]],
+    body: Object.values(gstSummary).map((slab) => [
+      `${slab.gstRate}%`,
+      slab.igst.toFixed(2),
+      slab.cgst.toFixed(2),
+      slab.sgst.toFixed(2),
+    ]),
+    styles: {
+      fontSize: 8,
+      textColor: colors.text,
+      halign: "left",
+      fillColor: false,
+      valign: "top",
+    },
+    bodyStyles: { fillColor: false },
+    headStyles: {
+      fillColor: colors.gold,
+      textColor: colors.text,
+      halign: "left",
+      fontStyle: "bold",
+      lineColor: colors.gold,
+      lineWidth: 0.1,
+    },
+  });
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(...colors.text);
+  let leftTableY = doc.lastAutoTable.finalY;
 
-  let cursorY = finalY + 7;
-  const rightX = pageWidth - margin - 60;
+  // add Amount in Words just below GST table
 
-  doc.text(`Gross Total: ${totalAmount.toFixed(2)}`, rightX, cursorY);
-  cursorY += 5;
-  doc.text(`Total Tax: ${totalTax.toFixed(2)}`, rightX, cursorY);
-  cursorY += 5;
-  doc.text(
-    `Total Amount (After Tax): ${totalAfterTax.toFixed(2)}`,
-    rightX,
-    cursorY
-  );
+  // add Amount in Words just below GST table
+  autoTable(doc, {
+    startY: leftTableY + 5,
+    margin: { left: margin },
+    tableWidth: halfWidth - 5, // restrict to 50%
+    body: [
+      [
+        {
+          content: `Amount in Words: ${toIndianWords(po.totalAmountWithGst)}`,
+          styles: { fontSize: 10 },
+        },
+      ],
+    ],
+    theme: "plain", // no borders if you like
+  });
 
-  // Amount in Words (left side)
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  const amountWords = `[Rs: ${toIndianWords(
-    totalAfterTax
-  ).toUpperCase()} Only]`;
-  doc.text(amountWords, margin, finalY + 23);
+  // right column → Total Amounts
+  autoTable(doc, {
+    startY: finalY + 10,
+    margin: { left: margin + halfWidth + 5 },
+    tableWidth: halfWidth - 5,
+    theme: "grid",
+    head: [["Description", "Amount"]],
+    body: [
+      ["Taxable Amount", po.totalAmount.toFixed(2)],
+      [
+        "IGST",
+        Object.values(gstSummary)
+          .reduce((s, r) => s + r.igst, 0)
+          .toFixed(2),
+      ],
+      [
+        "CGST",
+        Object.values(gstSummary)
+          .reduce((s, r) => s + r.cgst, 0)
+          .toFixed(2),
+      ],
+      [
+        "SGST",
+        Object.values(gstSummary)
+          .reduce((s, r) => s + r.sgst, 0)
+          .toFixed(2),
+      ],
+      ["Grand Total", po.totalAmountWithGst.toFixed(2)],
+    ],
+    styles: {
+      fontSize: 8,
+      textColor: colors.text,
+      halign: "left",
+      fillColor: false,
+      valign: "top",
+    },
+    bodyStyles: { fillColor: false },
+    headStyles: {
+      fillColor: colors.gold,
+      textColor: colors.text,
+      halign: "left",
+      fontStyle: "bold",
+      lineColor: colors.gold,
+      lineWidth: 0.1,
+    },
+  });
 
   // ---------- 4) TERMS & CONDITIONS (continue on last page, or add a new page) ----------
-  let termsY = finalY + 40;
-  if (termsY > pageHeight - 40) {
-    doc.addPage();
-    addLetterPad(); // background for this manual page
-    termsY = CONTENT_TOP; // keep top gutter consistent
-  }
-
+  doc.addPage();
+  addLetterPad(true); // second page design
+  let termsY = 15;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.setTextColor(...colors.gold);
   doc.text("TERMS & CONDITIONS", margin, termsY);
-
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
+  doc.setFontSize(10);
   doc.setTextColor(...colors.text);
   doc.text(TERMS, margin, termsY + 6, {
     maxWidth: pageWidth - margin * 2,
@@ -229,6 +307,20 @@ export const generateLPPO = async (po) => {
   doc.text(`${po.poNo} Details`, pageWidth / 2, CONTENT_TOP - 7, {
     align: "center",
   }); // around y≈47 if CONTENT_TOP=54
+
+  // Headings
+  doc.setTextColor(...colors.gold);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+
+  // Vendor Details heading
+  doc.text("Supplier Details", margin, vendorStartY + 2);
+
+  // PO Details heading
+  doc.text("Ship To", pageWidth / 2 + margin, vendorStartY + 2);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
 
   // Vendor label/value helper (now actually draws)
   const printDetail = (label, value, x, y, maxWidth) => {
@@ -255,16 +347,14 @@ export const generateLPPO = async (po) => {
 
   // Draw the two-column vendor block exactly into the reserved area
   const colWidth = pageWidth / 2 - margin * 2;
-  let leftY = vendorStartY;
-  let rightY = vendorStartY;
-
-  console.log("leftY", leftY);
-
-  leftDetails.forEach(([label, value]) => {
+  let leftY = vendorStartY + 8;
+  vendorDetails.forEach(([label, value]) => {
     const lines = printDetail(label, value, margin, leftY, colWidth);
     leftY += lines * lineH;
   });
-  rightDetails.forEach(([label, value]) => {
+
+  let rightY = vendorStartY + 8;
+  poDetails.forEach(([label, value]) => {
     const lines = printDetail(
       label,
       value,
@@ -361,3 +451,45 @@ const toIndianWords = (num) => {
   if (num > 0) result += numToWords(num) + " ";
   return result.trim();
 };
+
+function formatAddress(vendor) {
+  const parts = [];
+
+  if (vendor.address) parts.push(vendor.address);
+  if (vendor.city) parts.push(vendor.city);
+  if (vendor.state) {
+    let stateLine = vendor.state;
+    if (vendor.postalCode) stateLine += ` - ${vendor.postalCode}`;
+    parts.push(stateLine);
+  }
+  if (vendor.country) parts.push(vendor.country);
+
+  return parts.join(", ");
+}
+
+function getGstSummary(items, vendorState, companyState = "GJ") {
+  const summary = {};
+
+  items.forEach((item) => {
+    const gstRate = item.gst;
+    if (!summary[gstRate]) {
+      summary[gstRate] = { gstRate, taxable: 0, gstAmount: 0 };
+    }
+    summary[gstRate].taxable += item.amount;
+    summary[gstRate].gstAmount += item.gstAmount;
+  });
+
+  Object.values(summary).forEach((slab) => {
+    if (vendorState === companyState) {
+      slab.cgst = slab.gstAmount / 2;
+      slab.sgst = slab.gstAmount / 2;
+      slab.igst = 0;
+    } else {
+      slab.igst = slab.gstAmount;
+      slab.cgst = 0;
+      slab.sgst = 0;
+    }
+  });
+
+  return summary;
+}

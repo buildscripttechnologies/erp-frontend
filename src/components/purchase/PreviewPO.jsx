@@ -5,7 +5,7 @@ import Select from "react-select";
 import { ClipLoader } from "react-spinners";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 
-const UpdatePO = ({ onClose, onUpdated, po }) => {
+const PreviewPO = ({ onClose, onUpdated, po }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [orderQty, setOrderQty] = useState("");
@@ -196,7 +196,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
         return;
       }
 
-      toast.success("Purchase Order Updated Successfully");
+      // toast.success("Purchase Order Updated Successfully");
       onClose();
       onUpdated();
     } catch (err) {
@@ -222,7 +222,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white w-[92vw] max-w-2xl rounded-lg p-6 border border-primary overflow-y-auto max-h-[90vh]">
         <h2 className="text-xl font-bold mb-4 text-primary">
-          Update Purchase Order
+          Preview Purchase Order
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -491,9 +491,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
                           <span className="font-semibold text-primary">
                             GST (%) :{" "}
                           </span>
-                          <span className="">
-                            {Number(p.gst).toFixed(2)}
-                          </span>
+                          <span className="">{Number(p.gst).toFixed(2)}</span>
                         </p>
                         <p>
                           <span className="font-semibold text-primary">
@@ -532,7 +530,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
                   <ClipLoader size={20} color="#292926" />
                 </>
               ) : (
-                "Update"
+                "Next"
               )}
             </button>
             <button
@@ -549,4 +547,4 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
   );
 };
 
-export default UpdatePO;
+export default PreviewPO;

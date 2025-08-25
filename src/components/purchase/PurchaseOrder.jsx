@@ -175,6 +175,7 @@ const PurchaseOrder = ({ isOpen }) => {
                 <th className="px-[8px] py-1">Date</th>
                 <th className="px-[8px] py-1">Vendor Name</th>
                 <th className="px-[8px] py-1">Total Amount (₹)</th>
+                <th className="px-[8px] py-1">Total Amount With GST (₹)</th>
                 <th className="px-[8px] py-1">Status</th>
                 <th className="px-[8px] py-1">Created By</th>
                 <th className="px-[8px] py-1">Action</th>
@@ -226,6 +227,9 @@ const PurchaseOrder = ({ isOpen }) => {
 
                         <td className="px-[8px]  border-r border-r-primary">
                           {po.totalAmount || "-"}
+                        </td>
+                        <td className="px-[8px]  border-r border-r-primary">
+                          {po.totalAmountWithGst || "-"}
                         </td>
 
                         <td

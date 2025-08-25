@@ -18,6 +18,7 @@ import AddPO from "./AddPO";
 import POADetails from "./POADetails";
 import PurchaseOrderBill from "./POBill";
 import { generateLPPO } from "./generateLPPO";
+import PreviewPO from "./PreviewPO";
 
 const POApprovel = ({ isOpen }) => {
   const [pos, setPos] = useState([]);
@@ -25,6 +26,7 @@ const POApprovel = ({ isOpen }) => {
   const [loading, setLoading] = useState(false);
   // const [openAttachments, setOpenAttachments] = useState(null);
   const [poBill, setPObill] = useState(null);
+  const [previewPO, setPreviewPO] = useState(null);
   const [showAddPO, setShowAddPO] = useState(false);
   const [editingPO, setEditingPO] = useState(null);
   const [expandedPOId, setExpandedPOId] = useState(null);
@@ -62,6 +64,7 @@ const POApprovel = ({ isOpen }) => {
       const res = await axios.get(
         `/pos/get-all?page=${page}&limit=${limit}&search=${search}`
       );
+      const poList = res.data.data || [];
       setPos(res.data.data || []);
       setPagination({
         currentPage: res.data.currentPage,
@@ -69,6 +72,7 @@ const POApprovel = ({ isOpen }) => {
         totalResults: res.data.totalResults,
         limit: res.data.limit,
       });
+      return poList;
     } catch {
       toast.error("Failed to fetch POs");
     } finally {
@@ -148,6 +152,23 @@ const POApprovel = ({ isOpen }) => {
     }
   };
 
+  const handlePOUpdated = async (id) => {
+    // 1. Fetch POs again (fresh list)
+    const freshPOs = await fetchPOs(1); // <-- reuse your API call function
+
+    // 2. Update state
+    setPos(freshPOs);
+
+    // 3. Find updated PO
+    const updatedPO = freshPOs.find((po) => po._id === id);
+
+    // 4. Open in bill view
+    setPObill(updatedPO);
+
+    // 5. Close preview
+    setPreviewPO(null);
+  };
+
   return (
     <div className="p-3 max-w-[99vw] mx-auto overflow-x-hidden mt-4">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
@@ -192,6 +213,7 @@ const POApprovel = ({ isOpen }) => {
                 <th className="px-[8px] py-1">Date</th>
                 <th className="px-[8px] py-1">Vendor Name</th>
                 <th className="px-[8px] py-1">Total Amount (₹)</th>
+                <th className="px-[8px] py-1">Total Amount with GST (₹)</th>
                 <th className="px-[8px] py-1">Status</th>
                 <th className="px-[8px] py-1">Created By</th>
                 <th className="px-[8px] py-1">Action</th>
@@ -247,6 +269,9 @@ const POApprovel = ({ isOpen }) => {
 
                         <td className="px-[8px]  border-r border-r-primary">
                           {po.totalAmount || "-"}
+                        </td>
+                        <td className="px-[8px]  border-r border-r-primary">
+                          {po.totalAmountWithGst || "-"}
                         </td>
 
                         <td
@@ -309,7 +334,7 @@ const POApprovel = ({ isOpen }) => {
                             <td colSpan={7}></td>
                             <td className="max-w-[70px] pb-2 font-bold">
                               <button
-                                onClick={() => setPObill(po)}
+                                onClick={() => setPreviewPO(po)}
                                 className="px-4 py-1 mr-2  bg-green-200 hover:bg-green-300 text-[#292926]  rounded cursor-pointer"
                               >
                                 Approve
@@ -342,6 +367,13 @@ const POApprovel = ({ isOpen }) => {
 
       {poBill != null && (
         <PurchaseOrderBill po={poBill} onClose={() => setPObill(null)} />
+      )}
+      {previewPO != null && (
+        <PreviewPO
+          po={previewPO}
+          onUpdated={() => handlePOUpdated(previewPO._id)}
+          onClose={() => setPreviewPO(null)}
+        />
       )}
 
       <PaginationControls
