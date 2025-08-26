@@ -43,7 +43,12 @@ const POADetails = ({ PO }) => {
         <tbody>
           {PO.items?.length > 0 ? (
             PO.items.map((poItem, index) => (
-              <tr key={index} className="border-b border-primary capitalize">
+              <tr
+                key={index}
+                className={`border-b border-primary capitalize 
+              ${poItem.rejected ? "bg-red-50" : ""}
+              `}
+              >
                 <td className="px-2 py-1 border-r border-primary">
                   {index + 1}
                 </td>

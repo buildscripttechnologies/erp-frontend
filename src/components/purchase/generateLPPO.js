@@ -3,8 +3,7 @@ import autoTable from "jspdf-autotable";
 import { getBase64ImageFromPDF } from "../../utils/convertPDFPageToImage";
 
 // Terms & Conditions (multi-line string)
-const TERMS = `TERMS and CONDITIONS 
-1. IKhodal submission of the purchase Order is conditioned on Supplier’s agreement that any terms different from or in addition to the terms of the Purchase Order, whether communicated orally or contained in any purchase order confirmation, invoice, acknowledgement, acceptance or other written correspondence, irrespective of the timing, shall not form a part of the Purchase Order, even if Supplier purports to condition its acceptance of the Purchase Order on IKhodal agreement to such different or additional terms. 
+const TERMS = `1. IKhodal submission of the purchase Order is conditioned on Supplier’s agreement that any terms different from or in addition to the terms of the Purchase Order, whether communicated orally or contained in any purchase order confirmation, invoice, acknowledgement, acceptance or other written correspondence, irrespective of the timing, shall not form a part of the Purchase Order, even if Supplier purports to condition its acceptance of the Purchase Order on IKhodal agreement to such different or additional terms. 
 2. Supplier will immediately notify IKhodal if Supplier’s timely performance under the Purchase Order is delayed or is likely to be delayed. IKhodal's acceptance of Supplier’s notice will not constitute IKhodal's waiver of any of Supplier’s obligations. 
 3. If Supplier delivers Work after the Delivery Date, IKhodal may reject such Work. 
 4. Supplier will preserve, pack, package and handle the Deliverables and Products so as to protect the Deliverables and Products from loss or damage and in accordance with best commercial practices in the absence of any specifications IKhodal may provide. 
@@ -131,7 +130,9 @@ export const generateLPPO = async (po) => {
     ],
   ];
 
-  const body = (po.items || []).map((item, idx) => [
+  const pos = po.items.filter((i) => i.rejected == false);
+
+  const body = (pos || []).map((item, idx) => [
     String(idx + 1).toUpperCase(),
     (item.item?.skuCode || "").toUpperCase(),
     (item.item?.itemName || "").toUpperCase(),
@@ -175,14 +176,38 @@ export const generateLPPO = async (po) => {
         addLetterPad(false); // middle pages also use first page template
       }
     },
+
+    didDrawPage: (data) => {
+      const pageCount = doc.getNumberOfPages();
+      const currentPage = doc.internal.getCurrentPageInfo().pageNumber;
+
+      if (currentPage < pageCount) {
+        doc.setTextColor(...colors.white);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text(`${po.poNo} Details`, pageWidth / 2, CONTENT_TOP - 7, {
+          align: "center",
+        });
+      }
+    },
   });
 
   // Where table ended on the LAST page
   let finalY =
     (doc.lastAutoTable && doc.lastAutoTable.finalY) || CONTENT_TOP + 35;
 
+  // Estimate how much vertical space GST + Totals will take
+  const neededHeight = 70; // rough estimate (GST table + totals + spacing)
+
+  // ✅ Check if there is enough space left on this page
+  if (finalY + neededHeight > pageHeight - 40) {
+    doc.addPage();
+    addLetterPad(false); // same design as inner pages
+    finalY = CONTENT_TOP; // reset position for new page
+  }
+
   // ---------- 3) DRAW TOTALS + AMOUNT IN WORDS (on the last page) ----------
-  const gstSummary = getGstSummary(po.items, po.vendor.state, "GJ");
+  const gstSummary = getGstSummary(pos, po.vendor.state, "GJ");
   const halfWidth = (pageWidth - margin * 2) / 2;
   autoTable(doc, {
     startY: finalY + 10,
@@ -226,8 +251,10 @@ export const generateLPPO = async (po) => {
     body: [
       [
         {
-          content: `Amount in Words: ${toIndianWords(po.totalAmountWithGst)}`,
-          styles: { fontSize: 10 },
+          content: `[ Amount in Words: ${toIndianWords(
+            po.totalAmountWithGst
+          )} ]`,
+          styles: { fontSize: 10, fontStyle: "bold" },
         },
       ],
     ],
@@ -261,7 +288,13 @@ export const generateLPPO = async (po) => {
           .reduce((s, r) => s + r.sgst, 0)
           .toFixed(2),
       ],
-      ["Grand Total", po.totalAmountWithGst.toFixed(2)],
+      [
+        { content: "Grand Total", styles: { fontStyle: "bold" } },
+        {
+          content: po.totalAmountWithGst.toFixed(2),
+          styles: { fontStyle: "bold" },
+        },
+      ],
     ],
     styles: {
       fontSize: 8,
@@ -300,76 +333,138 @@ export const generateLPPO = async (po) => {
   // ---------- 5) GO BACK TO PAGE 1 AND DRAW TITLE + VENDOR/PO DETAILS ----------
   doc.setPage(1);
 
-  // Title (white on the letterpad’s banner)
-  doc.setTextColor(...colors.white);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.text(`${po.poNo} Details`, pageWidth / 2, CONTENT_TOP - 7, {
-    align: "center",
-  }); // around y≈47 if CONTENT_TOP=54
+  // Supplier Details Block (left table)
+  autoTable(doc, {
+    startY: CONTENT_TOP + 2,
+    margin: { left: margin },
+    tableWidth: pageWidth / 2 - margin * 2,
+    theme: "grid",
+    styles: {
+      fontSize: 9,
+      textColor: colors.text,
+      valign: "middle",
+      halign: "left",
+      fillColor: false,
+    },
+    headStyles: {
+      fillColor: colors.gold,
+      textColor: colors.text,
+      halign: "left",
+      fontStyle: "bold",
+      lineColor: colors.gold,
+      lineWidth: 0.1,
+    },
+    head: [
+      [
+        {
+          content: "Supplier Details",
+          colSpan: 2,
+          styles: { fontStyle: "bold", halign: "left" },
+        },
+      ],
+    ],
+    body: [
+      [
+        {
+          content: po.vendor?.vendorName,
+          colSpan: 2,
+          styles: { fontStyle: "bold" },
+        },
+      ],
+      [{ content: formatAddress(po.vendor), colSpan: 2 }],
+      ["Vendor Code:", po.vendor?.venderCode || ""],
+      ["PAN:", po.vendor?.pan || ""],
+      ["GST:", po.vendor?.gst || ""],
+      ["Price Terms:", po.vendor?.priceTerms || ""],
+      ["Payment Terms:", po.vendor?.paymentTerms || ""],
+    ],
+  });
 
-  // Headings
-  doc.setTextColor(...colors.gold);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
+  // Ship To Block (right table)
+  autoTable(doc, {
+    startY: CONTENT_TOP + 2,
+    margin: { left: pageWidth / 2 + margin },
+    tableWidth: pageWidth / 2 - margin * 2,
+    theme: "grid",
+    styles: {
+      fontSize: 9,
+      textColor: colors.text,
+      valign: "middle",
+      halign: "left",
+      fillColor: false,
+    },
+    headStyles: {
+      fillColor: colors.gold,
+      textColor: colors.text,
+      halign: "left",
+      fontStyle: "bold",
+      lineColor: colors.gold,
+      lineWidth: 0.1,
+    },
+    head: [
+      [
+        {
+          content: "Ship To",
+          colSpan: 2,
+          styles: { fontStyle: "bold", halign: "left" },
+        },
+      ],
+    ],
+    body: [
+      [
+        {
+          content: "I KHODAL BAG PVT. LTD",
+          colSpan: 2,
+          styles: { fontStyle: "bold" },
+        },
+      ],
+      [
+        {
+          content: po.address || "",
+          colSpan: 2,
+        },
+      ],
+      ["PO No:", po.poNo || ""],
+      [
+        "Date:",
+        new Date(po.date || Date.now()).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+      ],
+      [
+        "Expiry Date:",
+        new Date(po.expiryDate || Date.now()).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+      ],
+      [
+        "Delivery Date:",
+        new Date(po.deliveryDate || Date.now()).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+      ],
+    ],
+  });
 
-  // Vendor Details heading
-  doc.text("Supplier Details", margin, vendorStartY + 2);
+  const pageCount = doc.getNumberOfPages();
 
-  // PO Details heading
-  doc.text("Ship To", pageWidth / 2 + margin, vendorStartY + 2);
+  // Loop through all pages except the last one
+  for (let i = 1; i < pageCount; i++) {
+    doc.setPage(i);
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-
-  // Vendor label/value helper (now actually draws)
-  const printDetail = (label, value, x, y, maxWidth) => {
+    doc.setTextColor(...colors.white);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(...colors.text);
-    doc.setFontSize(10);
-
-    // Draw label
-    doc.text(label, x, y);
-
-    // Measure label width
-    const labelWidth = doc.getTextWidth(label);
-
-    // Draw value immediately after
-    doc.setFont("helvetica", "normal");
-    const wrappedText = doc.splitTextToSize(
-      value || "",
-      maxWidth - labelWidth - 2
-    );
-    doc.text(wrappedText, x + labelWidth, y);
-
-    return wrappedText.length;
-  };
-
-  // Draw the two-column vendor block exactly into the reserved area
-  const colWidth = pageWidth / 2 - margin * 2;
-  let leftY = vendorStartY + 8;
-  vendorDetails.forEach(([label, value]) => {
-    const lines = printDetail(label, value, margin, leftY, colWidth);
-    leftY += lines * lineH;
-  });
-
-  let rightY = vendorStartY + 8;
-  poDetails.forEach(([label, value]) => {
-    const lines = printDetail(
-      label,
-      value,
-      pageWidth / 2 + margin,
-      rightY,
-      colWidth
-    );
-    rightY += lines * lineH;
-  });
-
-  // Optional heading above the table on page 1 (drawn after table but placed above it)
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.setTextColor(...colors.gold);
-  doc.text("Product Details", margin, productHeadingY);
+    doc.setFontSize(14);
+    doc.text(`Purchase Order - ${po.poNo}`, pageWidth / 2, CONTENT_TOP - 7, {
+      align: "center",
+    });
+  }
 
   // ---------- 6) OUTPUT ----------
   const pdfBlob = doc.output("blob");

@@ -5,7 +5,7 @@ import Select from "react-select";
 import { ClipLoader } from "react-spinners";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 
-const PreviewPO = ({ onClose, onUpdated, po }) => {
+const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [orderQty, setOrderQty] = useState("");
@@ -24,21 +24,39 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
   // multiple items state
   const [poItems, setPoItems] = useState([]);
 
+  const [rejectionDialog, setRejectionDialog] = useState({
+    open: false,
+    index: null,
+  });
+  const [rejectionReason, setRejectionReason] = useState("");
+
   // console.log("po item", poItems);
 
-  const totalAmount = poItems.reduce(
-    (sum, item) => sum + Number(item.amount),
-    0
-  );
-  const totalGstAmount = poItems.reduce(
-    (sum, item) => sum + (Number(item.amountWithGst) - Number(item.amount)),
-    0
-  );
+  const calculateTotals = () => {
+    const validItems = poItems.filter((item) => !item.rejected);
 
-  const totalAmountWithGst = poItems.reduce(
-    (sum, item) => sum + Number(item.amountWithGst),
-    0
-  );
+    console.log("valid items", validItems);
+
+    const totalAmount = validItems.reduce(
+      (sum, i) => Number(sum) + Number(i.amount),
+      0
+    );
+    const totalGstAmount = validItems.reduce(
+      (sum, i) => Number(sum) + Number(i.gstAmount),
+      0
+    );
+    const totalAmountWithGst = validItems.reduce(
+      (sum, i) => Number(sum) + Number(i.amountWithGst),
+      0
+    );
+
+    console.log(totalAmount, totalGstAmount, totalAmountWithGst);
+
+    return { totalAmount, totalGstAmount, totalAmountWithGst };
+  };
+
+  const { totalAmount, totalGstAmount, totalAmountWithGst } = calculateTotals();
+
   // fetch dropdowns
   useEffect(() => {
     const fetchDropdowns = async () => {
@@ -92,6 +110,10 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
           },
           gstAmount: i.gstAmount,
           amountWithGst: i.amountWithGst,
+
+          // ✅ use values from DB
+          rejected: i.rejected || false,
+          rejectionReason: i.rejectionReason || "",
         }))
       );
     }
@@ -99,7 +121,16 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
 
   // add item to list
   const handleAddItem = () => {
-    if (!selectedItem || !selectedVendor || !orderQty) {
+    if (
+      !selectedItem ||
+      !selectedVendor ||
+      !orderQty ||
+      !itemDetails.rate ||
+      !date ||
+      !expiryDate ||
+      !deliveryDate ||
+      !address
+    ) {
       return toast.error("All fields are required before adding item");
     }
 
@@ -121,6 +152,8 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
       gst,
       amount,
       amountWithGst,
+      rejected: false,
+      rejectionReason: "",
     };
 
     if (editIndex !== null) {
@@ -141,6 +174,8 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
     setOrderQty("");
     setItemDetails(null);
     setMoq(1);
+    calculateTotals();
+    calculateStatus();
   };
 
   // console.log("item details", itemDetails);
@@ -163,42 +198,107 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
     setPoItems(updated);
   };
 
+  const handleReject = () => {
+    if (!rejectionReason.trim()) return;
+
+    if (rejectionDialog.index === "all") {
+      setPoItems((prev) =>
+        prev.map((item) => ({
+          ...item,
+          rejected: true,
+          rejectionReason,
+        }))
+      );
+    } else {
+      setPoItems((prev) =>
+        prev.map((item, idx) =>
+          idx === rejectionDialog.index
+            ? { ...item, rejected: true, rejectionReason }
+            : item
+        )
+      );
+    }
+
+    setRejectionDialog({ open: false, index: null });
+    setRejectionReason("");
+    setEditIndex(null);
+    setSelectedItem(null);
+    setOrderQty("");
+    setItemDetails(null);
+    setMoq(1);
+  };
+
+  const handleRestore = (index) => {
+    setPoItems((prev) =>
+      prev.map((item, i) =>
+        i === index ? { ...item, rejected: false, rejectionReason: "" } : item
+      )
+    );
+  };
+
+  const calculateStatus = () => {
+    const total = poItems.length;
+    const rejected = poItems.filter((i) => i.rejected).length;
+    const approved = total - rejected;
+
+    if (total === 1) return rejected === 1 ? "rejected" : "approved";
+    if (total === 2) {
+      if (rejected === 1) return "partially-approved";
+      if (rejected === 2) return "rejected";
+      return "approved";
+    }
+    if (rejected === 0) return "approved";
+    if (approved === 0) return "rejected";
+    if (approved > rejected) return "partially-approved";
+    return "partially-rejected";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (poItems.length === 0) return toast.error("Add at least one item");
+
+    const status = calculateStatus();
+    const filteredItems = poItems.filter((i) => !i.rejected);
+
+    const payload = {
+      items: poItems.map((p) => ({
+        item: p.item.value,
+        orderQty: p.orderQty,
+        rate: p.rate,
+        gst: p.gst,
+        amount: Number(p.amount).toFixed(2),
+        gstAmount: (Number(p.amountWithGst) - Number(p.amount)).toFixed(2),
+        amountWithGst: Number(p.amountWithGst).toFixed(2),
+        rejected: p.rejected,
+        rejectionReason: p.rejectionReason || "",
+      })),
+      expiryDate,
+      deliveryDate,
+      address,
+      vendor: selectedVendor.value,
+      date,
+      status,
+      totalAmount: totalAmount,
+      totalGstAmount: totalGstAmount,
+      totalAmountWithGst: totalAmountWithGst,
+    };
+
+    if (JSON.stringify(payload) === JSON.stringify(po)) {
+      toast("No changes detected");
+      return;
+    }
 
     setLoading(true);
     try {
-      const payload = {
-        items: poItems.map((p) => ({
-          item: p.item.value,
-          orderQty: p.orderQty,
-          rate: p.rate,
-          gst: p.gst,
-          amount: Number(p.amount).toFixed(2),
-          gstAmount: (Number(p.amountWithGst) - Number(p.amount)).toFixed(2),
-          amountWithGst: Number(p.amountWithGst).toFixed(2),
-        })),
-        expiryDate,
-        deliveryDate,
-        address,
-        vendor: selectedVendor.value,
-        date,
-        totalAmount: totalAmount.toFixed(2),
-        totalGstAmount: totalGstAmount.toFixed(2),
-        totalAmountWithGst: totalAmountWithGst.toFixed(2),
-      };
+      await axios.patch(`/pos/update/${po._id}`, payload);
 
-      const res = await axios.patch(`/pos/update/${po._id}`, payload);
-
-      if (res.data.status === 403) {
-        toast.error(res.data.message);
-        return;
+      // Call proper callback depending on PO status
+      if (status === "rejected") {
+        onRejected?.();
+      } else {
+        onApproved?.(po._id, payload);
       }
-
-      // toast.success("Purchase Order Updated Successfully");
-      onClose();
       onUpdated();
+      onClose?.();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update PO");
     } finally {
@@ -218,11 +318,28 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
     v: v,
   }));
 
+  // Convert Date object or ISO string -> dd-MM-yy
+  // const formatDateForInput = (date) => {
+  //   if (!date) return "";
+  //   const d = new Date(date);
+  //   const day = String(d.getDate()).padStart(2, "0");
+  //   const month = String(d.getMonth() + 1).padStart(2, "0");
+  //   const year = String(d.getFullYear()).slice(-2); // last 2 digits
+  //   return `${day}-${month}-${year}`;
+  // };
+
+  // Convert from input (dd-MM-yy) -> ISO (for saving in DB)
+  const parseDateFromInput = (value) => {
+    if (!value) return null;
+    const [day, month, year] = value.split("-");
+    return new Date(`20${year}-${month}-${day}`); // converts to yyyy-MM-dd
+  };
+
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white w-[92vw] max-w-2xl rounded-lg p-6 border border-primary overflow-y-auto max-h-[90vh]">
         <h2 className="text-xl font-bold mb-4 text-primary">
-          Preview Purchase Order
+          Review Purchase Order
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -370,8 +487,11 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
               </label>
               <input
                 type="date"
+                placeholder="dd-mm-yy"
                 value={expiryDate}
-                onChange={(e) => setExpiryDate(e.target.value)}
+                onChange={(e) =>
+                  setExpiryDate(parseDateFromInput(e.target.value))
+                }
                 className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
               />
             </div>
@@ -423,7 +543,8 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
               <div className="px-4 py-2 bg-primary text-[#292926] font-semibold rounded shadow-sm text-center space-y-1">
                 {/* <div>Total Amount (₹): {totalAmount.toFixed(2)}</div> */}
                 <div>
-                  Total Amount with GST (₹): {totalAmountWithGst.toFixed(2)}
+                  Total Amount with GST (₹):{" "}
+                  {Number(totalAmountWithGst).toFixed(2)}
                 </div>
               </div>
             )}
@@ -440,7 +561,11 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
                 {poItems.map((p, i) => (
                   <div
                     key={i}
-                    className="bg-gray-50 border border-primary rounded-lg p-4 shadow-sm"
+                    className={`border rounded-lg p-4 shadow-sm ${
+                      p.rejected
+                        ? "bg-red-50 border-red-400 opacity-70"
+                        : "bg-gray-50 border-primary"
+                    }  ${editIndex === i ? "bg-yellow-100/50" : ""}`}
                   >
                     {/* Row Number */}
                     <div className="flex justify-between items-center mb-2">
@@ -448,20 +573,41 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
                         Item #{i + 1}
                       </span>
                       <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleEdit(i)}
-                          className="px-2 py-1 rounded bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-xs"
-                        >
-                          <FiEdit2 size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleRemove(i)}
-                          className="p-1.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800 transition"
-                        >
-                          <FiTrash2 size={16} />
-                        </button>
+                        {p.rejected ? (
+                          <button
+                            type="button"
+                            onClick={() => handleRestore(i)}
+                            className="px-2 py-1 rounded bg-green-100 hover:bg-green-200 text-green-700 text-xs cursor-pointer"
+                          >
+                            Undo
+                          </button>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setRejectionDialog({ open: true, index: i })
+                              }
+                              className="px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-600 text-xs  cursor-pointer"
+                            >
+                              Reject
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleEdit(i)}
+                              className="px-2 py-1 rounded bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-xs cursor-pointer"
+                            >
+                              <FiEdit2 size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRemove(i)}
+                              className="p-1.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800 transition cursor-pointer"
+                            >
+                              <FiTrash2 size={16} />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -511,6 +657,11 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
                         </p>
                       </div>
                     </div>
+                    {p.rejected && (
+                      <p className="mt-2 text-sm text-red-600">
+                        Rejection Reason: {p.rejectionReason}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -520,9 +671,17 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
           {/* Final Save */}
           <div className="flex justify-end gap-4 mt-4">
             <button
+              type="button"
+              onClick={() => setRejectionDialog({ open: true, index: "all" })}
+              className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded cursor-pointer"
+            >
+              Reject PO
+            </button>
+
+            <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer"
+              className="px-6 py-2 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer cursor-pointer"
             >
               {loading ? (
                 <>
@@ -536,11 +695,45 @@ const PreviewPO = ({ onClose, onUpdated, po }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded cursor-pointer"
+              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded cursor-pointer cursor-pointer"
             >
               Cancel
             </button>
           </div>
+          {rejectionDialog.open && (
+            <div className="fixed inset-0 flex items-center justify-center  bg-black/20  z-50">
+              <div className="bg-white border-2 border-primary rounded-lg p-6 w-96">
+                <h3 className="text-lg font-bold mb-3 text-primary">
+                  Reject {rejectionDialog.index === "all" ? "PO" : "Item"}
+                </h3>
+                <textarea
+                  className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+                  rows="3"
+                  placeholder="Enter rejection reason..."
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                />
+                <div className="flex justify-end gap-3 mt-4">
+                  <button
+                    onClick={() => {
+                      setRejectionDialog({ open: false, index: null });
+                      setRejectionReason("");
+                    }}
+                    className="px-4 py-1 bg-gray-300 rounded cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleReject()}
+                    disabled={!rejectionReason.trim()}
+                    className="px-4 py-1 bg-red-500 text-white rounded disabled:opacity-50 cursor-pointer"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </form>
       </div>
     </div>

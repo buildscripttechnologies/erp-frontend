@@ -99,7 +99,16 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
 
   // add item to list
   const handleAddItem = () => {
-    if (!selectedItem || !selectedVendor || !orderQty) {
+    if (
+      !selectedItem ||
+      !selectedVendor ||
+      !orderQty ||
+      !itemDetails.rate ||
+      !date ||
+      !expiryDate ||
+      !deliveryDate ||
+      !address
+    ) {
       return toast.error("All fields are required before adding item");
     }
 
@@ -491,9 +500,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
                           <span className="font-semibold text-primary">
                             GST (%) :{" "}
                           </span>
-                          <span className="">
-                            {Number(p.gst).toFixed(2)}
-                          </span>
+                          <span className="">{Number(p.gst).toFixed(2)}</span>
                         </p>
                         <p>
                           <span className="font-semibold text-primary">

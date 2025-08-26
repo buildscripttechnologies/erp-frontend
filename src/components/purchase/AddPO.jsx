@@ -5,6 +5,7 @@ import Select from "react-select";
 import { ClipLoader } from "react-spinners";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { add } from "lodash";
+import DatePicker from "react-datepicker";
 
 const AddPO = ({ onClose, onAdded }) => {
   const [selectedItem, setSelectedItem] = useState(null);
@@ -62,7 +63,16 @@ const AddPO = ({ onClose, onAdded }) => {
 
   // UPDATE handleAddItem
   const handleAddItem = () => {
-    if (!selectedItem || !selectedVendor || !orderQty) {
+    if (
+      !selectedItem ||
+      !selectedVendor ||
+      !orderQty ||
+      !itemDetails.rate ||
+      !date ||
+      !expiryDate ||
+      !deliveryDate ||
+      !address
+    ) {
       return toast.error("All fields are required before adding item");
     }
 
@@ -175,6 +185,23 @@ const AddPO = ({ onClose, onAdded }) => {
     label: `${v.venderCode} - ${v.vendorName} - ${v.natureOfBusiness}`,
     v: v,
   }));
+
+  // Convert Date object or ISO string -> dd-MM-yy
+  const formatDateForInput = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = String(d.getFullYear()).slice(-2); // last 2 digits
+    return `${day}-${month}-${year}`;
+  };
+
+  // Convert from input (dd-MM-yy) -> ISO (for saving in DB)
+  const parseDateFromInput = (value) => {
+    if (!value) return null;
+    const [day, month, year] = value.split("-");
+    return new Date(`20${year}-${month}-${day}`); // converts to yyyy-MM-dd
+  };
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
@@ -298,10 +325,17 @@ const AddPO = ({ onClose, onAdded }) => {
               </label>
               <input
                 type="date"
+                placeholder="dd-mm-yy"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
               />
+              {/* <DatePicker
+                selected={date}
+                onChange={(date) => setDate(date)}
+                dateFormat="dd-MM-yy" // 👈 shows exactly like 23-08-25
+                placeholderText="dd-mm-yy"
+              /> */}
             </div>
           </div>
 
@@ -455,9 +489,7 @@ const AddPO = ({ onClose, onAdded }) => {
                           <span className="font-semibold text-primary">
                             GST (%) :{" "}
                           </span>
-                          <span className="">
-                            {Number(p.gst).toFixed(2)}
-                          </span>
+                          <span className="">{Number(p.gst).toFixed(2)}</span>
                         </p>
                         <p>
                           <span className="font-semibold text-primary">
