@@ -218,11 +218,17 @@ const PurchaseOrder = ({ isOpen }) => {
               <tr>
                 <th className="px-[8px] py-1">#</th>
                 <th className="px-[8px] py-1">Created At</th>
-                <th className="px-[8px] py-1">Purchase Order No</th>
-                <th className="px-[8px] py-1">Date</th>
+                <th className="px-[8px] py-1 ">
+                  Purchase Order No
+                </th>
+                <th className="px-[8px] py-1 ">Date</th>
                 <th className="px-[8px] py-1">Vendor Name</th>
-                <th className="px-[8px] py-1">Total Amount (₹)</th>
-                <th className="px-[8px] py-1">Total Amount + GST (₹)</th>
+                <th className="px-[8px] py-1 ">
+                  Total Amount (₹)
+                </th>
+                <th className="px-[8px] py-1 ">
+                  Total Amount + GST (₹)
+                </th>
                 <th className="px-[8px] py-1">Status</th>
                 <th className="px-[8px] py-1">Created By</th>
                 <th className="px-[8px] py-1">Action</th>
@@ -244,7 +250,7 @@ const PurchaseOrder = ({ isOpen }) => {
                             expandedPOId === po._id ? null : po._id
                           )
                         }
-                        className="border-t  border-primary hover:bg-gray-50 cursor-pointer "
+                        className="border-t  border-primary hover:bg-gray-50 cursor-pointer"
                       >
                         <td className="px-[8px] py-1  border-r border-r-primary ">
                           {Number(pagination.currentPage - 1) *
@@ -252,7 +258,7 @@ const PurchaseOrder = ({ isOpen }) => {
                             index +
                             1}
                         </td>
-                        <td className="px-[8px]  border-r border-r-primary">
+                        <td className="px-[8px]  border-r border-r-primary ">
                           {new Date(po.createdAt).toLocaleString("en-IN", {
                             day: "2-digit",
                             month: "short",
@@ -265,7 +271,7 @@ const PurchaseOrder = ({ isOpen }) => {
                         <td className="px-[8px]  border-r border-r-primary">
                           {po.poNo}
                         </td>
-                        <td className="px-[8px]  border-r border-r-primary">
+                        <td className="px-[8px]  border-r border-r-primary  ">
                           {new Date(po.date).toLocaleString("en-IN", {
                             day: "2-digit",
                             month: "short",
@@ -347,12 +353,25 @@ const PurchaseOrder = ({ isOpen }) => {
                               <POADetails PO={po} />
                             </td>
                           </tr>
+                          <tr>
+                            <td
+                              colSpan={7}
+                              className="pl-4 pb-2 text-red-600 font-semibold"
+                            >
+                              {po.status == "rejected" && (
+                                <p className="text-sm ">
+                                  Rejection Reason:{" "}
+                                  {po.items[0].rejectionReason || ""}
+                                </p>
+                              )}
+                            </td>
+                          </tr>
                         </>
                       )}
                     </React.Fragment>
                   ))}
                   {pos.length === 0 && (
-                    <tr>
+                    <tr className="">
                       <td
                         colSpan="14"
                         className="text-center py-4 text-gray-500"

@@ -396,7 +396,9 @@ const AddPO = ({ onClose, onAdded }) => {
                 <option value="132,133,134, ALPINE INDUSTRIAL PARK,NR. CHORYASI TOLL PLAZA, AT. CHORYASI,KAMREJ, SURAT- 394150. GUJARAT,INDIA.">
                   Warehouse 1
                 </option>
-                <option value="Warehouse 2">Warehouse 2</option>
+                <option value="Plot no. 62, Gate no. 3, Siddhivinayak Industrial Estate Taluka, Kholvad, Laskana-Kholvad Rd, opp. Opera palace, Kamrej, Gujarat 394190">
+                  Warehouse 2
+                </option>
               </select>
             </div>
           </div>

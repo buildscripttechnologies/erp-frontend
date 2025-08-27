@@ -4,6 +4,9 @@ import axios from "../../utils/axios";
 import Select from "react-select";
 import { ClipLoader } from "react-spinners";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { AiOutlineCloseCircle } from "react-icons/ai";
+import { IoArrowUndoCircleOutline } from "react-icons/io5";
+import { Tooltip } from "react-tooltip";
 
 const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
   const [selectedItem, setSelectedItem] = useState(null);
@@ -33,9 +36,9 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
   // console.log("po item", poItems);
 
   const calculateTotals = () => {
-    const validItems = poItems.filter((item) => !item.rejected);
+    const validItems = poItems.filter((item) => item.itemStatus != "rejected");
 
-    console.log("valid items", validItems);
+    // console.log("valid items", validItems);
 
     const totalAmount = validItems.reduce(
       (sum, i) => Number(sum) + Number(i.amount),
@@ -50,7 +53,7 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
       0
     );
 
-    console.log(totalAmount, totalGstAmount, totalAmountWithGst);
+    // console.log(totalAmount, totalGstAmount, totalAmountWithGst);
 
     return { totalAmount, totalGstAmount, totalAmountWithGst };
   };
@@ -112,7 +115,7 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
           amountWithGst: i.amountWithGst,
 
           // ✅ use values from DB
-          rejected: i.rejected || false,
+          itemStatus: i.itemStatus || false,
           rejectionReason: i.rejectionReason || "",
         }))
       );
@@ -152,7 +155,8 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
       gst,
       amount,
       amountWithGst,
-      rejected: false,
+      // itemStatus: false,
+      itemStatus: "approved",
       rejectionReason: "",
     };
 
@@ -198,22 +202,16 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
     setPoItems(updated);
   };
 
-  const handleReject = () => {
+  const handleReject = (index) => {
     if (!rejectionReason.trim()) return;
 
-    if (rejectionDialog.index === "all") {
-      setPoItems((prev) =>
-        prev.map((item) => ({
-          ...item,
-          rejected: true,
-          rejectionReason,
-        }))
-      );
+    if (index === "all") {
+      handleRejectAll();
     } else {
       setPoItems((prev) =>
         prev.map((item, idx) =>
-          idx === rejectionDialog.index
-            ? { ...item, rejected: true, rejectionReason }
+          idx === index
+            ? { ...item, itemStatus: "rejected", rejectionReason }
             : item
         )
       );
@@ -231,36 +229,46 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
   const handleRestore = (index) => {
     setPoItems((prev) =>
       prev.map((item, i) =>
-        i === index ? { ...item, rejected: false, rejectionReason: "" } : item
+        i === index
+          ? { ...item, itemStatus: "approved", rejectionReason: "" }
+          : item
       )
     );
   };
 
   const calculateStatus = () => {
     const total = poItems.length;
-    const rejected = poItems.filter((i) => i.rejected).length;
+    const rejected = poItems.filter((i) => i.itemStatus == "rejected").length;
     const approved = total - rejected;
 
+    // single item case
     if (total === 1) return rejected === 1 ? "rejected" : "approved";
+
+    // two items case
     if (total === 2) {
-      if (rejected === 1) return "partially-approved";
       if (rejected === 2) return "rejected";
+      if (rejected === 1) return "partially-approved";
       return "approved";
     }
-    if (rejected === 0) return "approved";
-    if (approved === 0) return "rejected";
-    if (approved > rejected) return "partially-approved";
-    return "partially-rejected";
+
+    // more than two items
+    if (rejected === 0) return "approved"; // all approved
+    if (approved === 0) return "rejected"; // all rejected
+    return "partially-approved"; // mix of both
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const buildPayload = (items, status = null) => {
+    // ✅ First, normalize items:
+    const normalizedItems = items.map((p) => ({
+      ...p,
+      itemStatus: p.itemStatus === "rejected" ? "rejected" : "approved", // force approval if not rejected
+      rejectionReason: p.itemStatus === "rejected" ? p.rejectionReason : "", // clear rejection reason for approved
+    }));
 
-    const status = calculateStatus();
-    const filteredItems = poItems.filter((i) => !i.rejected);
+    status = status || calculateStatus(normalizedItems);
 
-    const payload = {
-      items: poItems.map((p) => ({
+    return {
+      items: normalizedItems.map((p) => ({
         item: p.item.value,
         orderQty: p.orderQty,
         rate: p.rate,
@@ -268,8 +276,8 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
         amount: Number(p.amount).toFixed(2),
         gstAmount: (Number(p.amountWithGst) - Number(p.amount)).toFixed(2),
         amountWithGst: Number(p.amountWithGst).toFixed(2),
-        rejected: p.rejected,
-        rejectionReason: p.rejectionReason || "",
+        itemStatus: p.itemStatus,
+        rejectionReason: p.rejectionReason,
       })),
       expiryDate,
       deliveryDate,
@@ -277,33 +285,56 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
       vendor: selectedVendor.value,
       date,
       status,
-      totalAmount: totalAmount,
-      totalGstAmount: totalGstAmount,
-      totalAmountWithGst: totalAmountWithGst,
+      totalAmount,
+      totalGstAmount,
+      totalAmountWithGst,
     };
+  };
 
-    if (JSON.stringify(payload) === JSON.stringify(po)) {
-      toast("No changes detected");
-      return;
-    }
-
+  const doSubmit = async (payload, status) => {
     setLoading(true);
     try {
       await axios.patch(`/pos/update/${po._id}`, payload);
 
-      // Call proper callback depending on PO status
       if (status === "rejected") {
         onRejected?.();
       } else {
-        onApproved?.(po._id, payload);
+        onApproved?.();
       }
+
+      onClose();
       onUpdated();
-      onClose?.();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update PO");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const payload = buildPayload(poItems);
+    if (JSON.stringify(payload) === JSON.stringify(po)) {
+      toast("No changes detected");
+      return;
+    }
+
+    const status = calculateStatus(poItems);
+    doSubmit(payload, status);
+  };
+
+  const handleRejectAll = () => {
+    const rejectedItems = poItems.map((i) => ({
+      ...i,
+      itemStatus: "rejected",
+      rejectionReason, // from your rejection dialog
+    }));
+
+    const payload = buildPayload(rejectedItems, "rejected");
+    console.log("payLoad", payload);
+
+    doSubmit(payload, "rejected");
   };
 
   let items = rms.map((r) => ({
@@ -524,7 +555,9 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
                 <option value="132,133,134, ALPINE INDUSTRIAL PARK,NR. CHORYASI TOLL PLAZA, AT. CHORYASI,KAMREJ, SURAT- 394150. GUJARAT,INDIA.">
                   Warehouse 1
                 </option>
-                <option value="Warehouse 2">Warehouse 2</option>
+                <option value="Plot no. 62, Gate no. 3, Siddhivinayak Industrial Estate Taluka, Kholvad, Laskana-Kholvad Rd, opp. Opera palace, Kamrej, Gujarat 394190">
+                  Warehouse 2
+                </option>
               </select>
             </div>
           </div>
@@ -562,10 +595,14 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
                   <div
                     key={i}
                     className={`border rounded-lg p-4 shadow-sm ${
-                      p.rejected
+                      editIndex === i
+                        ? "bg-blue-100"
+                        : p.itemStatus == "rejected"
                         ? "bg-red-50 border-red-400 opacity-70"
+                        : p.itemStatus == "approved"
+                        ? "bg-green-50 border-primary"
                         : "bg-gray-50 border-primary"
-                    }  ${editIndex === i ? "bg-yellow-100/50" : ""}`}
+                    } `}
                   >
                     {/* Row Number */}
                     <div className="flex justify-between items-center mb-2">
@@ -573,39 +610,57 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
                         Item #{i + 1}
                       </span>
                       <div className="flex gap-2">
-                        {p.rejected ? (
+                        {p.itemStatus == "rejected" ? (
                           <button
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Restore"
                             type="button"
                             onClick={() => handleRestore(i)}
-                            className="px-2 py-1 rounded bg-green-100 hover:bg-green-200 text-green-700 text-xs cursor-pointer"
+                            className="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-900 text-xs cursor-pointer"
                           >
-                            Undo
+                            <IoArrowUndoCircleOutline size={16} />
                           </button>
                         ) : (
                           <>
                             <button
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Reject"
                               type="button"
                               onClick={() =>
                                 setRejectionDialog({ open: true, index: i })
                               }
-                              className="px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-600 text-xs  cursor-pointer"
+                              className="p-1.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 text-xs  cursor-pointer"
                             >
-                              Reject
+                              <AiOutlineCloseCircle size={16} />
                             </button>
                             <button
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Edit"
                               type="button"
                               onClick={() => handleEdit(i)}
-                              className="px-2 py-1 rounded bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-xs cursor-pointer"
+                              className="p-1.5 rounded-full bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-xs cursor-pointer"
                             >
                               <FiEdit2 size={16} />
                             </button>
                             <button
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Delete"
                               type="button"
                               onClick={() => handleRemove(i)}
                               className="p-1.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800 transition cursor-pointer"
                             >
                               <FiTrash2 size={16} />
                             </button>
+                            <Tooltip
+                              id="statusTip"
+                              place="top"
+                              style={{
+                                backgroundColor: "#292926",
+                                color: "white",
+                                fontSize: "12px",
+                                fontWeight: "bold",
+                              }}
+                            />
                           </>
                         )}
                       </div>
@@ -657,7 +712,7 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
                         </p>
                       </div>
                     </div>
-                    {p.rejected && (
+                    {p.itemStaus == "rejected" && (
                       <p className="mt-2 text-sm text-red-600">
                         Rejection Reason: {p.rejectionReason}
                       </p>
@@ -681,7 +736,7 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer cursor-pointer"
+              className="px-6 py-2 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer "
             >
               {loading ? (
                 <>
@@ -695,7 +750,7 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded cursor-pointer cursor-pointer"
+              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded cursor-pointer "
             >
               Cancel
             </button>
@@ -724,7 +779,7 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
                     Cancel
                   </button>
                   <button
-                    onClick={() => handleReject()}
+                    onClick={() => handleReject(rejectionDialog.index)}
                     disabled={!rejectionReason.trim()}
                     className="px-4 py-1 bg-red-500 text-white rounded disabled:opacity-50 cursor-pointer"
                   >

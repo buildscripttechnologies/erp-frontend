@@ -4,6 +4,7 @@ import axios from "../../utils/axios";
 import Select from "react-select";
 import { ClipLoader } from "react-spinners";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { Tooltip } from "react-tooltip";
 
 const UpdatePO = ({ onClose, onUpdated, po }) => {
   const [selectedItem, setSelectedItem] = useState(null);
@@ -83,6 +84,10 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
           rate: i.rate,
           gst: i.gst,
           amount: i.amount,
+          amountWithGst: i.amountWithGst,
+          itemStatus: i.itemStatus || "pending", // ✅ use itemStatus
+          rejectionReason: i.rejectionReason || "", // ✅ keep rejection reason
+          isEdited: false, // initially false
           itemDetails: {
             ...i.item,
             purchaseUOM: i.item?.purchaseUOM?.unitName || "",
@@ -91,7 +96,6 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
             gst: i.gst,
           },
           gstAmount: i.gstAmount,
-          amountWithGst: i.amountWithGst,
         }))
       );
     }
@@ -135,13 +139,20 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
     if (editIndex !== null) {
       // update existing
       const updated = [...poItems];
-      updated[editIndex] = newItem;
+      updated[editIndex] = {
+        ...newItem,
+        itemStatus: "pending", // ✅ edited items always go pending
+        isEdited: true, // ✅ mark as edited
+      };
       setPoItems(updated);
       setEditIndex(null); // reset back
       toast.success("Item updated successfully");
     } else {
       // add new
-      setPoItems((prev) => [...prev, newItem]);
+      setPoItems((prev) => [
+        ...prev,
+        { ...newItem, itemStatus: "pending", isEdited: true }, // new item is pending
+      ]);
       toast.success("Item added successfully");
     }
 
@@ -179,15 +190,32 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
     setLoading(true);
     try {
       const payload = {
-        items: poItems.map((p) => ({
-          item: p.item.value,
-          orderQty: p.orderQty,
-          rate: p.rate,
-          gst: p.gst,
-          amount: Number(p.amount).toFixed(2),
-          gstAmount: (Number(p.amountWithGst) - Number(p.amount)).toFixed(2),
-          amountWithGst: Number(p.amountWithGst).toFixed(2),
-        })),
+        items: poItems.map((p) => {
+          let finalStatus = p.itemStatus;
+
+          if (p.itemStatus === "rejected") {
+            finalStatus = "rejected"; // keep rejection
+          } else if (p.isEdited) {
+            finalStatus = "pending"; // edited/new items pending
+          } else if (p.itemStatus === "approved") {
+            finalStatus = "approved"; // untouched → approved
+          } else {
+            finalStatus = "pending";
+          }
+
+          return {
+            item: p.item.value,
+            orderQty: p.orderQty,
+            rate: p.rate,
+            gst: p.gst,
+            amount: Number(p.amount).toFixed(2),
+            gstAmount: (Number(p.amountWithGst) - Number(p.amount)).toFixed(2),
+            amountWithGst: Number(p.amountWithGst).toFixed(2),
+            itemStatus: finalStatus,
+            rejectionReason:
+              finalStatus === "rejected" ? p.rejectionReason : "",
+          };
+        }),
         expiryDate,
         deliveryDate,
         address,
@@ -413,7 +441,9 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
                 <option value="132,133,134, ALPINE INDUSTRIAL PARK,NR. CHORYASI TOLL PLAZA, AT. CHORYASI,KAMREJ, SURAT- 394150. GUJARAT,INDIA.">
                   Warehouse 1
                 </option>
-                <option value="Warehouse 2">Warehouse 2</option>
+                <option value="Plot no. 62, Gate no. 3, Siddhivinayak Industrial Estate Taluka, Kholvad, Laskana-Kholvad Rd, opp. Opera palace, Kamrej, Gujarat 394190">
+                  Warehouse 2
+                </option>
               </select>
             </div>
           </div>
@@ -423,10 +453,17 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
             <button
               type="button"
               onClick={handleAddItem}
-              className="px-4 py-1 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer"
+              disabled={po.status !== "pending" && editIndex === null}
+              className={`px-4 py-1 font-semibold rounded cursor-pointer
+    ${
+      po.status !== "pending" && editIndex === null
+        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+        : "bg-primary hover:bg-primary/80 text-[#292926]"
+    }`}
             >
               {editIndex != null ? "Update Item" : "Add Item"}
             </button>
+
             {/* Total Summary */}
             {poItems.length > 0 && (
               <div className="px-4 py-2 bg-primary text-[#292926] font-semibold rounded shadow-sm text-center space-y-1">
@@ -449,7 +486,18 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
                 {poItems.map((p, i) => (
                   <div
                     key={i}
-                    className="bg-gray-50 border border-primary rounded-lg p-4 shadow-sm"
+                    className={`
+                    border border-primary rounded-lg p-4 shadow-sm
+                    ${
+                      editIndex === i
+                        ? "bg-blue-100"
+                        : p.itemStatus === "approved"
+                        ? "bg-green-100"
+                        : p.itemStatus === "rejected"
+                        ? "bg-red-100"
+                        : "bg-gray-50"
+                    }
+                  `}
                   >
                     {/* Row Number */}
                     <div className="flex justify-between items-center mb-2">
@@ -457,20 +505,44 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
                         Item #{i + 1}
                       </span>
                       <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleEdit(i)}
-                          className="px-2 py-1 rounded bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-xs"
-                        >
-                          <FiEdit2 size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleRemove(i)}
-                          className="p-1.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800 transition"
-                        >
-                          <FiTrash2 size={16} />
-                        </button>
+                        {p.itemStatus !== "approved" && (
+                          <>
+                            <button
+                            data-tooltip-id="statusTip"
+                              data-tooltip-content="Edit"
+                              type="button"
+                              onClick={() => handleEdit(i)}
+                              className="p-1.5 rounded-full bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-xs cursor-pointer"
+                            >
+                              <FiEdit2 size={16} />
+                            </button>
+                            <button
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Delete"
+                              type="button"
+                              onClick={() => handleRemove(i)}
+                              // disabled={p.itemStatus === "approved"} // ❌ prevent removing approved
+                              className={`p-1.5 rounded-full transition cursor-pointer
+      ${
+        p.itemStatus === "approved"
+          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+          : "bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800"
+      }`}
+                            >
+                              <FiTrash2 size={16} />
+                            </button>
+                            <Tooltip
+                              id="statusTip"
+                              place="top"
+                              style={{
+                                backgroundColor: "#292926",
+                                color: "white",
+                                fontSize: "12px",
+                                fontWeight: "bold",
+                              }}
+                            />
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -518,6 +590,11 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
                             {Number(p.amountWithGst).toFixed(2)}
                           </span>
                         </p>
+                        {p.itemStatus === "rejected" && (
+                          <p className="text-sm text-red-700 mt-1">
+                            Reason: {p.rejectionReason || "Not provided"}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
