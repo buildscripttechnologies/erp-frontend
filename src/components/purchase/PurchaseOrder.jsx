@@ -16,16 +16,19 @@ import { generateBOM } from "../../utils/generateBOMPdf";
 import { debounce } from "lodash";
 import AddPO from "./AddPO";
 import UpdatePO from "./UpdatePO";
+import { generateLPPO } from "./generateLPPO";
+import { ClipLoader } from "react-spinners";
+import POADetails from "./POADetails";
 
 const PurchaseOrder = ({ isOpen }) => {
   const [pos, setPos] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   // const [openAttachments, setOpenAttachments] = useState(null);
-
-  const [showAddPO, setShowAddPO] = useState(false);
   const [editingPO, setEditingPO] = useState(null);
-
+  const [expandedPOId, setExpandedPOId] = useState(null);
+  const [showAddPO, setShowAddPO] = useState(false);
+  const [downloading, setDownloading] = useState();
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -123,6 +126,50 @@ const PurchaseOrder = ({ isOpen }) => {
       toast.error("Delete failed");
     }
   };
+  const handleDownload = async (po) => {
+    setDownloading(true);
+    try {
+      let p = await generateLPPO(po);
+      const blob = p.blob;
+      const url = window.URL.createObjectURL(blob);
+
+      // Open in new tab for preview
+      window.open(url, "_blank");
+
+      // Optionally, if you also want to allow download later:
+      // const a = document.createElement("a");
+      // a.href = url;
+      // a.download = `${po.poNo} Details.pdf`;
+      // document.body.appendChild(a);
+      // a.click();
+      // a.remove();
+
+      // Don’t revoke immediately, or the preview tab will break
+      // Instead, revoke after some delay
+      setTimeout(() => window.URL.revokeObjectURL(url), 60 * 1000);
+    } catch (error) {
+      console.error("Download failed:", error);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  // Convert Date object or ISO string -> dd-MM-yy
+  const formatDateForInput = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = String(d.getFullYear()).slice(-2); // last 2 digits
+    return `${day}-${month}-${year}`;
+  };
+
+  // Convert from input (dd-MM-yy) -> ISO (for saving in DB)
+  const parseDateFromInput = (value) => {
+    if (!value) return null;
+    const [day, month, year] = value.split("-");
+    return new Date(`20${year}-${month}-${day}`); // converts to yyyy-MM-dd
+  };
 
   return (
     <div className="p-3 max-w-[99vw] mx-auto overflow-x-hidden mt-4">
@@ -175,6 +222,7 @@ const PurchaseOrder = ({ isOpen }) => {
                 <th className="px-[8px] py-1">Date</th>
                 <th className="px-[8px] py-1">Vendor Name</th>
                 <th className="px-[8px] py-1">Total Amount (₹)</th>
+                <th className="px-[8px] py-1">Total Amount + GST (₹)</th>
                 <th className="px-[8px] py-1">Status</th>
                 <th className="px-[8px] py-1">Created By</th>
                 <th className="px-[8px] py-1">Action</th>
@@ -191,7 +239,11 @@ const PurchaseOrder = ({ isOpen }) => {
                   {pos.map((po, index) => (
                     <React.Fragment key={po.id}>
                       <tr
-                        // onClick={() => toggleL1(po.id)}
+                        onClick={() =>
+                          setExpandedPOId(
+                            expandedPOId === po._id ? null : po._id
+                          )
+                        }
                         className="border-t  border-primary hover:bg-gray-50 cursor-pointer "
                       >
                         <td className="px-[8px] py-1  border-r border-r-primary ">
@@ -227,6 +279,9 @@ const PurchaseOrder = ({ isOpen }) => {
                         <td className="px-[8px]  border-r border-r-primary">
                           {po.totalAmount || "-"}
                         </td>
+                        <td className="px-[8px]  border-r border-r-primary">
+                          {po.totalAmountWithGst || "-"}
+                        </td>
 
                         <td
                           className={`px-[8px] font-bold border-r border-r-primary capitalize `}
@@ -247,18 +302,26 @@ const PurchaseOrder = ({ isOpen }) => {
                           {po.createdBy?.fullName || "-"}
                         </td>
                         <td className="px-[8px] pt-1 text-sm flex gap-2 border-r border-r-primary/30">
-                          <FaFileDownload
-                            onClick={() => generateBOM(po)}
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Download"
-                            className="cursor-pointer text-primary hover:text-green-600"
-                          />
-                          <FiEdit
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Edit"
-                            className="cursor-pointer text-primary hover:text-blue-600"
-                            onClick={() => setEditingPO(po)}
-                          />
+                          {expandedPOId === po._id && downloading ? (
+                            <ClipLoader size={11} color="#d8b76a" />
+                          ) : (
+                            <FaFileDownload
+                              onClick={() => handleDownload(po)}
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Download"
+                              className="cursor-pointer text-primary hover:text-green-600"
+                            />
+                          )}
+                          {po.status == "approved" ? (
+                            ""
+                          ) : (
+                            <FiEdit
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Edit"
+                              className="cursor-pointer text-primary hover:text-blue-600"
+                              onClick={() => setEditingPO(po)}
+                            />
+                          )}
                           <FiTrash2
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Delete"
@@ -277,6 +340,15 @@ const PurchaseOrder = ({ isOpen }) => {
                           />
                         </td>
                       </tr>
+                      {expandedPOId === po._id && (
+                        <>
+                          <tr className="">
+                            <td colSpan="100%">
+                              <POADetails PO={po} />
+                            </td>
+                          </tr>
+                        </>
+                      )}
                     </React.Fragment>
                   ))}
                   {pos.length === 0 && (

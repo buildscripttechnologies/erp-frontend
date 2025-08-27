@@ -18,6 +18,8 @@ import AddPO from "./AddPO";
 import POADetails from "./POADetails";
 import PurchaseOrderBill from "./POBill";
 import { generateLPPO } from "./generateLPPO";
+import PreviewPO from "./PreviewPO";
+import { ClipLoader } from "react-spinners";
 
 const POApprovel = ({ isOpen }) => {
   const [pos, setPos] = useState([]);
@@ -25,6 +27,7 @@ const POApprovel = ({ isOpen }) => {
   const [loading, setLoading] = useState(false);
   // const [openAttachments, setOpenAttachments] = useState(null);
   const [poBill, setPObill] = useState(null);
+  const [previewPO, setPreviewPO] = useState(null);
   const [showAddPO, setShowAddPO] = useState(false);
   const [editingPO, setEditingPO] = useState(null);
   const [expandedPOId, setExpandedPOId] = useState(null);
@@ -34,9 +37,15 @@ const POApprovel = ({ isOpen }) => {
     totalResults: 0,
     limit: 10,
   });
+  const [downloading, setDownloading] = useState();
 
   const hasMountedRef = useRef(false);
-  ScrollLock(showAddPO == true || editingPO != null || poBill != null);
+  ScrollLock(
+    showAddPO == true ||
+      editingPO != null ||
+      poBill != null ||
+      previewPO != null
+  );
 
   useEffect(() => {
     if (!hasMountedRef.current) {
@@ -62,6 +71,7 @@ const POApprovel = ({ isOpen }) => {
       const res = await axios.get(
         `/pos/get-all?page=${page}&limit=${limit}&search=${search}`
       );
+      const poList = res.data.data || [];
       setPos(res.data.data || []);
       setPagination({
         currentPage: res.data.currentPage,
@@ -69,6 +79,7 @@ const POApprovel = ({ isOpen }) => {
         totalResults: res.data.totalResults,
         limit: res.data.limit,
       });
+      return poList;
     } catch {
       toast.error("Failed to fetch POs");
     } finally {
@@ -127,25 +138,48 @@ const POApprovel = ({ isOpen }) => {
   };
 
   const handleDownload = async (po) => {
+    setDownloading(true);
     try {
-      // If response already has a blob
-
       let p = await generateLPPO(po);
       const blob = p.blob;
       const url = window.URL.createObjectURL(blob);
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = po.poNo + " Details";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      // Open in new tab for preview
+      window.open(url, "_blank");
 
-      // cleanup
-      window.URL.revokeObjectURL(url);
+      // Optionally, if you also want to allow download later:
+      // const a = document.createElement("a");
+      // a.href = url;
+      // a.download = `${po.poNo} Details.pdf`;
+      // document.body.appendChild(a);
+      // a.click();
+      // a.remove();
+
+      // Don’t revoke immediately, or the preview tab will break
+      // Instead, revoke after some delay
+      setTimeout(() => window.URL.revokeObjectURL(url), 60 * 1000);
     } catch (error) {
       console.error("Download failed:", error);
+    } finally {
+      setDownloading(false);
     }
+  };
+
+  const handlePOUpdated = async (id) => {
+    // 1. Fetch POs again (fresh list)
+    const freshPOs = await fetchPOs(1); // <-- reuse your API call function
+
+    // 2. Update state
+    setPos(freshPOs);
+
+    // 3. Find updated PO
+    const updatedPO = freshPOs.find((po) => po._id === id);
+
+    // 4. Open in bill view
+    setPObill(updatedPO);
+
+    // 5. Close preview
+    setPreviewPO(null);
   };
 
   return (
@@ -191,7 +225,8 @@ const POApprovel = ({ isOpen }) => {
                 <th className="px-[8px] py-1">Purchase Order No</th>
                 <th className="px-[8px] py-1">Date</th>
                 <th className="px-[8px] py-1">Vendor Name</th>
-                <th className="px-[8px] py-1">Total Amount (₹)</th>
+                <th className="px-[8px] py-1">Amount (₹)</th>
+                <th className="px-[8px] py-1">Amount + GST (₹)</th>
                 <th className="px-[8px] py-1">Status</th>
                 <th className="px-[8px] py-1">Created By</th>
                 <th className="px-[8px] py-1">Action</th>
@@ -248,6 +283,9 @@ const POApprovel = ({ isOpen }) => {
                         <td className="px-[8px]  border-r border-r-primary">
                           {po.totalAmount || "-"}
                         </td>
+                        <td className="px-[8px]  border-r border-r-primary">
+                          {po.totalAmountWithGst || "-"}
+                        </td>
 
                         <td
                           className={`px-[8px] border-r font-bold border-r-primary capitalize `}
@@ -268,12 +306,16 @@ const POApprovel = ({ isOpen }) => {
                           {po.createdBy?.fullName || "-"}
                         </td>
                         <td className="px-[8px] pt-1 text-sm flex gap-2 border-r border-r-primary/30">
-                          <FaFileDownload
-                            onClick={() => handleDownload(po)}
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Download"
-                            className="cursor-pointer text-primary hover:text-green-600"
-                          />
+                          {expandedPOId === po._id && downloading ? (
+                            <ClipLoader size={11} color="#d8b76a" />
+                          ) : (
+                            <FaFileDownload
+                              onClick={() => handleDownload(po)}
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Download"
+                              className="cursor-pointer text-primary hover:text-green-600"
+                            />
+                          )}
                           {/* <FiEdit
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Edit"
@@ -309,13 +351,10 @@ const POApprovel = ({ isOpen }) => {
                             <td colSpan={7}></td>
                             <td className="max-w-[70px] pb-2 font-bold">
                               <button
-                                onClick={() => setPObill(po)}
-                                className="px-4 py-1 mr-2  bg-green-200 hover:bg-green-300 text-[#292926]  rounded cursor-pointer"
+                                onClick={() => setPreviewPO(po)}
+                                className="px-4 py-1 mr-2  bg-primary hover:bg-primary/80 text-[#292926]  rounded cursor-pointer"
                               >
-                                Approve
-                              </button>
-                              <button className="px-4 py-1 bg-red-200 hover:bg-red-300 text-[#292926]  rounded cursor-pointer">
-                                Reject
+                                Review PO
                               </button>
                             </td>
                           </tr>
@@ -342,6 +381,20 @@ const POApprovel = ({ isOpen }) => {
 
       {poBill != null && (
         <PurchaseOrderBill po={poBill} onClose={() => setPObill(null)} />
+      )}
+      {previewPO != null && (
+        <PreviewPO
+          po={previewPO}
+          onUpdated={() => fetchPOs()}
+          onClose={() => setPreviewPO(null)}
+          onApproved={() => {
+            handlePOUpdated(previewPO._id);
+            setPreviewPO(null);
+          }}
+          onRejected={() => {
+            setPreviewPO(null);
+          }}
+        />
       )}
 
       <PaginationControls

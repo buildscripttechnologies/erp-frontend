@@ -3,24 +3,45 @@ import toast from "react-hot-toast";
 import axios from "../../utils/axios";
 import Select from "react-select";
 import { ClipLoader } from "react-spinners";
-import { FiTrash2 } from "react-icons/fi";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { add } from "lodash";
+import DatePicker from "react-datepicker";
 
 const AddPO = ({ onClose, onAdded }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [orderQty, setOrderQty] = useState("");
+
   const [moq, setMoq] = useState(1);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [expiryDate, setExpiryDate] = useState();
+  const [deliveryDate, setDeliveryDate] = useState();
+  const [address, setAddress] = useState();
   const [loading, setLoading] = useState(false);
 
   const [vendors, setVendors] = useState([]);
   const [rms, setRms] = useState([]);
   const [itemDetails, setItemDetails] = useState(null);
-
+  const [editIndex, setEditIndex] = useState(null);
   // multiple items state
   const [poItems, setPoItems] = useState([]);
 
-  const totalAmount = poItems.reduce((sum, item) => sum + item.amount, 0);
+  // ---- Your existing total amount
+  const totalAmount = poItems.reduce(
+    (sum, item) => sum + Number(item.amount),
+    0
+  );
+
+  // ---- Add these:
+  const totalGstAmount = poItems.reduce(
+    (sum, item) => sum + (Number(item.amountWithGst) - Number(item.amount)),
+    0
+  );
+
+  const totalAmountWithGst = poItems.reduce(
+    (sum, item) => sum + Number(item.amountWithGst),
+    0
+  );
 
   useEffect(() => {
     const fetchDropdowns = async () => {
@@ -38,19 +59,20 @@ const AddPO = ({ onClose, onAdded }) => {
     fetchDropdowns();
   }, []);
 
-  // const handleOrderQty = (e) => {
-  //   const value = e.target.value;
-  //   const numericValue = Number(value);
-  //   if (!isNaN(numericValue) && numericValue < moq && value !== "") {
-  //     setOrderQty(moq);
-  //   } else {
-  //     setOrderQty(value);
-  //   }
-  // };
+  // NEW STATE
 
-  // add item to list
+  // UPDATE handleAddItem
   const handleAddItem = () => {
-    if (!selectedItem || !selectedVendor || !orderQty) {
+    if (
+      !selectedItem ||
+      !selectedVendor ||
+      !orderQty ||
+      !itemDetails.rate ||
+      !date ||
+      !expiryDate ||
+      !deliveryDate ||
+      !address
+    ) {
       return toast.error("All fields are required before adding item");
     }
 
@@ -58,30 +80,50 @@ const AddPO = ({ onClose, onAdded }) => {
       return toast.error(`Minimum Order Qty is ${moq}`);
     }
 
-    const rate = Number(itemDetails?.rate || 0);
+    const rate = Number(itemDetails?.rate || 0).toFixed(2);
+    const gst = Number(itemDetails?.gst || 0).toFixed(2);
     const amount = Number(orderQty) * rate;
+    const gstAmount = Number((amount * gst) / 100).toFixed(2);
+    const amountWithGst = Number(Number(amount) + Number(gstAmount)).toFixed(2);
 
     const newItem = {
       item: selectedItem,
-      // vendor: selectedVendor,
       orderQty,
-      // date,
       itemDetails,
       rate,
+      gst,
       amount,
+      amountWithGst,
     };
 
-    setPoItems((prev) => [...prev, newItem]);
+    if (editIndex !== null) {
+      // update existing
+      const updated = [...poItems];
+      updated[editIndex] = newItem;
+      setPoItems(updated);
+      setEditIndex(null); // reset back
+      toast.success("Item updated successfully");
+    } else {
+      // add new
+      setPoItems((prev) => [...prev, newItem]);
+      toast.success("Item added successfully");
+    }
 
-    // clear item & vendor but keep list
+    // clear form
     setSelectedItem(null);
-    // setSelectedVendor(null);
     setOrderQty("");
-    // setDate(new Date().toISOString().split("T")[0]);
     setItemDetails(null);
     setMoq(1);
+  };
 
-    // console.log("Added Item:", newItem);
+  // HANDLE EDIT
+  const handleEdit = (index) => {
+    const item = poItems[index];
+    setSelectedItem(item.item);
+    setItemDetails(item.itemDetails);
+    setOrderQty(item.orderQty);
+    setMoq(item.itemDetails?.moq || 1);
+    setEditIndex(index);
   };
 
   // remove item from list
@@ -102,14 +144,20 @@ const AddPO = ({ onClose, onAdded }) => {
           item: p.item.value,
           orderQty: p.orderQty,
           rate: p.rate,
-          amount: p.amount,
+          gst: p.gst,
+          amount: Number(p.amount).toFixed(2),
+          gstAmount: (Number(p.amountWithGst) - Number(p.amount)).toFixed(2),
+          amountWithGst: Number(p.amountWithGst).toFixed(2),
         })),
+        expiryDate,
+        deliveryDate,
+        address,
         vendor: selectedVendor.value,
-        date: date,
-        totalAmount: totalAmount,
+        date,
+        totalAmount: totalAmount.toFixed(2),
+        totalGstAmount: totalGstAmount.toFixed(2),
+        totalAmountWithGst: totalAmountWithGst.toFixed(2),
       };
-
-      // console.log("payload", payload);
 
       const res = await axios.post("/pos/add-po", payload);
       if (res.data.status === 403) {
@@ -137,6 +185,23 @@ const AddPO = ({ onClose, onAdded }) => {
     label: `${v.venderCode} - ${v.vendorName} - ${v.natureOfBusiness}`,
     v: v,
   }));
+
+  // Convert Date object or ISO string -> dd-MM-yy
+  const formatDateForInput = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = String(d.getFullYear()).slice(-2); // last 2 digits
+    return `${day}-${month}-${year}`;
+  };
+
+  // Convert from input (dd-MM-yy) -> ISO (for saving in DB)
+  const parseDateFromInput = (value) => {
+    if (!value) return null;
+    const [day, month, year] = value.split("-");
+    return new Date(`20${year}-${month}-${day}`); // converts to yyyy-MM-dd
+  };
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
@@ -260,10 +325,79 @@ const AddPO = ({ onClose, onAdded }) => {
               </label>
               <input
                 type="date"
+                placeholder="dd-mm-yy"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
               />
+              {/* <DatePicker
+                selected={date}
+                onChange={(date) => setDate(date)}
+                dateFormat="dd-MM-yy" // 👈 shows exactly like 23-08-25
+                placeholderText="dd-mm-yy"
+              /> */}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap justify-between gap-2">
+            <div className="w-[48%]">
+              <label className="block text-sm font-semibold text-black mb-1">
+                Rate
+              </label>
+              <input
+                type="number"
+                placeholder="Rate"
+                value={itemDetails?.rate || ""}
+                onChange={(e) => {
+                  const newItems = { ...itemDetails }; // copy array
+                  newItems.rate = e.target.value; // update rate for specific row
+                  setItemDetails(newItems); // update state
+                }}
+                className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
+            <div className="w-[48%]">
+              <label className="block text-sm font-semibold text-black mb-1">
+                Expiry Date
+              </label>
+              <input
+                type="date"
+                value={expiryDate}
+                onChange={(e) => setExpiryDate(e.target.value)}
+                className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap justify-between gap-2">
+            <div className="w-[48%]">
+              <label className="block text-sm font-semibold text-black mb-1">
+                Delivery Date
+              </label>
+              <input
+                type="date"
+                placeholder="Delivery Data"
+                value={deliveryDate}
+                onChange={(e) => setDeliveryDate(e.target.value)}
+                className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
+            <div className="w-[48%]">
+              <label className="block text-sm font-semibold text-black mb-1">
+                Select Address
+              </label>
+              <select
+                type="date"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+              >
+                <option value="">Select Address</option>
+                <option value="132,133,134, ALPINE INDUSTRIAL PARK,NR. CHORYASI TOLL PLAZA, AT. CHORYASI,KAMREJ, SURAT- 394150. GUJARAT,INDIA.">
+                  Warehouse 1
+                </option>
+                <option value="Warehouse 2">Warehouse 2</option>
+              </select>
             </div>
           </div>
 
@@ -274,12 +408,15 @@ const AddPO = ({ onClose, onAdded }) => {
               onClick={handleAddItem}
               className="px-4 py-1 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer"
             >
-              Add Item
+              {editIndex != null ? "Update Item" : "Add Item"}
             </button>
             {/* Total Summary */}
             {poItems.length > 0 && (
-              <div className="px-4 py-1 bg-primary text-[#292926] font-semibold rounded shadow-sm text-center">
-                Total Amount (₹): {totalAmount.toFixed(2)}
+              <div className="px-4 py-2 bg-primary text-[#292926] font-semibold rounded shadow-sm text-center space-y-1">
+                {/* <div>Total Amount (₹): {totalAmount.toFixed(2)}</div> */}
+                <div>
+                  Total Amount with GST (₹): {totalAmountWithGst.toFixed(2)}
+                </div>
               </div>
             )}
           </div>
@@ -302,13 +439,22 @@ const AddPO = ({ onClose, onAdded }) => {
                       <span className="text-sm font-semibold text-primary">
                         Item #{i + 1}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemove(i)}
-                        className="p-1.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800 transition"
-                      >
-                        <FiTrash2 size={16} />
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(i)}
+                          className="px-2 py-1 rounded bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-xs"
+                        >
+                          <FiEdit2 size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemove(i)}
+                          className="p-1.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800 transition"
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Key → Value Pairs */}
@@ -325,7 +471,7 @@ const AddPO = ({ onClose, onAdded }) => {
                         </span>
                         {p.vendor.label}
                       </p> */}
-                      <div className="flex gap-3">
+                      <div className="flex flex-wrap gap-3">
                         {" "}
                         <p>
                           <span className="font-semibold text-primary">
@@ -341,9 +487,25 @@ const AddPO = ({ onClose, onAdded }) => {
                         </p>
                         <p>
                           <span className="font-semibold text-primary">
+                            GST (%) :{" "}
+                          </span>
+                          <span className="">{Number(p.gst).toFixed(2)}</span>
+                        </p>
+                        <p>
+                          <span className="font-semibold text-primary">
                             Amount (₹):{" "}
                           </span>
-                          <span className="font-semibold">{p.amount}</span>
+                          <span className="">
+                            {Number(p.amount).toFixed(2)}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="font-semibold text-primary">
+                            Amount with GST (₹):{" "}
+                          </span>
+                          <span className="font-semibold">
+                            {Number(p.amountWithGst).toFixed(2)}
+                          </span>
                         </p>
                       </div>
                     </div>
