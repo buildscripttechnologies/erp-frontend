@@ -306,15 +306,19 @@ const POApprovel = ({ isOpen }) => {
                           {po.createdBy?.fullName || "-"}
                         </td>
                         <td className="px-[8px] pt-1 text-sm flex gap-2 border-r border-r-primary/30">
-                          {expandedPOId === po._id && downloading ? (
-                            <ClipLoader size={11} color="#d8b76a" />
-                          ) : (
-                            <FaFileDownload
-                              onClick={() => handleDownload(po)}
-                              data-tooltip-id="statusTip"
-                              data-tooltip-content="Download"
-                              className="cursor-pointer text-primary hover:text-green-600"
-                            />
+                          {po.status != "rejected" && (
+                            <>
+                              {expandedPOId === po._id && downloading ? (
+                                <ClipLoader size={11} color="#d8b76a" />
+                              ) : (
+                                <FaFileDownload
+                                  onClick={() => handleDownload(po)}
+                                  data-tooltip-id="statusTip"
+                                  data-tooltip-content="Download"
+                                  className="cursor-pointer text-primary hover:text-green-600"
+                                />
+                              )}
+                            </>
                           )}
                           {/* <FiEdit
                             data-tooltip-id="statusTip"
@@ -348,7 +352,17 @@ const POApprovel = ({ isOpen }) => {
                             </td>
                           </tr>
                           <tr className="">
-                            <td colSpan={7}></td>
+                            <td
+                              colSpan={7}
+                              className="pl-4 text-red-600 font-semibold"
+                            >
+                              {po.status == "rejected" && (
+                                <p className="text-sm ">
+                                  Rejection Reason:{" "}
+                                  {po.items[0].rejectionReason || ""}
+                                </p>
+                              )}
+                            </td>
                             <td className="max-w-[70px] pb-2 font-bold">
                               <button
                                 onClick={() => setPreviewPO(po)}

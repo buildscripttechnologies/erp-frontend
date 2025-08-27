@@ -17,6 +17,8 @@ export const generateLPPO = async (po) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
+  // console.log("po",po);
+
   // Content should always start at this Y on table pages
   const CONTENT_TOP = 54; // <- as requested
 
@@ -130,7 +132,9 @@ export const generateLPPO = async (po) => {
     ],
   ];
 
-  const pos = po.items.filter((i) => i.rejected == false);
+  const pos = po.items.filter((i) => i.itemStatus == "approved");
+
+  // console.log("pos", pos);
 
   const body = (pos || []).map((item, idx) => [
     String(idx + 1).toUpperCase(),
