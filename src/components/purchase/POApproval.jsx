@@ -185,7 +185,8 @@ const POApprovel = ({ isOpen }) => {
   return (
     <div className="p-3 max-w-[99vw] mx-auto overflow-x-hidden mt-4">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        PO Approval <span className="text-gray-500">({pos.length})</span>
+        PO Approval{" "}
+        <span className="text-gray-500">({pagination.totalResults})</span>
       </h2>
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
@@ -222,8 +223,8 @@ const POApprovel = ({ isOpen }) => {
               <tr>
                 <th className="px-[8px] py-1">#</th>
                 <th className="px-[8px] py-1">Created At</th>
-                <th className="px-[8px] py-1">Purchase Order No</th>
                 <th className="px-[8px] py-1">Date</th>
+                <th className="px-[8px] py-1">Purchase Order No</th>
                 <th className="px-[8px] py-1">Vendor Name</th>
                 <th className="px-[8px] py-1">Amount (₹)</th>
                 <th className="px-[8px] py-1">Amount + GST (₹)</th>
@@ -266,15 +267,16 @@ const POApprovel = ({ isOpen }) => {
                             hour12: true,
                           })}
                         </td>
-                        <td className="px-[8px]  border-r border-r-primary">
-                          {po.poNo}
-                        </td>
+
                         <td className="px-[8px]  border-r border-r-primary">
                           {new Date(po.date).toLocaleString("en-IN", {
                             day: "2-digit",
                             month: "short",
                             year: "numeric",
                           })}
+                        </td>
+                        <td className="px-[8px]  border-r border-r-primary">
+                          {po.poNo}
                         </td>
                         <td className="px-[8px]  border-r border-r-primary ">
                           {po.vendor?.vendorName || "-"}
@@ -306,20 +308,21 @@ const POApprovel = ({ isOpen }) => {
                           {po.createdBy?.fullName || "-"}
                         </td>
                         <td className="px-[8px] pt-1 text-sm flex gap-2 border-r border-r-primary/30">
-                          {po.status != "rejected" && (
-                            <>
-                              {expandedPOId === po._id && downloading ? (
-                                <ClipLoader size={11} color="#d8b76a" />
-                              ) : (
-                                <FaFileDownload
-                                  onClick={() => handleDownload(po)}
-                                  data-tooltip-id="statusTip"
-                                  data-tooltip-content="Download"
-                                  className="cursor-pointer text-primary hover:text-green-600"
-                                />
-                              )}
-                            </>
-                          )}
+                          {po.status != "rejected" &&
+                            po.status != "pending" && (
+                              <>
+                                {expandedPOId === po._id && downloading ? (
+                                  <ClipLoader size={11} color="#d8b76a" />
+                                ) : (
+                                  <FaFileDownload
+                                    onClick={() => handleDownload(po)}
+                                    data-tooltip-id="statusTip"
+                                    data-tooltip-content="Download"
+                                    className="cursor-pointer text-primary hover:text-green-600"
+                                  />
+                                )}
+                              </>
+                            )}
                           {/* <FiEdit
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Edit"

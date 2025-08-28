@@ -133,6 +133,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
       rate,
       gst,
       amount,
+      itemStatus: "pending",
       amountWithGst,
     };
 
@@ -183,6 +184,31 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
     setPoItems(updated);
   };
 
+  const calculateStatus = () => {
+    const total = poItems.length;
+    const rejected = poItems.filter((i) => i.itemStatus === "rejected").length;
+    const pending = poItems.filter((i) => i.itemStatus === "pending").length;
+    const approved = total - rejected - pending;
+
+    // if even one is pending → whole PO is pending
+    if (pending > 0) return "pending";
+
+    // single item case
+    if (total === 1) return rejected === 1 ? "rejected" : "approved";
+
+    // two items case
+    if (total === 2) {
+      if (rejected === 2) return "rejected";
+      if (rejected === 1) return "partially-approved";
+      return "approved";
+    }
+
+    // more than two items
+    if (rejected === 0) return "approved"; // all approved
+    if (approved === 0) return "rejected"; // all rejected
+    return "partially-approved"; // mix of approved & rejected
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (poItems.length === 0) return toast.error("Add at least one item");
@@ -212,8 +238,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
             gstAmount: (Number(p.amountWithGst) - Number(p.amount)).toFixed(2),
             amountWithGst: Number(p.amountWithGst).toFixed(2),
             itemStatus: finalStatus,
-            rejectionReason:
-              finalStatus === "rejected" ? p.rejectionReason : "",
+            rejectionReason: p.rejectionReason,
           };
         }),
         expiryDate,
@@ -221,6 +246,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
         address,
         vendor: selectedVendor.value,
         date,
+        status: calculateStatus(items),
         totalAmount: totalAmount.toFixed(2),
         totalGstAmount: totalGstAmount.toFixed(2),
         totalAmountWithGst: totalAmountWithGst.toFixed(2),
@@ -508,7 +534,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
                         {p.itemStatus !== "approved" && (
                           <>
                             <button
-                            data-tooltip-id="statusTip"
+                              data-tooltip-id="statusTip"
                               data-tooltip-content="Edit"
                               type="button"
                               onClick={() => handleEdit(i)}
