@@ -472,9 +472,7 @@ export default function MasterUsers() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
             <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
               All Users{" "}
-              <span className="text-sm text-black">
-                ({pagination.totalResults})
-              </span>
+              <span className=" text-black">({pagination.totalResults})</span>
             </h2>
             {hasPermission("User", "create") && (
               <button

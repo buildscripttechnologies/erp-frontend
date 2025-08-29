@@ -126,7 +126,8 @@ const RoleMaster = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
-          Role Master <span className="text-gray-500">({roles.length})</span>
+          Role Master{" "}
+          <span className="text-gray-500">({pagination.totalResults})</span>
         </h2>
 
         <div className="flex gap-2 flex-wrap">

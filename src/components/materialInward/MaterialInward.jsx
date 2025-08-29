@@ -239,7 +239,8 @@ const MaterialInward = () => {
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Material Inward <span className="text-gray-500">({stocks.length})</span>
+        Material Inward{" "}
+        <span className="text-gray-500">({pagination.totalResults})</span>
       </h2>
 
       <div className="flex flex-wrap gap-4 items-stretch sm:items-center justify-between mb-6">

@@ -423,7 +423,7 @@ const SfgMaster = ({ isOpen }) => {
     <div className="p-3 max-w-[99vw] mx-auto overflow-x-hidden mt-4">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
         Semi Finished Goods (SFG){" "}
-        <span className="text-gray-500">({sfgs.length})</span>
+        <span className="text-gray-500">({pagination.totalResults})</span>
       </h2>
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">

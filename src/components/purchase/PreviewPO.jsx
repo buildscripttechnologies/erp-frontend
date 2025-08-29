@@ -156,7 +156,7 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
       amount,
       amountWithGst,
       // itemStatus: false,
-      itemStatus: "approved",
+      // itemStatus: "approved",
       rejectionReason: "",
     };
 
@@ -712,7 +712,7 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
                         </p>
                       </div>
                     </div>
-                    {p.itemStaus == "rejected" && (
+                    {p.itemStatus == "rejected" && (
                       <p className="mt-2 text-sm text-red-600">
                         Rejection Reason: {p.rejectionReason}
                       </p>

@@ -426,7 +426,7 @@ const FgMaster = ({ isOpen }) => {
     <div className="relative p-3 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
         Finished Goods (FG){" "}
-        <span className="text-gray-500">({fgs.length})</span>
+        <span className="text-gray-500">({pagination.totalResults})</span>
       </h2>
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
