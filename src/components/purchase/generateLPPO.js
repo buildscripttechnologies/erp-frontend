@@ -3,12 +3,12 @@ import autoTable from "jspdf-autotable";
 import { getBase64ImageFromPDF } from "../../utils/convertPDFPageToImage";
 
 // Terms & Conditions (multi-line string)
-const TERMS = `1. IKhodal submission of the purchase Order is conditioned on Supplier’s agreement that any terms different from or in addition to the terms of the Purchase Order, whether communicated orally or contained in any purchase order confirmation, invoice, acknowledgement, acceptance or other written correspondence, irrespective of the timing, shall not form a part of the Purchase Order, even if Supplier purports to condition its acceptance of the Purchase Order on IKhodal agreement to such different or additional terms. 
-2. Supplier will immediately notify IKhodal if Supplier’s timely performance under the Purchase Order is delayed or is likely to be delayed. IKhodal's acceptance of Supplier’s notice will not constitute IKhodal's waiver of any of Supplier’s obligations. 
-3. If Supplier delivers Work after the Delivery Date, IKhodal may reject such Work. 
-4. Supplier will preserve, pack, package and handle the Deliverables and Products so as to protect the Deliverables and Products from loss or damage and in accordance with best commercial practices in the absence of any specifications IKhodal may provide. 
-5. Supplier may not subcontract any of its rights or obligations under the Purchase Order without IKhodal's prior written consent. 
-6. IKhodal may terminate this Purchase Order for no reason or for any reason, upon 15 days written notice to Supplier. Upon receipt of notice of such termination, Supplier will inform IKhodal of the extent to which it has completed performance as of the date of the notice, and Supplier will collect and deliver to IKhodal whatever Work then exists, IKhodal will pay Supplier for all Work performed and accepted through the effective date of the termination, provided that IKhodal will not be obligated to pay any more than the payment that would have become due had Supplier completed and IKhodal had accepted the Work. IKhodal will have no further payment obligation in connection with any termination. 
+const TERMS = `1. I Khodal Bag Pvt. Ltd. submission of the purchase Order is conditioned on Supplier’s agreement that any terms different from or in addition to the terms of the Purchase Order, whether communicated orally or contained in any purchase order confirmation, invoice, acknowledgement, acceptance or other written correspondence, irrespective of the timing, shall not form a part of the Purchase Order, even if Supplier purports to condition its acceptance of the Purchase Order on I Khodal Bag Pvt. Ltd. agreement to such different or additional terms. 
+2. Supplier will immediately notify I Khodal Bag Pvt. Ltd. if Supplier’s timely performance under the Purchase Order is delayed or is likely to be delayed. I Khodal Bag Pvt. Ltd.'s acceptance of Supplier’s notice will not constitute I Khodal Bag Pvt. Ltd.'s waiver of any of Supplier’s obligations. 
+3. If Supplier delivers Work after the Delivery Date, I Khodal Bag Pvt. Ltd. may reject such Work. 
+4. Supplier will preserve, pack, package and handle the Deliverables and Products so as to protect the Deliverables and Products from loss or damage and in accordance with best commercial practices in the absence of any specifications I Khodal Bag Pvt. Ltd. may provide. 
+5. Supplier may not subcontract any of its rights or obligations under the Purchase Order without I Khodal Bag Pvt. Ltd.'s prior written consent. 
+6. I Khodal Bag Pvt. Ltd. may terminate this Purchase Order for no reason or for any reason, upon 15 days written notice to Supplier. Upon receipt of notice of such termination, Supplier will inform I Khodal Bag Pvt. Ltd. of the extent to which it has completed performance as of the date of the notice, and Supplier will collect and deliver to I Khodal Bag Pvt. Ltd. whatever Work then exists, I Khodal Bag Pvt. Ltd. will pay Supplier for all Work performed and accepted through the effective date of the termination, provided that I Khodal Bag Pvt. Ltd. will not be obligated to pay any more than the payment that would have become due had Supplier completed and I Khodal Bag Pvt. Ltd. had accepted the Work. I Khodal Bag Pvt. Ltd. will have no further payment obligation in connection with any termination. 
 7. Payment credit period is stipulated as within 30 days from the receipt of goods `;
 
 export const generateLPPO = async (po) => {
@@ -41,8 +41,11 @@ export const generateLPPO = async (po) => {
   // ---------- 1) PRE-MEASURE VENDOR/PO BLOCK (no drawing yet) ----------
   // We’ll reserve vertical space on page 1 so the table never overlaps it.
   const vendorDetails = [
-    ["Vendor Name : ", po.vendor.vendorName || ""],
-    ["Vendor Code : ", po.vendor.venderCode || ""],
+    [
+      "Vendor Name : ",
+      `${po.vendor.vendorName} (${po.vendor.venderCode})` || "",
+    ],
+    // ["Vendor Code : ", po.vendor.venderCode || ""],
     ["Address : ", formatAddress(po.vendor)],
     ["PAN : ", po.vendor.pan || ""],
     ["GST : ", po.vendor.gst || ""],
@@ -82,35 +85,35 @@ export const generateLPPO = async (po) => {
   const lineH = 6;
   const vendorStartY = CONTENT_TOP + 2; // a tiny gap below the top content line
 
-  // measure: how far down vendor block will go
-  const measureBlock = () => {
-    let leftY = vendorStartY;
-    let rightY = vendorStartY;
+  // // measure: how far down vendor block will go
+  // const measureBlock = () => {
+  //   let leftY = vendorStartY;
+  //   let rightY = vendorStartY;
 
-    const measureOne = (label, value, maxWidth) => {
-      const labelText = `${label} `;
-      const labelWidth = doc.getTextWidth(labelText);
-      const usable = Math.max(10, maxWidth - labelWidth - 2);
-      const wrapped = doc.splitTextToSize(value || "", usable);
-      return wrapped.length;
-    };
+  //   const measureOne = (label, value, maxWidth) => {
+  //     const labelText = `${label} `;
+  //     const labelWidth = doc.getTextWidth(labelText);
+  //     const usable = Math.max(10, maxWidth - labelWidth - 2);
+  //     const wrapped = doc.splitTextToSize(value || "", usable);
+  //     return wrapped.length;
+  //   };
 
-    const colWidth = pageWidth / 2 - margin * 2;
+  //   const colWidth = pageWidth / 2 - margin * 2;
 
-    vendorDetails.forEach(([label, value]) => {
-      const lines = measureOne(label, value, colWidth);
-      leftY += lines * lineH;
-    });
-    poDetails.forEach(([label, value]) => {
-      const lines = measureOne(label, value, colWidth);
-      rightY += lines * lineH;
-    });
+  //   vendorDetails.forEach(([label, value]) => {
+  //     const lines = measureOne(label, value, colWidth);
+  //     leftY += lines * lineH;
+  //   });
+  //   poDetails.forEach(([label, value]) => {
+  //     const lines = measureOne(label, value, colWidth);
+  //     rightY += lines * lineH;
+  //   });
 
-    return Math.max(leftY, rightY);
-  };
+  //   return Math.max(leftY, rightY);
+  // };
 
-  const vendorEndY = measureBlock();
-  const tableStartYFirstPage = vendorEndY + 10; // space between vendor block and table
+  const vendorEndY = 117;
+  const tableStartYFirstPage = vendorEndY; // space between vendor block and table
   const productHeadingY = vendorEndY + 5; // "Product Details" label position (above table)
 
   // ---------- 2) DRAW THE TABLE (with letterpad under it on each page) ----------
@@ -214,9 +217,9 @@ export const generateLPPO = async (po) => {
   const gstSummary = getGstSummary(pos, po.vendor.state, "GJ");
   const halfWidth = (pageWidth - margin * 2) / 2;
   autoTable(doc, {
-    startY: finalY + 10,
+    startY: finalY + 3,
     margin: { left: margin },
-    tableWidth: halfWidth - 5,
+    tableWidth: halfWidth - 2.5,
     theme: "grid",
     head: [["GST Slab", "IGST", "CGST", "SGST"]],
     body: Object.values(gstSummary).map((slab) => [
@@ -249,9 +252,9 @@ export const generateLPPO = async (po) => {
 
   // add Amount in Words just below GST table
   autoTable(doc, {
-    startY: leftTableY + 5,
+    startY: leftTableY,
     margin: { left: margin },
-    tableWidth: halfWidth - 5, // restrict to 50%
+    tableWidth: halfWidth - 2, // restrict to 50%
     body: [
       [
         {
@@ -267,9 +270,9 @@ export const generateLPPO = async (po) => {
 
   // right column → Total Amounts
   autoTable(doc, {
-    startY: finalY + 10,
-    margin: { left: margin + halfWidth + 5 },
-    tableWidth: halfWidth - 5,
+    startY: finalY + 3,
+    margin: { left: margin + halfWidth + 2.5 },
+    tableWidth: halfWidth - 2.5,
     theme: "grid",
     head: [["Description", "Amount"]],
     body: [
@@ -316,7 +319,25 @@ export const generateLPPO = async (po) => {
       lineColor: colors.gold,
       lineWidth: 0.1,
     },
+    columnStyles: {
+      0: { cellWidth: 40 },
+    },
   });
+
+  // ---------- 3.5) SIGNATURE BLOCK (only on second-last page) ----------
+  let signatureHeight = 35; // estimated block height
+  let signatureStartY = Math.max(doc.lastAutoTable.finalY, leftTableY) + 30;
+
+  // check if it fits before page bottom
+  if (signatureStartY + signatureHeight > pageHeight - 20) {
+    // not enough space → add a new page (second-last)
+    doc.addPage();
+    addLetterPad(false);
+    signatureStartY = CONTENT_TOP;
+  }
+
+  // render signature
+  addSignatureBlock(doc, pageWidth, pageHeight, signatureStartY, margin);
 
   // ---------- 4) TERMS & CONDITIONS (continue on last page, or add a new page) ----------
   doc.addPage();
@@ -334,119 +355,85 @@ export const generateLPPO = async (po) => {
     align: "left",
   });
 
+  addSignatureBlock(doc, pageWidth, pageHeight, termsY + 200, margin);
+
   // ---------- 5) GO BACK TO PAGE 1 AND DRAW TITLE + VENDOR/PO DETAILS ----------
   doc.setPage(1);
 
-  // Supplier Details Block (left table)
+  // Combined Supplier + Ship To block
   autoTable(doc, {
     startY: CONTENT_TOP + 2,
     margin: { left: margin },
-    tableWidth: pageWidth / 2 - margin * 2,
+    tableWidth: pageWidth - margin * 2, // full width
     theme: "grid",
-    styles: {
-      fontSize: 9,
-      textColor: colors.text,
-      valign: "middle",
-      halign: "left",
-      fillColor: false,
-    },
-    headStyles: {
-      fillColor: colors.gold,
-      textColor: colors.text,
-      halign: "left",
-      fontStyle: "bold",
-      lineColor: colors.gold,
-      lineWidth: 0.1,
-    },
     head: [
       [
         {
           content: "Supplier Details",
           colSpan: 2,
-          styles: { fontStyle: "bold", halign: "left" },
+          styles: { fontStyle: "bold" },
         },
+        { content: "Ship To", colSpan: 2, styles: { fontStyle: "bold" } },
       ],
     ],
     body: [
+      // Row 1: Supplier Name + Ship To Name
       [
         {
-          content: po.vendor?.vendorName,
+          content: `${po.vendor?.vendorName || ""} (${
+            po.vendor?.venderCode || ""
+          })`,
           colSpan: 2,
           styles: { fontStyle: "bold" },
         },
-      ],
-      [{ content: formatAddress(po.vendor), colSpan: 2 }],
-      ["Vendor Code:", po.vendor?.venderCode || ""],
-      ["PAN:", po.vendor?.pan || ""],
-      ["GST:", po.vendor?.gst || ""],
-      ["Price Terms:", po.vendor?.priceTerms || ""],
-      ["Payment Terms:", po.vendor?.paymentTerms || ""],
-    ],
-  });
-
-  // Ship To Block (right table)
-  autoTable(doc, {
-    startY: CONTENT_TOP + 2,
-    margin: { left: pageWidth / 2 + margin },
-    tableWidth: pageWidth / 2 - margin * 2,
-    theme: "grid",
-    styles: {
-      fontSize: 9,
-      textColor: colors.text,
-      valign: "middle",
-      halign: "left",
-      fillColor: false,
-    },
-    headStyles: {
-      fillColor: colors.gold,
-      textColor: colors.text,
-      halign: "left",
-      fontStyle: "bold",
-      lineColor: colors.gold,
-      lineWidth: 0.1,
-    },
-    head: [
-      [
-        {
-          content: "Ship To",
-          colSpan: 2,
-          styles: { fontStyle: "bold", halign: "left" },
-        },
-      ],
-    ],
-    body: [
-      [
         {
           content: "I KHODAL BAG PVT. LTD",
           colSpan: 2,
           styles: { fontStyle: "bold" },
         },
       ],
+      // Row 2: Address block (force 3 lines)
       [
+        { content: formatAddressWithLines(po.vendor), colSpan: 2 },
         {
-          content: po.address || "",
+          content: formatAddressWithLines({ address: po.address }),
           colSpan: 2,
         },
       ],
-      ["PO No:", po.poNo || ""],
+      // Row 3
       [
-        "Date:",
+        { content: "PAN:", styles: { fontStyle: "bold" } },
+        po.vendor?.pan || "",
+        { content: "PO No:", styles: { fontStyle: "bold" } },
+        po.poNo || "",
+      ],
+      // Row 4
+      [
+        { content: "GST:", styles: { fontStyle: "bold" } },
+        po.vendor?.gst || "",
+        { content: "Date:", styles: { fontStyle: "bold" } },
         new Date(po.date || Date.now()).toLocaleDateString("en-GB", {
           day: "2-digit",
           month: "short",
           year: "numeric",
         }),
       ],
+      // Row 5
       [
-        "Expiry Date:",
+        { content: "Price Terms:", styles: { fontStyle: "bold" } },
+        po.vendor?.priceTerms || "",
+        { content: "Expiry Date:", styles: { fontStyle: "bold" } },
         new Date(po.expiryDate || Date.now()).toLocaleDateString("en-GB", {
           day: "2-digit",
           month: "short",
           year: "numeric",
         }),
       ],
+      // Row 6
       [
-        "Delivery Date:",
+        { content: "Payment Terms:", styles: { fontStyle: "bold" } },
+        po.vendor?.paymentTerms || "",
+        { content: "Delivery Date:", styles: { fontStyle: "bold" } },
         new Date(po.deliveryDate || Date.now()).toLocaleDateString("en-GB", {
           day: "2-digit",
           month: "short",
@@ -454,6 +441,25 @@ export const generateLPPO = async (po) => {
         }),
       ],
     ],
+    styles: {
+      fontSize: 9,
+      textColor: colors.text,
+      halign: "left",
+      valign: "middle",
+      fillColor: false,
+    },
+    headStyles: {
+      fillColor: colors.gold,
+      textColor: colors.text,
+      fontStyle: "bold",
+      lineWidth: 0.1,
+    },
+    columnStyles: {
+      0: { cellWidth: 28 }, // Supplier Label
+      1: { cellWidth: 71 }, // Supplier Value
+      2: { cellWidth: 28 }, // Ship To Label
+      3: { cellWidth: 71 }, // Ship To Value
+    },
   });
 
   const pageCount = doc.getNumberOfPages();
@@ -566,6 +572,33 @@ function formatAddress(vendor) {
   return parts.join(", ");
 }
 
+function formatAddressWithLines(obj = {}) {
+  const parts = [];
+
+  if (obj.address) parts.push(obj.address);
+  if (obj.city) parts.push(obj.city);
+
+  if (obj.state) {
+    let stateLine = obj.state;
+    if (obj.pincode || obj.postalCode) {
+      stateLine += ` - ${obj.pincode || obj.postalCode}`;
+    }
+    parts.push(stateLine);
+  }
+
+  if (obj.country) parts.push(obj.country);
+
+  // Break into lines
+  let lines = parts;
+
+  // Pad to exactly 3 lines
+  while (lines.length < 1) {
+    lines.push(" ");
+  }
+
+  return lines.slice(0, 3).join("\n");
+}
+
 function getGstSummary(items, vendorState, companyState = "GJ") {
   const summary = {};
 
@@ -591,4 +624,42 @@ function getGstSummary(items, vendorState, companyState = "GJ") {
   });
 
   return summary;
+}
+
+function addSignatureBlock(doc, pageWidth, pageHeight, y, margin = 6) {
+  const names = ["", "", "", ""];
+  const roles = [
+    "Prepared By",
+    "Purchase Manager",
+    "Authorised Signature",
+    "Supplier Signature",
+  ];
+
+  const colWidth = (pageWidth - margin * 2) / 4;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+
+  // Names row
+  names.forEach((n, i) => {
+    const x = margin + colWidth * i + colWidth / 2;
+    if (n) doc.text(n, x, y, { align: "center" });
+  });
+
+  // Lines row
+  const lineY = y + 5;
+  names.forEach((_, i) => {
+    const x1 = margin + colWidth * i + 5;
+    const x2 = margin + colWidth * (i + 1) - 5;
+    doc.line(x1, lineY, x2, lineY);
+  });
+
+  // Roles row
+  const roleY = lineY + 6;
+  roles.forEach((r, i) => {
+    const x = margin + colWidth * i + colWidth / 2;
+    doc.text(r, x, roleY, { align: "center" });
+  });
+
+  return roleY + 10; // return where it ended
 }

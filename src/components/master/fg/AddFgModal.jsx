@@ -22,6 +22,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
       gst: "",
       type: "FG",
       UOM: "",
+      rate: 0,
       height: 0,
       width: 0,
       depth: 0,
@@ -485,6 +486,18 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   />
                 </div> */}
+
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Rate</label>
+                  <input
+                    type="number"
+                    name="rate"
+                    placeholder="Rate"
+                    value={item.rate}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
 
                 <div className="flex flex-col">
                   <label className="font-semibold mb-1">Upload Files</label>
