@@ -6,6 +6,7 @@ import CreatableSelect from "react-select/creatable";
 import { FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import { capitalize } from "lodash";
+import { calculateRate } from "../../../utils/calc";
 
 const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
   const [form, setForm] = useState({
@@ -13,21 +14,22 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
     productName: sampleData.product?.name || "",
   });
 
-  console.log("form", form);
-
   const [productDetails, setProductDetails] = useState(
-    sampleData?.productDetails || []
-  );
+    sampleData?.productDetails?.map((detail) => ({
+      ...detail,
 
-  console.log("productDetails", productDetails);
+      tempQty: detail.tempQty || detail.qty / (sampleData.orderQty || 1), // ✅ ensure tempQty
+    })) || []
+  );
 
   const [rms, setRms] = useState([]);
   const [sfgs, setSfgs] = useState([]);
   const [fgs, setFgs] = useState([]);
+  const [samples, setSamples] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [files, setFiles] = useState([]);
   const [components, setComponents] = useState([]);
+
   const [newFiles, setNewFiles] = useState([]);
   const [existingFiles, setExistingFiles] = useState(sampleData.file || []);
   const [deletedFiles, setDeletedFiles] = useState([]);
@@ -35,25 +37,25 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        const [rmRes, sfgRes, fgRes, customerRes] = await Promise.all([
-          axios.get("/rms/rm"),
-          axios.get("/sfgs/get-all"),
-          axios.get("/fgs/get-all"),
-          axios.get("/customers/get-all"),
-        ]);
-        const rmsData = (rmRes.data.rawMaterials || []).map((i) => ({
-          ...i,
-          type: "RawMaterial",
-        }));
-        const sfgData = (sfgRes.data.data || []).map((i) => ({
-          ...i,
-          type: "SFG",
-        }));
-        setRms(rmsData);
-        setSfgs(sfgData);
+        const [rmRes, sfgRes, fgRes, customerRes, sampleRes] =
+          await Promise.all([
+            axios.get("/rms/rm"),
+            axios.get("/sfgs/get-all"),
+            axios.get("/fgs/get-all"),
+            axios.get("/customers/get-all"),
+            axios.get("/samples/get-all"),
+          ]);
+        setRms(
+          (rmRes.data.rawMaterials || []).map((i) => ({
+            ...i,
+            type: "RawMaterial",
+          }))
+        );
+        setSfgs((sfgRes.data.data || []).map((i) => ({ ...i, type: "SFG" })));
         setFgs(fgRes.data.data || []);
         setCustomers(customerRes.data.data || []);
-        setComponents([...rmsData, ...sfgData, ...fgRes.data.data]);
+        setSamples(sampleRes.data.data || []);
+        setComponents([...rms, ...sfgs, ...fgs]);
       } catch {
         toast.error("Failed to load dropdown data");
       }
@@ -68,7 +70,10 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
       }`,
       value: rm.id,
       type: "RawMaterial",
-      sqInchRate: rm.sqInchRate,
+      sqInchRate: rm.sqInchRate || null,
+      category: rm.itemCategory,
+      baseQty: rm.baseQty,
+      itemRate: rm.rate,
     })),
     ...sfgs.map((sfg) => ({
       label: `${sfg.skuCode}: ${sfg.itemName}${
@@ -77,6 +82,26 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
       value: sfg.id,
       type: "SFG",
       sqInchRate: sfg.sqInchRate || 1,
+      category: sfg.itemCategory,
+      baseQty: sfg.baseQty,
+      itemRate: sfg.rate || null,
+    })),
+  ];
+
+  const productOptions = [
+    ...samples.map((s) => ({
+      label: `${s.sampleNo}: ${s.product.name}${
+        s.description ? " - " + s.description : ""
+      }`,
+      value: s._id,
+      type: "SAMPLE",
+    })),
+    ...fgs.map((fg) => ({
+      label: `${fg.skuCode}: ${fg.itemName}${
+        fg.description ? " - " + fg.description : ""
+      }`,
+      value: fg.id,
+      type: "FG",
     })),
   ];
 
@@ -85,6 +110,7 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
     updatedDetails = productDetails
   ) => {
     const {
+      orderQty,
       rejection,
       QC,
       machineMaintainance,
@@ -114,11 +140,17 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
       (sum, comp) => sum + (Number(comp.rate) || 0),
       0
     );
-    const totalR = baseComponentRate + stitching + printing + others;
+    const unitR = baseComponentRate / orderQty + stitching + printing + others;
 
-    const unitRate = totalR + (totalR * overheadPercent) / 100;
-    const unitB2BRate = totalR + (totalR * (overheadPercent + B2B)) / 100;
-    const unitD2CRate = totalR + (totalR * (overheadPercent + D2C)) / 100;
+    const totalR =
+      (baseComponentRate / orderQty + stitching + printing + others) * orderQty;
+
+    const unitRate = unitR + (unitR * overheadPercent) / 100;
+    const unitB2BRate = unitR + (unitR * (overheadPercent + B2B)) / 100;
+    const unitD2CRate = unitR + (unitR * (overheadPercent + D2C)) / 100;
+    const totalRate = totalR + (totalR * overheadPercent) / 100;
+    const totalB2BRate = totalR + (totalR * (overheadPercent + B2B)) / 100;
+    const totalD2CRate = totalR + (totalR * (overheadPercent + D2C)) / 100;
 
     setForm((prev) => ({
       ...prev,
@@ -126,6 +158,9 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
       unitRate: unitRate.toFixed(2),
       unitB2BRate: unitB2BRate.toFixed(2),
       unitD2CRate: unitD2CRate.toFixed(2),
+      totalRate: totalRate.toFixed(2),
+      totalB2BRate: totalB2BRate.toFixed(2),
+      totalD2CRate: totalD2CRate.toFixed(2),
     }));
   };
 
@@ -135,6 +170,7 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
       "height",
       "width",
       "depth",
+      "orderQty",
       "qty",
       "sqInchRate",
       "rejection",
@@ -151,33 +187,67 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
       "B2B",
       "D2C",
     ];
-    const newValue = numericFields.includes(name) ? Number(value) || 0 : value;
-    recalculateTotals({ ...form, [name]: newValue }, productDetails);
+    const newValue = numericFields.includes(name)
+      ? Number(value) || null
+      : value;
+
+    let updatedDetails = [...productDetails];
+
+    if (name === "orderQty") {
+      updatedDetails = productDetails.map((comp) => {
+        const category = (comp.category || "").toLowerCase();
+
+        if (["plastic", "non-woven"].includes(category)) {
+          const grams = (Number(comp.tempQty) || 0) * newValue;
+          return {
+            ...comp,
+            grams,
+            qty: newValue,
+            rate: calculateRate({ ...comp, grams }, newValue),
+          };
+        } else {
+          const finalQty = (Number(comp.tempQty) || 0) * newValue;
+          return {
+            ...comp,
+            qty: finalQty,
+            rate: calculateRate(comp, finalQty),
+          };
+        }
+      });
+
+      setProductDetails(updatedDetails);
+    }
+
+    recalculateTotals({ ...form, [name]: newValue }, updatedDetails);
+    setForm((prev) => ({ ...prev, [name]: newValue }));
   };
 
   const updateComponent = (index, field, value) => {
     const updated = [...productDetails];
-    updated[index][field] = value;
+    const comp = updated[index];
+    const orderQty = Number(form.orderQty) || 1;
 
-    // console.log("index field value", index, field, value);
-
-    if (field === "sqInchRate") {
-      updated[index].sqInchRate = value;
-      // console.log("sq in rate", updated[index].sqInchRate);
+    if (field === "qty" || field === "grams") {
+      // user is entering per-unit qty or per-unit grams
+      comp.tempQty = Number(value) || 0;
+    } else {
+      comp[field] = value;
     }
 
-    let height = Number(updated[index].height) || 0;
-    let width = Number(updated[index].width) || 0;
-    let qty = Number(updated[index].qty) || 0;
-    let sqInchRate = Number(updated[index].sqInchRate) || null;
+    const category = (comp.category || "").toLowerCase();
 
-    console.log("sq rate", sqInchRate);
+    if (["plastic", "non-woven"].includes(category)) {
+      // scale grams with orderQty
+      comp.grams = (comp.tempQty || 0) * orderQty;
+      comp.qty = orderQty; // qty here is just "number of orders"
+    } else {
+      // all other categories → qty = tempQty × orderQty
+      comp.qty = (comp.tempQty || 0) * orderQty;
+    }
 
-    updated[index].rate =
-      height && width && qty && sqInchRate
-        ? Number((height * width * qty * sqInchRate).toFixed(2))
-        : null;
+    comp.rate = calculateRate(comp, comp.qty);
 
+    updated[index] = comp;
     setProductDetails(updated);
     recalculateTotals(form, updated);
   };
@@ -188,13 +258,18 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
       {
         itemId: "",
         type: "",
+        category: "",
+        tempQty: 0,
         qty: 0,
+        grams: 0,
         partName: "",
         height: 0,
         width: 0,
         // depth: 0,
         rate: 0,
         label: "",
+        baseQty: 0,
+        itemRate: 0,
       },
     ]);
   };
@@ -216,17 +291,12 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
       (c) =>
         !c.itemId || c.qty <= 0 || c.height <= 0 || c.width <= 0 || !c.partName
     );
-    if (hasEmpty) {
-      setLoading(false);
-      return toast.error("Please fill or remove all incomplete RM/SFG rows");
-    }
+    // if (hasEmpty) {
+    //   setLoading(false);
+    //   return toast.error("Please fill or remove all incomplete RM/SFG rows");
+    // }
     try {
       const formData = new FormData();
-      // formData.append(
-      //   "data",
-      //   JSON.stringify({ ...form, productDetails, deletedFiles })
-      // );
-
       const payload = {
         ...form,
         productDetails: productDetails.map(({ label, ...rest }) => rest),
@@ -260,10 +330,10 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto   shadow-lg border border-[#d8b76a] text-[#292926]">
+      <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-lg border border-[#d8b76a] text-[#292926]">
         {/* Header */}
         <div className="flex justify-between items-center sticky top-0 p-4 bg-white z-10">
-          <h2 className="text-xl font-semibold">Add Sample Product</h2>
+          <h2 className="text-xl font-semibold">Update Sample</h2>
           <button
             onClick={onClose}
             className="text-black hover:text-red-500 font-bold text-xl cursor-pointer"
@@ -275,6 +345,101 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
         <div className="px-4 pb-5">
           {/* Form */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm ">
+            <div>
+              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                Product Name
+              </label>
+              <Select
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    borderColor: "#d8b76a",
+                    boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
+                    "&:hover": {
+                      borderColor: "#d8b76a",
+                    },
+                  }),
+                }}
+                options={productOptions}
+                placeholder="Select or Type FG Product"
+                onCreateOption={(val) => setForm({ ...form, productName: val })}
+                value={
+                  form.productName
+                    ? { label: form.productName, value: form.productName }
+                    : null
+                }
+                onChange={(e) => {
+                  let selectedProduct = null;
+
+                  if (e.type === "FG") {
+                    selectedProduct = fgs.find((fg) => fg.id === e?.value);
+                  } else if (e.type === "SAMPLE") {
+                    selectedProduct = samples.find((s) => s._id === e?.value);
+                  }
+
+                  setForm({
+                    productName:
+                      selectedProduct.itemName ||
+                      selectedProduct.product.name ||
+                      "",
+                    sampleNo: selectedProduct.sampleNo,
+                    partyName: selectedProduct.partyName || "",
+                    orderQty: selectedProduct.orderQty || 1,
+                    height: selectedProduct.height || 0,
+                    width: selectedProduct.width || 0,
+                    depth: selectedProduct.depth || 0,
+                    B2B: selectedProduct.B2B || 0,
+                    D2C: selectedProduct.D2C || 0,
+                    rejection: selectedProduct.rejection || 2,
+                    QC: selectedProduct.QC || 0.75,
+                    machineMaintainance:
+                      selectedProduct.machineMaintainance || 1.75,
+                    materialHandling: selectedProduct.materialHandling || 1.75,
+                    packaging: selectedProduct.packaging || 2,
+                    shipping: selectedProduct.shipping || 1,
+                    companyOverHead: selectedProduct.companyOverHead || 4,
+                    indirectExpense: selectedProduct.indirectExpense || 1.75,
+                    stitching: selectedProduct.stitching || 0,
+                    printing: selectedProduct.printing || 0,
+                    others: selectedProduct.others || 0,
+                    unitRate: selectedProduct.unitRate || 0,
+                    unitB2BRate: selectedProduct.unitB2BRate || 0,
+                    unitD2CRate: selectedProduct.unitD2CRate || 0,
+                  });
+
+                  if (!selectedProduct) return;
+
+                  const allDetails = [
+                    ...(selectedProduct.rm || []),
+                    ...(selectedProduct.sfg || []),
+                    ...(selectedProduct.productDetails || []),
+                  ];
+
+                  const enrichedDetails = allDetails.map((item) => ({
+                    itemId: item.itemId || item.id || "",
+                    type: item.type,
+                    tempQty: item.qty || 0,
+                    qty: item.qty || 0,
+                    cateogry: item.category || "",
+                    grams: item.grams || 0,
+                    height: item.height || "",
+                    width: item.width || "",
+                    rate: item.rate || "",
+                    sqInchRate: item.sqInchRate || "",
+                    partName: item.partName || "",
+                    baseQty: item.baseQty || 0,
+                    itemRate: item.itemRate || 0,
+                    // depth: item.depth || "",
+                    label: `${item.skuCode}: ${item.itemName}${
+                      item.description ? ` - ${item.description}` : ""
+                    }`,
+                  }));
+
+                  setProductDetails(enrichedDetails);
+                }}
+              />
+            </div>
+
             <div>
               <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
                 Party Name
@@ -292,7 +457,7 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                 }}
                 options={customers.map((c) => ({
                   label: c.customerName,
-                  value: c.customerName.trim(),
+                  value: c.customerName?.trim(),
                 }))}
                 placeholder="Select or Type Customer"
                 onChange={(e) => setForm({ ...form, partyName: e?.value })}
@@ -305,91 +470,6 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
               />
             </div>
 
-            <div>
-              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                Product Name
-              </label>
-              <CreatableSelect
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    borderColor: "#d8b76a",
-                    boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
-                    "&:hover": {
-                      borderColor: "#d8b76a",
-                    },
-                  }),
-                }}
-                options={fgs.map((fg) => ({
-                  label: fg.itemName,
-                  value: fg.itemName.trim(),
-                }))}
-                placeholder="Select or Type FG Product"
-                onCreateOption={(val) => setForm({ ...form, productName: val })}
-                value={
-                  form.productName
-                    ? { label: form.productName, value: form.productName }
-                    : null
-                }
-                // onChange={(e) => setForm({ ...form, productName: e?.value })}
-                onChange={(e) => {
-                  const selectedFG = fgs.find((fg) => fg.itemName === e?.value);
-                  // setForm({ ...form, productName: e?.value });
-
-                  setForm({
-                    ...form,
-                    productName: e?.value,
-                    height: selectedFG.height || 0,
-                    width: selectedFG.width || 0,
-                    depth: selectedFG.depth || 0,
-                    B2B: selectedFG.B2B || 0,
-                    D2C: selectedFG.D2C || 0,
-                    rejection: selectedFG.rejection || 2,
-                    QC: selectedFG.QC || 0.75,
-                    machineMaintainance: selectedFG.machineMaintainance || 1.75,
-                    materialHandling: selectedFG.materialHandling || 1.75,
-                    packaging: selectedFG.packaging || 2,
-                    shipping: selectedFG.shipping || 1,
-                    companyOverHead: selectedFG.companyOverHead || 4,
-                    indirectExpense: selectedFG.indirectExpense || 1.75,
-                    stitching: selectedFG.stitching || 0,
-                    printing: selectedFG.printing || 0,
-                    others: selectedFG.others || 0,
-                    unitRate: selectedFG.unitRate || 0,
-                    unitB2BRate: selectedFG.unitB2BRate || 0,
-                    unitD2CRate: selectedFG.unitD2CRate || 0,
-                  });
-
-                  console.log("selectedFG", selectedFG);
-
-                  if (!selectedFG) return;
-
-                  const allDetails = [
-                    ...(selectedFG.rm || []),
-                    ...(selectedFG.sfg || []),
-                  ];
-                  // setSelectedFg(selectedFG);
-
-                  const enrichedDetails = allDetails.map((item) => ({
-                    itemId: item.id,
-                    type: item.type,
-                    qty: item.qty || "",
-                    height: item.height || "",
-                    width: item.width || "",
-                    rate: item.rate || "",
-                    sqInchRate: item.sqInchRate || "",
-                    partName: item.partName || "",
-                    // depth: item.depth || "",
-                    label: `${item.skuCode}: ${item.itemName}${
-                      item.description ? ` - ${item.description}` : ""
-                    }`,
-                  }));
-
-                  setProductDetails(enrichedDetails);
-                }}
-              />
-            </div>
-
             <div className="flex flex-col">
               <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
                 Order Qty
@@ -398,9 +478,10 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                 disabled
                 type="number"
                 placeholder="Order Qty"
+                name="orderQty"
                 className="p-2 border border-[#d8b76a] cursor-not-allowed rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-                value="1"
-                onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
+                value={form.orderQty}
+                onChange={(e) => handleFormChange(e)}
               />
             </div>
 
@@ -418,9 +499,8 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                 }
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
               />
-              {console.log("form date", form.date)}
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col ">
               <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
                 Upload New Files
               </label>
@@ -523,10 +603,12 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                   className="border border-[#d8b76a] rounded p-3 flex flex-col gap-2"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
-                    {/* Component Field - span 2 columns on medium+ screens */}
                     <div className="flex flex-col md:col-span-2">
                       <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
-                        Component
+                        Component{" "}
+                        <span className="text-primary capitalize">
+                          {comp.category ? `● ${comp.category}` : ""}
+                        </span>
                       </label>
                       <Select
                         className="w-full"
@@ -540,6 +622,9 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                           updateComponent(index, "type", e.type);
                           updateComponent(index, "label", e.label);
                           updateComponent(index, "sqInchRate", e.sqInchRate);
+                          updateComponent(index, "category", e.category);
+                          updateComponent(index, "baseQty", e.baseQty);
+                          updateComponent(index, "itemRate", e.itemRate);
                         }}
                         styles={{
                           control: (base, state) => ({
@@ -557,34 +642,87 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                     </div>
 
                     {/* Height, Width, Depth, Qty Fields */}
-                    {["partName", "height", "width", "qty", "rate"].map(
-                      (field) => (
+                    {[
+                      "partName",
+                      "height",
+                      "width",
+                      "grams",
+                      "qty",
+                      "rate",
+                    ].map((field) => {
+                      // Hide based on category
+                      if (
+                        [
+                          "slider",
+                          "bidding",
+                          "adjuster",
+                          "buckel",
+                          "dkadi",
+                          "accessories",
+                        ].includes(comp.category?.toLowerCase()) &&
+                        (field === "height" || field === "width")
+                      )
+                        return null;
+
+                      if (
+                        ["plastic", "non-woven"].includes(
+                          comp.category?.toLowerCase()
+                        ) &&
+                        field === "qty"
+                      ) {
+                        return null; // hide qty
+                      }
+                      if (
+                        !["plastic", "non-woven"].includes(
+                          comp.category?.toLowerCase()
+                        ) &&
+                        field === "grams"
+                      ) {
+                        return null; // hide grams for others
+                      }
+                      // ✅ Add this new rule for zipper
+                      if (
+                        comp.category?.toLowerCase() === "zipper" &&
+                        field === "height"
+                      ) {
+                        return null; // hide height only for zipper
+                      }
+
+                      return (
                         <div className="flex flex-col" key={field}>
                           <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                            {field == "partName"
+                            {field === "partName"
                               ? "Part Name"
-                              : field == "qty" || field == "rate"
-                              ? capitalize(field)
+                              : field === "qty"
+                              ? "Qty"
+                              : field === "grams"
+                              ? "Weight (gm)"
+                              : field === "rate"
+                              ? "Rate"
                               : `${field} (Inch)`}
                           </label>
                           <input
-                            type={field == "partName" ? "text" : "number"}
+                            type={
+                              ["partName"].includes(field) ? "text" : "number"
+                            }
                             placeholder={
-                              field == "partName"
+                              field === "partName"
                                 ? "Item Part Name"
-                                : field == "qty" || field == "rate"
-                                ? field
-                                : `${field} (Inch)`
+                                : field === "grams"
+                                ? "Weight in grams"
+                                : field === "qty"
+                                ? "qty"
+                                : `${field}`
                             }
                             className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-                            value={comp[field]}
+                            value={comp[field] || ""}
                             onChange={(e) =>
                               updateComponent(index, field, e.target.value)
                             }
                           />
                         </div>
-                      )
-                    )}
+                      );
+                    })}
                   </div>
 
                   <div className="mt-2">
@@ -802,6 +940,42 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                 className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
               />
             </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Total Rate (₹)</label>
+              <input
+                disabled
+                type="number"
+                name="totalRate"
+                placeholder="Total Rate"
+                value={form.totalRate}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Total B2B (₹)</label>
+              <input
+                disabled
+                type="number"
+                name="totalB2BRate"
+                placeholder="Total B2B"
+                value={form.totalB2BRate}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Total D2C (₹)</label>
+              <input
+                disabled
+                type="number"
+                name="totalD2CRate"
+                placeholder="total D2C"
+                value={form.totalD2CRate}
+                onChange={(e) => handleFormChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+              />
+            </div>
           </div>
 
           {/* Footer */}
@@ -813,11 +987,11 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
             >
               {loading ? (
                 <>
-                  <span className="mr-2">Saving...</span>
+                  <span className="mr-2">Updating...</span>
                   <ClipLoader size={20} color="#292926" />
                 </>
               ) : (
-                "Save"
+                "Update"
               )}
             </button>
           </div>

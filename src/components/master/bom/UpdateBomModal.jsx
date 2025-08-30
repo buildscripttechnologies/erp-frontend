@@ -6,6 +6,7 @@ import CreatableSelect from "react-select/creatable";
 import { FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import { capitalize } from "lodash";
+import { calculateRate } from "../../../utils/calc";
 
 const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
   const [form, setForm] = useState({
@@ -15,7 +16,8 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
   const [productDetails, setProductDetails] = useState(
     bom?.productDetails?.map((detail) => ({
       ...detail,
-      baseQty: detail.baseQty || detail.qty / (bom.orderQty || 1),
+      // baseQty: detail.baseQty || detail.qty / (bom.orderQty || 1),
+      tempQty: detail.tempQty || detail.qty / (bom.orderQty || 1), // ✅ ensure tempQty
     })) || []
   );
 
@@ -68,6 +70,9 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
       value: rm.id,
       type: "RawMaterial",
       sqInchRate: rm.sqInchRate || null,
+      category: rm.itemCategory,
+      baseQty: rm.baseQty,
+      itemRate: rm.rate,
     })),
     ...sfgs.map((sfg) => ({
       label: `${sfg.skuCode}: ${sfg.itemName}${
@@ -76,6 +81,9 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
       value: sfg.id,
       type: "SFG",
       sqInchRate: sfg.sqInchRate || 1,
+      category: sfg.itemCategory,
+      baseQty: sfg.baseQty,
+      itemRate: sfg.rate || null,
     })),
   ];
 
@@ -186,25 +194,24 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
 
     if (name === "orderQty") {
       updatedDetails = productDetails.map((comp) => {
-        const baseQty =
-          Number(comp.baseQty) || Number(comp.qty) / (form.orderQty || 1);
-        const newQty = baseQty * newValue;
+        const category = (comp.category || "").toLowerCase();
 
-        const height = Number(comp.height) || 0;
-        const width = Number(comp.width) || 0;
-        const sqInchRate = Number(comp.sqInchRate) || 0;
-
-        const newRate =
-          height && width && newQty && sqInchRate
-            ? Number((height * width * newQty * sqInchRate).toFixed(2))
-            : null;
-
-        return {
-          ...comp,
-          qty: newQty,
-          baseQty: baseQty,
-          rate: newRate,
-        };
+        if (["plastic", "non-woven"].includes(category)) {
+          const grams = (Number(comp.tempQty) || 0) * newValue;
+          return {
+            ...comp,
+            grams,
+            qty: newValue,
+            rate: calculateRate({ ...comp, grams }, newValue),
+          };
+        } else {
+          const finalQty = (Number(comp.tempQty) || 0) * newValue;
+          return {
+            ...comp,
+            qty: finalQty,
+            rate: calculateRate(comp, finalQty),
+          };
+        }
       });
 
       setProductDetails(updatedDetails);
@@ -216,23 +223,30 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
 
   const updateComponent = (index, field, value) => {
     const updated = [...productDetails];
-    updated[index][field] = value;
+    const comp = updated[index];
+    const orderQty = Number(form.orderQty) || 1;
 
-    if (field === "sqInchRate") {
-      updated[index].sqInchRate = value;
-      console.log("sq in rate", updated[index].sqInchRate);
+    if (field === "qty" || field === "grams") {
+      // user is entering per-unit qty or per-unit grams
+      comp.tempQty = Number(value) || 0;
+    } else {
+      comp[field] = value;
     }
 
-    let height = Number(updated[index].height) || 0;
-    let width = Number(updated[index].width) || 0;
-    let qty = Number(updated[index].qty) || 0;
-    let sqInchRate = Number(updated[index].sqInchRate) || null;
+    const category = (comp.category || "").toLowerCase();
 
-    updated[index].rate =
-      height && width && qty && sqInchRate
-        ? Number((height * width * qty * sqInchRate).toFixed(2))
-        : null;
+    if (["plastic", "non-woven"].includes(category)) {
+      // scale grams with orderQty
+      comp.grams = (comp.tempQty || 0) * orderQty;
+      comp.qty = orderQty; // qty here is just "number of orders"
+    } else {
+      // all other categories → qty = tempQty × orderQty
+      comp.qty = (comp.tempQty || 0) * orderQty;
+    }
 
+    comp.rate = calculateRate(comp, comp.qty);
+
+    updated[index] = comp;
     setProductDetails(updated);
     recalculateTotals(form, updated);
   };
@@ -243,13 +257,18 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
       {
         itemId: "",
         type: "",
-        baseQty: 1,
-        qty: productDetails.orderQty || 0,
+        category: "",
+        tempQty: 0,
+        qty: 0,
+        grams: 0,
         partName: "",
         height: 0,
         width: 0,
+        // depth: 0,
         rate: 0,
         label: "",
+        baseQty: 0,
+        itemRate: 0,
       },
     ]);
   };
@@ -271,10 +290,10 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
       (c) =>
         !c.itemId || c.qty <= 0 || c.height <= 0 || c.width <= 0 || !c.partName
     );
-    if (hasEmpty) {
-      setLoading(false);
-      return toast.error("Please fill or remove all incomplete RM/SFG rows");
-    }
+    // if (hasEmpty) {
+    //   setLoading(false);
+    //   return toast.error("Please fill or remove all incomplete RM/SFG rows");
+    // }
     try {
       const formData = new FormData();
       const payload = {
@@ -394,15 +413,18 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                   const enrichedDetails = allDetails.map((item) => ({
                     itemId: item.itemId || item.id || "",
                     type: item.type,
-                    baseQty:
-                      item.baseQty ||
-                      item.qty / (selectedProduct.orderQty || 1),
-                    qty: item.qty || "",
+                    tempQty: item.qty || 0,
+                    qty: item.qty || 0,
+                    cateogry: item.category || "",
+                    grams: item.grams || 0,
                     height: item.height || "",
                     width: item.width || "",
                     rate: item.rate || "",
                     sqInchRate: item.sqInchRate || "",
                     partName: item.partName || "",
+                    baseQty: item.baseQty || 0,
+                    itemRate: item.itemRate || 0,
+                    // depth: item.depth || "",
                     label: `${item.skuCode}: ${item.itemName}${
                       item.description ? ` - ${item.description}` : ""
                     }`,
@@ -577,7 +599,10 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
                     <div className="flex flex-col md:col-span-2">
                       <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
-                        Component
+                        Component{" "}
+                        <span className="text-primary capitalize">
+                          {comp.category ? `● ${comp.category}` : ""}
+                        </span>
                       </label>
                       <Select
                         className="w-full"
@@ -591,6 +616,9 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                           updateComponent(index, "type", e.type);
                           updateComponent(index, "label", e.label);
                           updateComponent(index, "sqInchRate", e.sqInchRate);
+                          updateComponent(index, "category", e.category);
+                          updateComponent(index, "baseQty", e.baseQty);
+                          updateComponent(index, "itemRate", e.itemRate);
                         }}
                         styles={{
                           control: (base, state) => ({
@@ -607,34 +635,88 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                       />
                     </div>
 
-                    {["partName", "height", "width", "qty", "rate"].map(
-                      (field) => (
+                    {/* Height, Width, Depth, Qty Fields */}
+                    {[
+                      "partName",
+                      "height",
+                      "width",
+                      "grams",
+                      "qty",
+                      "rate",
+                    ].map((field) => {
+                      // Hide based on category
+                      if (
+                        [
+                          "slider",
+                          "bidding",
+                          "adjuster",
+                          "buckel",
+                          "dkadi",
+                          "accessories",
+                        ].includes(comp.category?.toLowerCase()) &&
+                        (field === "height" || field === "width")
+                      )
+                        return null;
+
+                      if (
+                        ["plastic", "non-woven"].includes(
+                          comp.category?.toLowerCase()
+                        ) &&
+                        field === "qty"
+                      ) {
+                        return null; // hide qty
+                      }
+                      if (
+                        !["plastic", "non-woven"].includes(
+                          comp.category?.toLowerCase()
+                        ) &&
+                        field === "grams"
+                      ) {
+                        return null; // hide grams for others
+                      }
+                      // ✅ Add this new rule for zipper
+                      if (
+                        comp.category?.toLowerCase() === "zipper" &&
+                        field === "height"
+                      ) {
+                        return null; // hide height only for zipper
+                      }
+
+                      return (
                         <div className="flex flex-col" key={field}>
                           <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                            {field == "partName"
+                            {field === "partName"
                               ? "Part Name"
-                              : field == "qty" || field == "rate"
-                              ? capitalize(field)
+                              : field === "qty"
+                              ? "Qty"
+                              : field === "grams"
+                              ? "Weight (gm)"
+                              : field === "rate"
+                              ? "Rate"
                               : `${field} (Inch)`}
                           </label>
                           <input
-                            type={field == "partName" ? "text" : "number"}
+                            type={
+                              ["partName"].includes(field) ? "text" : "number"
+                            }
                             placeholder={
-                              field == "partName"
+                              field === "partName"
                                 ? "Item Part Name"
-                                : field == "qty" || field == "rate"
-                                ? field
-                                : `${field} (Inch)`
+                                : field === "grams"
+                                ? "Weight in grams"
+                                : field === "qty"
+                                ? "qty"
+                                : `${field}`
                             }
                             className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-                            value={comp[field]}
+                            value={comp[field] || ""}
                             onChange={(e) =>
                               updateComponent(index, field, e.target.value)
                             }
                           />
                         </div>
-                      )
-                    )}
+                      );
+                    })}
                   </div>
 
                   <div className="mt-2">

@@ -47,9 +47,9 @@ const AddBomModal = ({ onClose, onSuccess }) => {
   const [samples, setSamples] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [files, setFiles] = useState([]);
-
   const [components, setComponents] = useState([]);
+
+  const [files, setFiles] = useState([]);
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -101,7 +101,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       sqInchRate: sfg.sqInchRate || 1,
       category: sfg.itemCategory,
       baseQty: sfg.baseQty,
-      itemRate: sfg.ratePerBaseQty,
+      itemRate: sfg.rate || null,
     })),
   ];
   console.log("Material Options", materialOptions);
@@ -290,6 +290,8 @@ const AddBomModal = ({ onClose, onSuccess }) => {
         // depth: 0,
         rate: 0,
         label: "",
+        baseQty: 0,
+        itemRate: 0,
       },
     ]);
   };
@@ -442,11 +444,15 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                     type: item.type,
                     tempQty: item.qty || 0,
                     qty: item.qty || 0,
+                    cateogry: item.category || "",
+                    grams: item.grams || 0,
                     height: item.height || "",
                     width: item.width || "",
                     rate: item.rate || "",
                     sqInchRate: item.sqInchRate || "",
                     partName: item.partName || "",
+                    baseQty: item.baseQty || 0,
+                    itemRate: item.itemRate || 0,
                     // depth: item.depth || "",
                     label: `${item.skuCode}: ${item.itemName}${
                       item.description ? ` - ${item.description}` : ""
@@ -496,7 +502,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                 type="number"
                 placeholder="Order Qty"
                 name="orderQty"
-                className="p-2 border border-[#d8b76a] cursor-not-allowed rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                className="p-2 border border-[#d8b76a]  rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
                 value={form.orderQty}
                 // onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
                 onChange={(e) => handleFormChange(e)}
@@ -646,6 +652,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                           if (
                             [
                               "slider",
+                              "bidding",
                               "adjuster",
                               "buckel",
                               "dkadi",

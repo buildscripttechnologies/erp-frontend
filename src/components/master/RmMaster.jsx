@@ -255,10 +255,15 @@ const RmMaster = ({ isOpen }) => {
       skuCode: e.skuCode,
       itemName: e.itemName,
       description: e.description,
+      itemCategory: e.itemCategory,
+      itemColor: e.itemColor,
       hsnOrSac: e.hsnOrSac,
       type: e.type,
       location: e.location,
       moq: e.moq,
+      panno: e.panno,
+      sqInchRate: e.sqInchRate,
+      rate: e.rate,
       gst: e.gst,
       stockQty: e.stockQty,
       baseQty: e.baseQty,
@@ -269,6 +274,7 @@ const RmMaster = ({ isOpen }) => {
         ? "Required"
         : "Not Required",
       attachments: e.attachments.map((att) => `${att.fileUrl}`).join(", "),
+      totalRate: e.totalRate,
     }));
   };
 
@@ -279,7 +285,7 @@ const RmMaster = ({ isOpen }) => {
       let exportData = [];
 
       if (exportScope === "current" || exportScope === "filtered") {
-        exportData = data(filteredData);
+        exportData = data(rawMaterials);
         generateExportFile(exportData); // Synchronous export
         setDownloading(false);
       } else {

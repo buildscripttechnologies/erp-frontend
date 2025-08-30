@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import Select from "react-select";
+import { calculateRate } from "../../../utils/calc";
 
 const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
   const [form, setForm] = useState(null);
@@ -52,23 +53,33 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
       (fg.rm || []).forEach((r) => {
         mappedMaterials.push({
           itemId: r.id,
+          partName: r.partName,
           height: r.height,
           width: r.width,
           // depth: r.depth,
           qty: r.qty,
+          grams: r.grams,
           rate: r.rate,
           sqInchRate: r.sqInchRate,
+          category: r.category,
+          itemRate: r.itemRate,
+          baseQty: r.baseQty,
         });
       });
       (fg.sfg || []).forEach((s) => {
         mappedMaterials.push({
           itemId: s.id,
+          partName: s.partName,
           height: s.height,
           width: s.width,
           // depth: s.depth,
           qty: s.qty,
-          rate: r.rate,
-          sqInchRate: r.sqInchRate,
+          grams: s.grams,
+          rate: s.rate,
+          sqInchRate: s.sqInchRate,
+          category: s.category,
+          itemRate: s.itemRate,
+          baseQty: s.baseQty,
         });
       });
 
@@ -196,33 +207,34 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
     );
   };
 
-  const handleMaterialChange = (matIndex, field, value) => {
-    const updatedMaterials = [...form.materials];
+  const handleMaterialChange = (index, field, value) => {
+    const updated = [...form.materials];
+    const comp = updated[index];
+    const orderQty = 1;
 
-    if (field === "itemId") {
-      let itm = components.find((item) => item.id === value);
-      if (itm) {
-        updatedMaterials[matIndex].itemId = value;
-        updatedMaterials[matIndex].sqInchRate = itm.sqInchRate || null;
-      }
+    if (field === "qty" || field === "grams") {
+      // user is entering per-unit qty or per-unit grams
+      comp.tempQty = Number(value) || 0;
     } else {
-      updatedMaterials[matIndex][field] = value;
+      comp[field] = value;
     }
 
-    let height = Number(updatedMaterials[matIndex].height) || 0;
-    let width = Number(updatedMaterials[matIndex].width) || 0;
-    let qty = Number(updatedMaterials[matIndex].qty) || 0;
-    let sqInchRate = Number(updatedMaterials[matIndex].sqInchRate) || 0;
+    const category = (comp.category || "").toLowerCase();
 
-    updatedMaterials[matIndex].rate =
-      height && width && qty && sqInchRate
-        ? Number((height * width * qty * sqInchRate).toFixed(4))
-        : 0;
+    if (["plastic", "non-woven"].includes(category)) {
+      // scale grams with orderQty
+      comp.grams = (comp.tempQty || 0) * orderQty;
+      comp.qty = orderQty; // qty here is just "number of orders"
+    } else {
+      // all other categories → qty = tempQty × orderQty
+      comp.qty = (comp.tempQty || 0) * orderQty;
+    }
+    comp.rate = calculateRate(comp, comp.qty);
 
     setForm((prev) =>
       recalculateTotals({
         ...prev,
-        materials: updatedMaterials,
+        materials: updated,
       })
     );
   };
@@ -232,7 +244,19 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
       ...prev,
       materials: [
         ...prev.materials,
-        { itemId: "", height: "", width: "", qty: "", rate: "" },
+        {
+          itemId: "",
+          partName: "",
+          height: "",
+          width: "",
+          qty: 0,
+          grams: 0,
+          rate: 0,
+          sqInchRate: "",
+          category: "",
+          itemRate: 0,
+          baseQty: 0,
+        },
       ],
     }));
   };
@@ -258,22 +282,32 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         if (match.type === "RM") {
           rm.push({
             rmid: match.id,
+            partName: mat.partName,
             height: Number(mat.height),
             width: Number(mat.width),
             // depth: Number(mat.depth),
             qty: Number(mat.qty),
+            grams: Number(mat.grams),
             rate: Number(mat.rate),
             sqInchRate: Number(mat.sqInchRate),
+            category: mat.category,
+            itemRate: Number(mat.itemRate),
+            baseQty: Number(mat.baseQty),
           });
         } else {
           sfgNested.push({
             sfgid: match.id,
+            partName: mat.partName,
             height: Number(mat.height),
             width: Number(mat.width),
             // depth: Number(mat.depth),
             qty: Number(mat.qty),
+            grams: Number(mat.grams),
             rate: Number(mat.rate),
             sqInchRate: Number(mat.sqInchRate),
+            category: mat.category,
+            itemRate: Number(mat.itemRate),
+            baseQty: Number(mat.baseQty),
           });
         }
       });
@@ -348,6 +382,10 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         .map((c) => ({
           value: c.id,
           label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
+          sqInchRate: c.sqInchRate || null,
+          category: c.itemCategory || null,
+          baseQty: c.baseQty || null,
+          itemRate: c.rate || null,
         })),
     },
     {
@@ -357,6 +395,10 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         .map((c) => ({
           value: c.id,
           label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
+          sqInchRate: c.sqInchRate || null,
+          category: c.itemCategory || null,
+          baseQty: c.baseQty || null,
+          itemRate: c.rate || null,
         })),
     },
   ];
@@ -580,153 +622,212 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
 
           <div>
             <p className="font-semibold mb-2">List of Consumed Components</p>
-            {form.materials.map((mat, index) => (
-              <div
-                key={index}
-                className="flex flex-wrap gap-3 mb-4 border p-3 rounded-md border-primary"
-              >
-                <div className="w-full sm:w-[55%] md:w-[40%]">
-                  <label className="font-medium">Material</label>
-                  <Select
-                    className="flex-grow"
-                    value={
-                      groupedOptions
-                        .flatMap((g) => g.options)
-                        .find((opt) => opt.value === mat.itemId) || null
-                    }
-                    onChange={(selected) =>
-                      handleMaterialChange(index, "itemId", selected?.value)
-                    }
-                    options={groupedOptions}
-                    placeholder="Select RM or SFG"
-                    isSearchable
-                    styles={{
-                      control: (base, state) => ({
-                        ...base,
-                        padding: "2px",
-                        borderRadius: "6px",
-                        borderColor: "var(--color-primary)",
-                        boxShadow: state.isFocused
-                          ? "0 0 0 1px var(--color-primary)"
-                          : "none",
-                        "&:hover": {
-                          borderColor: "var(--color-primary)",
-                        },
-                      }),
-                      // option: (base, state) => ({
-                      //   ...base,
-                      //   backgroundColor: state.isFocused ? "#f3e6c0" : "#fff",
-                      //   color: "#292926",
-                      // }),
-                      menu: (base) => ({
-                        ...base,
-                        zIndex: 9999,
-                      }),
-                      singleValue: (base) => ({
-                        ...base,
-                        color: "#292926",
-                      }),
-                      placeholder: (base) => ({
-                        ...base,
-                        color: "#9e9e9e",
-                      }),
-                      groupHeading: (base) => ({
-                        ...base,
-                        color: "#292926",
-                        fontWeight: "bold",
-                      }),
-                    }}
-                    filterOption={(option, inputValue) => {
-                      const label = option.label
-                        .replace(/\s+/g, "")
-                        .toLowerCase();
-                      const input = inputValue
-                        .replace(/\s+/g, "")
-                        .toLowerCase();
-                      return label.includes(input);
-                    }}
-                  />
-                </div>
-
-                {/* Height */}
-                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                  <label className="font-medium text-sm mb-1">
-                    Height (Inch)
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    placeholder="Height"
-                    value={mat.height}
-                    onChange={(e) =>
-                      handleMaterialChange(index, "height", e.target.value)
-                    }
-                    className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
-                  />
-                </div>
-
-                {/* Width */}
-                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                  <label className="font-medium text-sm mb-1">
-                    Width (Inch)
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    placeholder="Width"
-                    value={mat.width}
-                    onChange={(e) =>
-                      handleMaterialChange(index, "width", e.target.value)
-                    }
-                    className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
-                  />
-                </div>
-
-                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[10%]">
-                  <label className="font-medium text-sm mb-1">Qty</label>
-                  <input
-                    type="number"
-                    step="any"
-                    placeholder="Qty"
-                    value={mat.qty}
-                    onChange={(e) =>
-                      handleMaterialChange(index, "qty", e.target.value)
-                    }
-                    className="p-1.5  border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-                  />
-                </div>
-
-                {/* Rate */}
-                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                  <label className="font-medium text-sm mb-1">Rate (₹)</label>
-                  <input
-                    type="number"
-                    step="any"
-                    placeholder="Rate"
-                    value={mat.rate}
-                    onChange={(e) =>
-                      handleMaterialChange(index, "rate", e.target.value)
-                    }
-                    className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => removeMaterial(index)}
-                  className="text-red-600 cursor-pointer gap-1 flex items-center hover:underline"
+            <div className="flex flex-col gap-4">
+              {form.materials.map((mat, index) => (
+                <div
+                  key={index}
+                  className="border border-primary rounded p-3 flex flex-col gap-2"
                 >
-                  <FiTrash2 /> Remove
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={addMaterial}
-              className="bg-primary cursor-pointer hover:bg-[#d8b76a91] px-3 py-1 rounded flex items-center gap-1 mt-2"
-            >
-              <FiPlus /> Add RM/SFG
-            </button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
+                    <div className="flex flex-col md:col-span-2">
+                      <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
+                        Material{" "}
+                        <span className="text-primary capitalize">
+                          {mat.category ? `● ${mat.category}` : ""}
+                        </span>
+                      </label>
+                      <Select
+                        className="flex-grow"
+                        value={
+                          groupedOptions
+                            .flatMap((g) => g.options)
+                            .find((opt) => opt.value === mat.itemId) || null
+                        }
+                        onChange={(selected) => {
+                          handleMaterialChange(
+                            index,
+                            "itemId",
+                            selected?.value
+                          );
+                          handleMaterialChange(
+                            index,
+                            "sqInchRate",
+                            selected?.sqInchRate
+                          );
+                          handleMaterialChange(
+                            index,
+                            "category",
+                            selected?.category
+                          );
+                          handleMaterialChange(
+                            index,
+                            "baseQty",
+                            selected?.baseQty
+                          );
+                          handleMaterialChange(
+                            index,
+                            "itemRate",
+                            selected?.itemRate
+                          );
+                        }}
+                        options={groupedOptions}
+                        placeholder="Select RM or SFG"
+                        isSearchable
+                        styles={{
+                          control: (base, state) => ({
+                            ...base,
+                            padding: "2px",
+                            borderRadius: "6px",
+                            borderColor: "var(--color-primary)",
+                            boxShadow: state.isFocused
+                              ? "0 0 0 1px var(--color-primary)"
+                              : "none",
+                            "&:hover": {
+                              borderColor: "var(--color-primary)",
+                            },
+                          }),
+                          // option: (base, state) => ({
+                          //   ...base,
+                          //   backgroundColor: state.isFocused ? "#f3e6c0" : "#fff",
+                          //   color: "#292926",
+                          // }),
+                          menu: (base) => ({
+                            ...base,
+                            zIndex: 9999,
+                          }),
+                          singleValue: (base) => ({
+                            ...base,
+                            color: "#292926",
+                          }),
+                          placeholder: (base) => ({
+                            ...base,
+                            color: "#9e9e9e",
+                          }),
+                          groupHeading: (base) => ({
+                            ...base,
+                            color: "#292926",
+                            fontWeight: "bold",
+                          }),
+                        }}
+                        filterOption={(option, inputValue) => {
+                          const label = option.label
+                            .replace(/\s+/g, "")
+                            .toLowerCase();
+                          const input = inputValue
+                            .replace(/\s+/g, "")
+                            .toLowerCase();
+                          return label.includes(input);
+                        }}
+                      />
+                    </div>
+
+                    {/* Height, Width, Depth, Qty Fields */}
+                    {[
+                      "partName",
+                      "height",
+                      "width",
+                      "grams",
+                      "qty",
+                      "rate",
+                    ].map((field) => {
+                      // Hide based on category
+                      if (
+                        [
+                          "slider",
+                          "bidding",
+                          "adjuster",
+                          "buckel",
+                          "dkadi",
+                          "accessories",
+                        ].includes(mat.category?.toLowerCase()) &&
+                        (field === "height" || field === "width")
+                      )
+                        return null;
+
+                      if (
+                        ["plastic", "non-woven"].includes(
+                          mat.category?.toLowerCase()
+                        ) &&
+                        field === "qty"
+                      ) {
+                        return null; // hide qty
+                      }
+                      if (
+                        !["plastic", "non-woven"].includes(
+                          mat.category?.toLowerCase()
+                        ) &&
+                        field === "grams"
+                      ) {
+                        return null; // hide grams for others
+                      }
+                      // ✅ Add this new rule for zipper
+                      if (
+                        mat.category?.toLowerCase() === "zipper" &&
+                        field === "height"
+                      ) {
+                        return null; // hide height only for zipper
+                      }
+
+                      return (
+                        <div className="flex flex-col" key={field}>
+                          <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                            {field === "partName"
+                              ? "Part Name"
+                              : field === "qty"
+                              ? "Qty"
+                              : field === "grams"
+                              ? "Weight (gm)"
+                              : field === "rate"
+                              ? "Rate"
+                              : `${field} (Inch)`}
+                          </label>
+                          <input
+                            type={
+                              ["partName"].includes(field) ? "text" : "number"
+                            }
+                            placeholder={
+                              field === "partName"
+                                ? "Item Part Name"
+                                : field === "grams"
+                                ? "Weight in grams"
+                                : field === "qty"
+                                ? "qty"
+                                : `${field}`
+                            }
+                            className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                            value={mat[field] || ""}
+                            onChange={(e) =>
+                              handleMaterialChange(
+                                index,
+
+                                field,
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      onClick={() => removeMaterial(index)}
+                      className="text-red-600 cursor-pointer gap-1 flex items-center hover:underline"
+                    >
+                      <FiTrash2 /> Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addMaterial}
+                className="bg-[#d8b76a] hover:bg-[#d8b76a91] text-[#292926] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
+              >
+                <FiPlus /> Add RM/SFG
+              </button>
+            </div>
           </div>
 
           <div className="bg-primary w-full h-[1px] my-2"></div>
