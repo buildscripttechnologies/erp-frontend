@@ -6,6 +6,7 @@ import CreatableSelect from "react-select/creatable";
 import { FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import { capitalize } from "lodash";
+import { calculateRate } from "../../../utils/calc";
 
 const AddBomModal = ({ onClose, onSuccess }) => {
   const [form, setForm] = useState({
@@ -46,9 +47,9 @@ const AddBomModal = ({ onClose, onSuccess }) => {
   const [samples, setSamples] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [files, setFiles] = useState([]);
-
   const [components, setComponents] = useState([]);
+
+  const [files, setFiles] = useState([]);
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -87,6 +88,9 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       value: rm.id,
       type: "RawMaterial",
       sqInchRate: rm.sqInchRate || null,
+      category: rm.itemCategory,
+      baseQty: rm.baseQty,
+      itemRate: rm.rate,
     })),
     ...sfgs.map((sfg) => ({
       label: `${sfg.skuCode}: ${sfg.itemName}${
@@ -95,8 +99,12 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       value: sfg.id,
       type: "SFG",
       sqInchRate: sfg.sqInchRate || 1,
+      category: sfg.itemCategory,
+      baseQty: sfg.baseQty,
+      itemRate: sfg.rate || null,
     })),
   ];
+  console.log("Material Options", materialOptions);
 
   const productOptions = [
     ...samples.map((s) => ({
@@ -179,8 +187,6 @@ const AddBomModal = ({ onClose, onSuccess }) => {
   };
 
   const handleFormChange = (e) => {
-    console.log("e", e);
-
     const { name, value } = e.target;
     const numericFields = [
       "height",
@@ -207,60 +213,63 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       ? Number(value) || null
       : value;
 
-    console.log("newValue", newValue);
-
     let updatedDetails = [...productDetails];
 
-    if (name == "orderQty") {
+    if (name === "orderQty") {
       updatedDetails = productDetails.map((comp) => {
-        const newQty = (Number(comp.baseQty) || 0) * newValue;
+        const category = (comp.category || "").toLowerCase();
 
-        // recompute rate with new qty
-        const height = Number(comp.height) || 0;
-        const width = Number(comp.width) || 0;
-        const sqInchRate = Number(comp.sqInchRate) || 0;
-
-        const newRate =
-          height && width && newQty && sqInchRate
-            ? Number((height * width * newQty * sqInchRate).toFixed(2))
-            : null;
-
-        return {
-          ...comp,
-          qty: newQty,
-          rate: newRate,
-        };
+        if (["plastic", "non-woven"].includes(category)) {
+          const grams = (Number(comp.tempQty) || 0) * newValue;
+          return {
+            ...comp,
+            grams,
+            qty: newValue,
+            rate: calculateRate({ ...comp, grams }, newValue),
+          };
+        } else {
+          const finalQty = (Number(comp.tempQty) || 0) * newValue;
+          return {
+            ...comp,
+            qty: finalQty,
+            rate: calculateRate(comp, finalQty),
+          };
+        }
       });
 
       setProductDetails(updatedDetails);
     }
 
-    console.log("updated", updatedDetails);
-
-    // setProductDetails(updatedDetails);
     recalculateTotals({ ...form, [name]: newValue }, updatedDetails);
     setForm((prev) => ({ ...prev, [name]: newValue }));
   };
 
   const updateComponent = (index, field, value) => {
     const updated = [...productDetails];
-    updated[index][field] = value;
+    const comp = updated[index];
+    const orderQty = Number(form.orderQty) || 1;
 
-    if (field === "sqInchRate") {
-      updated[index].sqInchRate = value;
-      // console.log("sq in rate", updated[index].sqInchRate);
+    if (field === "qty" || field === "grams") {
+      // user is entering per-unit qty or per-unit grams
+      comp.tempQty = Number(value) || 0;
+    } else {
+      comp[field] = value;
     }
 
-    let height = Number(updated[index].height) || 0;
-    let width = Number(updated[index].width) || 0;
-    let qty = Number(updated[index].qty) || 0;
-    let sqInchRate = Number(updated[index].sqInchRate) || null;
+    const category = (comp.category || "").toLowerCase();
 
-    updated[index].rate =
-      height && width && qty && sqInchRate
-        ? Number((height * width * qty * sqInchRate).toFixed(2))
-        : null;
+    if (["plastic", "non-woven"].includes(category)) {
+      // scale grams with orderQty
+      comp.grams = (comp.tempQty || 0) * orderQty;
+      comp.qty = orderQty; // qty here is just "number of orders"
+    } else {
+      // all other categories → qty = tempQty × orderQty
+      comp.qty = (comp.tempQty || 0) * orderQty;
+    }
 
+    comp.rate = calculateRate(comp, comp.qty);
+
+    updated[index] = comp;
     setProductDetails(updated);
     recalculateTotals(form, updated);
   };
@@ -271,14 +280,18 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       {
         itemId: "",
         type: "",
-        baseQty: 0,
+        category: "",
+        tempQty: 0,
         qty: 0,
+        grams: 0,
         partName: "",
         height: 0,
         width: 0,
         // depth: 0,
         rate: 0,
         label: "",
+        baseQty: 0,
+        itemRate: 0,
       },
     ]);
   };
@@ -302,10 +315,10 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       (c) =>
         !c.itemId || c.qty <= 0 || c.height <= 0 || c.width <= 0 || !c.partName
     );
-    if (hasEmpty) {
-      setLoading(false);
-      return toast.error("Please fill or remove all incomplete RM/SFG rows");
-    }
+    // if (hasEmpty) {
+    //   setLoading(false);
+    //   return toast.error("Please fill or remove all incomplete RM/SFG rows");
+    // }
     try {
       const formData = new FormData();
       formData.append("data", JSON.stringify({ ...form, productDetails }));
@@ -429,13 +442,17 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                   const enrichedDetails = allDetails.map((item) => ({
                     itemId: item.itemId || item.id || "",
                     type: item.type,
-                    baseQty: item.qty || 0,
+                    tempQty: item.qty || 0,
                     qty: item.qty || 0,
+                    cateogry: item.category || "",
+                    grams: item.grams || 0,
                     height: item.height || "",
                     width: item.width || "",
                     rate: item.rate || "",
                     sqInchRate: item.sqInchRate || "",
                     partName: item.partName || "",
+                    baseQty: item.baseQty || 0,
+                    itemRate: item.itemRate || 0,
                     // depth: item.depth || "",
                     label: `${item.skuCode}: ${item.itemName}${
                       item.description ? ` - ${item.description}` : ""
@@ -485,7 +502,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                 type="number"
                 placeholder="Order Qty"
                 name="orderQty"
-                className="p-2 border border-[#d8b76a] cursor-not-allowed rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                className="p-2 border border-[#d8b76a]  rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
                 value={form.orderQty}
                 // onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
                 onChange={(e) => handleFormChange(e)}
@@ -577,7 +594,10 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                         {/* Component Field - span 2 columns on medium+ screens */}
                         <div className="flex flex-col md:col-span-2">
                           <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
-                            Component
+                            Component{" "}
+                            <span className="text-primary capitalize">
+                              {comp.category ? `● ${comp.category}` : ""}
+                            </span>
                           </label>
                           <Select
                             className="w-full"
@@ -600,6 +620,9 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                                 "sqInchRate",
                                 e.sqInchRate
                               );
+                              updateComponent(index, "category", e.category);
+                              updateComponent(index, "baseQty", e.baseQty);
+                              updateComponent(index, "itemRate", e.itemRate);
                             }}
                             styles={{
                               control: (base, state) => ({
@@ -617,34 +640,89 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                         </div>
 
                         {/* Height, Width, Depth, Qty Fields */}
-                        {["partName", "height", "width", "qty", "rate"].map(
-                          (field) => (
+                        {[
+                          "partName",
+                          "height",
+                          "width",
+                          "grams",
+                          "qty",
+                          "rate",
+                        ].map((field) => {
+                          // Hide based on category
+                          if (
+                            [
+                              "slider",
+                              "bidding",
+                              "adjuster",
+                              "buckel",
+                              "dkadi",
+                              "accessories",
+                            ].includes(comp.category?.toLowerCase()) &&
+                            (field === "height" || field === "width")
+                          )
+                            return null;
+
+                          if (
+                            ["plastic", "non-woven"].includes(
+                              comp.category?.toLowerCase()
+                            ) &&
+                            field === "qty"
+                          ) {
+                            return null; // hide qty
+                          }
+                          if (
+                            !["plastic", "non-woven"].includes(
+                              comp.category?.toLowerCase()
+                            ) &&
+                            field === "grams"
+                          ) {
+                            return null; // hide grams for others
+                          }
+                          // ✅ Add this new rule for zipper
+                          if (
+                            comp.category?.toLowerCase() === "zipper" &&
+                            field === "height"
+                          ) {
+                            return null; // hide height only for zipper
+                          }
+
+                          return (
                             <div className="flex flex-col" key={field}>
                               <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                                {field == "partName"
+                                {field === "partName"
                                   ? "Part Name"
-                                  : field == "qty" || field == "rate"
-                                  ? capitalize(field)
+                                  : field === "qty"
+                                  ? "Qty"
+                                  : field === "grams"
+                                  ? "Weight (gm)"
+                                  : field === "rate"
+                                  ? "Rate"
                                   : `${field} (Inch)`}
                               </label>
                               <input
-                                type={field == "partName" ? "text" : "number"}
+                                type={
+                                  ["partName"].includes(field)
+                                    ? "text"
+                                    : "number"
+                                }
                                 placeholder={
-                                  field == "partName"
+                                  field === "partName"
                                     ? "Item Part Name"
-                                    : field == "qty" || field == "rate"
-                                    ? field
-                                    : `${field} (Inch)`
+                                    : field === "grams"
+                                    ? "Weight in grams"
+                                    : field === "qty"
+                                    ? "qty"
+                                    : `${field}`
                                 }
                                 className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-                                value={comp[field]}
+                                value={comp[field] || ""}
                                 onChange={(e) =>
                                   updateComponent(index, field, e.target.value)
                                 }
                               />
                             </div>
-                          )
-                        )}
+                          );
+                        })}
                       </div>
 
                       <div className="mt-2">

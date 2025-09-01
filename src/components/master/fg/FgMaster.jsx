@@ -105,9 +105,11 @@ const renderNestedMaterials = (
           <td className={`px-2 border-r ${border}`}>{mat.height || "-"}</td>
           <td className={`px-2 border-r ${border}`}>{mat.width || "-"}</td>
           <td className={`px-2 border-r ${border}`}>
+            {mat.grams ? `${mat.grams} gm` : mat.qty || "-"}
+          </td>
+          <td className={`px-2 rounded-br-sm `}>
             {Number(mat.rate).toFixed(2) || "-"}
           </td>
-          <td className={`px-2 rounded-br-sm`}>{mat.qty || "-"}</td>
         </tr>
 
         {level === 1 &&
@@ -135,9 +137,9 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">Location</th>
                         <th className="px-2 font-semibold">Height (Inch)</th>
                         <th className="px-2 font-semibold">Width (Inch)</th>
-                        <th className="px-2 font-semibold">Rate (₹)</th>
+                        <th className="px-2 font-semibold">Qty</th>
                         <th className="px-2 font-semibold rounded-tr-sm">
-                          Qty
+                          Rate (₹)
                         </th>
                       </tr>
                     </thead>
@@ -192,9 +194,9 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">Location</th>
                         <th className="px-2 font-semibold">Height (Inch)</th>
                         <th className="px-2 font-semibold">Width (Inch)</th>
-                        <th className="px-2 font-semibold">Rate (₹)</th>
+                        <th className="px-2 font-semibold">Qty</th>
                         <th className="px-2 font-semibold rounded-tr-sm">
-                          Qty
+                          Rate (₹)
                         </th>
                       </tr>
                     </thead>
@@ -656,10 +658,10 @@ const FgMaster = ({ isOpen }) => {
                                         Width (Inch)
                                       </th>
                                       <th className="px-2 font-semibold">
-                                        Rate (₹)
+                                        Qty
                                       </th>
                                       <th className="px-2 font-semibold">
-                                        Qty
+                                        Rate (₹)
                                       </th>
                                     </tr>
                                   </thead>

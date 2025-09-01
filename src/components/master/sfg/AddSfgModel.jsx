@@ -4,6 +4,7 @@ import axios from "../../../utils/axios";
 import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import Select from "react-select";
+import { calculateRate } from "../../../utils/calc";
 
 const AddSfgModal = ({ onClose, onAdded }) => {
   const [uoms, setUoms] = useState([]);
@@ -24,6 +25,30 @@ const AddSfgModal = ({ onClose, onAdded }) => {
       moq: "",
       type: "SFG",
       UOM: "",
+
+      height: 0,
+      width: 0,
+      depth: 0,
+
+      stitching: 0,
+      printing: 0,
+      others: 0,
+
+      unitRate: 0,
+      unitB2BRate: 0,
+      unitD2CRate: 0,
+
+      B2B: 0,
+      D2C: 0,
+      rejection: 2,
+      QC: 0.75,
+      machineMaintainance: 1.75,
+      materialHandling: 1.75,
+      packaging: 2,
+      shipping: 1,
+      companyOverHead: 4,
+      indirectExpense: 1.75,
+
       rm: [],
       sfg: [],
       file: [],
@@ -60,6 +85,56 @@ const AddSfgModal = ({ onClose, onAdded }) => {
     fetchDropdownData();
   }, []);
 
+  const recalculateTotals = (updated, index) => {
+    const {
+      qty,
+      rejection = 0,
+      QC = 0,
+      machineMaintainance = 0,
+      materialHandling = 0,
+      packaging = 0,
+      shipping = 0,
+      companyOverHead = 0,
+      indirectExpense = 0,
+      stitching = 0,
+      printing = 0,
+      others = 0,
+      B2B = 0,
+      D2C = 0,
+      materials = [],
+    } = updated[index];
+
+    const p =
+      rejection +
+      QC +
+      machineMaintainance +
+      materialHandling +
+      packaging +
+      shipping +
+      companyOverHead +
+      indirectExpense;
+
+    const baseComponentRate = materials.reduce(
+      (sum, mat) => sum + (Number(mat.rate) || 0),
+      0
+    );
+
+    const totalR = baseComponentRate + stitching + printing + others;
+
+    const unitRate = totalR + totalR * (p / 100);
+    const unitB2BRate = totalR + (totalR * (p + B2B)) / 100;
+    const unitD2CRate = totalR + (totalR * (p + D2C)) / 100;
+
+    updated[index].unitRate = Number(unitRate).toFixed(2);
+    updated[index].unitB2BRate = Number(unitB2BRate).toFixed(2);
+    updated[index].unitD2CRate = Number(unitD2CRate).toFixed(2);
+    // updated[index].totalRate = Number(unitRate * qty).toFixed(2);
+    // updated[index].totalB2BRate = Number(unitB2BRate * qty).toFixed(2);
+    // updated[index].totalD2CRate = Number(unitD2CRate * qty).toFixed(2);
+
+    return updated;
+  };
+
   const handleChange = (index, e) => {
     const updated = [...formList];
     const { name, value, files } = e.target;
@@ -67,21 +142,76 @@ const AddSfgModal = ({ onClose, onAdded }) => {
     if (name === "file") {
       updated[index][name] = Array.from(files);
     } else {
-      updated[index][name] = value;
+      const numericFields = [
+        "height",
+        "width",
+        "qty",
+        "sqInchRate",
+        "rejection",
+        "QC",
+        "machineMaintainance",
+        "materialHandling",
+        "packaging",
+        "shipping",
+        "companyOverHead",
+        "indirectExpense",
+        "stitching",
+        "printing",
+        "others",
+        "B2B",
+        "D2C",
+      ];
+      updated[index][name] = numericFields.includes(name)
+        ? Number(value) || 0
+        : value;
     }
 
-    setFormList(updated);
+    setFormList(recalculateTotals(updated, index));
   };
 
   const handleMaterialChange = (index, matIndex, field, value) => {
-    const updated = [...formList];
-    updated[index].materials[matIndex][field] = value;
-    setFormList(updated);
+    let updated = [...formList];
+    let comp = updated[index].materials[matIndex];
+    const orderQty = 1;
+    const category = (comp.category || "").toLowerCase();
+
+    if (field === "qty" || field === "grams") {
+      // user is entering per-unit qty or per-unit grams
+      comp.tempQty = Number(value) || 0;
+    } else {
+      comp[field] = value;
+    }
+    if (["plastic", "non-woven"].includes(category)) {
+      // scale grams with orderQty
+      comp.grams = (comp.tempQty || 0) * orderQty;
+      comp.qty = orderQty; // qty here is just "number of orders"
+    } else {
+      // all other categories → qty = tempQty × orderQty
+      comp.qty = (comp.tempQty || 0) * orderQty;
+    }
+
+    comp.rate = calculateRate(comp, comp.qty);
+
+    updated[index].materials[matIndex] = comp;
+
+    setFormList(recalculateTotals(updated, index));
   };
 
   const addMaterial = (index) => {
     const updated = [...formList];
-    updated[index].materials.push({ itemId: "", qty: "" });
+    updated[index].materials.push({
+      itemId: "",
+      partName: "",
+      height: "",
+      width: "",
+      qty: 0,
+      grams: 0,
+      rate: 0,
+      sqInchRate: "",
+      category: "",
+      itemRate: 0,
+      baseQty: 0,
+    });
 
     setFormList(updated);
   };
@@ -107,6 +237,29 @@ const AddSfgModal = ({ onClose, onAdded }) => {
         moq: "",
         type: "SFG",
         UOM: "",
+
+        height: 0,
+        width: 0,
+        depth: 0,
+        // qty: 0,
+        stitching: 0,
+        printing: 0,
+        others: 0,
+
+        unitRate: 0,
+        unitB2BRate: 0,
+        unitD2CRate: 0,
+
+        B2B: 0,
+        D2C: 0,
+        rejection: 2,
+        QC: 0.75,
+        machineMaintainance: 1.75,
+        materialHandling: 1.75,
+        packaging: 2,
+        shipping: 1,
+        companyOverHead: 4,
+        indirectExpense: 1.75,
         rm: [],
         sfg: [],
         file: [],
@@ -149,18 +302,32 @@ const AddSfgModal = ({ onClose, onAdded }) => {
           if (matched.type == "RM") {
             rm.push({
               rmid: matched.id,
+              partName: mat.partName,
               height: Number(mat.height),
               width: Number(mat.width),
-              depth: Number(mat.depth),
+              // depth: Number(mat.depth),
               qty: Number(mat.qty),
+              grams: Number(mat.grams),
+              rate: Number(mat.rate),
+              sqInchRate: Number(mat.sqInchRate),
+              category: mat.category,
+              itemRate: Number(mat.itemRate),
+              baseQty: Number(mat.baseQty),
             });
           } else if (matched.type === "SFG") {
             sfg.push({
               sfgid: matched.id,
+              partName: mat.partName,
               height: Number(mat.height),
               width: Number(mat.width),
-              depth: Number(mat.depth),
+              // depth: Number(mat.depth),
               qty: Number(mat.qty),
+              grams: Number(mat.grams),
+              rate: Number(mat.rate),
+              sqInchRate: Number(mat.sqInchRate),
+              category: mat.category,
+              itemRate: Number(mat.itemRate),
+              baseQty: Number(mat.baseQty),
             });
           }
         });
@@ -360,187 +527,479 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   className="w-full p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
                 />
               </div>
+              <div className="flex-col">
+                <div>
+                  <h2 className="font-semibold mb-1">Product Size</h2>
+                </div>
+                <div className="p-2 border border-primary rounded grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 ">
+                  <div className="flex flex-col">
+                    <label className="font-semibold mb-1">Height (Inch)</label>
+                    <input
+                      type="number"
+                      name="height"
+                      placeholder="Height (Inch)"
+                      value={item.height}
+                      onChange={(e) => handleChange(index, e)}
+                      className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="font-semibold mb-1">Width (Inch)</label>
+                    <input
+                      type="number"
+                      name="width"
+                      placeholder="Width (Inch)"
+                      value={item.width}
+                      onChange={(e) => handleChange(index, e)}
+                      className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="font-semibold mb-1">Depth (Inch)</label>
+                    <input
+                      type="number"
+                      name="depth"
+                      placeholder="Depth (Inch)"
+                      value={item.depth}
+                      onChange={(e) => handleChange(index, e)}
+                      className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                    />
+                  </div>
+                </div>
+              </div>
 
               <div>
                 <p className="font-semibold mb-2">
                   List of Consumed Components
                 </p>
+                <div className="flex flex-col gap-4">
+                  {item.materials.map((mat, matIndex) => {
+                    const selectedOption = components.find(
+                      (comp) => comp.id === mat.itemId
+                    );
 
-                {item.materials.map((mat, matIndex) => {
-                  const selectedOption = components.find(
-                    (comp) => comp.id === mat.itemId
-                  );
+                    return (
+                      <div
+                        key={matIndex}
+                        className="border border-primary rounded p-3 flex flex-col gap-2"
+                      >
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
+                          {/* Material Selector */}
+                          <div className="flex flex-col md:col-span-2">
+                            <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
+                              Material{" "}
+                              <span className="text-primary capitalize">
+                                {mat.category ? `● ${mat.category}` : ""}
+                              </span>
+                            </label>
+                            <Select
+                              value={
+                                components
+                                  .map((c) => ({
+                                    value: c.id,
+                                    label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
+                                  }))
+                                  .find((opt) => opt.value === mat.itemId) ||
+                                null
+                              }
+                              onChange={(selected) => {
+                                handleMaterialChange(
+                                  index,
+                                  matIndex,
+                                  "itemId",
+                                  selected?.value
+                                );
+                                handleMaterialChange(
+                                  index,
+                                  matIndex,
+                                  "sqInchRate",
+                                  selected?.sqInchRate
+                                );
+                                handleMaterialChange(
+                                  index,
+                                  matIndex,
+                                  "category",
+                                  selected?.category
+                                );
+                                handleMaterialChange(
+                                  index,
+                                  matIndex,
+                                  "baseQty",
+                                  selected?.baseQty
+                                );
+                                handleMaterialChange(
+                                  index,
+                                  matIndex,
+                                  "itemRate",
+                                  selected?.itemRate
+                                );
+                              }}
+                              options={[
+                                {
+                                  label: "Raw Materials",
+                                  options: components
+                                    .filter((c) => c.type === "RM")
+                                    .map((c) => ({
+                                      value: c.id,
+                                      label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
+                                      sqInchRate: c.sqInchRate || null,
+                                      category: c.itemCategory || null,
+                                      baseQty: c.baseQty || null,
+                                      itemRate: c.rate || null,
+                                    })),
+                                },
+                                {
+                                  label: "Semi-Finished Goods",
+                                  options: components
+                                    .filter((c) => c.type === "SFG")
+                                    .map((c) => ({
+                                      value: c.id,
+                                      label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
+                                      sqInchRate: c.sqInchRate || null,
+                                      category: c.itemCategory || null,
+                                      baseQty: c.baseQty || null,
+                                      itemRate: c.rate || null,
+                                    })),
+                                },
+                              ]}
+                              placeholder="Select RM/SFG"
+                              isSearchable
+                              styles={{
+                                control: (base, state) => ({
+                                  ...base,
+                                  borderColor: "#d8b76a",
+                                  boxShadow: state.isFocused
+                                    ? "0 0 0 1px #d8b76a"
+                                    : "none",
+                                  "&:hover": {
+                                    borderColor: "#d8b76a",
+                                  },
+                                }),
+                              }}
+                              filterOption={(option, inputValue) => {
+                                const label = option.label
+                                  .replace(/\s+/g, "")
+                                  .toLowerCase();
+                                const input = inputValue
+                                  .replace(/\s+/g, "")
+                                  .toLowerCase();
+                                return label.includes(input);
+                              }}
+                            />
+                          </div>
 
-                  return (
-                    <div
-                      key={matIndex}
-                      className="flex flex-wrap gap-3 mb-4 border p-3 rounded-md border-[#d8b76a]"
-                    >
-                      {/* Material Selector */}
-                      <div className="flex flex-col w-full sm:w-[55%] md:w-[40%]">
-                        <label className="font-medium text-sm mb-1">
-                          Material
-                        </label>
-                        <Select
-                          value={
-                            selectedOption
-                              ? {
-                                  value: selectedOption.id,
-                                  label: `${selectedOption.skuCode} - ${selectedOption.itemName} - ${selectedOption.description}`,
-                                }
-                              : null
-                          }
-                          onChange={(selected) =>
-                            handleMaterialChange(
-                              index,
-                              matIndex,
-                              "itemId",
-                              selected.value
+                          {/* Height, Width, Depth, Qty Fields */}
+                          {[
+                            "partName",
+                            "height",
+                            "width",
+                            "grams",
+                            "qty",
+                            "rate",
+                          ].map((field) => {
+                            // Hide based on category
+                            if (
+                              [
+                                "slider",
+                                "bidding",
+                                "adjuster",
+                                "buckel",
+                                "dkadi",
+                                "accessories",
+                              ].includes(mat.category?.toLowerCase()) &&
+                              (field === "height" || field === "width")
                             )
-                          }
-                          options={components.map((comp) => ({
-                            value: comp.id,
-                            label: `${comp.skuCode} - ${comp.itemName} - ${comp.description}`,
-                          }))}
-                          filterOption={(option, inputValue) => {
-                            const label = option.label
-                              .replace(/\s+/g, "")
-                              .toLowerCase();
-                            const input = inputValue
-                              .replace(/\s+/g, "")
-                              .toLowerCase();
-                            return label.includes(input);
-                          }}
-                          styles={{
-                            control: (base, state) => ({
-                              ...base,
-                              borderColor: "#d8b76a",
-                              boxShadow: state.isFocused
-                                ? "0 0 0 1px #d8b76a"
-                                : "none",
-                              "&:hover": {
-                                borderColor: "#d8b76a",
-                              },
-                            }),
-                            singleValue: (base) => ({
-                              ...base,
-                              color: "#292926",
-                            }),
-                          }}
-                          placeholder="Select RM/SFG"
-                          className="react-select-container"
-                          classNamePrefix="react-select"
-                          isSearchable
-                        />
-                      </div>
+                              return null;
 
-                      {/* Height */}
-                      <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                        <label className="font-medium text-sm mb-1">
-                          Height (Inch)
-                        </label>
-                        <input
-                          type="number"
-                          step="any"
-                          placeholder="Height"
-                          value={mat.height}
-                          onChange={(e) =>
-                            handleMaterialChange(
-                              index,
-                              matIndex,
-                              "height",
-                              e.target.value
-                            )
-                          }
-                          className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-                        />
-                      </div>
+                            if (
+                              ["plastic", "non-woven"].includes(
+                                mat.category?.toLowerCase()
+                              ) &&
+                              field === "qty"
+                            ) {
+                              return null; // hide qty
+                            }
+                            if (
+                              !["plastic", "non-woven"].includes(
+                                mat.category?.toLowerCase()
+                              ) &&
+                              field === "grams"
+                            ) {
+                              return null; // hide grams for others
+                            }
+                            // ✅ Add this new rule for zipper
+                            if (
+                              mat.category?.toLowerCase() === "zipper" &&
+                              field === "height"
+                            ) {
+                              return null; // hide height only for zipper
+                            }
 
-                      {/* Width */}
-                      <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                        <label className="font-medium text-sm mb-1">
-                          Width (Inch)
-                        </label>
-                        <input
-                          type="number"
-                          step="any"
-                          placeholder="Width"
-                          value={mat.width}
-                          onChange={(e) =>
-                            handleMaterialChange(
-                              index,
-                              matIndex,
-                              "width",
-                              e.target.value
-                            )
-                          }
-                          className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-                        />
+                            return (
+                              <div className="flex flex-col" key={field}>
+                                <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                                  {field === "partName"
+                                    ? "Part Name"
+                                    : field === "qty"
+                                    ? "Qty"
+                                    : field === "grams"
+                                    ? "Weight (gm)"
+                                    : field === "rate"
+                                    ? "Rate"
+                                    : `${field} (Inch)`}
+                                </label>
+                                <input
+                                  type={
+                                    ["partName"].includes(field)
+                                      ? "text"
+                                      : "number"
+                                  }
+                                  placeholder={
+                                    field === "partName"
+                                      ? "Item Part Name"
+                                      : field === "grams"
+                                      ? "Weight in grams"
+                                      : field === "qty"
+                                      ? "qty"
+                                      : `${field}`
+                                  }
+                                  className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                                  value={mat[field] || ""}
+                                  onChange={(e) =>
+                                    handleMaterialChange(
+                                      index,
+                                      matIndex,
+                                      field,
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {/* Remove Button */}
+                        <div className="mt-2">
+                          <button
+                            type="button"
+                            onClick={() => removeMaterial(index, matIndex)}
+                            className="text-red-600 cursor-pointer flex items-center gap-1 hover:underline"
+                          >
+                            <FiTrash2 /> Remove
+                          </button>
+                        </div>
                       </div>
+                    );
+                  })}
 
-                      {/* Depth */}
-                      <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                        <label className="font-medium text-sm mb-1">
-                          Depth (Inch)
-                        </label>
-                        <input
-                          step="any"
-                          type="number"
-                          placeholder="Depth"
-                          value={mat.depth}
-                          onChange={(e) =>
-                            handleMaterialChange(
-                              index,
-                              matIndex,
-                              "depth",
-                              e.target.value
-                            )
-                          }
-                          className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-                        />
-                      </div>
+                  <button
+                    type="button"
+                    onClick={() => addMaterial(index)}
+                    className="bg-[#d8b76a] hover:bg-[#d8b76a91] text-[#292926] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
+                  >
+                    <FiPlus /> Add RM/SFG
+                  </button>
+                </div>
+              </div>
 
-                      {/* Qty */}
-                      <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[10%]">
-                        <label className="font-medium text-sm mb-1">Qty</label>
-                        <input
-                          step="any"
-                          type="number"
-                          placeholder="Qty"
-                          value={mat.qty}
-                          onChange={(e) =>
-                            handleMaterialChange(
-                              index,
-                              matIndex,
-                              "qty",
-                              e.target.value
-                            )
-                          }
-                          className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-                        />
-                      </div>
+              <div className="bg-primary w-full h-[1px] my-2"></div>
 
-                      {/* Remove Button */}
-                      <div className="flex items-end w-full sm:w-auto">
-                        <button
-                          type="button"
-                          onClick={() => removeMaterial(index, matIndex)}
-                          className="text-red-600 cursor-pointer flex items-center gap-1 hover:underline"
-                        >
-                          <FiTrash2 /> Remove
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+              {/* bottom fields */}
+              <div className="sm:text-[12px] grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">B2B (%)</label>
+                  <input
+                    type="number"
+                    name="B2B"
+                    placeholder="B2B"
+                    value={item.B2B}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">D2C (%)</label>
+                  <input
+                    type="number"
+                    name="D2C"
+                    placeholder="D2C"
+                    value={item.D2C}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Rejection (%)</label>
+                  <input
+                    type="number"
+                    name="rejection"
+                    placeholder="Rejection"
+                    value={item.rejection}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">QC (%)</label>
+                  <input
+                    type="number"
+                    name="QC"
+                    placeholder="QC"
+                    value={item.QC}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">
+                    Machine Maintainance (%)
+                  </label>
+                  <input
+                    type="number"
+                    name="machineMaintainance"
+                    placeholder="Machine Maintainance"
+                    value={item.machineMaintainance}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">
+                    Material Handling (%)
+                  </label>
+                  <input
+                    type="number"
+                    name="materialHandling"
+                    placeholder="Material Handling"
+                    value={item.materialHandling}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Packaging (%)</label>
+                  <input
+                    type="number"
+                    name="packaging"
+                    placeholder="Packaging"
+                    value={item.packaging}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Shipping (%)</label>
+                  <input
+                    type="number"
+                    name="shipping"
+                    placeholder="Shipping"
+                    value={item.shipping}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">
+                    Company OverHead (%)
+                  </label>
+                  <input
+                    type="number"
+                    name="companyOverHead"
+                    placeholder="Company OverHead"
+                    value={item.companyOverHead}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">
+                    Indirect Expense (%)
+                  </label>
+                  <input
+                    type="number"
+                    name="indirectExpense"
+                    placeholder="Indirect Expense"
+                    value={item.indirectExpense}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Stitching (₹)</label>
+                  <input
+                    type="number"
+                    name="stitching"
+                    placeholder="Stitching"
+                    value={item.stitching}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Print/Emb (₹)</label>
+                  <input
+                    type="number"
+                    name="printing"
+                    placeholder="Print/Emb"
+                    value={item.printing}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                    required
+                  />
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => addMaterial(index)}
-                  className="bg-[#d8b76a] hover:bg-[#d8b76a91] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer"
-                >
-                  <FiPlus /> Add RM/SFG
-                </button>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Others (₹)</label>
+                  <input
+                    type="number"
+                    name="others"
+                    placeholder="Others"
+                    value={item.others}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Unit Rate (₹)</label>
+                  <input
+                    disabled
+                    type="number"
+                    name="unitRate"
+                    placeholder="Unit Rate"
+                    value={item.unitRate}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Unit B2B (₹)</label>
+                  <input
+                    disabled
+                    type="number"
+                    name="unitB2BRate"
+                    placeholder="Unit B2B"
+                    value={item.unitB2BRate}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Unit D2C (₹)</label>
+                  <input
+                    disabled
+                    type="number"
+                    name="unitD2CRate"
+                    placeholder="Unit D2C"
+                    value={item.unitD2CRate}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+                  />
+                </div>
               </div>
 
               {formList.length > 1 && (

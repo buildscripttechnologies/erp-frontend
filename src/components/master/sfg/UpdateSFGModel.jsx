@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import Select from "react-select";
+import { calculateRate } from "../../../utils/calc";
 const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -51,19 +52,33 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
       (sfg.rm || []).forEach((r) => {
         mappedMaterials.push({
           itemId: r.id,
+          partName: r.partName,
           height: r.height,
           width: r.width,
-          depth: r.depth,
+          // depth: r.depth,
           qty: r.qty,
+          grams: r.grams,
+          rate: r.rate,
+          sqInchRate: r.sqInchRate,
+          category: r.category,
+          itemRate: r.itemRate,
+          baseQty: r.baseQty,
         });
       });
       (sfg.sfg || []).forEach((s) => {
         mappedMaterials.push({
           itemId: s.id,
+          partName: s.partName,
           height: s.height,
           width: s.width,
-          depth: s.depth,
+          // depth: s.depth,
           qty: s.qty,
+          grams: s.grams,
+          rate: s.rate,
+          sqInchRate: s.sqInchRate,
+          category: s.category,
+          itemRate: s.itemRate,
+          baseQty: s.baseQty,
         });
       });
 
@@ -80,31 +95,171 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         basePrice: sfg.basePrice || "",
         status: sfg.status || "Active",
         UOM: sfg.uom || "",
+        height: sfg.height,
+        width: sfg.width,
+        depth: sfg.depth,
+        stitching: sfg.stitching,
+        printing: sfg.printing,
+        others: sfg.others,
+        unitRate: sfg.unitRate,
+        unitB2BRate: sfg.unitB2BRate,
+        unitD2CRate: sfg.unitD2CRate,
+        // totalRate: fg.totalRate,
+        // totalB2BRate: fg.totalB2BRate,
+        // totalD2CRate: fg.totalD2CRate,
+        B2B: sfg.B2B,
+        D2C: sfg.D2C,
+        rejection: sfg.rejection,
+        QC: sfg.QC,
+        machineMaintainance: sfg.machineMaintainance,
+        materialHandling: sfg.materialHandling,
+        packaging: sfg.packaging,
+        shipping: sfg.shipping,
+        companyOverHead: sfg.companyOverHead,
+        indirectExpense: sfg.indirectExpense,
         file: [],
         materials: mappedMaterials,
       });
     }
   }, [sfg]);
 
+  const recalculateTotals = (updatedForm) => {
+    const {
+      qty,
+      rejection = 0,
+      QC = 0,
+      machineMaintainance = 0,
+      materialHandling = 0,
+      packaging = 0,
+      shipping = 0,
+      companyOverHead = 0,
+      indirectExpense = 0,
+      stitching = 0,
+      printing = 0,
+      others = 0,
+      B2B = 0,
+      D2C = 0,
+      materials = [],
+    } = updatedForm;
+
+    const p =
+      rejection +
+      QC +
+      machineMaintainance +
+      materialHandling +
+      packaging +
+      shipping +
+      companyOverHead +
+      indirectExpense;
+
+    const baseComponentRate = materials.reduce(
+      (sum, mat) => sum + (Number(mat.rate) || 0),
+      0
+    );
+
+    const totalR = baseComponentRate + stitching + printing + others;
+
+    const unitRate = totalR + totalR * (p / 100);
+    const unitB2BRate = totalR + (totalR * (p + B2B)) / 100;
+    const unitD2CRate = totalR + (totalR * (p + D2C)) / 100;
+
+    return {
+      ...updatedForm,
+      unitRate: Number(unitRate).toFixed(2),
+      unitB2BRate: Number(unitB2BRate).toFixed(2),
+      unitD2CRate: Number(unitD2CRate).toFixed(2),
+      // totalRate: Number(unitRate * qty).toFixed(2),
+      // totalB2BRate: Number(unitB2BRate * qty).toFixed(2),
+      // totalD2CRate: Number(unitD2CRate * qty).toFixed(2),
+    };
+  };
+
   const handleChange = (e) => {
     const { name, value, files } = e.target;
+    const numericFields = [
+      "height",
+      "width",
+      "qty",
+      "sqInchRate",
+      "rejection",
+      "QC",
+      "machineMaintainance",
+      "materialHandling",
+      "packaging",
+      "shipping",
+      "companyOverHead",
+      "indirectExpense",
+      "stitching",
+      "printing",
+      "others",
+      "B2B",
+      "D2C",
+    ];
 
-    setForm((prev) => ({
-      ...prev,
-      [name]: name === "file" ? Array.from(files) : value,
-    }));
+    setForm((prev) =>
+      recalculateTotals({
+        ...prev,
+        [name]:
+          name === "file"
+            ? Array.from(files)
+            : numericFields.includes(name)
+            ? Number(value) || 0
+            : value,
+      })
+    );
   };
 
   const handleMaterialChange = (index, field, value) => {
     const updated = [...form.materials];
-    updated[index][field] = value;
-    setForm((prev) => ({ ...prev, materials: updated }));
+    const comp = updated[index];
+    const orderQty = 1;
+
+    if (field === "qty" || field === "grams") {
+      // user is entering per-unit qty or per-unit grams
+      comp.tempQty = Number(value) || 0;
+    } else {
+      comp[field] = value;
+    }
+
+    const category = (comp.category || "").toLowerCase();
+
+    if (["plastic", "non-woven"].includes(category)) {
+      // scale grams with orderQty
+      comp.grams = (comp.tempQty || 0) * orderQty;
+      comp.qty = orderQty; // qty here is just "number of orders"
+    } else {
+      // all other categories → qty = tempQty × orderQty
+      comp.qty = (comp.tempQty || 0) * orderQty;
+    }
+    comp.rate = calculateRate(comp, comp.qty);
+
+    setForm((prev) =>
+      recalculateTotals({
+        ...prev,
+        materials: updated,
+      })
+    );
   };
 
   const addMaterial = () => {
     setForm((prev) => ({
       ...prev,
-      materials: [...prev.materials, { itemId: "", qty: "" }],
+      materials: [
+        ...prev.materials,
+        {
+          itemId: "",
+          partName: "",
+          height: "",
+          width: "",
+          qty: 0,
+          grams: 0,
+          rate: 0,
+          sqInchRate: "",
+          category: "",
+          itemRate: 0,
+          baseQty: 0,
+        },
+      ],
     }));
   };
 
@@ -129,18 +284,32 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         if (match.type === "RM") {
           rm.push({
             rmid: match.id,
+            partName: mat.partName,
             height: Number(mat.height),
             width: Number(mat.width),
-            depth: Number(mat.depth),
+            // depth: Number(mat.depth),
             qty: Number(mat.qty),
+            grams: Number(mat.grams),
+            rate: Number(mat.rate),
+            sqInchRate: Number(mat.sqInchRate),
+            category: mat.category,
+            itemRate: Number(mat.itemRate),
+            baseQty: Number(mat.baseQty),
           });
         } else {
           sfgNested.push({
             sfgid: match.id,
+            partName: mat.partName,
             height: Number(mat.height),
             width: Number(mat.width),
-            depth: Number(mat.depth),
+            // depth: Number(mat.depth),
             qty: Number(mat.qty),
+            grams: Number(mat.grams),
+            rate: Number(mat.rate),
+            sqInchRate: Number(mat.sqInchRate),
+            category: mat.category,
+            itemRate: Number(mat.itemRate),
+            baseQty: Number(mat.baseQty),
           });
         }
       });
@@ -157,6 +326,28 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         basePrice: form.basePrice,
         gst: form.gst,
         UOM: form.UOM,
+        height: form.height,
+        width: form.width,
+        depth: form.depth,
+        stitching: form.stitching,
+        printing: form.printing,
+        others: form.others,
+        unitRate: form.unitRate,
+        unitB2BRate: form.unitB2BRate,
+        unitD2CRate: form.unitD2CRate,
+        totalRate: form.totalRate,
+        totalB2BRate: form.totalB2BRate,
+        totalD2CRate: form.totalD2CRate,
+        B2B: form.B2B,
+        D2C: form.D2C,
+        rejection: form.rejection,
+        QC: form.QC,
+        machineMaintainance: form.machineMaintainance,
+        materialHandling: form.materialHandling,
+        packaging: form.packaging,
+        shipping: form.shipping,
+        companyOverHead: form.companyOverHead,
+        indirectExpense: form.indirectExpense,
         rm,
         sfg: sfgNested,
         deletedFiles: deletedFileIds,
@@ -186,10 +377,34 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
     }
   };
 
-  const options = components.map((c) => ({
-    value: c.id,
-    label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
-  }));
+  const groupedOptions = [
+    {
+      label: "Raw Materials",
+      options: components
+        .filter((c) => c.type === "RM")
+        .map((c) => ({
+          value: c.id,
+          label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
+          sqInchRate: c.sqInchRate || null,
+          category: c.itemCategory || null,
+          baseQty: c.baseQty || null,
+          itemRate: c.rate || null,
+        })),
+    },
+    {
+      label: "Semi-Finished Goods",
+      options: components
+        .filter((c) => c.type === "SFG")
+        .map((c) => ({
+          value: c.id,
+          label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
+          sqInchRate: c.sqInchRate || null,
+          category: c.itemCategory || null,
+          baseQty: c.baseQty || null,
+          itemRate: c.rate || null,
+        })),
+    },
+  ];
 
   if (!form) return null;
 
@@ -351,149 +566,452 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
             />
           </div>
 
+          <div className="flex-col">
+            <div>
+              <h2 className="font-semibold mb-1">Product Size</h2>
+            </div>
+            <div className="p-2 border border-primary rounded grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 ">
+              <div className="flex flex-col">
+                <label className="font-semibold mb-1">Height (Inch)</label>
+                <input
+                  type="number"
+                  name="height"
+                  placeholder="Height (Inch)"
+                  value={form.height}
+                  onChange={(e) => handleChange(e)}
+                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="font-semibold mb-1">Width (Inch)</label>
+                <input
+                  type="number"
+                  name="width"
+                  placeholder="Width (Inch)"
+                  value={form.width}
+                  onChange={(e) => handleChange(e)}
+                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="font-semibold mb-1">Depth (Inch)</label>
+                <input
+                  type="number"
+                  name="depth"
+                  placeholder="Depth (Inch)"
+                  value={form.depth}
+                  onChange={(e) => handleChange(e)}
+                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                />
+              </div>
+            </div>
+          </div>
+
           <div>
             <p className="font-semibold mb-2">List of Consumed Components</p>
-            {form.materials.map((mat, index) => (
-              <div
-                key={index}
-                className="flex flex-wrap gap-3 mb-4 border p-3 rounded-md border-[#d8b76a]"
+            <div className="flex flex-col gap-4">
+              {form.materials.map((mat, index) => (
+                <div
+                  key={index}
+                  className="border border-primary rounded p-3 flex flex-col gap-2"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
+                    <div className="flex flex-col md:col-span-2">
+                      <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
+                        Material{" "}
+                        <span className="text-primary capitalize">
+                          {mat.category ? `● ${mat.category}` : ""}
+                        </span>
+                      </label>
+                      <Select
+                        className="flex-grow"
+                        value={
+                          groupedOptions
+                            .flatMap((g) => g.options)
+                            .find((opt) => opt.value === mat.itemId) || null
+                        }
+                        onChange={(selected) => {
+                          handleMaterialChange(
+                            index,
+                            "itemId",
+                            selected?.value
+                          );
+                          handleMaterialChange(
+                            index,
+                            "sqInchRate",
+                            selected?.sqInchRate
+                          );
+                          handleMaterialChange(
+                            index,
+                            "category",
+                            selected?.category
+                          );
+                          handleMaterialChange(
+                            index,
+                            "baseQty",
+                            selected?.baseQty
+                          );
+                          handleMaterialChange(
+                            index,
+                            "itemRate",
+                            selected?.itemRate
+                          );
+                        }}
+                        options={groupedOptions}
+                        placeholder="Select RM or SFG"
+                        isSearchable
+                        styles={{
+                          control: (base, state) => ({
+                            ...base,
+                            padding: "2px",
+                            borderRadius: "6px",
+                            borderColor: "var(--color-primary)",
+                            boxShadow: state.isFocused
+                              ? "0 0 0 1px var(--color-primary)"
+                              : "none",
+                            "&:hover": {
+                              borderColor: "var(--color-primary)",
+                            },
+                          }),
+                          // option: (base, state) => ({
+                          //   ...base,
+                          //   backgroundColor: state.isFocused ? "#f3e6c0" : "#fff",
+                          //   color: "#292926",
+                          // }),
+                          menu: (base) => ({
+                            ...base,
+                            zIndex: 9999,
+                          }),
+                          singleValue: (base) => ({
+                            ...base,
+                            color: "#292926",
+                          }),
+                          placeholder: (base) => ({
+                            ...base,
+                            color: "#9e9e9e",
+                          }),
+                          groupHeading: (base) => ({
+                            ...base,
+                            color: "#292926",
+                            fontWeight: "bold",
+                          }),
+                        }}
+                        filterOption={(option, inputValue) => {
+                          const label = option.label
+                            .replace(/\s+/g, "")
+                            .toLowerCase();
+                          const input = inputValue
+                            .replace(/\s+/g, "")
+                            .toLowerCase();
+                          return label.includes(input);
+                        }}
+                      />
+                    </div>
+
+                    {/* Height, Width, Depth, Qty Fields */}
+                    {[
+                      "partName",
+                      "height",
+                      "width",
+                      "grams",
+                      "qty",
+                      "rate",
+                    ].map((field) => {
+                      // Hide based on category
+                      if (
+                        [
+                          "slider",
+                          "bidding",
+                          "adjuster",
+                          "buckel",
+                          "dkadi",
+                          "accessories",
+                        ].includes(mat.category?.toLowerCase()) &&
+                        (field === "height" || field === "width")
+                      )
+                        return null;
+
+                      if (
+                        ["plastic", "non-woven"].includes(
+                          mat.category?.toLowerCase()
+                        ) &&
+                        field === "qty"
+                      ) {
+                        return null; // hide qty
+                      }
+                      if (
+                        !["plastic", "non-woven"].includes(
+                          mat.category?.toLowerCase()
+                        ) &&
+                        field === "grams"
+                      ) {
+                        return null; // hide grams for others
+                      }
+                      // ✅ Add this new rule for zipper
+                      if (
+                        mat.category?.toLowerCase() === "zipper" &&
+                        field === "height"
+                      ) {
+                        return null; // hide height only for zipper
+                      }
+
+                      return (
+                        <div className="flex flex-col" key={field}>
+                          <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                            {field === "partName"
+                              ? "Part Name"
+                              : field === "qty"
+                              ? "Qty"
+                              : field === "grams"
+                              ? "Weight (gm)"
+                              : field === "rate"
+                              ? "Rate"
+                              : `${field} (Inch)`}
+                          </label>
+                          <input
+                            type={
+                              ["partName"].includes(field) ? "text" : "number"
+                            }
+                            placeholder={
+                              field === "partName"
+                                ? "Item Part Name"
+                                : field === "grams"
+                                ? "Weight in grams"
+                                : field === "qty"
+                                ? "qty"
+                                : `${field}`
+                            }
+                            className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                            value={mat[field] || ""}
+                            onChange={(e) =>
+                              handleMaterialChange(
+                                index,
+
+                                field,
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      onClick={() => removeMaterial(index)}
+                      className="text-red-600 cursor-pointer flex items-center gap-1 hover:underline  "
+                    >
+                      <FiTrash2 /> Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addMaterial}
+                className="bg-[#d8b76a] hover:bg-[#d8b76a91] text-[#292926] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
               >
-                <div className="w-full sm:w-[55%] md:w-[40%]">
-                  <label className="font-semibold">Material</label>
-                  <Select
-                    className="flex-grow  "
-                    value={
-                      options.find((opt) => opt.value === mat.itemId) || null
-                    }
-                    onChange={(selected) =>
-                      handleMaterialChange(index, "itemId", selected?.value)
-                    }
-                    options={options}
-                    isSearchable
-                    placeholder="Select RM or SFG"
-                    styles={{
-                      control: (base, state) => ({
-                        ...base,
-                        padding: "2px",
-                        borderRadius: "6px",
-                        borderColor: "#d8b76a",
-                        boxShadow: state.isFocused
-                          ? "0 0 0 1px #d8b76a"
-                          : "none",
-                        "&:hover": {
-                          borderColor: "#d8b76a",
-                        },
-                      }),
-                      // option: (base, state) => ({
-                      //   ...base,
-                      //   backgroundColor: state.isFocused ? "#f3e6c0" : "#fff",
-                      //   color: "#292926",
-                      // }),
-                      menu: (base) => ({
-                        ...base,
-                        zIndex: 9999,
-                      }),
-                      singleValue: (base) => ({
-                        ...base,
-                        color: "#292926",
-                      }),
-                    }}
-                    filterOption={(option, inputValue) => {
-                      const normalizedLabel = option.label
-                        .replace(/\s+/g, "")
-                        .toLowerCase();
-                      const normalizedInput = inputValue
-                        .replace(/\s+/g, "")
-                        .toLowerCase();
-                      return normalizedLabel.includes(normalizedInput);
-                    }}
-                  />
-                </div>
-                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                  <label className="font-medium">Height (Inch)</label>
-                  <input
-                    type="number"
-                    step="any"
-                    placeholder="Height"
-                    value={mat.height}
-                    onChange={(e) =>
-                      handleMaterialChange(
-                        index,
+                <FiPlus /> Add RM/SFG
+              </button>
+            </div>
+          </div>
 
-                        "height",
-                        e.target.value
-                      )
-                    }
-                    className="p-2  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-                  />
-                </div>
-                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                  <label className="font-medium">Width (Inch)</label>
-                  <input
-                    type="number"
-                    step="any"
-                    placeholder="Width"
-                    value={mat.width}
-                    onChange={(e) =>
-                      handleMaterialChange(
-                        index,
+          <div className="bg-primary w-full h-[1px] my-2"></div>
 
-                        "width",
-                        e.target.value
-                      )
-                    }
-                    className="p-2  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-                  />
-                </div>
-                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[14%]">
-                  <label className="font-medium">Depth (Inch)</label>
-                  <input
-                    type="number"
-                    step="any"
-                    placeholder="Depth"
-                    value={mat.depth}
-                    onChange={(e) =>
-                      handleMaterialChange(
-                        index,
+          {/* bottom fields */}
+          <div className="sm:text-[12px] grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">B2B (%)</label>
+              <input
+                type="number"
+                name="B2B"
+                placeholder="B2B"
+                value={form.B2B}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">D2C (%)</label>
+              <input
+                type="number"
+                name="D2C"
+                placeholder="D2C"
+                value={form.D2C}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Rejection (%)</label>
+              <input
+                type="number"
+                name="rejection"
+                placeholder="Rejection"
+                value={form.rejection}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">QC (%)</label>
+              <input
+                type="number"
+                name="QC"
+                placeholder="QC"
+                value={form.QC}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">
+                Machine Maintainance (%)
+              </label>
+              <input
+                type="number"
+                name="machineMaintainance"
+                placeholder="Machine Maintainance"
+                value={form.machineMaintainance}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">
+                Material Handling (%)
+              </label>
+              <input
+                type="number"
+                name="materialHandling"
+                placeholder="Material Handling"
+                value={form.materialHandling}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Packaging (%)</label>
+              <input
+                type="number"
+                name="packaging"
+                placeholder="Packaging"
+                value={form.packaging}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Shipping (%)</label>
+              <input
+                type="number"
+                name="shipping"
+                placeholder="Shipping"
+                value={form.shipping}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Company OverHead (%)</label>
+              <input
+                type="number"
+                name="companyOverHead"
+                placeholder="Company OverHead"
+                value={form.companyOverHead}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Indirect Expense (%)</label>
+              <input
+                type="number"
+                name="indirectExpense"
+                placeholder="Indirect Expense"
+                value={form.indirectExpense}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Stitching (₹)</label>
+              <input
+                type="number"
+                name="stitching"
+                placeholder="Stitching"
+                value={form.stitching}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                required
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Print/Emb (₹)</label>
+              <input
+                type="number"
+                name="printing"
+                placeholder="Print/Emb"
+                value={form.printing}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                required
+              />
+            </div>
 
-                        "depth",
-                        e.target.value
-                      )
-                    }
-                    className="p-2  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-                  />
-                </div>
-                <div className="flex flex-col w-[46.5%] sm:w-[30%] md:w-[10%]">
-                  <label className="font-semibold">Qty</label>
-                  <input
-                    type="number"
-                    step="any"
-                    placeholder="Qty"
-                    value={mat.qty}
-                    onChange={(e) =>
-                      handleMaterialChange(index, "qty", e.target.value)
-                    }
-                    className="p-2  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200 "
-                  />
-                </div>
-                <div className="flex items-end w-full sm:w-auto">
-                  <button
-                    type="button"
-                    onClick={() => removeMaterial(index)}
-                    className="text-red-600 cursor-pointer flex items-center gap-1 hover:underline  "
-                  >
-                    <FiTrash2 /> Remove
-                  </button>
-                </div>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={addMaterial}
-              className="bg-[#d8b76a] cursor-pointer hover:bg-[#d8b76a91] px-3 py-1 rounded flex items-center gap-1 mt-2"
-            >
-              <FiPlus /> Add RM/SFG
-            </button>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Others (₹)</label>
+              <input
+                type="number"
+                name="others"
+                placeholder="Others"
+                value={form.others}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Unit Rate (₹)</label>
+              <input
+                disabled
+                type="number"
+                name="unitRate"
+                placeholder="Unit Rate"
+                value={form.unitRate}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+                required
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Unit B2B (₹)</label>
+              <input
+                disabled
+                type="number"
+                name="unitB2BRate"
+                placeholder="Unit B2B"
+                value={form.unitB2BRate}
+                onChange={(e) => handleChange(e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="font-semibold mb-1">Unit D2C (₹)</label>
+              <input
+                disabled
+                type="number"
+                name="unitD2CRate"
+                placeholder="Unit D2C"
+                value={form.unitD2CRate}
+                onChange={(e) => handleChange(index, e)}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-4 mt-6">

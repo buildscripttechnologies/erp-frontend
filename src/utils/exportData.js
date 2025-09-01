@@ -19,28 +19,37 @@ export const exportToPDF = (rawMaterials) => {
     "SKU Code",
     "Item Name",
     "Description",
+    "Category",
+    "Color",
     "HSN/SAC",
     "Type",
     "Location",
     "MOQ",
+    "Panno",
+    "SI Rate",
     "Rate",
     "GST",
-    "Stock Qty",
-    "Base Qty",
-    "Pkg Qty",
+    "S Qty",
+    "B Qty",
+    "P Qty",
     "P UOM",
     "S UOM",
-    "Qual. Insp.",
+    "Q. Insp.",
+    "T Rate",
   ];
 
   const data = rawMaterials.map((e) => [
     e.skuCode,
     e.itemName,
     e.description,
+    e.itemCategory,
+    e.itemColor,
     e.hsnOrSac,
     e.type,
     e.location,
     e.moq,
+    e.panno,
+    e.sqInchRate,
     e.rate,
     e.gst,
     e.stockQty,
@@ -50,13 +59,14 @@ export const exportToPDF = (rawMaterials) => {
     e.stockUOM,
     (e.qualityInspectionNeeded =
       e.qualityInspectionNeeded == "Required" ? "Yes" : "No"),
+    e.totalRate,
   ]);
 
   autoTable(doc, {
     head: [headers],
     body: data,
     styles: {
-      fontSize: 8,
+      fontSize: 6,
       cellWidth: "wrap",
       overflow: "linebreak",
     },
@@ -66,17 +76,19 @@ export const exportToPDF = (rawMaterials) => {
       fontStyle: "bold",
     },
     columnStyles: {
-      0: { cellWidth: 17 }, // SKU
-      1: { cellWidth: 35 }, // Item Name
+      //   0: { cellWidth: 17 }, // SKU
+      1: { cellWidth: 30 }, // Item Name
       2: { cellWidth: 30 }, // Description
-      5: { cellWidth: 15 }, // Location
-      12: { cellWidth: 14 }, // Qual. Insp.
-      13: { cellWidth: 14 }, // Qual. Insp.
-      14: { cellWidth: 18 }, // Qual. Insp.
-      // 15: { cellWidth: 80 }, // Attachments
+      //   5: { cellWidth: 15 }, // Location
+      //   12: { cellWidth: 14 }, // Qual. Insp.
+      //   13: { cellWidth: 14 }, // Qual. Insp.
+      //   14: { cellWidth: 18 }, // Qual. Insp.
+      //   // 15: { cellWidth: 80 }, // Attachments
     },
-    startY: 15,
+    margin: { top: 5, left: 5, right: 5, bottom: 5 }, // 🔑 super small margins
+    startY: 5,
     theme: "grid",
+    // tableWidth: "auto",
     // ensures table isn't forced to page width
   });
 

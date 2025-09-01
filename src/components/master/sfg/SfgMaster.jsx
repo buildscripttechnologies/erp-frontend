@@ -20,6 +20,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
 
 import { useRef } from "react";
+import SfgDetailsSection from "./SfgDetailsSection";
 
 const renderNestedMaterials = (
   materials,
@@ -105,8 +106,11 @@ const renderNestedMaterials = (
           <td className={`px-2 border-r ${border}`}>{mat.location}</td>
           <td className={`px-2 border-r ${border}`}>{mat.height}</td>
           <td className={`px-2 border-r ${border}`}>{mat.width}</td>
-          <td className={`px-2 border-r ${border}`}>{mat.depth}</td>
-          <td className={`px-2 rounded-br-sm`}>{mat.qty}</td>
+
+          <td className={`px-2 border-r ${border}`}>
+            {mat.grams ? `${mat.grams} gm` : mat.qty}
+          </td>
+          <td className={`px-2 rounded-br-sm `}>{mat.rate}</td>
         </tr>
 
         {level === 1 &&
@@ -134,9 +138,9 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">Location</th>
                         <th className="px-2 font-semibold">Height (Inch)</th>
                         <th className="px-2 font-semibold">Width (Inch)</th>
-                        <th className="px-2 font-semibold">depth (Inch)</th>
+                        <th className="px-2 font-semibold ">Qty</th>
                         <th className="px-2 font-semibold rounded-tr-sm">
-                          Qty
+                          Rate
                         </th>
                       </tr>
                     </thead>
@@ -191,8 +195,8 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">Location</th>
                         <th className="px-2 font-semibold">Height (Inch)</th>
                         <th className="px-2 font-semibold">Width (Inch)</th>
-                        <th className="px-2 font-semibold">depth (Inch)</th>
                         <th className="px-2 font-semibold">Qty</th>
+                        <th className="px-2 font-semibold">Rate</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -238,7 +242,7 @@ const SfgMaster = ({ isOpen }) => {
 
   const [showAddSFG, setShowAddSFG] = useState(false);
   const [editingSfg, setEditingSfg] = useState(null);
-
+  const [expandedSfgId, setExpandedSfgId] = useState(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -488,7 +492,12 @@ const SfgMaster = ({ isOpen }) => {
                   {sfgs.map((sfg, index) => (
                     <React.Fragment key={sfg.id}>
                       <tr
-                        onClick={() => toggleL1(sfg.id)}
+                        onClick={() => {
+                          toggleL1(sfg.id),
+                            setExpandedSfgId(
+                              expandedSfgId === sfg.id ? null : sfg.id
+                            ); // second funct
+                        }}
                         className="border-t  border-[#d8b76a] hover:bg-gray-50 cursor-pointer "
                       >
                         <td className="px-[8px]  border-r border-r-[#d8b76a] ">
@@ -665,10 +674,10 @@ const SfgMaster = ({ isOpen }) => {
                                         Width (Inch)
                                       </th>
                                       <th className="px-2 font-semibold">
-                                        depth (Inch)
+                                        Qty
                                       </th>
                                       <th className="px-2 font-semibold">
-                                        Qty
+                                        Rate
                                       </th>
                                     </tr>
                                   </thead>
@@ -688,6 +697,13 @@ const SfgMaster = ({ isOpen }) => {
                             </td>
                           </tr>
                         )}
+                      {expandedSfgId == sfg.id && (
+                        <tr className="">
+                          <td colSpan="100%">
+                            <SfgDetailsSection sfgData={sfg} />
+                          </td>
+                        </tr>
+                      )}
                     </React.Fragment>
                   ))}
                   {sfgs.length === 0 && (
