@@ -18,6 +18,7 @@ const availableModules = [
   "User",
   "Dashboard",
   "Material Inward",
+  "Material Issue",
   "PO",
 ];
 

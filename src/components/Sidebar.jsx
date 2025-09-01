@@ -105,6 +105,7 @@ export function Sidebar({ isOpen }) {
       icon: FiBox,
       label: "Material Issue",
       module: "Dashboard",
+      path: "/material-issue",
       action: "read",
     },
     {
