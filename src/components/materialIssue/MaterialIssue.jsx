@@ -16,10 +16,10 @@ import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
 
-import { ClipLoader } from "react-spinners";
-import AddMI from "./addMI";
+
 import MIdetails from "./Midetails";
 import UpdateMI from "./UpdateMI";
+import Add from "./Add";
 
 const MaterialIssue = () => {
   const { hasPermission } = useAuth();
@@ -253,7 +253,7 @@ const MaterialIssue = () => {
       </div>
 
       {formOpen && (
-        <AddMI
+        <Add
           isOpen={formOpen}
           setIsOpen={setFormOpen}
           onClose={() => setFormOpen(false)}

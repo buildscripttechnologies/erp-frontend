@@ -3,12 +3,8 @@ import toast from "react-hot-toast";
 import axios from "../../utils/axios";
 import Select from "react-select";
 import { ClipLoader } from "react-spinners";
-import { FiEdit2, FiTrash2 } from "react-icons/fi";
-import { add } from "lodash";
-import DatePicker from "react-datepicker";
-import { option } from "framer-motion/client";
 
-const AddMI = ({ onClose, onAdded }) => {
+const Add = ({ onClose, onAdded }) => {
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [loading, setLoading] = useState(false);
@@ -266,4 +262,4 @@ const AddMI = ({ onClose, onAdded }) => {
   );
 };
 
-export default AddMI;
+export default Add;
