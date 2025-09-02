@@ -36,7 +36,7 @@ export const calculateRate = (comp, qtyOverride = null) => {
   }
 
   // Plastic / Non-woven: calculate per gram
-  if (["plastic", "non-woven"].includes(category)) {
+  if (["plastic", "non woven","ld cord"].includes(category)) {
     const grams = comp.grams || 0;
     const baseQtyKg = Number(comp.baseQty) || 1; // baseQty is in KG
     const baseQtyGrams = baseQtyKg * 1000;

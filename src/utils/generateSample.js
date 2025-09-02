@@ -4,95 +4,106 @@ import { getBase64ImageFromPDF } from "./convertPDFPageToImage"; // You need thi
 
 export const generateSample = async (SampleData) => {
   const doc = new jsPDF("portrait", "mm", "a4");
-  const margin = 15;
+  const margin = 6;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  // 1. Convert the letterpad PDF to base64 image
-  const backgroundBase64 = await getBase64ImageFromPDF("/lp.pdf", 0);
+  // Load both pages of lp2.pdf
+  const lp2Page1 = await getBase64ImageFromPDF("/lp2.pdf", 0);
+  const lp2Page2 = await getBase64ImageFromPDF("/lp2.pdf", 1);
 
-  // 2. Draw letterpad image as full-page background
-  doc.addImage(backgroundBase64, "PNG", 0, 0, pageWidth, pageHeight);
+  // Helper to draw lp2 background
+  const addBackground = (pageNo) => {
+    if (pageNo === "first") {
+      doc.addImage(lp2Page1, "PNG", 0, 0, pageWidth, pageHeight);
+    } else if (pageNo === "last") {
+      doc.addImage(lp2Page2, "PNG", 0, 0, pageWidth, pageHeight);
+    } else {
+      doc.addImage(lp2Page1, "PNG", 0, 0, pageWidth, pageHeight);
+    }
+  };
 
+  // --- Page 1 ---
+  addBackground("first");
   doc.setTextColor("white");
   doc.setFont("helvetica", "bold");
   doc.text(`${SampleData.sampleNo + " Details"}`, pageWidth / 2, 47, {
     align: "center",
   });
 
-  let y = 54; // adjust according to letterpad
-  // 3. Add Sample Details
-  //   doc.setFont("helvetica", "bold");
-  //   doc.setFontSize(12);
-  //   doc.setTextColor("#d8b76a");
-  //   doc.text("Sample Details", doc.internal.pageSize.getWidth() / 2, y, {
-  //     align: "center",
-  //   });
+  let y = 54;
 
-  const details = [
-    ["Party Name", SampleData.partyName || ""],
-    ["Product Name", SampleData.product.name || ""],
-    // ["Order Qty", SampleData.orderQty || ""],
-    ["Sample No.", SampleData.sampleNo || ""],
-    [
-      "Date",
-      new Date(SampleData.date || Date.now()).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }),
+  // --- Top Details Table ---
+  autoTable(doc, {
+    startY: y + 2,
+    margin: { left: margin },
+    tableWidth: pageWidth - margin * 2, // full width
+    theme: "grid",
+    // head: [
+    //   [
+    //     {
+    //       content: "BOM Details",
+    //       colSpan: 4,
+    //       styles: { fontStyle: "bold", halign: "center" },
+    //     },
+    //   ],
+    // ],
+    body: [
+      // Row 1
+      [
+        { content: "Party Name:", styles: { fontStyle: "bold" } },
+        SampleData.partyName || "-",
+        { content: "Sample No.:", styles: { fontStyle: "bold" } },
+        SampleData.sampleNo || "-",
+      ],
+      // Row 2
+      [
+        { content: "Product Name:", styles: { fontStyle: "bold" } },
+        SampleData.product?.name || "-",
+        { content: "Date:", styles: { fontStyle: "bold" } },
+        new Date(SampleData.date || Date.now()).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+      ],
     ],
-  ];
+    styles: {
+      fontSize: 8,
+      textColor: "#292926",
+      halign: "left",
+      valign: "middle",
+      fillColor: false,
+    },
+    headStyles: {
+      fillColor: [216, 183, 106], // gold
+      textColor: [41, 41, 38], // dark text
+      fontStyle: "bold",
+      lineWidth: 0.1,
+    },
+    columnStyles: {
+      0: { cellWidth: 28 }, // Label
+      1: { cellWidth: 71 }, // Value
+      2: { cellWidth: 28 }, // Label
+      3: { cellWidth: 71 }, // Value
+    },
+  });
 
-  doc.setFontSize(10);
-  doc.setTextColor("#292926");
-
-  // Split the array into two columns
-  const leftDetails = details.slice(0, Math.ceil(details.length / 2));
-  const rightDetails = details.slice(Math.ceil(details.length / 2));
-
-  let leftX = margin;
-  let rightX = doc.internal.pageSize.getWidth() / 2 + margin + 24;
-  let startY = y + 6; // your previous y value
-
-  let maxLength = Math.max(leftDetails.length, rightDetails.length);
-
-  // Loop for maximum length to keep rows aligned
-  for (let i = 0; i < maxLength; i++) {
-    if (leftDetails[i]) {
-      doc.setFont("helvetica", "bold");
-      doc.text(`${leftDetails[i][0]}:`, leftX, startY);
-      doc.setFont("helvetica", "normal");
-      doc.text(`${leftDetails[i][1]}`, leftX + 27, startY);
-    }
-
-    if (rightDetails[i]) {
-      doc.setFont("helvetica", "bold");
-      doc.text(`${rightDetails[i][0]}:`, rightX + 9, startY);
-      doc.setFont("helvetica", "normal");
-      doc.text(`${rightDetails[i][1]}`, rightX + 50, startY, {
-        align: "right",
-      });
-    }
-
-    startY += 6;
-  }
-
-  // 4. Product Table
+  // --- Product Table ---
   doc.setFont("helvetica", "bold");
   doc.setFontSize("12");
   doc.setTextColor("#d8b76a");
-  doc.text("Product Details", margin, y + 22);
+  doc.text("Product Details", margin, y + 23);
 
   const tableBody = (SampleData.productDetails || []).map((item, index) => [
     index + 1,
-    item.skuCode || "",
-    item.itemName || "",
-    item.type || "",
-    item.height || "",
-    item.width || "",
-    item.depth || "",
-    item.qty || "",
+    item.skuCode || "-",
+    item.itemName || "-",
+    item.type || "-",
+    item.height || "-",
+    item.width || "-",
+    item.grams ? `${item.grams / 1000} kg` : item.qty || "",
+    item.rate || "-",
   ]);
 
   autoTable(doc, {
@@ -105,31 +116,37 @@ export const generateSample = async (SampleData) => {
         "Type",
         "Height(cm)",
         "Width(cm)",
-        "Depth(cm)",
         "Quantity",
+        "Rate",
       ],
     ],
     body: tableBody,
     theme: "grid",
     styles: {
-      fontSize: 9,
+      fontSize: 8,
       textColor: "#292926",
       fillColor: false,
       halign: "left",
     },
     headStyles: {
-      fillColor: [216, 183, 106], // background color
-      textColor: [41, 41, 38], // dark text color (converted from "#292926")
-      halign: "left", // horizontal alignment
-      fontStyle: "bold", // bold header
-      lineColor: [216, 183, 106], // border color for grid lines
-      lineWidth: 0.1, // border thickness
+      fillColor: [216, 183, 106],
+      textColor: [41, 41, 38],
+      halign: "left",
+      fontStyle: "bold",
+      lineColor: [216, 183, 106],
+      lineWidth: 0.1,
     },
     margin: { left: margin, right: margin },
   });
 
-  // Save or print
-  //   doc.save(`Sample-${SampleData.sampleNo || "Details"}.pdf`);
+  // --- Last Page (always lp2 second page) ---
+  doc.addPage();
+  addBackground("last");
+  doc.setTextColor("white");
+  doc.setFont("helvetica", "bold");
+  doc.text(`${SampleData.bomNo}`, pageWidth / 2, 47, { align: "center" });
+
+  // Return blob url
   const pdfBlob = doc.output("blob");
   const blobUrl = URL.createObjectURL(pdfBlob);
   return blobUrl;

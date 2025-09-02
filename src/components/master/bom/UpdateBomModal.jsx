@@ -17,7 +17,8 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
     bom?.productDetails?.map((detail) => ({
       ...detail,
       // baseQty: detail.baseQty || detail.qty / (bom.orderQty || 1),
-      tempQty: detail.tempQty || detail.qty / (bom.orderQty || 1), // ✅ ensure tempQty
+      tempQty: detail.tempQty || detail.qty / (bom.orderQty || 1),
+      tempGrams: detail.tempGrams || detail.grams / bom.orderQty, // ✅ ensure tempQty
     })) || []
   );
 
@@ -94,6 +95,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
       }`,
       value: s._id,
       type: "SAMPLE",
+      sample: s,
     })),
     ...fgs.map((fg) => ({
       label: `${fg.skuCode}: ${fg.itemName}${
@@ -101,6 +103,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
       }`,
       value: fg.id,
       type: "FG",
+      fg: fg,
     })),
   ];
 
@@ -196,8 +199,8 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
       updatedDetails = productDetails.map((comp) => {
         const category = (comp.category || "").toLowerCase();
 
-        if (["plastic", "non-woven"].includes(category)) {
-          const grams = (Number(comp.tempQty) || 0) * newValue;
+        if (["plastic", "non woven", "ld cord"].includes(category)) {
+          const grams = (Number(comp.tempGrams) || 0) * newValue;
           return {
             ...comp,
             grams,
@@ -226,18 +229,19 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
     const comp = updated[index];
     const orderQty = Number(form.orderQty) || 1;
 
-    if (field === "qty" || field === "grams") {
+    if (field === "qty") {
       // user is entering per-unit qty or per-unit grams
       comp.tempQty = Number(value) || 0;
+    } else if (field === "grams") {
+      comp.tempGrams = Number(value) || 0;
     } else {
       comp[field] = value;
     }
-
     const category = (comp.category || "").toLowerCase();
 
-    if (["plastic", "non-woven"].includes(category)) {
+    if (["plastic", "non woven", "ld cord"].includes(category)) {
       // scale grams with orderQty
-      comp.grams = (comp.tempQty || 0) * orderQty;
+      comp.grams = (comp.tempGrams || 0) * orderQty;
       comp.qty = orderQty; // qty here is just "number of orders"
     } else {
       // all other categories → qty = tempQty × orderQty
@@ -259,6 +263,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
         type: "",
         category: "",
         tempQty: 0,
+        tempGrams: 0,
         qty: 0,
         grams: 0,
         partName: "",
@@ -367,9 +372,14 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                   let selectedProduct = null;
 
                   if (e.type === "FG") {
-                    selectedProduct = fgs.find((fg) => fg.id === e?.value);
+                    selectedProduct = e.fg;
+                    // setForm({ ...form, productName: selectedProduct.itemName });
                   } else if (e.type === "SAMPLE") {
-                    selectedProduct = samples.find((s) => s._id === e?.value);
+                    selectedProduct = e.sample;
+                    // setForm({
+                    //   ...form,
+                    //   productName: selectedProduct.product.name,
+                    // });
                   }
 
                   setForm({
@@ -414,8 +424,9 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                     itemId: item.itemId || item.id || "",
                     type: item.type,
                     tempQty: item.qty || 0,
+                    tempGrams: item.grams || 0,
                     qty: item.qty || 0,
-                    cateogry: item.category || "",
+                    category: item.category || "",
                     grams: item.grams || 0,
                     height: item.height || "",
                     width: item.width || "",
@@ -659,7 +670,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                         return null;
 
                       if (
-                        ["plastic", "non-woven"].includes(
+                        ["plastic", "non woven", "ld cord"].includes(
                           comp.category?.toLowerCase()
                         ) &&
                         field === "qty"
@@ -667,7 +678,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                         return null; // hide qty
                       }
                       if (
-                        !["plastic", "non-woven"].includes(
+                        !["plastic", "non woven", "ld cord"].includes(
                           comp.category?.toLowerCase()
                         ) &&
                         field === "grams"
@@ -677,6 +688,12 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                       // ✅ Add this new rule for zipper
                       if (
                         comp.category?.toLowerCase() === "zipper" &&
+                        field === "height"
+                      ) {
+                        return null; // hide height only for zipper
+                      }
+                      if (
+                        comp.category?.toLowerCase() === "ld cord" &&
                         field === "height"
                       ) {
                         return null; // hide height only for zipper

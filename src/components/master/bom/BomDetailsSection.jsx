@@ -111,7 +111,7 @@ const BomDetailsSection = ({ bomData }) => {
                   {item.width || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.grams ? `${item.grams} gm` : item.qty || "-"}
+                  {item.grams ? `${(item.grams)/1000} kg` : item.qty || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.rate || "-"}

@@ -113,6 +113,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       }`,
       value: s._id,
       type: "SAMPLE",
+      sample: s,
     })),
     ...fgs.map((fg) => ({
       label: `${fg.skuCode}: ${fg.itemName}${
@@ -120,6 +121,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       }`,
       value: fg.id,
       type: "FG",
+      fg: fg,
     })),
   ];
 
@@ -219,8 +221,10 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       updatedDetails = productDetails.map((comp) => {
         const category = (comp.category || "").toLowerCase();
 
-        if (["plastic", "non-woven"].includes(category)) {
-          const grams = (Number(comp.tempQty) || 0) * newValue;
+        if (["plastic", "non woven", "ld cord"].includes(category)) {
+          const grams = (Number(comp.tempGrams) || 0) * newValue;
+          console.log("grams", grams);
+
           return {
             ...comp,
             grams,
@@ -249,18 +253,22 @@ const AddBomModal = ({ onClose, onSuccess }) => {
     const comp = updated[index];
     const orderQty = Number(form.orderQty) || 1;
 
-    if (field === "qty" || field === "grams") {
+    if (field === "qty") {
       // user is entering per-unit qty or per-unit grams
       comp.tempQty = Number(value) || 0;
+    } else if (field === "grams") {
+      comp.tempGrams = Number(value) || 0;
     } else {
       comp[field] = value;
     }
 
     const category = (comp.category || "").toLowerCase();
 
-    if (["plastic", "non-woven"].includes(category)) {
+    if (["plastic", "non woven", "ld cord"].includes(category)) {
       // scale grams with orderQty
-      comp.grams = (comp.tempQty || 0) * orderQty;
+      comp.grams = (comp.tempGrams || 0) * orderQty;
+      // console.log("comp gram", comp.grams, comp.qty);
+
       comp.qty = orderQty; // qty here is just "number of orders"
     } else {
       // all other categories → qty = tempQty × orderQty
@@ -282,6 +290,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
         type: "",
         category: "",
         tempQty: 0,
+        tempGrams: 0,
         qty: 0,
         grams: 0,
         partName: "",
@@ -384,12 +393,13 @@ const AddBomModal = ({ onClose, onSuccess }) => {
 
                 onChange={(e) => {
                   let selectedProduct = null;
+                  console.log("e", e);
 
                   if (e.type === "FG") {
-                    selectedProduct = fgs.find((fg) => fg.id === e?.value);
+                    selectedProduct = e.fg;
                     // setForm({ ...form, productName: selectedProduct.itemName });
                   } else if (e.type === "SAMPLE") {
-                    selectedProduct = samples.find((s) => s._id === e?.value);
+                    selectedProduct = e.sample;
                     // setForm({
                     //   ...form,
                     //   productName: selectedProduct.product.name,
@@ -443,8 +453,9 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                     itemId: item.itemId || item.id || "",
                     type: item.type,
                     tempQty: item.qty || 0,
+                    tempGrams: item.grams || 0,
                     qty: item.qty || 0,
-                    cateogry: item.category || "",
+                    category: item.category || "",
                     grams: item.grams || 0,
                     height: item.height || "",
                     width: item.width || "",
@@ -458,6 +469,8 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                       item.description ? ` - ${item.description}` : ""
                     }`,
                   }));
+
+                  console.log("enriched", enrichedDetails);
 
                   setProductDetails(enrichedDetails);
                 }}
@@ -582,162 +595,157 @@ const AddBomModal = ({ onClose, onSuccess }) => {
             </h3>
 
             <div className="flex flex-col gap-4">
-              {productDetails.map(
-                (comp, index) => (
-                  console.log("comp", comp),
-                  (
-                    <div
-                      key={index}
-                      className="border border-[#d8b76a] rounded p-3 flex flex-col gap-2"
-                    >
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
-                        {/* Component Field - span 2 columns on medium+ screens */}
-                        <div className="flex flex-col md:col-span-2">
-                          <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
-                            Component{" "}
-                            <span className="text-primary capitalize">
-                              {comp.category ? `● ${comp.category}` : ""}
-                            </span>
+              {productDetails.map((comp, index) => (
+                <div
+                  key={index}
+                  className="border border-[#d8b76a] rounded p-3 flex flex-col gap-2"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
+                    {/* Component Field - span 2 columns on medium+ screens */}
+                    <div className="flex flex-col md:col-span-2">
+                      <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
+                        Component{" "}
+                        <span className="text-primary capitalize">
+                          {comp.category ? `● ${comp.category}` : ""}
+                        </span>
+                      </label>
+                      <Select
+                        className="w-full"
+                        required
+                        value={materialOptions.find(
+                          (opt) => opt.value === comp.itemId
+                          // console.log(
+                          //   "opt.value === comp.itemId",
+                          //   opt.value,
+                          //   comp.itemId
+                          // )
+                        )}
+                        options={materialOptions}
+                        onChange={(e) => {
+                          updateComponent(index, "itemId", e.value);
+                          updateComponent(index, "type", e.type);
+                          updateComponent(index, "label", e.label);
+                          updateComponent(index, "sqInchRate", e.sqInchRate);
+                          updateComponent(index, "category", e.category);
+                          updateComponent(index, "baseQty", e.baseQty);
+                          updateComponent(index, "itemRate", e.itemRate);
+                        }}
+                        styles={{
+                          control: (base, state) => ({
+                            ...base,
+                            borderColor: "#d8b76a",
+                            boxShadow: state.isFocused
+                              ? "0 0 0 1px #d8b76a"
+                              : "none",
+                            "&:hover": {
+                              borderColor: "#d8b76a",
+                            },
+                          }),
+                        }}
+                      />
+                    </div>
+
+                    {/* Height, Width, Depth, Qty Fields */}
+                    {[
+                      "partName",
+                      "height",
+                      "width",
+                      "grams",
+                      "qty",
+                      "rate",
+                    ].map((field) => {
+                      // Hide based on category
+                      if (
+                        [
+                          "slider",
+                          "bidding",
+                          "adjuster",
+                          "buckel",
+                          "dkadi",
+                          "accessories",
+                        ].includes(comp.category?.toLowerCase()) &&
+                        (field === "height" || field === "width")
+                      )
+                        return null;
+
+                      if (
+                        ["plastic", "non woven", "ld cord"].includes(
+                          comp.category?.toLowerCase()
+                        ) &&
+                        field === "qty"
+                      ) {
+                        return null; // hide qty
+                      }
+                      if (
+                        !["plastic", "non woven", "ld cord"].includes(
+                          comp.category?.toLowerCase()
+                        ) &&
+                        field === "grams"
+                      ) {
+                        return null; // hide grams for others
+                      }
+                      // ✅ Add this new rule for zipper
+                      if (
+                        comp.category?.toLowerCase() === "zipper" &&
+                        field === "height"
+                      ) {
+                        return null; // hide height only for zipper
+                      }
+                      if (
+                        comp.category?.toLowerCase() === "ld cord" &&
+                        field === "height"
+                      ) {
+                        return null; // hide height only for zipper
+                      }
+
+                      return (
+                        <div className="flex flex-col" key={field}>
+                          <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                            {field === "partName"
+                              ? "Part Name"
+                              : field === "qty"
+                              ? "Qty"
+                              : field === "grams"
+                              ? "Weight (gm)"
+                              : field === "rate"
+                              ? "Rate"
+                              : `${field} (Inch)`}
                           </label>
-                          <Select
-                            className="w-full"
-                            required
-                            value={materialOptions.find(
-                              (opt) => opt.value === comp.itemId
-                              // console.log(
-                              //   "opt.value === comp.itemId",
-                              //   opt.value,
-                              //   comp.itemId
-                              // )
-                            )}
-                            options={materialOptions}
-                            onChange={(e) => {
-                              updateComponent(index, "itemId", e.value);
-                              updateComponent(index, "type", e.type);
-                              updateComponent(index, "label", e.label);
-                              updateComponent(
-                                index,
-                                "sqInchRate",
-                                e.sqInchRate
-                              );
-                              updateComponent(index, "category", e.category);
-                              updateComponent(index, "baseQty", e.baseQty);
-                              updateComponent(index, "itemRate", e.itemRate);
-                            }}
-                            styles={{
-                              control: (base, state) => ({
-                                ...base,
-                                borderColor: "#d8b76a",
-                                boxShadow: state.isFocused
-                                  ? "0 0 0 1px #d8b76a"
-                                  : "none",
-                                "&:hover": {
-                                  borderColor: "#d8b76a",
-                                },
-                              }),
-                            }}
+                          <input
+                            type={
+                              ["partName"].includes(field) ? "text" : "number"
+                            }
+                            placeholder={
+                              field === "partName"
+                                ? "Item Part Name"
+                                : field === "grams"
+                                ? "Weight in grams"
+                                : field === "qty"
+                                ? "qty"
+                                : `${field}`
+                            }
+                            className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                            value={comp[field] || ""}
+                            onChange={(e) =>
+                              updateComponent(index, field, e.target.value)
+                            }
                           />
                         </div>
+                      );
+                    })}
+                  </div>
 
-                        {/* Height, Width, Depth, Qty Fields */}
-                        {[
-                          "partName",
-                          "height",
-                          "width",
-                          "grams",
-                          "qty",
-                          "rate",
-                        ].map((field) => {
-                          // Hide based on category
-                          if (
-                            [
-                              "slider",
-                              "bidding",
-                              "adjuster",
-                              "buckel",
-                              "dkadi",
-                              "accessories",
-                            ].includes(comp.category?.toLowerCase()) &&
-                            (field === "height" || field === "width")
-                          )
-                            return null;
-
-                          if (
-                            ["plastic", "non-woven"].includes(
-                              comp.category?.toLowerCase()
-                            ) &&
-                            field === "qty"
-                          ) {
-                            return null; // hide qty
-                          }
-                          if (
-                            !["plastic", "non-woven"].includes(
-                              comp.category?.toLowerCase()
-                            ) &&
-                            field === "grams"
-                          ) {
-                            return null; // hide grams for others
-                          }
-                          // ✅ Add this new rule for zipper
-                          if (
-                            comp.category?.toLowerCase() === "zipper" &&
-                            field === "height"
-                          ) {
-                            return null; // hide height only for zipper
-                          }
-
-                          return (
-                            <div className="flex flex-col" key={field}>
-                              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                                {field === "partName"
-                                  ? "Part Name"
-                                  : field === "qty"
-                                  ? "Qty"
-                                  : field === "grams"
-                                  ? "Weight (gm)"
-                                  : field === "rate"
-                                  ? "Rate"
-                                  : `${field} (Inch)`}
-                              </label>
-                              <input
-                                type={
-                                  ["partName"].includes(field)
-                                    ? "text"
-                                    : "number"
-                                }
-                                placeholder={
-                                  field === "partName"
-                                    ? "Item Part Name"
-                                    : field === "grams"
-                                    ? "Weight in grams"
-                                    : field === "qty"
-                                    ? "qty"
-                                    : `${field}`
-                                }
-                                className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
-                                value={comp[field] || ""}
-                                onChange={(e) =>
-                                  updateComponent(index, field, e.target.value)
-                                }
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      <div className="mt-2">
-                        <button
-                          type="button"
-                          className="text-red-600 text-xs hover:underline flex items-center gap-1 cursor-pointer"
-                          onClick={() => removeComponent(index)}
-                        >
-                          <FiTrash2 /> Remove
-                        </button>
-                      </div>
-                    </div>
-                  )
-                )
-              )}
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      className="text-red-600 text-xs hover:underline flex items-center gap-1 cursor-pointer"
+                      onClick={() => removeComponent(index)}
+                    >
+                      <FiTrash2 /> Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
 
               <button
                 type="button"
