@@ -120,6 +120,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
       }`,
       value: fg.id,
       type: "FG",
+      fg: fg,
     })),
   ];
 
@@ -219,7 +220,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
       updatedDetails = productDetails.map((comp) => {
         const category = (comp.category || "").toLowerCase();
 
-        if (["plastic", "non-woven"].includes(category)) {
+        if (["plastic", "non woven", "ld cord"].includes(category)) {
           const grams = (Number(comp.tempQty) || 0) * newValue;
           return {
             ...comp,
@@ -258,7 +259,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
 
     const category = (comp.category || "").toLowerCase();
 
-    if (["plastic", "non-woven"].includes(category)) {
+    if (["plastic", "non woven", "ld cord"].includes(category)) {
       // scale grams with orderQty
       comp.grams = (comp.tempQty || 0) * orderQty;
       comp.qty = orderQty; // qty here is just "number of orders"
@@ -383,18 +384,18 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                 // onChange={(e) => setForm({ ...form, productName: e?.value })}
 
                 onChange={(e) => {
-                  let selectedProduct = null;
+                  let selectedProduct = e.fg;
 
-                  if (e.type === "FG") {
-                    selectedProduct = fgs.find((fg) => fg.id === e?.value);
-                    // setForm({ ...form, productName: selectedProduct.itemName });
-                  } else if (e.type === "SAMPLE") {
-                    selectedProduct = samples.find((s) => s._id === e?.value);
-                    // setForm({
-                    //   ...form,
-                    //   productName: selectedProduct.product.name,
-                    // });
-                  }
+                  // if (e.type === "FG") {
+                  //   selectedProduct = fgs.find((fg) => fg.id === e?.value);
+                  //   // setForm({ ...form, productName: selectedProduct.itemName });
+                  // } else if (e.type === "SAMPLE") {
+                  //   selectedProduct = samples.find((s) => s._id === e?.value);
+                  //   // setForm({
+                  //   //   ...form,
+                  //   //   productName: selectedProduct.product.name,
+                  //   // });
+                  // }
 
                   setForm({
                     productName:
@@ -444,7 +445,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                     type: item.type,
                     tempQty: item.qty || 0,
                     qty: item.qty || 0,
-                    cateogry: item.category || "",
+                    category: item.category || "",
                     grams: item.grams || 0,
                     height: item.height || "",
                     width: item.width || "",
@@ -664,7 +665,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                             return null;
 
                           if (
-                            ["plastic", "non-woven"].includes(
+                            ["plastic", "non woven", "ld cord"].includes(
                               comp.category?.toLowerCase()
                             ) &&
                             field === "qty"
@@ -672,7 +673,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                             return null; // hide qty
                           }
                           if (
-                            !["plastic", "non-woven"].includes(
+                            !["plastic", "non woven", "ld cord"].includes(
                               comp.category?.toLowerCase()
                             ) &&
                             field === "grams"
@@ -682,6 +683,12 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                           // ✅ Add this new rule for zipper
                           if (
                             comp.category?.toLowerCase() === "zipper" &&
+                            field === "height"
+                          ) {
+                            return null; // hide height only for zipper
+                          }
+                          if (
+                            comp.category?.toLowerCase() === "ld cord" &&
                             field === "height"
                           ) {
                             return null; // hide height only for zipper
@@ -939,42 +946,6 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                 name="unitD2CRate"
                 placeholder="Unit D2C"
                 value={form.unitD2CRate}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Total Rate (₹)</label>
-              <input
-                disabled
-                type="number"
-                name="totalRate"
-                placeholder="Total Rate"
-                value={form.totalRate}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Total B2B (₹)</label>
-              <input
-                disabled
-                type="number"
-                name="totalB2BRate"
-                placeholder="Total B2B"
-                value={form.totalB2BRate}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Total D2C (₹)</label>
-              <input
-                disabled
-                type="number"
-                name="totalD2CRate"
-                placeholder="total D2C"
-                value={form.totalD2CRate}
                 onChange={(e) => handleFormChange(e)}
                 className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
               />

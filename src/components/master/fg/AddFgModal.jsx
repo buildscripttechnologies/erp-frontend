@@ -183,7 +183,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
     } else {
       comp[field] = value;
     }
-    if (["plastic", "non-woven"].includes(category)) {
+    if (["plastic", "non woven", "ld cord"].includes(category)) {
       // scale grams with orderQty
       comp.grams = (comp.tempQty || 0) * orderQty;
       comp.qty = orderQty; // qty here is just "number of orders"
@@ -721,7 +721,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                             return null;
 
                           if (
-                            ["plastic", "non-woven"].includes(
+                            ["plastic", "non woven", "ld cord"].includes(
                               mat.category?.toLowerCase()
                             ) &&
                             field === "qty"
@@ -729,7 +729,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                             return null; // hide qty
                           }
                           if (
-                            !["plastic", "non-woven"].includes(
+                            !["plastic", "non woven", "ld cord"].includes(
                               mat.category?.toLowerCase()
                             ) &&
                             field === "grams"
@@ -739,6 +739,12 @@ const AddFgModal = ({ onClose, onAdded }) => {
                           // ✅ Add this new rule for zipper
                           if (
                             mat.category?.toLowerCase() === "zipper" &&
+                            field === "height"
+                          ) {
+                            return null; // hide height only for zipper
+                          }
+                          if (
+                            mat.category?.toLowerCase() === "ld cord" &&
                             field === "height"
                           ) {
                             return null; // hide height only for zipper
@@ -788,7 +794,6 @@ const AddFgModal = ({ onClose, onAdded }) => {
                         })}
                       </div>
 
-                      
                       <div className="mt-2">
                         <button
                           type="button"

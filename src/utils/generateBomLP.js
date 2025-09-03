@@ -76,7 +76,7 @@ export const generateBomLP = async (bomData) => {
       ],
     ],
     styles: {
-      fontSize: 9,
+      fontSize: 8,
       textColor: "#292926",
       halign: "left",
       valign: "middle",
@@ -109,7 +109,7 @@ export const generateBomLP = async (bomData) => {
     item.type || "",
     item.height || "",
     item.width || "",
-    item.qty || "",
+    item.grams ? `${item.grams / 1000} kg` : item.qty || "",
     item.rate || "",
   ]);
 
@@ -121,8 +121,8 @@ export const generateBomLP = async (bomData) => {
         "SKU Code",
         "Item Name",
         "Type",
-        "Height(cm)",
-        "Width(cm)",
+        "Height (Inch)",
+        "Width (Inch)",
         "Quantity",
         "Rate",
       ],
@@ -130,7 +130,7 @@ export const generateBomLP = async (bomData) => {
     body: tableBody,
     theme: "grid",
     styles: {
-      fontSize: 9,
+      fontSize: 8,
       textColor: "#292926",
       fillColor: false,
       halign: "left",

@@ -105,7 +105,7 @@ const renderNestedMaterials = (
           <td className={`px-2 border-r ${border}`}>{mat.height || "-"}</td>
           <td className={`px-2 border-r ${border}`}>{mat.width || "-"}</td>
           <td className={`px-2 border-r ${border}`}>
-            {mat.grams ? `${mat.grams} gm` : mat.qty || "-"}
+            {mat.grams ? `${mat.grams/1000} kg` : mat.qty || "-"}
           </td>
           <td className={`px-2 rounded-br-sm `}>
             {Number(mat.rate).toFixed(2) || "-"}

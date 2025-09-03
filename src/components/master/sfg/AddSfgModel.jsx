@@ -181,7 +181,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
     } else {
       comp[field] = value;
     }
-    if (["plastic", "non-woven"].includes(category)) {
+    if (["plastic", "non woven", "ld cord"].includes(category)) {
       // scale grams with orderQty
       comp.grams = (comp.tempQty || 0) * orderQty;
       comp.qty = orderQty; // qty here is just "number of orders"
@@ -713,7 +713,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                               return null;
 
                             if (
-                              ["plastic", "non-woven"].includes(
+                              ["plastic", "non woven"].includes(
                                 mat.category?.toLowerCase()
                               ) &&
                               field === "qty"
@@ -721,7 +721,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                               return null; // hide qty
                             }
                             if (
-                              !["plastic", "non-woven"].includes(
+                              !["plastic", "non woven"].includes(
                                 mat.category?.toLowerCase()
                               ) &&
                               field === "grams"
