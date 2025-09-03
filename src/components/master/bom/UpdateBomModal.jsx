@@ -201,10 +201,11 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
 
         if (["plastic", "non woven", "ld cord"].includes(category)) {
           const grams = (Number(comp.tempGrams) || 0) * newValue;
+          const qty = (Number(comp.tempQty) || 1) * newValue;
           return {
             ...comp,
             grams,
-            qty: newValue,
+            qty: qty,
             rate: calculateRate({ ...comp, grams }, newValue),
           };
         } else {
@@ -242,7 +243,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
     if (["plastic", "non woven", "ld cord"].includes(category)) {
       // scale grams with orderQty
       comp.grams = (comp.tempGrams || 0) * orderQty;
-      comp.qty = orderQty; // qty here is just "number of orders"
+      comp.qty = (comp.tempQty || 0) * orderQty; // qty here is just "number of orders"
     } else {
       // all other categories → qty = tempQty × orderQty
       comp.qty = (comp.tempQty || 0) * orderQty;
@@ -317,12 +318,12 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
       });
       if (res.data.status === 403) return toast.error(res.data.message);
 
-      toast.success("BOM updated successfully");
+      toast.success("Bill of Materials updated successfully");
       onSuccess();
       onClose();
     } catch (err) {
       console.error(err);
-      toast.error("Failed to update BOM");
+      toast.error("Failed to update Bill of Materials");
     } finally {
       setLoading(false);
     }
@@ -607,7 +608,13 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                   key={index}
                   className="border border-[#d8b76a] rounded p-3 flex flex-col gap-2"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
+                  <div
+                    className={`grid grid-cols-1 sm:grid-cols-2 ${
+                      comp.category == "plastic" || comp.category == "non woven"
+                        ? "md:grid-cols-8"
+                        : "md:grid-cols-7"
+                    } md:grid-cols-8 gap-3`}
+                  >
                     <div className="flex flex-col md:col-span-2">
                       <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
                         Component{" "}
@@ -629,6 +636,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                           updateComponent(index, "sqInchRate", e.sqInchRate);
                           updateComponent(index, "category", e.category);
                           updateComponent(index, "baseQty", e.baseQty);
+                          updateComponent(index, "qty", e.qty);
                           updateComponent(index, "itemRate", e.itemRate);
                         }}
                         styles={{
@@ -651,8 +659,8 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                       "partName",
                       "height",
                       "width",
-                      "grams",
                       "qty",
+                      "grams",
                       "rate",
                     ].map((field) => {
                       // Hide based on category
@@ -669,14 +677,14 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                       )
                         return null;
 
-                      if (
-                        ["plastic", "non woven", "ld cord"].includes(
-                          comp.category?.toLowerCase()
-                        ) &&
-                        field === "qty"
-                      ) {
-                        return null; // hide qty
-                      }
+                      // if (
+                      //   ["plastic", "non woven", "ld cord"].includes(
+                      //     comp.category?.toLowerCase()
+                      //   ) &&
+                      //   field === "qty"
+                      // ) {
+                      //   return null; // hide qty
+                      // }
                       if (
                         !["plastic", "non woven", "ld cord"].includes(
                           comp.category?.toLowerCase()

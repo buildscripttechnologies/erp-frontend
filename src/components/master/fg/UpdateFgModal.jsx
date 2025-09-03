@@ -211,24 +211,25 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
     const updated = [...form.materials];
     const comp = updated[index];
     const orderQty = 1;
-
-    if (field === "qty" || field === "grams") {
+    const category = (comp.category || "").toLowerCase();
+    if (field === "qty") {
       // user is entering per-unit qty or per-unit grams
-      comp.tempQty = Number(value) || 0;
+      comp.qty = Number(value) || 0;
+    } else if (field === "grams") {
+      comp.grams = Number(value) || 0;
     } else {
       comp[field] = value;
     }
 
-    const category = (comp.category || "").toLowerCase();
+    // if (["plastic", "non woven","ld cord"].includes(category)) {
+    //   // scale grams with orderQty
+    //   comp.grams = (comp.tempQty || 0) * orderQty;
+    //   comp.qty = orderQty; // qty here is just "number of orders"
+    // } else {
+    //   // all other categories → qty = tempQty × orderQty
+    //   comp.qty = (comp.tempQty || 0) * orderQty;
+    // }
 
-    if (["plastic", "non woven","ld cord"].includes(category)) {
-      // scale grams with orderQty
-      comp.grams = (comp.tempQty || 0) * orderQty;
-      comp.qty = orderQty; // qty here is just "number of orders"
-    } else {
-      // all other categories → qty = tempQty × orderQty
-      comp.qty = (comp.tempQty || 0) * orderQty;
-    }
     comp.rate = calculateRate(comp, comp.qty);
 
     setForm((prev) =>
@@ -628,7 +629,13 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                   key={index}
                   className="border border-primary rounded p-3 flex flex-col gap-2"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
+                  <div
+                    className={`grid grid-cols-1 sm:grid-cols-2 ${
+                      mat.category == "plastic" || mat.category == "non woven"
+                        ? "md:grid-cols-8"
+                        : "md:grid-cols-7"
+                    } md:grid-cols-8 gap-3`}
+                  >
                     <div className="flex flex-col md:col-span-2">
                       <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
                         Material{" "}
@@ -726,8 +733,8 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                       "partName",
                       "height",
                       "width",
-                      "grams",
                       "qty",
+                      "grams",
                       "rate",
                     ].map((field) => {
                       // Hide based on category
@@ -744,16 +751,16 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                       )
                         return null;
 
+                      // if (
+                      //   ["plastic", "non woven", "ld cord"].includes(
+                      //     mat.category?.toLowerCase()
+                      //   ) &&
+                      //   field === "qty"
+                      // ) {
+                      //   return null; // hide qty
+                      // }
                       if (
-                        ["plastic", "non woven"].includes(
-                          mat.category?.toLowerCase()
-                        ) &&
-                        field === "qty"
-                      ) {
-                        return null; // hide qty
-                      }
-                      if (
-                        !["plastic", "non woven"].includes(
+                        !["plastic", "non woven", "ld cord"].includes(
                           mat.category?.toLowerCase()
                         ) &&
                         field === "grams"

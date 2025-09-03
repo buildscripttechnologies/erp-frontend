@@ -22,13 +22,13 @@ const SampleDetailsSection = ({ SampleData }) => {
               Party Name
             </td>
             <td className="px-2 py-1 border-r border-[#d8b76a]">
-              {SampleData.partyName || "-"}
+              {SampleData.partyName || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
               Sample No.
             </td>
             <td className="px-2 py-1 border-r border-[#d8b76a]">
-              {SampleData.sampleNo || "-"}
+              {SampleData.sampleNo || "N/A"}
             </td>
           </tr>
 
@@ -37,7 +37,7 @@ const SampleDetailsSection = ({ SampleData }) => {
               Product Name
             </td>
             <td className="px-2 py-1 border-r border-[#d8b76a]">
-              {SampleData.product?.name || "-"}
+              {SampleData.product?.name || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
               Date
@@ -72,6 +72,7 @@ const SampleDetailsSection = ({ SampleData }) => {
               Width (Inch)
             </th>
             <th className="px-2 py-1 border-r border-[#d8b76a]">Quantity</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Weight</th>
             <th className="px-2 py-1 border-r border-[#d8b76a]">Rate (₹)</th>
             {/* <th className="px-2 py-1 border-r border-[#d8b76a]">UOM</th> */}
           </tr>
@@ -84,31 +85,34 @@ const SampleDetailsSection = ({ SampleData }) => {
                   {idx + 1}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.skuCode || "-"}
+                  {item.skuCode || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.itemName || "-"}
+                  {item.itemName || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.type || "-"}
+                  {item.type || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.partName || "-"}
+                  {item.partName || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.height || "-"}
+                  {item.height || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.width || "-"}
+                  {item.width || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.grams? `${item.grams/1000} kg` : item.qty || "-"}
+                  {item.qty || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.rate || "-"}
+                  {item.grams? `${item.grams/1000} kg` :  "N/A"}
+                </td>
+                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {item.rate || "N/A"}
                 </td>
                 {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.itemId?.UOM?.unit || "-"}
+                  {item.itemId?.UOM?.unit || "N/A"}
                 </td> */}
               </tr>
             ))
@@ -129,19 +133,19 @@ const SampleDetailsSection = ({ SampleData }) => {
               Stitching (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {SampleData.stitching || "-"}
+              {SampleData.stitching || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Print/Emb (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {SampleData.printing || "-"}
+              {SampleData.printing || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Others (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {SampleData.others || "-"}
+              {SampleData.others || "N/A"}
             </td>
           </tr>
           <tr className="border-b border-primary">
@@ -149,19 +153,19 @@ const SampleDetailsSection = ({ SampleData }) => {
               Unit Rate (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {SampleData.unitRate || "-"}
+              {SampleData.unitRate || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Unit B2B (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {SampleData.unitB2BRate || "-"}
+              {SampleData.unitB2BRate || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Unit D2C (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {SampleData.unitD2CRate || "-"}
+              {SampleData.unitD2CRate || "N/A"}
             </td>
           </tr>
         </tbody>

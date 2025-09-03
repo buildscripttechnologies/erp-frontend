@@ -20,13 +20,13 @@ const BomDetailsSection = ({ bomData }) => {
               Party Name
             </td>
             <td className="px-2 py-1 border-r border-[#d8b76a]">
-              {bomData.partyName || "-"}
+              {bomData.partyName || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
               Sample No.
             </td>
             <td className="px-2 py-1 border-r border-[#d8b76a]">
-              {bomData.sampleNo || "-"}
+              {bomData.sampleNo || "N/A"}
             </td>
           </tr>
           <tr className="border-b border-[#d8b76a]">
@@ -34,19 +34,19 @@ const BomDetailsSection = ({ bomData }) => {
               Order Qty
             </td>
             <td className="px-2 py-1 border-r border-[#d8b76a]">
-              {bomData.orderQty || "-"}
+              {bomData.orderQty || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
               BOM No.
             </td>
-            <td className="px-2 py-1">{bomData.bomNo || "-"}</td>
+            <td className="px-2 py-1">{bomData.bomNo || "N/A"}</td>
           </tr>
           <tr className="border-b border-[#d8b76a]">
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
               Product Name
             </td>
             <td className="px-2 py-1 border-r border-[#d8b76a]">
-              {bomData.productName || "-"}
+              {bomData.productName || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
               Date
@@ -81,6 +81,7 @@ const BomDetailsSection = ({ bomData }) => {
               Width (Inch)
             </th>
             <th className="px-2 py-1 border-r border-[#d8b76a]">Quantity</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">Weight</th>
             <th className="px-2 py-1 border-r border-[#d8b76a]">Rate (₹)</th>
             {/* <th className="px-2 py-1 border-r border-[#d8b76a]">UOM</th> */}
           </tr>
@@ -93,31 +94,34 @@ const BomDetailsSection = ({ bomData }) => {
                   {idx + 1}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.skuCode || "-"}
+                  {item.skuCode || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.itemName || "-"}
+                  {item.itemName || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.type || "-"}
+                  {item.type || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.partName || "-"}
+                  {item.partName || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.height || "-"}
+                  {item.height || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.width || "-"}
+                  {item.width || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.grams ? `${(item.grams)/1000} kg` : item.qty || "-"}
+                  {item.qty || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.rate || "-"}
+                  {item.grams ? `${item.grams / 1000} kg` : "N/A"}
+                </td>
+                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {item.rate || "N/A"}
                 </td>
                 {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.itemId?.UOM?.unit || "-"}
+                  {item.itemId?.UOM?.unit || "N/A"}
                 </td> */}
               </tr>
             ))
@@ -138,19 +142,19 @@ const BomDetailsSection = ({ bomData }) => {
               Stitching (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {bomData.stitching || "-"}
+              {bomData.stitching || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Print/Emb (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {bomData.printing || "-"}
+              {bomData.printing || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Others (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {bomData.others || "-"}
+              {bomData.others || "N/A"}
             </td>
           </tr>
           <tr className="border-b border-primary">
@@ -158,19 +162,19 @@ const BomDetailsSection = ({ bomData }) => {
               Unit Rate (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {bomData.unitRate || "-"}
+              {bomData.unitRate || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Unit B2B (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {bomData.unitB2BRate || "-"}
+              {bomData.unitB2BRate || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Unit D2C (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {bomData.unitD2CRate || "-"}
+              {bomData.unitD2CRate || "N/A"}
             </td>
           </tr>
           <tr className="border-b border-primary">
@@ -178,19 +182,19 @@ const BomDetailsSection = ({ bomData }) => {
               Total Rate (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {bomData.totalRate || "-"}
+              {bomData.totalRate || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Total B2B (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {bomData.totalB2BRate || "-"}
+              {bomData.totalB2BRate || "N/A"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Total D2C (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {bomData.totalD2CRate || "-"}
+              {bomData.totalD2CRate || "N/A"}
             </td>
           </tr>
         </tbody>

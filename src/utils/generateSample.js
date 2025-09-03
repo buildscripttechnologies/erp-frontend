@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getBase64ImageFromPDF } from "./convertPDFPageToImage"; // You need this util
+import { calculateRate } from "./calc";
 
 export const generateSample = async (SampleData) => {
   const doc = new jsPDF("portrait", "mm", "a4");
@@ -25,7 +26,7 @@ export const generateSample = async (SampleData) => {
 
   // --- Page 1 ---
   addBackground("first");
-  doc.setTextColor("white");
+  doc.setTextColor("black");
   doc.setFont("helvetica", "bold");
   doc.text(`${SampleData.sampleNo + " Details"}`, pageWidth / 2, 47, {
     align: "center",
@@ -39,6 +40,7 @@ export const generateSample = async (SampleData) => {
     margin: { left: margin },
     tableWidth: pageWidth - margin * 2, // full width
     theme: "grid",
+
     // head: [
     //   [
     //     {
@@ -52,14 +54,23 @@ export const generateSample = async (SampleData) => {
       // Row 1
       [
         { content: "Party Name:", styles: { fontStyle: "bold" } },
-        SampleData.partyName || "-",
-        { content: "Sample No.:", styles: { fontStyle: "bold" } },
-        SampleData.sampleNo || "-",
+        SampleData.partyName || "",
+        { content: "Product Name:", styles: { fontStyle: "bold" } },
+        SampleData.product.name || "",
       ],
       // Row 2
       [
-        { content: "Product Name:", styles: { fontStyle: "bold" } },
-        SampleData.product?.name || "-",
+        { content: "Order Qty:", styles: { fontStyle: "bold" } },
+        SampleData.orderQty || "",
+        { content: "Product Size:", styles: { fontStyle: "bold" } },
+        `${SampleData.height ?? 0}  x ${SampleData.width ?? 0} x ${
+          SampleData.depth ?? 0
+        } (In)` || "",
+      ],
+      // Row 3
+      [
+        { content: "Sample No.:", styles: { fontStyle: "bold" } },
+        SampleData.sampleNo || "",
         { content: "Date:", styles: { fontStyle: "bold" } },
         new Date(SampleData.date || Date.now()).toLocaleDateString("en-GB", {
           day: "2-digit",
@@ -74,6 +85,8 @@ export const generateSample = async (SampleData) => {
       halign: "left",
       valign: "middle",
       fillColor: false,
+      lineColor: [0, 0, 0], // border color black
+      lineWidth: 0.1,
     },
     headStyles: {
       fillColor: [216, 183, 106], // gold
@@ -93,31 +106,35 @@ export const generateSample = async (SampleData) => {
   doc.setFont("helvetica", "bold");
   doc.setFontSize("12");
   doc.setTextColor("#d8b76a");
-  doc.text("Product Details", margin, y + 23);
+  doc.text("Product Details", margin, y + 30);
 
   const tableBody = (SampleData.productDetails || []).map((item, index) => [
     index + 1,
-    item.skuCode || "-",
-    item.itemName || "-",
-    item.type || "-",
-    item.height || "-",
-    item.width || "-",
-    item.grams ? `${item.grams / 1000} kg` : item.qty || "",
-    item.rate || "-",
+    item.skuCode || "N/A",
+    item.itemName || "N/A",
+    item.category || "N/A",
+    item.partName || "N/A",
+    item.height || "N/A",
+    item.width || "N/A",
+    item.qty || "N/A",
+    item.grams ? `${item.grams / 1000} kg` : "N/A",
+    // item.rate || "N/A",
   ]);
 
   autoTable(doc, {
-    startY: y + 25,
+    startY: y + 32,
     head: [
       [
         "S. No.",
         "SKU Code",
         "Item Name",
-        "Type",
-        "Height (Inch)",
-        "Width (Inch)",
-        "Quantity",
-        "Rate",
+        "Category",
+        "Part Name",
+        "H (In)",
+        "W (In)",
+        "Qty",
+        "Weight",
+        // "Rate",
       ],
     ],
     body: tableBody,
@@ -127,24 +144,266 @@ export const generateSample = async (SampleData) => {
       textColor: "#292926",
       fillColor: false,
       halign: "left",
+      lineColor: [0, 0, 0], // border color black
+      lineWidth: 0.1,
     },
     headStyles: {
       fillColor: [216, 183, 106],
       textColor: [41, 41, 38],
       halign: "left",
       fontStyle: "bold",
-      lineColor: [216, 183, 106],
+      lineColor: [0, 0, 0], // border color black
       lineWidth: 0.1,
     },
     margin: { left: margin, right: margin },
   });
 
-  // --- Last Page (always lp2 second page) ---
-  doc.addPage();
-  addBackground("last");
-  doc.setTextColor("white");
+  // --- Raw Material Conjunction Table ---
+  // --- Raw Material Conjunction Table ---
   doc.setFont("helvetica", "bold");
-  doc.text(`${SampleData.bomNo}`, pageWidth / 2, 47, { align: "center" });
+  doc.setFontSize("12");
+  doc.setTextColor("#d8b76a");
+  doc.text("Raw Material Consumption", margin, doc.lastAutoTable.finalY + 10);
+
+  const mergedRawMaterials = {};
+  (SampleData.productDetails || []).forEach((item) => {
+    const sku = item.skuCode || "N/A";
+    const category = (item.category || "N/A").toLowerCase();
+    const qty = Number(item.qty) || 0;
+    const width = Number(item.width) || 0;
+    const height = Number(item.height) || 0;
+    const grams = Number(item.grams) || 0;
+
+    if (!mergedRawMaterials[sku]) {
+      mergedRawMaterials[sku] = {
+        skuCode: sku,
+        itemName: item.itemName || "N/A",
+        category: category,
+        qty: 0,
+        weight: 0,
+        attachments: item.attachments || [],
+      };
+    }
+
+    if (category === "zipper") {
+      // total inches = width * qty
+      const totalInches = width * qty;
+      const totalMeters = totalInches / 39.37;
+      mergedRawMaterials[sku].qty += totalMeters; // save in meters
+      // mergedRawMaterials[sku].qty += qty;
+    } else if (category === "fabric") {
+      const pieceWidth = Number(item.width) || 0;
+      const pieceHeight = Number(item.height) || 0;
+      const qty = Number(item.qty) || 0;
+      const panno = Number(item.panno) || 0;
+
+      if (pieceWidth && pieceHeight && qty && panno) {
+        // --- Orientation A ---
+        const perRowA = Math.floor(panno / pieceWidth);
+        const rowsA = perRowA > 0 ? Math.ceil(qty / perRowA) : Infinity;
+        const totalInchesA = rowsA * pieceHeight;
+
+        // --- Orientation B (rotated) ---
+        const perRowB = Math.floor(panno / pieceHeight);
+        const rowsB = perRowB > 0 ? Math.ceil(qty / perRowB) : Infinity;
+        const totalInchesB = rowsB * pieceWidth;
+
+        // pick better (smaller total inches)
+        const bestInches = Math.min(totalInchesA, totalInchesB);
+
+        const totalMeters = bestInches / 39.37;
+        mergedRawMaterials[sku].qty += totalMeters; // in meters
+      }
+    } else if (["plastic", "non woven", "ld cord"].includes(category)) {
+      // grams -> kg
+      mergedRawMaterials[sku].weight += grams / 1000;
+      mergedRawMaterials[sku].qty += qty;
+    } else if (
+      [
+        "slider",
+        "bidding",
+        "adjuster",
+        "buckel",
+        "dkadi",
+        "accessories",
+      ].includes(category)
+    ) {
+      // only qty
+      mergedRawMaterials[sku].qty += qty;
+    } else {
+      // fallback
+      mergedRawMaterials[sku].qty += qty;
+    }
+  });
+
+  // Build table rows
+  const rawMatTableBody = Object.values(mergedRawMaterials).map(
+    (item, index) => {
+      let weightDisplay = "N/A";
+      let qtyDisplay = "N/A";
+
+      if (["plastic", "non woven", "ld cord"].includes(item.category))
+        weightDisplay = `${item.weight.toFixed(2)} kg`;
+
+      if (["zipper", "fabric", "canvas", "cotton"].includes(item.category)) {
+        qtyDisplay = `${Number(item.qty).toFixed(2)} m`;
+      } else if (["plastic", "non woven", "ld cord"].includes(item.category)) {
+        qtyDisplay = "N/A";
+      } else if (
+        [
+          "slider",
+          "bidding",
+          "adjuster",
+          "buckel",
+          "dkadi",
+          "accessories",
+        ].includes(item.category)
+      ) {
+        qtyDisplay = item.qty;
+      }
+      return [
+        index + 1,
+        item.skuCode,
+        item.itemName,
+        item.category,
+        weightDisplay,
+        qtyDisplay,
+      ];
+    }
+  );
+
+  autoTable(doc, {
+    startY: doc.lastAutoTable.finalY + 12,
+    head: [["S. No.", "SKU Code", "Item Name", "Category", "Weight", "Qty"]],
+    body: rawMatTableBody,
+    theme: "grid",
+    styles: {
+      fontSize: 8,
+      textColor: "#292926",
+      fillColor: false,
+      halign: "left",
+      lineColor: [0, 0, 0],
+      lineWidth: 0.1,
+    },
+    headStyles: {
+      fillColor: [216, 183, 106],
+      textColor: [41, 41, 38],
+      halign: "left",
+      fontStyle: "bold",
+      lineColor: [0, 0, 0],
+      lineWidth: 0.1,
+    },
+    margin: { left: margin, right: margin },
+  });
+
+  // --- Always Last Page for Images ---
+  // --- Always Last Page for Images + BOM No ---
+  doc.addPage();
+  addBackground("last"); // background for last page
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor("#d8b76a");
+  doc.text("Material Images", pageWidth / 2, 10, { align: "center" });
+
+  const imageSize = 55; // square size in mm
+  const imagesPerRow = 3;
+  const padding = 15;
+  const startX = margin;
+  const startY = 15;
+  let x = startX;
+  y = startY;
+
+  // Ensure unique SKUs from conjunction table
+  const uniqueItemsMap = new Map();
+  for (const item of Object.values(mergedRawMaterials)) {
+    if (!uniqueItemsMap.has(item.skuCode)) {
+      uniqueItemsMap.set(item.skuCode, item);
+    }
+  }
+
+  // Render images
+  for (const item of uniqueItemsMap.values()) {
+    console.log("item", item);
+
+    if (item.attachments && item.attachments.length > 0) {
+      const att = item.attachments[0]; // pick first attachment
+      console.log("att", att);
+
+      try {
+        const img = await fetch(att.fileUrl)
+          .then((res) => res.blob())
+          .then(
+            (blob) =>
+              new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+              })
+          );
+
+        const addContainImage = (doc, img, x, y, boxSize) => {
+          return new Promise((resolve) => {
+            const image = new Image();
+            image.onload = () => {
+              const ratio = Math.min(
+                boxSize / image.width,
+                boxSize / image.height
+              );
+              const displayWidth = image.width * ratio;
+              const displayHeight = image.height * ratio;
+
+              const offsetX = x + (boxSize - displayWidth) / 2;
+              const offsetY = y + (boxSize - displayHeight) / 2;
+
+              doc.addImage(
+                img,
+                "PNG",
+                offsetX,
+                offsetY,
+                displayWidth,
+                displayHeight
+              );
+              resolve();
+            };
+            image.src = img;
+          });
+        };
+
+        // Add image
+        await addContainImage(doc, img, x, y, imageSize);
+
+        // Add SKU Code below image
+        doc.setFontSize(8);
+        doc.setTextColor("#000000");
+        doc.text(item.skuCode || "N/A", x + imageSize / 2, y + imageSize + 5, {
+          align: "center",
+        });
+
+        // Update cursor
+        x += imageSize + padding;
+        if (x + imageSize > pageWidth - margin) {
+          x = startX;
+          y += imageSize + 20; // move to next row
+        }
+
+        // If row doesn't fit on page → add new page
+        if (y + imageSize > pageHeight - margin) {
+          doc.addPage();
+          addBackground("last");
+          doc.setTextColor("white");
+          doc.text(`${SampleData.bomNo}`, pageWidth / 2, 47, {
+            align: "center",
+          });
+
+          // reset cursor
+          x = startX;
+          y = startY;
+        }
+      } catch (err) {
+        console.error("Image load error:", att.fileUrl, err);
+      }
+    }
+  }
 
   // Return blob url
   const pdfBlob = doc.output("blob");

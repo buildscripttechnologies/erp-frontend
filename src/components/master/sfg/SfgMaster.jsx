@@ -107,8 +107,9 @@ const renderNestedMaterials = (
           <td className={`px-2 border-r ${border}`}>{mat.height}</td>
           <td className={`px-2 border-r ${border}`}>{mat.width}</td>
 
+          <td className={`px-2 border-r ${border}`}>{mat.qty}</td>
           <td className={`px-2 border-r ${border}`}>
-            {mat.grams ? `${mat.grams/1000} kg` : mat.qty}
+            {mat.grams ? `${mat.grams / 1000} kg` : "N/A"}
           </td>
           <td className={`px-2 rounded-br-sm `}>{mat.rate}</td>
         </tr>
@@ -139,6 +140,7 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">Height (Inch)</th>
                         <th className="px-2 font-semibold">Width (Inch)</th>
                         <th className="px-2 font-semibold ">Qty</th>
+                        <th className="px-2 font-semibold ">Weight</th>
                         <th className="px-2 font-semibold rounded-tr-sm">
                           Rate
                         </th>
@@ -196,6 +198,7 @@ const renderNestedMaterials = (
                         <th className="px-2 font-semibold">Height (Inch)</th>
                         <th className="px-2 font-semibold">Width (Inch)</th>
                         <th className="px-2 font-semibold">Qty</th>
+                        <th className="px-2 font-semibold">Weight</th>
                         <th className="px-2 font-semibold">Rate</th>
                       </tr>
                     </thead>
@@ -675,6 +678,9 @@ const SfgMaster = ({ isOpen }) => {
                                       </th>
                                       <th className="px-2 font-semibold">
                                         Qty
+                                      </th>
+                                      <th className="px-2 font-semibold">
+                                        Weight
                                       </th>
                                       <th className="px-2 font-semibold">
                                         Rate

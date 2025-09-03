@@ -176,7 +176,7 @@ const RmMaster = ({ isOpen }) => {
       const res = await axios.delete(`/rms/delete-rm/${id}`);
       if (res.status == 200) {
         toast.success("Raw material deleted successfully");
-        fetchRawMaterials(); // reload list
+        fetchRawMaterials(pagination.currentPage); // reload list
       } else {
         toast.error("Failed to delete raw material");
       }

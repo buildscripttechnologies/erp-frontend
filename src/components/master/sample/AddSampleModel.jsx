@@ -221,11 +221,12 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
         const category = (comp.category || "").toLowerCase();
 
         if (["plastic", "non woven", "ld cord"].includes(category)) {
-          const grams = (Number(comp.tempQty) || 0) * newValue;
+          const grams = (Number(comp.tempGrams) || 0) * newValue;
+          const qty = (Number(comp.tempQty) || 1) * newValue;
           return {
             ...comp,
             grams,
-            qty: newValue,
+            qty: qty,
             rate: calculateRate({ ...comp, grams }, newValue),
           };
         } else {
@@ -250,9 +251,11 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
     const comp = updated[index];
     const orderQty = Number(form.orderQty) || 1;
 
-    if (field === "qty" || field === "grams") {
+    if (field === "qty") {
       // user is entering per-unit qty or per-unit grams
       comp.tempQty = Number(value) || 0;
+    } else if (field === "grams") {
+      comp.tempGrams = Number(value) || 0;
     } else {
       comp[field] = value;
     }
@@ -261,8 +264,10 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
 
     if (["plastic", "non woven", "ld cord"].includes(category)) {
       // scale grams with orderQty
-      comp.grams = (comp.tempQty || 0) * orderQty;
-      comp.qty = orderQty; // qty here is just "number of orders"
+      comp.grams = (comp.tempGrams || 0) * orderQty;
+      // console.log("comp gram", comp.grams, comp.qty);
+
+      comp.qty = (comp.tempQty || 0) * orderQty; // qty here is just "number of orders"
     } else {
       // all other categories → qty = tempQty × orderQty
       comp.qty = (comp.tempQty || 0) * orderQty;
@@ -447,6 +452,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                     qty: item.qty || 0,
                     category: item.category || "",
                     grams: item.grams || 0,
+                    tempGrams: item.grams || 0,
                     height: item.height || "",
                     width: item.width || "",
                     rate: item.rate || "",
@@ -592,7 +598,14 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                       key={index}
                       className="border border-[#d8b76a] rounded p-3 flex flex-col gap-2"
                     >
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
+                      <div
+                        className={`grid grid-cols-1 sm:grid-cols-2 ${
+                          comp.category == "plastic" ||
+                          comp.category == "non woven"
+                            ? "md:grid-cols-8"
+                            : "md:grid-cols-7"
+                        } md:grid-cols-8 gap-3`}
+                      >
                         {/* Component Field - span 2 columns on medium+ screens */}
                         <div className="flex flex-col md:col-span-2">
                           <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
@@ -624,6 +637,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                               );
                               updateComponent(index, "category", e.category);
                               updateComponent(index, "baseQty", e.baseQty);
+                              updateComponent(index, "qty", e.qty);
                               updateComponent(index, "itemRate", e.itemRate);
                             }}
                             styles={{
@@ -646,8 +660,8 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                           "partName",
                           "height",
                           "width",
-                          "grams",
                           "qty",
+                          "grams",
                           "rate",
                         ].map((field) => {
                           // Hide based on category
@@ -664,14 +678,14 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                           )
                             return null;
 
-                          if (
-                            ["plastic", "non woven", "ld cord"].includes(
-                              comp.category?.toLowerCase()
-                            ) &&
-                            field === "qty"
-                          ) {
-                            return null; // hide qty
-                          }
+                          // if (
+                          //   ["plastic", "non woven", "ld cord"].includes(
+                          //     comp.category?.toLowerCase()
+                          //   ) &&
+                          //   field === "qty"
+                          // ) {
+                          //   return null; // hide qty
+                          // }
                           if (
                             !["plastic", "non woven", "ld cord"].includes(
                               comp.category?.toLowerCase()
