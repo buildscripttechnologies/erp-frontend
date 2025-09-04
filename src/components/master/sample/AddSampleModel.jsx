@@ -7,6 +7,7 @@ import { FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import { capitalize } from "lodash";
 import { calculateRate } from "../../../utils/calc";
+import { generateConsumptionTable } from "../../../utils/consumptionTable";
 
 const AddSampleModal = ({ onClose, onSuccess }) => {
   const [form, setForm] = useState({
@@ -91,6 +92,9 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
       category: rm.itemCategory,
       baseQty: rm.baseQty,
       itemRate: rm.rate,
+      panno: rm.panno,
+      itemName: rm.itemName,
+      skuCode: rm.skuCode,
     })),
     ...sfgs.map((sfg) => ({
       label: `${sfg.skuCode}: ${sfg.itemName}${
@@ -288,16 +292,19 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
         type: "",
         category: "",
         tempQty: 0,
+        tempGrams: 0,
         qty: 0,
         grams: 0,
         partName: "",
         height: 0,
         width: 0,
-        // depth: 0,
+        panno: 0,
         rate: 0,
         label: "",
         baseQty: 0,
         itemRate: 0,
+        itemName: "",
+        skuCode: "",
       },
     ]);
   };
@@ -326,8 +333,12 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
     //   return toast.error("Please fill or remove all incomplete RM/SFG rows");
     // }
     try {
+      const consumptionTable = generateConsumptionTable(productDetails);
       const formData = new FormData();
-      formData.append("data", JSON.stringify({ ...form, productDetails }));
+      formData.append(
+        "data",
+        JSON.stringify({ ...form, productDetails, consumptionTable })
+      );
       files.forEach((f) => formData.append("files", f));
 
       const res = await axios.post("/samples/add", formData, {
@@ -460,6 +471,8 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                     partName: item.partName || "",
                     baseQty: item.baseQty || 0,
                     itemRate: item.itemRate || 0,
+                    itemName: item.itemName || "",
+                    skuCode: item.skuCode || "",
                     // depth: item.depth || "",
                     label: `${item.skuCode}: ${item.itemName}${
                       item.description ? ` - ${item.description}` : ""
@@ -639,6 +652,8 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                               updateComponent(index, "baseQty", e.baseQty);
                               updateComponent(index, "qty", e.qty);
                               updateComponent(index, "itemRate", e.itemRate);
+                              updateComponent(index, "itemName", e.itemName);
+                              updateComponent(index, "skuCode", e.skuCode);
                             }}
                             styles={{
                               control: (base, state) => ({

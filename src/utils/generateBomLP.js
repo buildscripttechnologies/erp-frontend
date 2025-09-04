@@ -69,7 +69,7 @@ export const generateBomLP = async (bomData) => {
       ],
       // Row 3
       [
-        { content: "Sample No.:", styles: { fontStyle: "bold" } },
+        { content: "SMP / FG No.:", styles: { fontStyle: "bold" } },
         bomData.sampleNo || "",
         { content: "Date:", styles: { fontStyle: "bold" } },
         new Date(bomData.date || Date.now()).toLocaleDateString("en-GB", {
@@ -159,123 +159,31 @@ export const generateBomLP = async (bomData) => {
   });
 
   // --- Raw Material Conjunction Table ---
-  // --- Raw Material Conjunction Table ---
+  // --- Consumption Table ---
   doc.setFont("helvetica", "bold");
-  doc.setFontSize("12");
+  doc.setFontSize(12);
   doc.setTextColor("#d8b76a");
-  doc.text("Raw Material Consumption", margin, doc.lastAutoTable.finalY + 10);
+  doc.text(
+    "Raw Material Conjunction Table",
+    margin,
+    doc.lastAutoTable.finalY + 10
+  );
 
-  const mergedRawMaterials = {};
-  (bomData.productDetails || []).forEach((item) => {
-    const sku = item.skuCode || "N/A";
-    const category = (item.category || "N/A").toLowerCase();
-    const qty = Number(item.qty) || 0;
-    const width = Number(item.width) || 0;
-    const height = Number(item.height) || 0;
-    const grams = Number(item.grams) || 0;
-
-    if (!mergedRawMaterials[sku]) {
-      mergedRawMaterials[sku] = {
-        skuCode: sku,
-        itemName: item.itemName || "N/A",
-        category: category,
-        qty: 0,
-        weight: 0,
-        attachments: item.attachments || [],
-      };
-    }
-
-    if (category === "zipper") {
-      // total inches = width * qty
-      const totalInches = width * qty;
-      const totalMeters = totalInches / 39.37;
-      mergedRawMaterials[sku].qty += totalMeters; // save in meters
-      // mergedRawMaterials[sku].qty += qty;
-    } else if (category === "fabric") {
-      const pieceWidth = Number(item.width) || 0;
-      const pieceHeight = Number(item.height) || 0;
-      const qty = Number(item.qty) || 0;
-      const panno = Number(item.panno) || 0;
-
-      if (pieceWidth && pieceHeight && qty && panno) {
-        // --- Orientation A ---
-        const perRowA = Math.floor(panno / pieceWidth);
-        const rowsA = perRowA > 0 ? Math.ceil(qty / perRowA) : Infinity;
-        const totalInchesA = rowsA * pieceHeight;
-
-        // --- Orientation B (rotated) ---
-        const perRowB = Math.floor(panno / pieceHeight);
-        const rowsB = perRowB > 0 ? Math.ceil(qty / perRowB) : Infinity;
-        const totalInchesB = rowsB * pieceWidth;
-
-        // pick better (smaller total inches)
-        const bestInches = Math.min(totalInchesA, totalInchesB);
-
-        const totalMeters = bestInches / 39.37;
-        mergedRawMaterials[sku].qty += totalMeters; // in meters
-      }
-    } else if (["plastic", "non woven", "ld cord"].includes(category)) {
-      // grams -> kg
-      mergedRawMaterials[sku].weight += grams / 1000;
-      mergedRawMaterials[sku].qty += qty;
-    } else if (
-      [
-        "slider",
-        "bidding",
-        "adjuster",
-        "buckel",
-        "dkadi",
-        "accessories",
-      ].includes(category)
-    ) {
-      // only qty
-      mergedRawMaterials[sku].qty += qty;
-    } else {
-      // fallback
-      mergedRawMaterials[sku].qty += qty;
-    }
-  });
-
-  // Build table rows
-  const rawMatTableBody = Object.values(mergedRawMaterials).map(
-    (item, index) => {
-      let weightDisplay = "N/A";
-      let qtyDisplay = "N/A";
-
-      if (["plastic", "non woven", "ld cord"].includes(item.category))
-        weightDisplay = `${item.weight.toFixed(2)} kg`;
-
-      if (["zipper", "fabric", "canvas", "cotton"].includes(item.category)) {
-        qtyDisplay = `${Number(item.qty).toFixed(2)} m`;
-      } else if (["plastic", "non woven", "ld cord"].includes(item.category)) {
-        qtyDisplay = "N/A";
-      } else if (
-        [
-          "slider",
-          "bidding",
-          "adjuster",
-          "buckel",
-          "dkadi",
-          "accessories",
-        ].includes(item.category)
-      ) {
-        qtyDisplay = item.qty;
-      }
-      return [
-        index + 1,
-        item.skuCode,
-        item.itemName,
-        item.category,
-        weightDisplay,
-        qtyDisplay,
-      ];
-    }
+  const consumptionBody = (bomData.consumptionTable || []).map(
+    (item, index) => [
+      index + 1,
+      item.skuCode || "N/A",
+      item.itemName || "N/A",
+      item.category || "N/A",
+      item.weight || "N/A",
+      item.qty || "N/A",
+    ]
   );
 
   autoTable(doc, {
     startY: doc.lastAutoTable.finalY + 12,
     head: [["S. No.", "SKU Code", "Item Name", "Category", "Weight", "Qty"]],
-    body: rawMatTableBody,
+    body: consumptionBody,
     theme: "grid",
     styles: {
       fontSize: 8,
@@ -296,7 +204,6 @@ export const generateBomLP = async (bomData) => {
     margin: { left: margin, right: margin },
   });
 
-  // --- Always Last Page for Images ---
   // --- Always Last Page for Images + BOM No ---
   doc.addPage();
   addBackground("last"); // background for last page
@@ -306,29 +213,35 @@ export const generateBomLP = async (bomData) => {
   doc.text("Material Images", pageWidth / 2, 10, { align: "center" });
 
   const imageSize = 55; // square size in mm
-  const imagesPerRow = 3;
   const padding = 15;
   const startX = margin;
   const startY = 15;
   let x = startX;
   y = startY;
 
-  // Ensure unique SKUs from conjunction table
-  const uniqueItemsMap = new Map();
-  for (const item of Object.values(mergedRawMaterials)) {
-    if (!uniqueItemsMap.has(item.skuCode)) {
-      uniqueItemsMap.set(item.skuCode, item);
+  // Build a map of skuCode → attachments from productDetails
+  const attachmentMap = new Map();
+  (bomData.productDetails || []).forEach((pd) => {
+    if (pd.skuCode && pd.attachments && pd.attachments.length > 0) {
+      attachmentMap.set(pd.skuCode, pd.attachments);
     }
-  }
+  });
+
+  // Ensure unique SKUs from consumption table
+  const uniqueItems = [];
+  const seen = new Set();
+  (bomData.consumptionTable || []).forEach((item) => {
+    if (!seen.has(item.skuCode)) {
+      seen.add(item.skuCode);
+      uniqueItems.push(item);
+    }
+  });
 
   // Render images
-  for (const item of uniqueItemsMap.values()) {
-    console.log("item", item);
-
-    if (item.attachments && item.attachments.length > 0) {
-      const att = item.attachments[0]; // pick first attachment
-      console.log("att", att);
-
+  for (const item of uniqueItems) {
+    const attachments = attachmentMap.get(item.skuCode) || [];
+    if (attachments.length > 0) {
+      const att = attachments[0]; // pick first attachment
       try {
         const img = await fetch(att.fileUrl)
           .then((res) => res.blob())
@@ -341,6 +254,7 @@ export const generateBomLP = async (bomData) => {
               })
           );
 
+        // Function to add image in "contain" style
         const addContainImage = (doc, img, x, y, boxSize) => {
           return new Promise((resolve) => {
             const image = new Image();

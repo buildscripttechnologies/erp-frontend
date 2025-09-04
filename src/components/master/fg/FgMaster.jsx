@@ -92,9 +92,8 @@ const renderNestedMaterials = (
             {mat.description || "-"}
           </td>
           <td className={`px-2 border-r ${border}`}>{mat.type || "-"}</td>
-          <td className={`px-2 border-r ${border}`}>
-            {mat.hsnOrSac || mat.hsnSac || "-"}
-          </td>
+          <td className={`px-2 border-r ${border}`}>{mat.category || "-"}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.partName || "-"}</td>
           <td className={`px-2 border-r ${border}`}>
             {mat.stockUOM || mat.uom || "-"}
           </td>
@@ -132,7 +131,8 @@ const renderNestedMaterials = (
                           Description
                         </th>
                         <th className="px-2 font-semibold">Type</th>
-                        <th className="px-2 font-semibold">HSN/SAC</th>
+                        <th className="px-2 font-semibold">Category</th>
+                        <th className="px-2 font-semibold">Part Name</th>
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
@@ -190,7 +190,8 @@ const renderNestedMaterials = (
                           Description
                         </th>
                         <th className="px-2 font-semibold">Type</th>
-                        <th className="px-2 font-semibold">HSN/SAC</th>
+                        <th className="px-2 font-semibold">Category</th>
+                        <th className="px-2 font-semibold">Part Name</th>
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
@@ -643,7 +644,10 @@ const FgMaster = ({ isOpen }) => {
                                         Type
                                       </th>
                                       <th className="px-2 font-semibold">
-                                        HSN/SAC
+                                        Category
+                                      </th>
+                                      <th className="px-2 font-semibold">
+                                        Part Name
                                       </th>
                                       <th className="px-2 font-semibold">
                                         UOM

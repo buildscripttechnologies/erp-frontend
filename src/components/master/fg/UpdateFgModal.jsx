@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
 import { FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
@@ -15,6 +15,23 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
   const [existingFiles, setExistingFiles] = useState(fg.files || []);
   const [deletedFileIds, setDeletedFileIds] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
+
+  const [editSku, setEditSku] = useState(false);
+
+  const skuCodeRef = useRef(null);
+
+  const handleSkuChange = () => {
+    setEditSku(true); // make editSku true
+    setTimeout(() => {
+      if (skuCodeRef.current) {
+        skuCodeRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        skuCodeRef.current.focus();
+      }
+    }, 100); // small delay to ensure UI updates
+  };
 
   useEffect(() => {
     const fetchDropdowns = async () => {
@@ -117,6 +134,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         indirectExpense: fg.indirectExpense,
         file: [],
         materials: mappedMaterials,
+        isSample: fg.isSample,
       });
     }
   }, [fg]);
@@ -346,6 +364,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         companyOverHead: form.companyOverHead,
         indirectExpense: form.indirectExpense,
         rm,
+        isSample: editSku ? false : true,
         sfg: sfgNested,
         deletedFiles: deletedFileIds,
       };
@@ -409,13 +428,23 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
       <div className="bg-white w-[95vw] max-w-4xl p-6 rounded-lg border border-primary overflow-y-auto max-h-[90vh]">
-        <h2 className="text-xl font-bold mb-4 text-primary">Edit FG Item</h2>
+        <div className="text-xl flex flex-wrap justify-between font-bold mb-4 text-primary">
+          <h2>Edit FG Item</h2>{" "}
+          {form.isSample ? (
+            <span className="bg-primary text-secondary text-base px-2 py-1 rounded">
+              Sample Product
+            </span>
+          ) : (
+            ""
+          )}
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div className="flex flex-col">
               <label className="font-semibold mb-1">Sku Code</label>
               <input
-                disabled
+                disabled={!editSku}
+                ref={skuCodeRef}
                 name="skuCode"
                 placeholder="Sku Code"
                 value={form.skuCode}
@@ -1037,28 +1066,45 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
             </div>
           </div>
 
-          <div className="flex justify-end gap-4 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2 bg-gray-300 cursor-pointer hover:bg-gray-400 text-secondary rounded"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-2 bg-primary cursor-pointer flex justify-center items-center hover:bg-primary/80 text-secondary font-semibold rounded"
-            >
-              {loading ? (
-                <>
-                  <span className="mr-2">Saving...</span>
-                  <ClipLoader size={20} color="#292926" />
-                </>
-              ) : (
-                "Update"
-              )}
-            </button>
+          <div
+            className={`flex ${
+              form.isSample ? "justify-between" : "justify-end"
+            } gap-4 `}
+          >
+            {form.isSample ? (
+              <button
+                onClick={handleSkuChange}
+                type="button"
+                className="px-6 py-2 bg-primary cursor-pointer flex justify-center items-center hover:bg-primary/80 text-secondary font-semibold rounded"
+              >
+                Convert to FG
+              </button>
+            ) : (
+              ""
+            )}
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-5 py-2 bg-gray-300 cursor-pointer hover:bg-gray-400 text-secondary rounded"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-6 py-2 bg-primary cursor-pointer flex justify-center items-center hover:bg-primary/80 text-secondary font-semibold rounded"
+              >
+                {loading ? (
+                  <>
+                    <span className="mr-2">Saving...</span>
+                    <ClipLoader size={20} color="#292926" />
+                  </>
+                ) : (
+                  "Update"
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>

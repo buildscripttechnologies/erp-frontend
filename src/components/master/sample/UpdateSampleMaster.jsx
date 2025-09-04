@@ -7,6 +7,7 @@ import { FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import { capitalize } from "lodash";
 import { calculateRate } from "../../../utils/calc";
+import { generateConsumptionTable } from "../../../utils/consumptionTable";
 
 const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
   const [form, setForm] = useState({
@@ -302,10 +303,13 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
     //   return toast.error("Please fill or remove all incomplete RM/SFG rows");
     // }
     try {
+      const consumptionTable = generateConsumptionTable(productDetails);
+
       const formData = new FormData();
       const payload = {
         ...form,
         productDetails: productDetails.map(({ label, ...rest }) => rest),
+        consumptionTable,
         deletedFiles,
       };
       formData.append("data", JSON.stringify(payload));

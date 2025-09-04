@@ -7,6 +7,7 @@ import { FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import { capitalize } from "lodash";
 import { calculateRate } from "../../../utils/calc";
+import { generateConsumptionTable } from "../../../utils/consumptionTable";
 
 const AddBomModal = ({ onClose, onSuccess }) => {
   const [form, setForm] = useState({
@@ -91,6 +92,9 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       category: rm.itemCategory,
       baseQty: rm.baseQty,
       itemRate: rm.rate,
+      panno: rm.panno,
+      itemName: rm.itemName,
+      skuCode: rm.skuCode,
     })),
     ...sfgs.map((sfg) => ({
       label: `${sfg.skuCode}: ${sfg.itemName}${
@@ -297,11 +301,13 @@ const AddBomModal = ({ onClose, onSuccess }) => {
         partName: "",
         height: 0,
         width: 0,
-        // depth: 0,
+        panno: 0,
         rate: 0,
         label: "",
         baseQty: 0,
         itemRate: 0,
+        itemName: "",
+        skuCode: "",
       },
     ]);
   };
@@ -330,8 +336,14 @@ const AddBomModal = ({ onClose, onSuccess }) => {
     //   return toast.error("Please fill or remove all incomplete RM/SFG rows");
     // }
     try {
+      const consumptionTable = generateConsumptionTable(productDetails);
+      console.log("table", consumptionTable);
+
       const formData = new FormData();
-      formData.append("data", JSON.stringify({ ...form, productDetails }));
+      formData.append(
+        "data",
+        JSON.stringify({ ...form, productDetails, consumptionTable })
+      );
       files.forEach((f) => formData.append("files", f));
 
       const res = await axios.post("/boms/add", formData, {
@@ -412,7 +424,8 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                       selectedProduct.itemName ||
                       selectedProduct.product.name ||
                       "",
-                    sampleNo: selectedProduct.sampleNo,
+                    sampleNo:
+                      selectedProduct.sampleNo || selectedProduct.skuCode,
                     partyName: selectedProduct.partyName || "",
                     orderQty: selectedProduct.orderQty || 1,
                     height: selectedProduct.height || 0,
@@ -460,12 +473,14 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                     grams: item.grams || 0,
                     height: item.height || "",
                     width: item.width || "",
+                    panno: item.panno || 0,
                     rate: item.rate || "",
                     sqInchRate: item.sqInchRate || "",
                     partName: item.partName || "",
                     baseQty: item.baseQty || 0,
                     itemRate: item.itemRate || 0,
-                    // depth: item.depth || "",
+                    itemName: item.itemName || "",
+                    skuCode: item.skuCode || "",
                     label: `${item.skuCode}: ${item.itemName}${
                       item.description ? ` - ${item.description}` : ""
                     }`,
@@ -633,10 +648,13 @@ const AddBomModal = ({ onClose, onSuccess }) => {
                           updateComponent(index, "type", e.type);
                           updateComponent(index, "label", e.label);
                           updateComponent(index, "sqInchRate", e.sqInchRate);
+                          updateComponent(index, "panno", e.panno);
                           updateComponent(index, "category", e.category);
                           updateComponent(index, "baseQty", e.baseQty);
                           updateComponent(index, "qty", e.qty);
                           updateComponent(index, "itemRate", e.itemRate);
+                          updateComponent(index, "itemName", e.itemName);
+                          updateComponent(index, "skuCode", e.skuCode);
                         }}
                         styles={{
                           control: (base, state) => ({

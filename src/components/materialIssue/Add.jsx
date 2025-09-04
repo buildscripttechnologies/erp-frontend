@@ -12,6 +12,9 @@ const Add = ({ onClose, onAdded }) => {
   const [boms, setBoms] = useState([]);
   const [users, setUsers] = useState([]);
   const [itemDetails, setItemDetails] = useState(null);
+  const [consumptionTable, setConsumptionTable] = useState(null);
+  const [checkedSkus, setCheckedSkus] = useState([]);
+
   const [editIndex, setEditIndex] = useState(null);
   // multiple items state
   const [poItems, setPoItems] = useState([]);
@@ -38,16 +41,16 @@ const Add = ({ onClose, onAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setLoading(true);
+
     try {
       const payload = {
         bom: selectedItem.b._id,
         bomNo: selectedItem.b.bomNo,
-        itemDetails: itemDetails,
+        itemDetails,
+        consumptionTable, // already has isChecked, stockQty, type
       };
-
-      //   console.log("payload", payload);
+      console.log("payload", payload);
 
       const res = await axios.post("/mi/add", payload);
       if (res.data.status === 403) {
@@ -69,6 +72,16 @@ const Add = ({ onClose, onAdded }) => {
     label: `${b.bomNo} - ${b.productName} `,
     b: b,
   }));
+
+  const filteredDetails = checkedSkus.flatMap((sku) =>
+    itemDetails.filter((pd) => pd.skuCode === sku)
+  );
+
+  const parseValue = (val) => {
+    if (!val || val === "N/A") return 0;
+    const num = parseFloat(val.replace(/[^0-9.]/g, ""));
+    return isNaN(num) ? 0 : parseFloat(num.toFixed(2));
+  };
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
@@ -93,6 +106,21 @@ const Add = ({ onClose, onAdded }) => {
                   setSelectedItem(item);
                   const actualItem = item.b;
                   setItemDetails(actualItem.productDetails);
+                  // build enhanced consumption table
+                  const enhanced = (actualItem.consumptionTable || []).map(
+                    (c) => {
+                      const match = actualItem.productDetails.find(
+                        (d) => d.skuCode === c.skuCode
+                      );
+                      return {
+                        ...c,
+                        type: match?.type || null,
+                        stockQty: match?.stockQty || 0,
+                        isChecked: false,
+                      };
+                    }
+                  );
+                  setConsumptionTable(enhanced);
                 }}
                 placeholder="Item Name or SKU"
                 isSearchable
@@ -108,8 +136,153 @@ const Add = ({ onClose, onAdded }) => {
             </div>
           </div>
 
+          {/* Consumption Table */}
+          {consumptionTable && (
+            <div className="bg-white border border-[#d8b76a] rounded shadow pt-3  px-4  mb-4 text-[11px] text-[#292926]">
+              <h3 className="font-bold text-[#d8b76a] text-[14px] underline underline-offset-4 mb-2">
+                Raw Material Consumption
+              </h3>
+              <table className="w-full mb-4 text-[11px] border text-left">
+                <thead className="bg-[#d8b76a]/70">
+                  <tr>
+                    <th className="px-2 py-1 border-r border-[#d8b76a]">#</th>
+                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                      S. No.
+                    </th>
+                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                      Sku Code
+                    </th>
+                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                      Item Name
+                    </th>
+                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                      Category
+                    </th>
+                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                      Weight
+                    </th>
+                    <th className="px-2 py-1 border-r border-[#d8b76a]">Qty</th>
+                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                      Stock Qty
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {consumptionTable?.length > 0 ? (
+                    consumptionTable.map((item, idx) => (
+                      <tr key={idx} className="border-b border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                          <input
+                            type="checkbox"
+                            checked={item.isChecked}
+                            onChange={(e) => {
+                              const updated = [...consumptionTable];
+                              const currentRow = updated[idx];
+
+                              // Deduction from weight or qty
+                              let deduction = 0;
+                              if (
+                                currentRow.weight &&
+                                currentRow.weight !== "N/A"
+                              ) {
+                                deduction = parseValue(currentRow.weight);
+                              } else if (
+                                currentRow.qty &&
+                                currentRow.qty !== "N/A"
+                              ) {
+                                deduction = parseValue(currentRow.qty);
+                              }
+
+                              if (e.target.checked) {
+                                if (currentRow.stockQty < deduction) {
+                                  toast.error("Insufficient StockQty!");
+                                  return;
+                                }
+                                currentRow.isChecked = true;
+                                currentRow.stockQty = parseFloat(
+                                  (currentRow.stockQty - deduction).toFixed(2)
+                                );
+                                setCheckedSkus((prev) => [
+                                  ...prev,
+                                  currentRow.skuCode,
+                                ]);
+                              } else {
+                                currentRow.isChecked = false;
+                                currentRow.stockQty = parseFloat(
+                                  (currentRow.stockQty + deduction).toFixed(2)
+                                );
+                                setCheckedSkus((prev) =>
+                                  prev.filter(
+                                    (sku) => sku !== currentRow.skuCode
+                                  )
+                                );
+                              }
+
+                              updated[idx] = currentRow;
+                              setConsumptionTable(updated);
+                            }}
+                            className="accent-primary"
+                          />
+                        </td>
+                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                          {idx + 1}
+                        </td>
+                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                          {item.skuCode || "N/A"}
+                        </td>
+                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                          {item.itemName || "N/A"}
+                        </td>
+                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                          {item.category || "N/A"}
+                        </td>
+                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                          {item.weight || "N/A"}
+                        </td>
+                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                          {item.qty || "N/A"}
+                        </td>
+                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                          <span
+                            className={`px-2 py-0.5 rounded text-xs font-semibold ${(() => {
+                              const qtyVal =
+                                item.qty && item.qty !== "N/A"
+                                  ? parseFloat(
+                                      item.qty.replace(/[^0-9.]/g, "")
+                                    ) || 0
+                                  : 0;
+                              const weightVal =
+                                item.weight && item.weight !== "N/A"
+                                  ? parseFloat(
+                                      item.weight.replace(/[^0-9.]/g, "")
+                                    ) || 0
+                                  : 0;
+
+                              return (qtyVal && item.stockQty < qtyVal) ||
+                                (weightVal && item.stockQty < weightVal)
+                                ? "bg-red-200 "
+                                : "bg-green-100 ";
+                            })()}`}
+                          >
+                            {item.stockQty.toFixed(2)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td className="px-2 py-1 text-center" colSpan={8}>
+                        No product details available.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
           {/* Item details */}
-          {itemDetails && (
+          {checkedSkus.length > 0 && (
             <div className="bg-white border border-[#d8b76a] rounded shadow pt-3 pb-4 px-4  mb-2 text-[11px] text-[#292926]">
               {/* Product Details Table */}
               <h3 className="font-bold text-[#d8b76a] text-[14px] underline underline-offset-4 mb-2">
@@ -155,8 +328,8 @@ const Add = ({ onClose, onAdded }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {itemDetails.length > 0 ? (
-                    itemDetails.map((item, idx) => (
+                  {filteredDetails.length > 0 ? (
+                    filteredDetails.map((item, idx) => (
                       <tr key={idx} className="border-b border-[#d8b76a]">
                         <td className="px-2 py-1 border-r border-[#d8b76a]">
                           <input
@@ -204,10 +377,18 @@ const Add = ({ onClose, onAdded }) => {
                                 (u) => u.id === e.target.value
                               );
                               let updated = [...itemDetails];
-                              updated[idx].assignee = selectedUser
-                                ? selectedUser.id
-                                : null;
-                              setItemDetails(updated);
+
+                              // Find by unique _id
+                              const targetIndex = updated.findIndex(
+                                (pd) => pd._id === item._id
+                              );
+
+                              if (targetIndex !== -1) {
+                                updated[targetIndex].assignee = selectedUser
+                                  ? selectedUser.id
+                                  : null;
+                                setItemDetails(updated);
+                              }
                             }}
                           >
                             <option value="">Select</option>
