@@ -391,7 +391,7 @@ const EditRawMaterialModal = ({
           <div>
             <label className="block mb-1 font-medium">Stock Quantity</label>
             <input
-              disabled
+              // disabled
               type="number"
               placeholder="Stock Quantiy"
               value={formData.stockQty}

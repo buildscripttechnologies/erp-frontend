@@ -7,6 +7,7 @@ import { FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import { capitalize } from "lodash";
 import { calculateRate } from "../../../utils/calc";
+import { generateConsumptionTable } from "../../../utils/consumptionTable";
 
 const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
   const [form, setForm] = useState({
@@ -18,7 +19,8 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
     sampleData?.productDetails?.map((detail) => ({
       ...detail,
 
-      tempQty: detail.tempQty || detail.qty / (sampleData.orderQty || 1), // ✅ ensure tempQty
+      tempQty: detail.tempQty || detail.qty / (sampleData.orderQty || 1),
+      tempGrams: detail.tempGrams || detail.grams / sampleData.orderQty, // ✅ ensure tempQty
     })) || []
   );
 
@@ -199,11 +201,12 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
         const category = (comp.category || "").toLowerCase();
 
         if (["plastic", "non woven", "ld cord"].includes(category)) {
-          const grams = (Number(comp.tempQty) || 0) * newValue;
+          const grams = (Number(comp.tempGrams) || 0) * newValue;
+          const qty = (Number(comp.tempQty) || 1) * newValue;
           return {
             ...comp,
             grams,
-            qty: newValue,
+            qty: qty,
             rate: calculateRate({ ...comp, grams }, newValue),
           };
         } else {
@@ -228,19 +231,22 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
     const comp = updated[index];
     const orderQty = Number(form.orderQty) || 1;
 
-    if (field === "qty" || field === "grams") {
+    if (field === "qty") {
       // user is entering per-unit qty or per-unit grams
       comp.tempQty = Number(value) || 0;
+    } else if (field === "grams") {
+      comp.tempGrams = Number(value) || 0;
     } else {
       comp[field] = value;
     }
-
     const category = (comp.category || "").toLowerCase();
 
     if (["plastic", "non woven", "ld cord"].includes(category)) {
       // scale grams with orderQty
-      comp.grams = (comp.tempQty || 0) * orderQty;
-      comp.qty = orderQty; // qty here is just "number of orders"
+      comp.grams = (comp.tempGrams || 0) * orderQty;
+      comp.qty = (comp.tempQty || 0) * orderQty;
+      console.log("comp qty", comp.qty);
+      // qty here is just "number of orders"
     } else {
       // all other categories → qty = tempQty × orderQty
       comp.qty = (comp.tempQty || 0) * orderQty;
@@ -297,10 +303,13 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
     //   return toast.error("Please fill or remove all incomplete RM/SFG rows");
     // }
     try {
+      const consumptionTable = generateConsumptionTable(productDetails);
+
       const formData = new FormData();
       const payload = {
         ...form,
         productDetails: productDetails.map(({ label, ...rest }) => rest),
+        consumptionTable,
         deletedFiles,
       };
       formData.append("data", JSON.stringify(payload));
@@ -603,7 +612,13 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                   key={index}
                   className="border border-[#d8b76a] rounded p-3 flex flex-col gap-2"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
+                  <div
+                    className={`grid grid-cols-1 sm:grid-cols-2 ${
+                      comp.category == "plastic" || comp.category == "non woven"
+                        ? "md:grid-cols-8"
+                        : "md:grid-cols-7"
+                    } md:grid-cols-8 gap-3`}
+                  >
                     <div className="flex flex-col md:col-span-2">
                       <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
                         Component{" "}
@@ -625,6 +640,7 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                           updateComponent(index, "sqInchRate", e.sqInchRate);
                           updateComponent(index, "category", e.category);
                           updateComponent(index, "baseQty", e.baseQty);
+                          updateComponent(index, "qty", e.qty);
                           updateComponent(index, "itemRate", e.itemRate);
                         }}
                         styles={{
@@ -647,8 +663,8 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                       "partName",
                       "height",
                       "width",
-                      "grams",
                       "qty",
+                      "grams",
                       "rate",
                     ].map((field) => {
                       // Hide based on category
@@ -665,14 +681,14 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                       )
                         return null;
 
-                      if (
-                        ["plastic", "non woven", "ld cord"].includes(
-                          comp.category?.toLowerCase()
-                        ) &&
-                        field === "qty"
-                      ) {
-                        return null; // hide qty
-                      }
+                      // if (
+                      //   ["plastic", "non woven", "ld cord"].includes(
+                      //     comp.category?.toLowerCase()
+                      //   ) &&
+                      //   field === "qty"
+                      // ) {
+                      //   return null; // hide qty
+                      // }
                       if (
                         !["plastic", "non woven", "ld cord"].includes(
                           comp.category?.toLowerCase()

@@ -127,9 +127,7 @@ const BomMaster = ({ isOpen }) => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this BOM?")) return;
     try {
-      const res = await axios.patch(`/boms/edit/${id}`, {
-        isDeleted: true,
-      });
+      const res = await axios.delete(`/boms/delete/${id}`);
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
@@ -137,7 +135,7 @@ const BomMaster = ({ isOpen }) => {
 
       if (res.data.status == 200) {
         toast.success(`BOM Deleted Successfully`);
-        fetchBOMs();
+        fetchBOMs(pagination.currentPage);
       } else {
         toast.error("Failed to Delete BOM");
       }
@@ -253,7 +251,7 @@ const BomMaster = ({ isOpen }) => {
                   <th className="px-[8px] py-1.5 ">#</th>
                   <th className="px-[8px] ">Created At</th>
                   <th className="px-[8px] ">Updated At</th>
-                  <th className="px-[8px] ">Sample No.</th>
+                  <th className="px-[8px] ">SMP / FG No</th>
                   <th className="px-[8px] ">BOM No.</th>
                   <th className="px-[8px] ">Party Name</th>
                   <th className="px-[8px] ">Product Name</th>

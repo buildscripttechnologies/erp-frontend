@@ -4,7 +4,7 @@ export const calculateRate = (comp, qtyOverride = null) => {
   const qty = qtyOverride ?? (Number(comp.qty) || 0);
 
   // Fabric: uses height × width × qty × sqInchRate
-  if (category === "fabric") {
+  if (["fabric", "canvas", "cotton"].includes(category)) {
     const height = Number(comp.height) || 0;
     const width = Number(comp.width) || 0;
     const sqInchRate = Number(comp.sqInchRate) || 0;
@@ -36,11 +36,11 @@ export const calculateRate = (comp, qtyOverride = null) => {
   }
 
   // Plastic / Non-woven: calculate per gram
-  if (["plastic", "non woven","ld cord"].includes(category)) {
+  if (["plastic", "non woven", "ld cord"].includes(category)) {
     const grams = comp.grams || 0;
     const baseQtyKg = Number(comp.baseQty) || 1; // baseQty is in KG
     const baseQtyGrams = baseQtyKg * 1000;
-
+    const qty = Number(comp.qty) || 0;
     if (!grams || !baseQtyGrams || !comp.itemRate) return null;
 
     // Rate = proportion of grams relative to baseQty in grams × itemRate

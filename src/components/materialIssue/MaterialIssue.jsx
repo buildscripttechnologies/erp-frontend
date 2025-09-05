@@ -16,7 +16,6 @@ import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
 
-
 import MIdetails from "./Midetails";
 import UpdateMI from "./UpdateMI";
 import Add from "./Add";

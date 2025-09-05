@@ -92,9 +92,8 @@ const renderNestedMaterials = (
             {mat.description || "-"}
           </td>
           <td className={`px-2 border-r ${border}`}>{mat.type || "-"}</td>
-          <td className={`px-2 border-r ${border}`}>
-            {mat.hsnOrSac || mat.hsnSac || "-"}
-          </td>
+          <td className={`px-2 border-r ${border}`}>{mat.category || "-"}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.partName || "-"}</td>
           <td className={`px-2 border-r ${border}`}>
             {mat.stockUOM || mat.uom || "-"}
           </td>
@@ -104,8 +103,9 @@ const renderNestedMaterials = (
           <td className={`px-2 border-r ${border}`}>{mat.location || "-"}</td>
           <td className={`px-2 border-r ${border}`}>{mat.height || "-"}</td>
           <td className={`px-2 border-r ${border}`}>{mat.width || "-"}</td>
+          <td className={`px-2 border-r ${border}`}>{mat.qty || "-"}</td>
           <td className={`px-2 border-r ${border}`}>
-            {mat.grams ? `${mat.grams/1000} kg` : mat.qty || "-"}
+            {mat.grams ? `${mat.grams / 1000} kg` : "N/A"}
           </td>
           <td className={`px-2 rounded-br-sm `}>
             {Number(mat.rate).toFixed(2) || "-"}
@@ -131,13 +131,15 @@ const renderNestedMaterials = (
                           Description
                         </th>
                         <th className="px-2 font-semibold">Type</th>
-                        <th className="px-2 font-semibold">HSN/SAC</th>
+                        <th className="px-2 font-semibold">Category</th>
+                        <th className="px-2 font-semibold">Part Name</th>
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
                         <th className="px-2 font-semibold">Height (Inch)</th>
                         <th className="px-2 font-semibold">Width (Inch)</th>
                         <th className="px-2 font-semibold">Qty</th>
+                        <th className="px-2 font-semibold">Weight</th>
                         <th className="px-2 font-semibold rounded-tr-sm">
                           Rate (₹)
                         </th>
@@ -188,13 +190,15 @@ const renderNestedMaterials = (
                           Description
                         </th>
                         <th className="px-2 font-semibold">Type</th>
-                        <th className="px-2 font-semibold">HSN/SAC</th>
+                        <th className="px-2 font-semibold">Category</th>
+                        <th className="px-2 font-semibold">Part Name</th>
                         <th className="px-2 font-semibold">UOM</th>
                         <th className="px-2 font-semibold">Quality Insp.</th>
                         <th className="px-2 font-semibold">Location</th>
                         <th className="px-2 font-semibold">Height (Inch)</th>
                         <th className="px-2 font-semibold">Width (Inch)</th>
                         <th className="px-2 font-semibold">Qty</th>
+                        <th className="px-2 font-semibold">Weight</th>
                         <th className="px-2 font-semibold rounded-tr-sm">
                           Rate (₹)
                         </th>
@@ -640,7 +644,10 @@ const FgMaster = ({ isOpen }) => {
                                         Type
                                       </th>
                                       <th className="px-2 font-semibold">
-                                        HSN/SAC
+                                        Category
+                                      </th>
+                                      <th className="px-2 font-semibold">
+                                        Part Name
                                       </th>
                                       <th className="px-2 font-semibold">
                                         UOM
@@ -659,6 +666,9 @@ const FgMaster = ({ isOpen }) => {
                                       </th>
                                       <th className="px-2 font-semibold">
                                         Qty
+                                      </th>
+                                      <th className="px-2 font-semibold">
+                                        Weight
                                       </th>
                                       <th className="px-2 font-semibold">
                                         Rate (₹)
