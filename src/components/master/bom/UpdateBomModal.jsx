@@ -35,6 +35,12 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
   const [existingFiles, setExistingFiles] = useState(bom.file || []);
   const [deletedFiles, setDeletedFiles] = useState([]);
 
+  const [newPrintingFiles, setNewPrintingFiles] = useState([]);
+  const [existingPrintingFiles, setExistingPrintingFiles] = useState(
+    bom.printingFile || []
+  );
+  const [deletedPrintingFiles, setDeletedPrintingFiles] = useState([]);
+
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
@@ -276,6 +282,8 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
         label: "",
         baseQty: 0,
         itemRate: 0,
+        isPrint: false,
+        cuttingType: "",
       },
     ]);
   };
@@ -311,11 +319,15 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
         productDetails: productDetails.map(({ label, ...rest }) => rest),
         consumptionTable,
         deletedFiles,
+        deletedPrintingFiles,
       };
       formData.append("data", JSON.stringify(payload));
 
       newFiles.forEach((file) => {
         formData.append("files", file);
+      });
+      newPrintingFiles.forEach((file) => {
+        formData.append("printingFiles", file);
       });
 
       const res = await axios.patch(`/boms/update/${bom._id}`, formData, {
@@ -512,51 +524,111 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
               />
             </div>
             <div className="flex flex-col ">
-              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                Upload New Files
-              </label>
-              <input
-                type="file"
-                multiple
-                onChange={(e) => setNewFiles([...e.target.files])}
-                className="block text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2 my-2">
-            <h3 className="font-semibold text-[14px] mb-1 text-black">
-              Existing Files
-            </h3>
-            {existingFiles.length === 0 && (
-              <p className="text-sm text-gray-500">No files uploaded.</p>
-            )}
-
-            {existingFiles.map((file, idx) => (
-              <div
-                key={idx}
-                className="flex justify-between items-center bg-gray-100 px-3 py-1 rounded text-sm"
-              >
-                <a
-                  href={file.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#292926] underline break-all"
-                >
-                  {file.fileName}
-                </a>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDeletedFiles([...deletedFiles, file]);
-                    setExistingFiles(existingFiles.filter((_, i) => i !== idx));
-                  }}
-                  className="text-red-500 flex items-center gap-0.5 text-xs hover:underline cursor-pointer"
-                >
-                  <FiTrash2 /> Remove
-                </button>
+              <div className="">
+                <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                  Product Files
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) => setNewFiles([...e.target.files])}
+                  className="block w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
+                />
               </div>
-            ))}
+              <div className="flex flex-col  mt-2">
+                <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                  Existing Product Files
+                </label>
+                {existingFiles.length === 0 && (
+                  <p className="text-sm text-gray-500">
+                    No product files uploaded.
+                  </p>
+                )}
+
+                {existingFiles.map((file, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center bg-[#fdf6e9] border border-primary rounded p-1"
+                  >
+                    <a
+                      href={file.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#292926] underline break-all"
+                    >
+                      {file.fileName}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeletedFiles([...deletedFiles, file]);
+                        setExistingFiles(
+                          existingFiles.filter((_, i) => i !== idx)
+                        );
+                      }}
+                      className="text-red-500 flex items-center gap-0.5 text-xs hover:underline cursor-pointer"
+                    >
+                      <FiTrash2 /> Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col ">
+              <div>
+                <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                  Printing Files
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) => setNewPrintingFiles([...e.target.files])}
+                  className="block w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
+                />
+              </div>
+              <div className="flex flex-col mt-2">
+                <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                  Existing Printing Files
+                </label>
+                {existingPrintingFiles.length === 0 && (
+                  <p className="text-sm text-gray-500">
+                    No printing files uploaded.
+                  </p>
+                )}
+
+                {existingPrintingFiles.map((file, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center bg-[#fdf6e9] border border-primary rounded p-1"
+                  >
+                    <a
+                      href={file.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#292926] underline break-all"
+                    >
+                      {file.fileName}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeletedPrintingFiles([
+                          ...deletedPrintingFiles,
+                          file,
+                        ]);
+                        setExistingPrintingFiles(
+                          existingPrintingFiles.filter((_, i) => i !== idx)
+                        );
+                      }}
+                      className="text-red-500 flex items-center gap-0.5 text-xs hover:underline cursor-pointer"
+                    >
+                      <FiTrash2 /> Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="flex-col my-2">
@@ -749,10 +821,44 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                     })}
                   </div>
 
-                  <div className="mt-2">
+                  <div className="mt-2 flex w-full justify-between">
+                    <div className="flex gap-4 items-center">
+                      {/* Cutting Type Dropdown */}
+                      <select
+                        className="border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition px-2 py-1 text-sm"
+                        value={comp.cuttingType || ""}
+                        onChange={(e) =>
+                          updateComponent(index, "cuttingType", e.target.value)
+                        }
+                      >
+                        <option value="">Cutting Type</option>
+                        <option value="Slitting Cutting">
+                          Slitting Cutting
+                        </option>
+                        <option value="Cutting">Cutting</option>
+                        <option value="Press Cutting">Press Cutting</option>
+                        <option value="Laser Cutting">Laser Cutting</option>
+                        <option value="Table Cutting">Table Cutting</option>
+                      </select>
+
+                      {/* Print Checkbox */}
+                      <label className="flex items-center gap-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={comp.isPrint || false}
+                          onChange={(e) =>
+                            updateComponent(index, "isPrint", e.target.checked)
+                          }
+                          className="rounded border-gray-300 accent-[#d8b76a]"
+                        />
+                        Print
+                      </label>
+                    </div>
+
+                    {/* Remove Button */}
                     <button
                       type="button"
-                      className="text-red-600 text-xs hover:underline flex items-center gap-1 cursor-pointer"
+                      className="text-red-600 text-xs hover:underline flex gap-1 cursor-pointer items-center"
                       onClick={() => removeComponent(index)}
                     >
                       <FiTrash2 /> Remove

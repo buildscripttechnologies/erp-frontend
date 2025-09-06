@@ -15,6 +15,12 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
   const [deletedFileIds, setDeletedFileIds] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
 
+  const [newPrintingFiles, setNewPrintingFiles] = useState([]);
+  const [existingPrintingFiles, setExistingPrintingFiles] = useState(
+    sfg.printingFile || []
+  );
+  const [deletedPrintingFiles, setDeletedPrintingFiles] = useState([]);
+
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
@@ -63,6 +69,8 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
           category: r.category,
           itemRate: r.itemRate,
           baseQty: r.baseQty,
+          isPrint: r.isPrint,
+          cuttingType: r.cuttingType,
         });
       });
       (sfg.sfg || []).forEach((s) => {
@@ -79,6 +87,8 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
           category: s.category,
           itemRate: s.itemRate,
           baseQty: s.baseQty,
+          isPrint: s.isPrint,
+          cuttingType: s.cuttingType,
         });
       });
 
@@ -118,6 +128,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         companyOverHead: sfg.companyOverHead,
         indirectExpense: sfg.indirectExpense,
         file: [],
+        printingFile: [],
         materials: mappedMaterials,
       });
     }
@@ -200,7 +211,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
       recalculateTotals({
         ...prev,
         [name]:
-          name === "file"
+          name === "file" || name == "printingFile"
             ? Array.from(files)
             : numericFields.includes(name)
             ? Number(value) || 0
@@ -258,6 +269,8 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
           category: "",
           itemRate: 0,
           baseQty: 0,
+          isPrint: false,
+          cuttingType: "",
         },
       ],
     }));
@@ -295,6 +308,8 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
             category: mat.category,
             itemRate: Number(mat.itemRate),
             baseQty: Number(mat.baseQty),
+            isPrint: mat.isPrint,
+            cuttingType: mat.cuttingType,
           });
         } else {
           sfgNested.push({
@@ -310,6 +325,8 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
             category: mat.category,
             itemRate: Number(mat.itemRate),
             baseQty: Number(mat.baseQty),
+            isPrint: mat.isPrint,
+            cuttingType: mat.cuttingType,
           });
         }
       });
@@ -351,10 +368,14 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         rm,
         sfg: sfgNested,
         deletedFiles: deletedFileIds,
+        deletedPrintingFiles: deletedPrintingFiles,
       };
 
       newFiles.forEach((file) => {
         payload.append("files", file);
+      });
+      newPrintingFiles.forEach((file) => {
+        payload.append("printingFiles", file);
       });
 
       payload.append("data", JSON.stringify(data));
@@ -362,7 +383,11 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
       if (form.file.length) {
         form.file.forEach((file) => payload.append("files", file));
       }
-
+      if (form.printingFile.length) {
+        form.printingFile.forEach((file) =>
+          payload.append("printingFiles", file)
+        );
+      }
       let res = await axios.patch(`/sfgs/edit/${sfg.id}`, payload);
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -553,6 +578,107 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 <option value="">Select Type</option>
                 <option value="SFG">SFG</option>
               </select>
+            </div>
+          </div>
+          {/* Upload New Files */}
+          <div className="col-span-full gap-4 grid grid-cols-1 sm:grid-cols-2">
+            <div>
+              <div className=" ">
+                <label className="block font-semibold mb-1 text-secondary">
+                  Product Files
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) => setNewFiles(Array.from(e.target.files))}
+                  className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-secondary hover:file:bg-primary/10 file:cursor-pointer"
+                />
+              </div>
+              <div>
+                <p className="font-semibold mb-1 mt-2 text-secondary">
+                  Existing Product Files
+                </p>
+                {existingFiles.length === 0 && (
+                  <p className="text-sm text-gray-500">No files uploaded</p>
+                )}
+                {existingFiles.map((file) => (
+                  <div
+                    key={file._id}
+                    className="flex justify-between items-center mb-1 bg-[#fdf6e9] border border-primary rounded p-1 "
+                  >
+                    <a
+                      href={file.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-secondary underline truncate"
+                    >
+                      {file.fileName}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeletedFileIds((prev) => [...prev, file._id]);
+                        setExistingFiles((prev) =>
+                          prev.filter((f) => f._id !== file._id)
+                        );
+                      }}
+                      className="text-red-500 hover:text-red-700 cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className=" ">
+                <label className="block font-semibold mb-1 text-secondary">
+                  Printing Files
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) =>
+                    setNewPrintingFiles(Array.from(e.target.files))
+                  }
+                  className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-secondary hover:file:bg-primary/10 file:cursor-pointer"
+                />
+              </div>
+              <div>
+                <p className="font-semibold mb-1 mt-2 text-secondary">
+                  Existing Printing Files
+                </p>
+                {existingPrintingFiles.length === 0 && (
+                  <p className="text-sm text-gray-500">No files uploaded</p>
+                )}
+                {existingPrintingFiles.map((file) => (
+                  <div
+                    key={file._id}
+                    className="flex justify-between items-center bg-[#fdf6e9] border border-primary rounded p-1 "
+                  >
+                    <a
+                      href={file.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-secondary underline truncate"
+                    >
+                      {file.fileName}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeletedPrintingFiles((prev) => [...prev, file._id]);
+                        setExistingPrintingFiles((prev) =>
+                          prev.filter((f) => f._id !== file._id)
+                        );
+                      }}
+                      className="text-red-500 hover:text-red-700 cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <div className="flex flex-col">
@@ -804,11 +930,53 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                     })}
                   </div>
 
-                  <div className="mt-2">
+                  <div className="mt-2 flex w-full justify-between">
+                    <div className="flex gap-4 items-center">
+                      {/* Cutting Type Dropdown */}
+                      <select
+                        className="border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition px-2 py-1 text-sm"
+                        value={mat.cuttingType || ""}
+                        onChange={(e) =>
+                          handleMaterialChange(
+                            index,
+                            "cuttingType",
+                            e.target.value
+                          )
+                        }
+                      >
+                        <option value="">Cutting Type</option>
+                        <option value="Slitting Cutting">
+                          Slitting Cutting
+                        </option>
+                        <option value="Cutting">Cutting</option>
+                        <option value="Press Cutting">Press Cutting</option>
+                        <option value="Laser Cutting">Laser Cutting</option>
+                        <option value="Table Cutting">Table Cutting</option>
+                      </select>
+
+                      {/* Print Checkbox */}
+                      <label className="flex items-center gap-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={mat.isPrint || false}
+                          onChange={(e) =>
+                            handleMaterialChange(
+                              index,
+                              "isPrint",
+                              e.target.checked
+                            )
+                          }
+                          className="rounded border-gray-300 accent-[#d8b76a]"
+                        />
+                        Print
+                      </label>
+                    </div>
+
+                    {/* Remove Button */}
                     <button
                       type="button"
+                      className="text-red-600 text-xs hover:underline flex gap-1 cursor-pointer items-center"
                       onClick={() => removeMaterial(index)}
-                      className="text-red-600 cursor-pointer flex items-center gap-1 hover:underline  "
                     >
                       <FiTrash2 /> Remove
                     </button>

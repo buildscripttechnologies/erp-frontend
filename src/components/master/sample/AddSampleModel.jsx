@@ -51,6 +51,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
   const [components, setComponents] = useState([]);
 
   const [files, setFiles] = useState([]);
+  const [printingFiles, setPrintingFiles] = useState([]);
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -305,6 +306,8 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
         itemRate: 0,
         itemName: "",
         skuCode: "",
+        isPrint: false,
+        cuttingType: "",
       },
     ]);
   };
@@ -340,6 +343,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
         JSON.stringify({ ...form, productDetails, consumptionTable })
       );
       files.forEach((f) => formData.append("files", f));
+      printingFiles.forEach((f) => formData.append("printingFiles", f));
 
       const res = await axios.post("/samples/add", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -543,12 +547,23 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
             </div>
             <div className="flex flex-col ">
               <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                Upload Files
+                Product Files
               </label>
               <input
                 type="file"
                 multiple
                 onChange={(e) => setFiles([...e.target.files])}
+                className="block text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
+              />
+            </div>
+            <div className="flex flex-col ">
+              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                Printing Files
+              </label>
+              <input
+                type="file"
+                multiple
+                onChange={(e) => setPrintingFiles([...e.target.files])}
                 className="block text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
               />
             </div>
@@ -762,10 +777,52 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                         })}
                       </div>
 
-                      <div className="mt-2">
+                      <div className="mt-2 flex w-full justify-between">
+                        <div className="flex gap-4 items-center">
+                          {/* Cutting Type Dropdown */}
+                          <select
+                            className="border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition px-2 py-1 text-sm"
+                            value={comp.cuttingType || ""}
+                            onChange={(e) =>
+                              updateComponent(
+                                index,
+                                "cuttingType",
+                                e.target.value
+                              )
+                            }
+                          >
+                            <option value="">Cutting Type</option>
+                            <option value="Slitting Cutting">
+                              Slitting Cutting
+                            </option>
+                            <option value="Cutting">Cutting</option>
+                            <option value="Press Cutting">Press Cutting</option>
+                            <option value="Laser Cutting">Laser Cutting</option>
+                            <option value="Table Cutting">Table Cutting</option>
+                          </select>
+
+                          {/* Print Checkbox */}
+                          <label className="flex items-center gap-1 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={comp.isPrint || false}
+                              onChange={(e) =>
+                                updateComponent(
+                                  index,
+                                  "isPrint",
+                                  e.target.checked
+                                )
+                              }
+                              className="rounded border-gray-300 accent-[#d8b76a]"
+                            />
+                            Print
+                          </label>
+                        </div>
+
+                        {/* Remove Button */}
                         <button
                           type="button"
-                          className="text-red-600 text-xs hover:underline flex items-center gap-1 cursor-pointer"
+                          className="text-red-600 text-xs hover:underline flex gap-1 cursor-pointer items-center"
                           onClick={() => removeComponent(index)}
                         >
                           <FiTrash2 /> Remove

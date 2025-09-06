@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import axios from "../../utils/axios";
 import Select from "react-select";
 import { ClipLoader } from "react-spinners";
+import { cuttingType, jobWorkType } from "../../data/dropdownData";
 
 const Add = ({ onClose, onAdded }) => {
   const [selectedItem, setSelectedItem] = useState(null);
@@ -319,11 +320,14 @@ const Add = ({ onClose, onAdded }) => {
                     <th className="px-2 py-1 border-r border-[#d8b76a]">
                       Quantity
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    {/* <th className="px-2 py-1 border-r border-[#d8b76a]">
                       Rate (₹)
+                    </th> */}
+                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                      Cutting Type
                     </th>
                     <th className="px-2 py-1 border-r border-[#d8b76a]">
-                      Assignee
+                      Jobwork Type
                     </th>
                   </tr>
                 </thead>
@@ -334,7 +338,7 @@ const Add = ({ onClose, onAdded }) => {
                         <td className="px-2 py-1 border-r border-[#d8b76a]">
                           <input
                             type="checkbox"
-                            checked={!!item.assignee}
+                            checked={!!item.cuttingType}
                             id={idx}
                             className="accent-primary"
                           />
@@ -366,35 +370,53 @@ const Add = ({ onClose, onAdded }) => {
                         <td className="px-2 py-1 border-r border-[#d8b76a]">
                           {item.grams ? `${item.grams} gm` : item.qty || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
                           {item.rate || "-"}
-                        </td>
+                        </td> */}
                         <td className="px-2 py-1 border-r border-[#d8b76a]">
                           <select
-                            value={item.assignee || ""}
+                            value={item.cuttingType || ""}
                             onChange={(e) => {
-                              const selectedUser = users.find(
-                                (u) => u.id === e.target.value
-                              );
                               let updated = [...itemDetails];
-
-                              // Find by unique _id
                               const targetIndex = updated.findIndex(
                                 (pd) => pd._id === item._id
                               );
 
                               if (targetIndex !== -1) {
-                                updated[targetIndex].assignee = selectedUser
-                                  ? selectedUser.id
-                                  : null;
+                                updated[targetIndex].cuttingType =
+                                  e.target.value; // ✅ direct assign
                                 setItemDetails(updated);
                               }
                             }}
                           >
                             <option value="">Select</option>
-                            {users.map((u) => (
-                              <option key={u.id} value={u.id}>
-                                {u.fullName}
+                            {cuttingType.map((type, idx) => (
+                              <option key={idx} value={type}>
+                                {type}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                          <select
+                            value={item.jobWorkType || ""}
+                            onChange={(e) => {
+                              let updated = [...itemDetails];
+                              const targetIndex = updated.findIndex(
+                                (pd) => pd._id === item._id
+                              );
+
+                              if (targetIndex !== -1) {
+                                updated[targetIndex].jobWorkType =
+                                  e.target.value; // ✅ direct assign
+                                setItemDetails(updated);
+                              }
+                            }}
+                          >
+                            <option value="">Select</option>
+                            {jobWorkType.map((type, idx) => (
+                              <option key={idx} value={type}>
+                                {type}
                               </option>
                             ))}
                           </select>

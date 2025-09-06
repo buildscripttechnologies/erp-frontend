@@ -43,25 +43,25 @@ const SampleDetailsSection = ({ SampleData }) => {
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {idx + 1}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-[#d8b76a]  capitalize">
                   {item.skuCode || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-[#d8b76a] capitalize">
                   {item.itemName || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-[#d8b76a] capitalize">
                   {item.type || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-[#d8b76a] capitalize">
                   {item.partName || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-[#d8b76a] capitalize">
                   {item.category || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-[#d8b76a] capitalize">
                   {item.height || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-[#d8b76a] capitalize">
                   {item.width || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
@@ -110,13 +110,13 @@ const SampleDetailsSection = ({ SampleData }) => {
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {idx + 1}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-[#d8b76a] capitalize">
                   {item.skuCode || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-[#d8b76a] capitalize">
                   {item.itemName || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-[#d8b76a] capitalize">
                   {item.category || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
@@ -144,19 +144,19 @@ const SampleDetailsSection = ({ SampleData }) => {
               Stitching (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {SampleData.stitching || "N/A"}
+              {SampleData.stitching || "9"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Print/Emb (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {SampleData.printing || "N/A"}
+              {SampleData.printing || "0"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Others (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {SampleData.others || "N/A"}
+              {SampleData.others || "0"}
             </td>
           </tr>
           <tr className="border-b border-primary">
@@ -164,19 +164,19 @@ const SampleDetailsSection = ({ SampleData }) => {
               Unit Rate (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {SampleData.unitRate || "N/A"}
+              {SampleData.unitRate || "0"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Unit B2B (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {SampleData.unitB2BRate || "N/A"}
+              {SampleData.unitB2BRate || "0"}
             </td>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-primary">
               Unit D2C (₹)
             </td>
             <td className="px-2 py-1 border-r border-primary">
-              {SampleData.unitD2CRate || "N/A"}
+              {SampleData.unitD2CRate || "0"}
             </td>
           </tr>
         </tbody>

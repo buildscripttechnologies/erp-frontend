@@ -307,20 +307,20 @@ const BomMaster = ({ isOpen }) => {
                               hour12: true,
                             })}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
+                          <td className="px-[8px] border-r border-primary capitalize ">
                             {b.sampleNo || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
+                          <td className="px-[8px] border-r border-primary  capitalize">
                             {b.bomNo || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
+                          <td className="px-[8px] border-r border-primary  capitalize">
                             {b.partyName || "-"}
                           </td>
 
-                          <td className="px-[8px] border-r border-primary ">
+                          <td className="px-[8px] border-r border-primary capitalize ">
                             {b.productName || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
+                          <td className="px-[8px] border-r border-primary  capitalize">
                             {b.orderQty || "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary ">
@@ -419,7 +419,7 @@ const BomMaster = ({ isOpen }) => {
             bom={editingBOM}
             onClose={() => setEditingBOM(null)}
             onSuccess={() => {
-              fetchBOMs(); // re-fetch or refresh list
+              fetchBOMs(pagination.currentPage); // re-fetch or refresh list
               setEditingBOM(null);
             }}
           />

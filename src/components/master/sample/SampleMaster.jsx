@@ -296,14 +296,14 @@ const SampleMaster = ({ isOpen }) => {
                               hour12: true,
                             })}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-[#d8b76a] capitalize ">
                             {b.sampleNo || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-[#d8b76a]  capitalize">
                             {b.partyName || "-"}
                           </td>
 
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-[#d8b76a]  capitalize">
                             {b.product?.name || "-"}
                           </td>
                           <td className="px-[8px] border-r border-[#d8b76a] ">

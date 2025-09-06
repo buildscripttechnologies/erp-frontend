@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getBase64ImageFromPDF } from "./convertPDFPageToImage"; // You need this util
 import { calculateRate } from "./calc";
+import { capitalize } from "lodash";
 
 export const generateSample = async (SampleData) => {
   const doc = new jsPDF("portrait", "mm", "a4");
@@ -54,9 +55,9 @@ export const generateSample = async (SampleData) => {
       // Row 1
       [
         { content: "Party Name:", styles: { fontStyle: "bold" } },
-        SampleData.partyName || "",
+        capitalize(SampleData.partyName) || "",
         { content: "Product Name:", styles: { fontStyle: "bold" } },
-        SampleData.product.name || "",
+        capitalize(SampleData.product.name) || "",
       ],
       // Row 2
       [
@@ -112,8 +113,8 @@ export const generateSample = async (SampleData) => {
     index + 1,
     item.skuCode || "N/A",
     item.itemName || "N/A",
-    item.category || "N/A",
-    item.partName || "N/A",
+    capitalize(item.category) || "N/A",
+    capitalize(item.partName) || "N/A",
     item.height || "N/A",
     item.width || "N/A",
     item.qty || "N/A",
@@ -265,7 +266,7 @@ export const generateSample = async (SampleData) => {
         index + 1,
         item.skuCode,
         item.itemName,
-        item.category,
+        capitalize(item.category),
         weightDisplay,
         qtyDisplay,
       ];
@@ -306,29 +307,98 @@ export const generateSample = async (SampleData) => {
   doc.text("Material Images", pageWidth / 2, 10, { align: "center" });
 
   const imageSize = 55; // square size in mm
-  const imagesPerRow = 3;
   const padding = 15;
   const startX = margin;
   const startY = 15;
   let x = startX;
   y = startY;
 
-  // Ensure unique SKUs from conjunction table
-  const uniqueItemsMap = new Map();
-  for (const item of Object.values(mergedRawMaterials)) {
-    if (!uniqueItemsMap.has(item.skuCode)) {
-      uniqueItemsMap.set(item.skuCode, item);
+  // Utility to add images in "contain" style
+  const addContainImage = (doc, img, x, y, boxSize) =>
+    new Promise((resolve) => {
+      const image = new Image();
+      image.onload = () => {
+        const ratio = Math.min(boxSize / image.width, boxSize / image.height);
+        const displayWidth = image.width * ratio;
+        const displayHeight = image.height * ratio;
+
+        const offsetX = x + (boxSize - displayWidth) / 2;
+        const offsetY = y + (boxSize - displayHeight) / 2;
+
+        doc.addImage(img, "PNG", offsetX, offsetY, displayWidth, displayHeight);
+        resolve();
+      };
+      image.src = img;
+    });
+
+  // --- STEP 1: Render BOM Files ---
+  if (SampleData.file && SampleData.file.length > 0) {
+    for (const f of SampleData.file) {
+      try {
+        const img = await fetch(f.fileUrl)
+          .then((res) => res.blob())
+          .then(
+            (blob) =>
+              new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+              })
+          );
+
+        await addContainImage(doc, img, x, y, imageSize);
+
+        doc.setFontSize(8);
+        doc.setTextColor("#000000");
+        doc.text(
+          `${SampleData.sampleNo}`,
+          x + imageSize / 2,
+          y + imageSize + 5,
+          {
+            align: "center",
+          }
+        );
+
+        // update cursor
+        x += imageSize + padding;
+        if (x + imageSize > pageWidth - margin) {
+          x = startX;
+          y += imageSize + 20;
+        }
+
+        if (y + imageSize > pageHeight - margin) {
+          doc.addPage();
+          addBackground("last");
+          x = startX;
+          y = startY;
+        }
+      } catch (err) {
+        console.error("BOM file load error:", f.fileUrl, err);
+      }
     }
   }
 
-  // Render images
-  for (const item of uniqueItemsMap.values()) {
-    console.log("item", item);
+  // --- STEP 2: Then render productDetails attachments ---
+  const attachmentMap = new Map();
+  (SampleData.productDetails || []).forEach((pd) => {
+    if (pd.skuCode && pd.attachments && pd.attachments.length > 0) {
+      attachmentMap.set(pd.skuCode, pd.attachments);
+    }
+  });
 
-    if (item.attachments && item.attachments.length > 0) {
-      const att = item.attachments[0]; // pick first attachment
-      console.log("att", att);
+  // ensure unique items
+  const uniqueItems = [];
+  const seen = new Set();
+  (SampleData.consumptionTable || []).forEach((item) => {
+    if (!seen.has(item.skuCode)) {
+      seen.add(item.skuCode);
+      uniqueItems.push(item);
+    }
+  });
 
+  for (const item of uniqueItems) {
+    const attachments = attachmentMap.get(item.skuCode) || [];
+    for (const att of attachments) {
       try {
         const img = await fetch(att.fileUrl)
           .then((res) => res.blob())
@@ -341,66 +411,28 @@ export const generateSample = async (SampleData) => {
               })
           );
 
-        const addContainImage = (doc, img, x, y, boxSize) => {
-          return new Promise((resolve) => {
-            const image = new Image();
-            image.onload = () => {
-              const ratio = Math.min(
-                boxSize / image.width,
-                boxSize / image.height
-              );
-              const displayWidth = image.width * ratio;
-              const displayHeight = image.height * ratio;
-
-              const offsetX = x + (boxSize - displayWidth) / 2;
-              const offsetY = y + (boxSize - displayHeight) / 2;
-
-              doc.addImage(
-                img,
-                "PNG",
-                offsetX,
-                offsetY,
-                displayWidth,
-                displayHeight
-              );
-              resolve();
-            };
-            image.src = img;
-          });
-        };
-
-        // Add image
         await addContainImage(doc, img, x, y, imageSize);
 
-        // Add SKU Code below image
         doc.setFontSize(8);
         doc.setTextColor("#000000");
         doc.text(item.skuCode || "N/A", x + imageSize / 2, y + imageSize + 5, {
           align: "center",
         });
 
-        // Update cursor
         x += imageSize + padding;
         if (x + imageSize > pageWidth - margin) {
           x = startX;
-          y += imageSize + 20; // move to next row
+          y += imageSize + 20;
         }
 
-        // If row doesn't fit on page → add new page
         if (y + imageSize > pageHeight - margin) {
           doc.addPage();
           addBackground("last");
-          doc.setTextColor("white");
-          doc.text(`${SampleData.bomNo}`, pageWidth / 2, 47, {
-            align: "center",
-          });
-
-          // reset cursor
           x = startX;
           y = startY;
         }
       } catch (err) {
-        console.error("Image load error:", att.fileUrl, err);
+        console.error("Attachment load error:", att.fileUrl, err);
       }
     }
   }

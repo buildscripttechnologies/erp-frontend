@@ -51,6 +51,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
       rm: [],
       sfg: [],
       file: [],
+      printingFile: [],
       materials: [],
     },
   ]);
@@ -139,9 +140,10 @@ const AddFgModal = ({ onClose, onAdded }) => {
   const handleChange = (index, e) => {
     const updated = [...formList];
     const { name, value, files } = e.target;
+    console.log("e", e);
 
-    if (name === "file") {
-      updated[index][name] = Array.from(files);
+    if (name === "file" || name === "printingFile") {
+      updated[index][name] = files ? Array.from(files) : [];
     } else {
       const numericFields = [
         "height",
@@ -176,6 +178,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
     let comp = updated[index].materials[matIndex];
     const orderQty = 1;
     const category = (comp.category || "").toLowerCase();
+    console.log(index, matIndex, field, value);
 
     if (field === "qty") {
       // user is entering per-unit qty or per-unit grams
@@ -215,6 +218,8 @@ const AddFgModal = ({ onClose, onAdded }) => {
       category: "",
       itemRate: 0,
       baseQty: 0,
+      isPrint: false,
+      cuttingType: "",
     });
 
     setFormList(updated);
@@ -265,6 +270,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
         rm: [],
         sfg: [],
         file: [],
+        printingFile: [],
         materials: [],
       },
     ]);
@@ -315,6 +321,8 @@ const AddFgModal = ({ onClose, onAdded }) => {
               category: mat.category,
               itemRate: Number(mat.itemRate),
               baseQty: Number(mat.baseQty),
+              isPrint: mat.isPrint,
+              cuttingType: mat.cuttingType,
             });
           } else if (matched.type === "SFG") {
             sfg.push({
@@ -330,6 +338,8 @@ const AddFgModal = ({ onClose, onAdded }) => {
               category: mat.category,
               itemRate: Number(mat.itemRate),
               baseQty: Number(mat.baseQty),
+              isPrint: mat.isPrint,
+              cuttingType: mat.cuttingType,
             });
           }
         });
@@ -339,9 +349,12 @@ const AddFgModal = ({ onClose, onAdded }) => {
           rm,
           sfg,
           file: undefined,
+          printingFile: undefined,
           materials: undefined,
         };
       });
+
+      console.log("payload", JSON.stringify(transformedData));
 
       payload.append("fgs", JSON.stringify(transformedData));
 
@@ -350,6 +363,14 @@ const AddFgModal = ({ onClose, onAdded }) => {
           item.file.forEach((file) => {
             const renamed = new File([file], `${file.name}__index_${i}__`);
             payload.append("files", renamed);
+          });
+        }
+      });
+      formList.forEach((item, i) => {
+        if (Array.isArray(item.printingFile)) {
+          item.printingFile.forEach((file) => {
+            const renamed = new File([file], `${file.name}__index_${i}__`);
+            payload.append("printingFiles", renamed);
           });
         }
       });
@@ -520,10 +541,20 @@ const AddFgModal = ({ onClose, onAdded }) => {
                 </div>
 
                 <div className="flex flex-col">
-                  <label className="font-semibold mb-1">Upload Files</label>
+                  <label className="font-semibold mb-1">Product Files</label>
                   <input
                     type="file"
                     name="file"
+                    multiple
+                    onChange={(e) => handleChange(index, e)}
+                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-secondary hover:file:bg-primary/10 file:cursor-pointer"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="font-semibold mb-1">Printing Files</label>
+                  <input
+                    type="file"
+                    name="printingFile"
                     multiple
                     onChange={(e) => handleChange(index, e)}
                     className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-secondary hover:file:bg-primary/10 file:cursor-pointer"
@@ -803,11 +834,55 @@ const AddFgModal = ({ onClose, onAdded }) => {
                         })}
                       </div>
 
-                      <div className="mt-2">
+                      <div className="mt-2 flex w-full justify-between">
+                        <div className="flex gap-4 items-center">
+                          {/* Cutting Type Dropdown */}
+                          <select
+                            className="border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition px-2 py-1 text-sm"
+                            value={mat.cuttingType || ""}
+                            onChange={(e) =>
+                              handleMaterialChange(
+                                index,
+                                matIndex,
+                                "cuttingType",
+                                e.target.value
+                              )
+                            }
+                          >
+                            <option value="">Cutting Type</option>
+                            <option value="Slitting Cutting">
+                              Slitting Cutting
+                            </option>
+                            <option value="Cutting">Cutting</option>
+                            <option value="Press Cutting">Press Cutting</option>
+                            <option value="Laser Cutting">Laser Cutting</option>
+                            <option value="Table Cutting">Table Cutting</option>
+                          </select>
+
+                          {/* Print Checkbox */}
+                          <label className="flex items-center gap-1 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={mat.isPrint || false}
+                              onChange={(e) =>
+                                handleMaterialChange(
+                                  index,
+                                  matIndex,
+                                  "isPrint",
+                                  e.target.checked
+                                )
+                              }
+                              className="rounded border-gray-300 accent-[#d8b76a]"
+                            />
+                            Print
+                          </label>
+                        </div>
+
+                        {/* Remove Button */}
                         <button
                           type="button"
+                          className="text-red-600 text-xs hover:underline flex gap-1 cursor-pointer items-center"
                           onClick={() => removeMaterial(index, matIndex)}
-                          className="text-red-600 text-xs hover:underline flex items-center gap-1 cursor-pointer"
                         >
                           <FiTrash2 /> Remove
                         </button>

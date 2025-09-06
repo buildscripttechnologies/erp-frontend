@@ -2,12 +2,15 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getBase64ImageFromPDF } from "./convertPDFPageToImage"; // You need this util
 import { calculateRate } from "./calc";
+import { capitalize } from "lodash";
 
 export const generateBomLP = async (bomData) => {
   const doc = new jsPDF("portrait", "mm", "a4");
   const margin = 6;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
+
+  console.log("bom file", bomData.file);
 
   // Load both pages of lp2.pdf
   const lp2Page1 = await getBase64ImageFromPDF("/lp2.pdf", 0);
@@ -110,10 +113,10 @@ export const generateBomLP = async (bomData) => {
 
   const tableBody = (bomData.productDetails || []).map((item, index) => [
     index + 1,
-    item.skuCode || "N/A",
-    item.itemName || "N/A",
-    item.category || "N/A",
-    item.partName || "N/A",
+    capitalize(item.skuCode) || "N/A",
+    capitalize(item.itemName) || "N/A",
+    capitalize(item.category) || "N/A",
+    capitalize(item.partName) || "N/A",
     item.height || "N/A",
     item.width || "N/A",
     item.qty || "N/A",
@@ -163,18 +166,16 @@ export const generateBomLP = async (bomData) => {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.setTextColor("#d8b76a");
-  doc.text(
-    "Raw Material Conjunction Table",
-    margin,
-    doc.lastAutoTable.finalY + 10
-  );
+  doc.text("Raw Material Consumption", margin, doc.lastAutoTable.finalY + 10);
+
+  // Capitalize each word
 
   const consumptionBody = (bomData.consumptionTable || []).map(
     (item, index) => [
       index + 1,
-      item.skuCode || "N/A",
-      item.itemName || "N/A",
-      item.category || "N/A",
+      capitalize(item.skuCode) || "N/A",
+      capitalize(item.itemName) || "N/A",
+      capitalize(item.category) || "N/A",
       item.weight || "N/A",
       item.qty || "N/A",
     ]
@@ -205,6 +206,7 @@ export const generateBomLP = async (bomData) => {
   });
 
   // --- Always Last Page for Images + BOM No ---
+  // --- Always Last Page for Images + BOM No ---
   doc.addPage();
   addBackground("last"); // background for last page
   doc.setFont("helvetica", "bold");
@@ -219,7 +221,67 @@ export const generateBomLP = async (bomData) => {
   let x = startX;
   y = startY;
 
-  // Build a map of skuCode → attachments from productDetails
+  // Utility to add images in "contain" style
+  const addContainImage = (doc, img, x, y, boxSize) =>
+    new Promise((resolve) => {
+      const image = new Image();
+      image.onload = () => {
+        const ratio = Math.min(boxSize / image.width, boxSize / image.height);
+        const displayWidth = image.width * ratio;
+        const displayHeight = image.height * ratio;
+
+        const offsetX = x + (boxSize - displayWidth) / 2;
+        const offsetY = y + (boxSize - displayHeight) / 2;
+
+        doc.addImage(img, "PNG", offsetX, offsetY, displayWidth, displayHeight);
+        resolve();
+      };
+      image.src = img;
+    });
+
+  // --- STEP 1: Render BOM Files ---
+  if (bomData.file && bomData.file.length > 0) {
+    for (const f of bomData.file) {
+      try {
+        const img = await fetch(f.fileUrl)
+          .then((res) => res.blob())
+          .then(
+            (blob) =>
+              new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+              })
+          );
+
+        await addContainImage(doc, img, x, y, imageSize);
+
+        doc.setFontSize(8);
+        doc.setTextColor("#000000");
+        doc.text(`${bomData.bomNo}`, x + imageSize / 2, y + imageSize + 5, {
+          align: "center",
+        });
+
+        // update cursor
+        x += imageSize + padding;
+        if (x + imageSize > pageWidth - margin) {
+          x = startX;
+          y += imageSize + 20;
+        }
+
+        if (y + imageSize > pageHeight - margin) {
+          doc.addPage();
+          addBackground("last");
+          x = startX;
+          y = startY;
+        }
+      } catch (err) {
+        console.error("BOM file load error:", f.fileUrl, err);
+      }
+    }
+  }
+
+  // --- STEP 2: Then render productDetails attachments ---
   const attachmentMap = new Map();
   (bomData.productDetails || []).forEach((pd) => {
     if (pd.skuCode && pd.attachments && pd.attachments.length > 0) {
@@ -227,7 +289,7 @@ export const generateBomLP = async (bomData) => {
     }
   });
 
-  // Ensure unique SKUs from consumption table
+  // ensure unique items
   const uniqueItems = [];
   const seen = new Set();
   (bomData.consumptionTable || []).forEach((item) => {
@@ -237,11 +299,9 @@ export const generateBomLP = async (bomData) => {
     }
   });
 
-  // Render images
   for (const item of uniqueItems) {
     const attachments = attachmentMap.get(item.skuCode) || [];
-    if (attachments.length > 0) {
-      const att = attachments[0]; // pick first attachment
+    for (const att of attachments) {
       try {
         const img = await fetch(att.fileUrl)
           .then((res) => res.blob())
@@ -254,65 +314,28 @@ export const generateBomLP = async (bomData) => {
               })
           );
 
-        // Function to add image in "contain" style
-        const addContainImage = (doc, img, x, y, boxSize) => {
-          return new Promise((resolve) => {
-            const image = new Image();
-            image.onload = () => {
-              const ratio = Math.min(
-                boxSize / image.width,
-                boxSize / image.height
-              );
-              const displayWidth = image.width * ratio;
-              const displayHeight = image.height * ratio;
-
-              const offsetX = x + (boxSize - displayWidth) / 2;
-              const offsetY = y + (boxSize - displayHeight) / 2;
-
-              doc.addImage(
-                img,
-                "PNG",
-                offsetX,
-                offsetY,
-                displayWidth,
-                displayHeight
-              );
-              resolve();
-            };
-            image.src = img;
-          });
-        };
-
-        // Add image
         await addContainImage(doc, img, x, y, imageSize);
 
-        // Add SKU Code below image
         doc.setFontSize(8);
         doc.setTextColor("#000000");
         doc.text(item.skuCode || "N/A", x + imageSize / 2, y + imageSize + 5, {
           align: "center",
         });
 
-        // Update cursor
         x += imageSize + padding;
         if (x + imageSize > pageWidth - margin) {
           x = startX;
-          y += imageSize + 20; // move to next row
+          y += imageSize + 20;
         }
 
-        // If row doesn't fit on page → add new page
         if (y + imageSize > pageHeight - margin) {
           doc.addPage();
           addBackground("last");
-          doc.setTextColor("white");
-          doc.text(`${bomData.bomNo}`, pageWidth / 2, 47, { align: "center" });
-
-          // reset cursor
           x = startX;
           y = startY;
         }
       } catch (err) {
-        console.error("Image load error:", att.fileUrl, err);
+        console.error("Attachment load error:", att.fileUrl, err);
       }
     }
   }

@@ -29,9 +29,14 @@ const MIdetails = ({ MI }) => {
               Width (Inch)
             </th>
             <th className="px-2 py-1 border-r border-[#d8b76a]">Quantity</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Rate (₹)</th>
+            {/* <th className="px-2 py-1 border-r border-[#d8b76a]">Rate (₹)</th> */}
             <th className="px-2 py-1 border-r border-[#d8b76a]">Status</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Assignee</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">
+              Cutting Type
+            </th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">
+              Jobwork Type
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -65,9 +70,9 @@ const MIdetails = ({ MI }) => {
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.grams ? `${item.grams} gm` : item.qty || "-"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.rate || "-"}
-                </td>
+                </td> */}
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
                   <span
                     className={`${
@@ -80,7 +85,10 @@ const MIdetails = ({ MI }) => {
                   </span>
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.assignee?.fullName || "-"}
+                  {item.cuttingType || "-"}
+                </td>
+                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                  {item.jobWorkType || "-"}
                 </td>
               </tr>
             ))
