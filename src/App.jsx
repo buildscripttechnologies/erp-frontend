@@ -29,6 +29,9 @@ import POApproval from "./components/purchase/POApproval";
 import StockRegister from "./components/stockRegister/StockRegister";
 import MaterialInward from "./components/materialInward/MaterialInward";
 import MaterialIssue from "./components/materialIssue/MaterialIssue";
+import MaterialReceive from "./components/materialReceive/MaterialReceive";
+import Cutting from "./components/jobWork/insideFactory/Cutting";
+import Printing from "./components/jobWork/outsideFactory/Printing";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -153,6 +156,45 @@ const App = () => {
               isAuthenticated ? (
                 <Dashboard>
                   <MaterialIssue />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
+          <Route
+            path="/material-receive"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <MaterialReceive />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
+          <Route
+            path="/inside-factory/cutting"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <Cutting />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
+          <Route
+            path="/outside-factory/printing"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <Printing />
                 </Dashboard>
               ) : (
                 <Navigate to="/login" />

@@ -93,20 +93,32 @@ export function Sidebar({ isOpen }) {
         },
       ],
     },
-
     {
       icon: FiBox,
-      label: "Material Inward",
-      module: "Material Inward",
-      path: "/material-inward",
-      action: "read",
-    },
-    {
-      icon: FiBox,
-      label: "Material Issue",
-      module: "Dashboard",
-      path: "/material-issue",
-      action: "read",
+      label: "Material",
+      subMenu: [
+        {
+          label: "Material Inward",
+          icon: FiBox,
+          module: "Material Inward",
+          path: "/material-inward",
+          action: "read",
+        },
+        {
+          icon: FiBox,
+          label: "Material Issue",
+          module: "Material Issue",
+          path: "/material-issue",
+          action: "read",
+        },
+        {
+          icon: FiBox,
+          label: "Material Receive",
+          module: "Material Receive",
+          path: "/material-receive",
+          action: "read",
+        },
+      ],
     },
     {
       icon: FiShoppingCart,
@@ -117,8 +129,34 @@ export function Sidebar({ isOpen }) {
     {
       icon: FiClipboard,
       label: "Job Work",
-      module: "Dashboard",
-      action: "read",
+      subMenu: [
+        {
+          label: "Inside Factory",
+          icon: FiClipboard,
+          subMenu: [
+            {
+              label: "Cutting",
+              icon: FiClipboard,
+              path: "/inside-factory/cutting",
+              module: "Cutting",
+              action: "read",
+            },
+          ],
+        },
+        {
+          label: "Outside Factory",
+          icon: FiClipboard,
+          subMenu: [
+            {
+              label: "Printing",
+              icon: FiClipboard,
+              path: "/outside-factory/printing",
+              module: "Printing",
+              action: "read",
+            },
+          ],
+        },
+      ],
     },
 
     {
@@ -206,6 +244,67 @@ export function Sidebar({ isOpen }) {
     },
   ];
 
+  const MenuItem = ({
+    item,
+    openMenus,
+    toggleMenu,
+    navigate,
+    hasPermission,
+  }) => {
+    const { icon: Icon, label, path, subMenu, module, action } = item;
+
+    // Permission check
+    if (!subMenu && module && !hasPermission(module, action)) return null;
+
+    const filteredSubMenu = subMenu?.filter((sm) =>
+      hasPermission(sm.module, sm.action)
+    );
+
+    if (subMenu && filteredSubMenu.length === 0) return null;
+
+    return (
+      <div>
+        <div
+          className="flex items-center gap-3 px-1 py-0.5 hover:bg-gray-100 rounded cursor-pointer text-sm"
+          onClick={() => {
+            if (subMenu) {
+              toggleMenu(label);
+            } else if (path) {
+              navigate(path);
+            }
+          }}
+        >
+          {Icon && <Icon className="text-primary" />}
+          <span className="flex items-center gap-1">
+            {label}
+            {subMenu && (openMenus[label] ? <FaAngleUp /> : <FaAngleDown />)}
+          </span>
+        </div>
+
+        {subMenu && (
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              openMenus[label] ? "max-h-[500px]" : "max-h-0"
+            }`}
+          >
+            <div className="ml-4 mt-1">
+              {filteredSubMenu.map((sm) => (
+                <MenuItem
+                  key={sm.label}
+                  item={sm}
+                  openMenus={openMenus}
+                  toggleMenu={toggleMenu}
+                  navigate={navigate}
+                  hasPermission={hasPermission}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <aside
       className={`fixed top-0 left-0 z-50 h-full w-50 bg-white shadow-xl drop-shadow-xl transform ${
@@ -217,66 +316,16 @@ export function Sidebar({ isOpen }) {
       </div>
 
       <nav className="flex flex-col px-3 pt-1 text-base font-semibold text-gray-800">
-        {sidebarMenus.map(
-          ({ icon: Icon, label, path, subMenu, module, action }) => {
-            // If it's a simple menu, check permission
-            if (!subMenu && module && !hasPermission(module, action))
-              return null;
-
-            // If it's a submenu, filter out items without permission
-            const filteredSubMenu = subMenu?.filter((item) =>
-              hasPermission(item.module, item.action)
-            );
-
-            // If submenu exists but all its items are filtered, skip rendering
-            if (subMenu && filteredSubMenu.length === 0) return null;
-
-            return (
-              <div key={label}>
-                <div
-                  className="flex items-center gap-3 p-1 hover:bg-gray-100 rounded cursor-pointer text-sm"
-                  onClick={() => {
-                    if (subMenu) {
-                      toggleMenu(label);
-                    } else if (path) {
-                      navigate(path);
-                    }
-                  }}
-                >
-                  <Icon className="text-[#d8b76a]" />
-                  <span className="flex items-center gap-2">
-                    {label}
-                    {subMenu &&
-                      (openMenus[label] ? <FaAngleUp /> : <FaAngleDown />)}
-                  </span>
-                </div>
-
-                {subMenu && (
-                  <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      openMenus[label] ? "max-h-[500px]" : "max-h-0"
-                    }`}
-                  >
-                    <div className="ml-4 mt-1">
-                      {filteredSubMenu.map(
-                        ({ label: subLabel, icon: SubIcon, path }) => (
-                          <div
-                            key={subLabel}
-                            onClick={() => navigate(path)}
-                            className="flex items-center gap-2 p-1 text-sm rounded hover:bg-gray-100 text-[#292926] cursor-pointer"
-                          >
-                            <SubIcon className="text-[#d8b76a]" />
-                            {subLabel}
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          }
-        )}
+        {sidebarMenus.map((item) => (
+          <MenuItem
+            key={item.label}
+            item={item}
+            openMenus={openMenus}
+            toggleMenu={toggleMenu}
+            navigate={navigate}
+            hasPermission={hasPermission}
+          />
+        ))}
 
         <button
           onClick={logout}

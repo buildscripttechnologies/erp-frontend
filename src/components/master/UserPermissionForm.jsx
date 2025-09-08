@@ -2,27 +2,7 @@ import React, { useState } from "react";
 import axios from "../../utils/axios";
 import { FiTrash2 } from "react-icons/fi";
 import toast from "react-hot-toast";
-
-const availableModules = [
-  "UOM",
-  "RawMaterial",
-  "Stock",
-  "Location",
-  "SFG",
-  "FG",
-  "Sample",
-  "BOM",
-  "Vendor",
-  "Customer",
-  "Role",
-  "User",
-  "Dashboard",
-  "Material Inward",
-  "Material Issue",
-  "PO",
-];
-
-const availableActions = ["read", "write", "update", "delete"];
+import { availableActions, availableModules } from "../../data/dropdownData";
 
 export default function UserPermissionForm({
   userId,
