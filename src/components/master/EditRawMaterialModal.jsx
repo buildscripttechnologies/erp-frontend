@@ -60,8 +60,6 @@ const EditRawMaterialModal = ({
     const stockQty = parseFloat(updatedForm.stockQty) || 0;
     updatedForm.totalRate = rate * stockQty;
 
-    
-
     const category = (updatedForm.itemCategory || "").toLowerCase();
     const panno = parseFloat(updatedForm.panno) || 0;
 
@@ -77,7 +75,8 @@ const EditRawMaterialModal = ({
       panno &&
       (category.includes("fabric") ||
         category.includes("cotton") ||
-        category.includes("canvas"))
+        category.includes("canvas") ||
+        category.includes("foam"))
     ) {
       updatedForm.sqInchRate = Number(
         ((rate / panno / fabricRate) * 1.05).toFixed(2)

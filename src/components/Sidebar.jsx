@@ -131,30 +131,31 @@ export function Sidebar({ isOpen }) {
       label: "Job Work",
       subMenu: [
         {
-          label: "Inside Factory",
+          label: "Inside Company",
           icon: FiClipboard,
           subMenu: [
             {
               label: "Cutting",
               icon: FiClipboard,
-              path: "/inside-factory/cutting",
+              path: "/inside-company/cutting",
               module: "Cutting",
+              action: "read",
+            },
+            {
+              label: "Printing",
+              icon: FiClipboard,
+              path: "/inside-company/printing",
+              module: "Printing",
               action: "read",
             },
           ],
         },
         {
-          label: "Outside Factory",
+          label: "Outside Company",
           icon: FiClipboard,
-          subMenu: [
-            {
-              label: "Printing",
-              icon: FiClipboard,
-              path: "/outside-factory/printing",
-              module: "Printing",
-              action: "read",
-            },
-          ],
+          path: "/outside-company",
+          module: "Outside Company",
+          action: "read",
         },
       ],
     },

@@ -60,7 +60,25 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
         .map((c) => c.skuCode);
 
       setCheckedSkus(preChecked);
-      setConsumptionTable(MIData.consumptionTable);
+      const cleaned = MIData.consumptionTable.map((c) => {
+        // Assume extra is whatever was added before
+        const baseQty =
+          c.qty != "N/A" && c.extra
+            ? Number(c.qty - c.extra).toFixed(2)
+            : c.qty;
+        const baseWeight =
+          c.weight != "N/A" && c.extra
+            ? Number(c.weight - c.extra).toFixed(2)
+            : c.weight;
+
+        return {
+          ...c,
+          qty: baseQty, // ✅ remove extra from qty
+          weight: baseWeight, // ✅ remove extra from weight
+          extra: c.extra || 0, // ✅ reset extra so it won’t accumulate
+        };
+      });
+      setConsumptionTable(cleaned);
     }
   }, [MIData]);
 
@@ -71,12 +89,37 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
     setLoading(true);
 
     try {
+      const mainStatus = itemDetails.every((it) => it.status !== "pending")
+        ? "issued"
+        : "pending";
+
+      // Merge extra into qty/weight
+      const updatedConsumption = consumptionTable.map((row) => {
+        let newRow = { ...row };
+        if (newRow.extra && newRow.extra > 0) {
+          if (newRow.qty && newRow.qty !== "N/A") {
+            newRow.qty = parseFloat(newRow.qty) + newRow.extra;
+          } else if (newRow.weight && newRow.weight !== "N/A") {
+            newRow.weight = parseFloat(newRow.weight) + newRow.extra;
+          }
+        }
+        return newRow;
+      });
+
       const payload = {
         bom: selectedItem.b._id,
         bomNo: selectedItem.b.bomNo,
-        itemDetails,
-        consumptionTable, // already has isChecked, stockQty, type
+        itemDetails: itemDetails.map((item) => ({
+          ...item,
+          status:
+            item.cuttingType && checkedSkus.includes(item.skuCode)
+              ? "in cutting"
+              : "pending",
+        })),
+        consumptionTable: updatedConsumption,
+        status: mainStatus,
       };
+
       console.log("payload", payload);
 
       const res = await axios.patch(`/mi/update/${MIData._id}`, payload);
@@ -84,7 +127,7 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
         toast.error(res.data.message);
         return;
       }
-      toast.success("Material Issue Created Successfully");
+      toast.success("Material Issue Updated Successfully");
       onClose();
       onUpdated();
     } catch (err) {
@@ -105,9 +148,13 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
   );
 
   const parseValue = (val) => {
-    if (!val || val === "N/A") return 0;
-    const num = parseFloat(val.replace(/[^0-9.]/g, ""));
-    return isNaN(num) ? 0 : parseFloat(num.toFixed(2));
+    if (val == null || val === "N/A") return 0;
+    if (typeof val === "number") return val; // ✅ already numeric
+    if (typeof val === "string") {
+      const num = parseFloat(val.replace(/[^0-9.]/g, ""));
+      return isNaN(num) ? 0 : parseFloat(num.toFixed(2));
+    }
+    return 0;
   };
 
   return (
@@ -191,6 +238,9 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                     <th className="px-2 py-1 border-r border-[#d8b76a]">Qty</th>
                     <th className="px-2 py-1 border-r border-[#d8b76a]">
                       Stock Qty
+                    </th>
+                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                      Issue Extra Q/W
                     </th>
                   </tr>
                 </thead>
@@ -276,18 +326,8 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                         <td className="px-2 py-1 border-r border-[#d8b76a]">
                           <span
                             className={`px-2 py-0.5 rounded text-xs font-semibold ${(() => {
-                              const qtyVal =
-                                item.qty && item.qty !== "N/A"
-                                  ? parseFloat(
-                                      item.qty.replace(/[^0-9.]/g, "")
-                                    ) || 0
-                                  : 0;
-                              const weightVal =
-                                item.weight && item.weight !== "N/A"
-                                  ? parseFloat(
-                                      item.weight.replace(/[^0-9.]/g, "")
-                                    ) || 0
-                                  : 0;
+                              const qtyVal = parseValue(item.qty);
+                              const weightVal = parseValue(item.weight);
 
                               return (qtyVal && item.stockQty < qtyVal) ||
                                 (weightVal && item.stockQty < weightVal)
@@ -297,6 +337,21 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                           >
                             {item.stockQty.toFixed(2)}
                           </span>
+                        </td>
+                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                          <input
+                            type="number"
+                            step="0.001"
+                            min="0"
+                            value={item.extra || 0}
+                            onChange={(e) => {
+                              const updated = [...consumptionTable];
+                              updated[idx].extra =
+                                parseFloat(e.target.value) || 0;
+                              setConsumptionTable(updated);
+                            }}
+                            className="w-20 border border-gray-300 rounded px-1"
+                          />
                         </td>
                       </tr>
                     ))

@@ -5,6 +5,7 @@ import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import Select from "react-select";
 import { calculateRate } from "../../../utils/calc";
+import { plastic, slider } from "../../../data/dropdownData";
 
 const AddFgModal = ({ onClose, onAdded }) => {
   const [uoms, setUoms] = useState([]);
@@ -392,7 +393,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white w-[95vw] max-w-6xl rounded-lg p-6 border border-primary overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-primary scrollbar-track-[#fdf6e9]">
+      <div className="bg-white w-[95vw] max-w-6xl rounded-lg p-6 border border-primary overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-primary scrollbar-track-primary/20">
         <h2 className="text-xl font-bold mb-4 text-primary">
           Create Finished Goods BOM
         </h2>
@@ -547,7 +548,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     name="file"
                     multiple
                     onChange={(e) => handleChange(index, e)}
-                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-secondary hover:file:bg-primary/10 file:cursor-pointer"
+                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
                   />
                 </div>
                 <div className="flex flex-col">
@@ -557,7 +558,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                     name="printingFile"
                     multiple
                     onChange={(e) => handleChange(index, e)}
-                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-secondary hover:file:bg-primary/10 file:cursor-pointer"
+                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
                   />
                 </div>
               </div>
@@ -636,7 +637,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                       >
                         {/* Component Field - span 2 columns on medium+ screens */}
                         <div className="flex flex-col md:col-span-2">
-                          <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
+                          <label className="text-[12px] font-semibold mb-[2px] text-black">
                             Material{" "}
                             <span className="text-primary capitalize">
                               {mat.category ? `● ${mat.category}` : ""}
@@ -716,12 +717,12 @@ const AddFgModal = ({ onClose, onAdded }) => {
                             styles={{
                               control: (base, state) => ({
                                 ...base,
-                                borderColor: "#d8b76a",
+                                borderColor: "var(--color-primary)",
                                 boxShadow: state.isFocused
-                                  ? "0 0 0 1px #d8b76a"
+                                  ? "0 0 0 1px var(--color-primary)"
                                   : "none",
                                 "&:hover": {
-                                  borderColor: "#d8b76a",
+                                  borderColor: "var(--color-primary)",
                                 },
                               }),
                             }}
@@ -748,14 +749,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                         ].map((field) => {
                           // Hide based on category
                           if (
-                            [
-                              "slider",
-                              "bidding",
-                              "adjuster",
-                              "buckel",
-                              "dkadi",
-                              "accessories",
-                            ].includes(mat.category?.toLowerCase()) &&
+                            slider.includes(mat.category?.toLowerCase()) &&
                             (field === "height" || field === "width")
                           )
                             return null;
@@ -769,16 +763,14 @@ const AddFgModal = ({ onClose, onAdded }) => {
                           //   return null; // hide qty
                           // }
                           if (
-                            !["plastic", "non woven", "ld cord"].includes(
-                              mat.category?.toLowerCase()
-                            ) &&
+                            !plastic.includes(mat.category?.toLowerCase()) &&
                             field === "grams"
                           ) {
                             return null; // hide grams for others
                           }
                           // ✅ Add this new rule for zipper
                           if (
-                            mat.category?.toLowerCase() === "zipper" &&
+                            zipper.includes(mat.category?.toLowerCase()) &&
                             field === "height"
                           ) {
                             return null; // hide height only for zipper
@@ -792,7 +784,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
 
                           return (
                             <div className="flex flex-col" key={field}>
-                              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                                 {field === "partName"
                                   ? "Part Name"
                                   : field === "qty"
@@ -818,7 +810,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                                     ? "qty"
                                     : `${field}`
                                 }
-                                className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                                className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                                 value={mat[field] || ""}
                                 onChange={(e) =>
                                   handleMaterialChange(
@@ -838,7 +830,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                         <div className="flex gap-4 items-center">
                           {/* Cutting Type Dropdown */}
                           <select
-                            className="border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition px-2 py-1 text-sm"
+                            className="border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition px-2 py-1 text-sm"
                             value={mat.cuttingType || ""}
                             onChange={(e) =>
                               handleMaterialChange(
@@ -872,7 +864,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                                   e.target.checked
                                 )
                               }
-                              className="rounded border-gray-300 accent-[#d8b76a]"
+                              className="rounded border-gray-300 accent-primary"
                             />
                             Print
                           </label>
@@ -892,7 +884,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                   <button
                     type="button"
                     onClick={() => addMaterial(index)}
-                    className="bg-[#d8b76a] hover:bg-[#d8b76a91] text-[#292926] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
+                    className="bg-primary hover:bg-primary/80 text-secondary px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
                   >
                     <FiPlus /> Add RM/SFG
                   </button>
@@ -1149,7 +1141,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
             <button
               type="button"
               onClick={addRow}
-              className="bg-primary px-4 py-2 rounded flex items-center gap-1 cursor-pointer"
+              className="bg-primary text-secondary hover:bg-primary/80 px-4 py-2 rounded flex items-center gap-1 cursor-pointer"
             >
               <FiPlus /> Add FG
             </button>

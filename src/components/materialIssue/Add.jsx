@@ -45,11 +45,21 @@ const Add = ({ onClose, onAdded }) => {
     setLoading(true);
 
     try {
+      const mainStatus = itemDetails.every((it) => it.status !== "pending")
+        ? "issued"
+        : "pending";
       const payload = {
         bom: selectedItem.b._id,
         bomNo: selectedItem.b.bomNo,
-        itemDetails,
+        itemDetails: itemDetails.map((item) => ({
+          ...item,
+          status:
+            item.cuttingType && checkedSkus.includes(item.skuCode)
+              ? "in cutting"
+              : "pending",
+        })),
         consumptionTable, // already has isChecked, stockQty, type
+        status: mainStatus,
       };
       console.log("payload", payload);
 

@@ -52,7 +52,7 @@ const renderNestedMaterials = (
     return (
       <React.Fragment key={`${mat.id}-${level}-${idx}`}>
         <tr
-          className={`border-t ${border} cursor-pointer hover:bg-gray-50 text-[11px] rounded-sm border-separate`}
+          className={`border-t ${border}  cursor-pointer hover:bg-gray-50 text-[11px] rounded-sm border-separate`}
           onClick={() => {
             if (level === 1) toggleL2(currentKey);
             else if (level === 2) toggleL3(currentKey);
@@ -449,7 +449,7 @@ const FgMaster = ({ isOpen }) => {
         {hasPermission("FG", "write") && (
           <button
             onClick={() => toogleAddFG(showAddFG)}
-            className="w-full sm:w-auto justify-center bg-primary hover:bg-[#b38a37] text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
+            className="w-full sm:w-auto justify-center bg-primary hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
           >
             <FiPlus /> Add FG
           </button>
@@ -629,7 +629,7 @@ const FgMaster = ({ isOpen }) => {
                             <td colSpan="18" className="px-2">
                               <div className="border border-green-600 rounded overflow-x-auto mb-2 ">
                                 <table className="min-w-full text-[11px] text-left rounded">
-                                  <thead className="bg-green-100 rounded">
+                                  <thead className="bg-green-100 rounded ">
                                     <tr className="">
                                       <th className="px-2 font-semibold  pl-13">
                                         SKU Code

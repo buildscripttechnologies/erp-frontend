@@ -91,7 +91,8 @@ const BulkRmPanel = ({ onClose }) => {
         panno &&
         (category.includes("fabric") ||
           category.includes("cotton") ||
-          category.includes("canvas"))
+          category.includes("canvas") ||
+          category.includes("foam"))
       ) {
         updated[index].sqInchRate = Number(
           ((rate / panno / fabricRate) * 1.05).toFixed(2)

@@ -5,6 +5,7 @@ import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import Select from "react-select";
 import { calculateRate } from "../../../utils/calc";
+import { plastic, slider } from "../../../data/dropdownData";
 
 const AddSfgModal = ({ onClose, onAdded }) => {
   const [uoms, setUoms] = useState([]);
@@ -387,15 +388,15 @@ const AddSfgModal = ({ onClose, onAdded }) => {
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white w-[95vw] max-w-6xl rounded-lg p-6 border border-[#d8b76a] overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
-        <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">
+      <div className="bg-white w-[95vw] max-w-6xl rounded-lg p-6 border border-primary overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-primary scrollbar-track-primary/20">
+        <h2 className="text-xl font-bold mb-4 text-primary">
           Create Semi Finished Goods BOM
         </h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           {formList.map((item, index) => (
             <div
               key={index}
-              className="space-y-4 border border-[#d8b76a] p-4 rounded"
+              className="space-y-4 border border-primary p-4 rounded"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="flex flex-col">
@@ -406,7 +407,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     placeholder="Sku Code"
                     value={item.skuCode}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                     required
                   />
                 </div>
@@ -418,7 +419,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     placeholder="Item Name"
                     value={item.itemName}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                     required
                   />
                 </div>
@@ -430,7 +431,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     placeholder="HSN/SAC"
                     value={item.hsnOrSac}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   />{" "}
                 </div>
                 <div className="flex flex-col">
@@ -441,7 +442,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     placeholder="Base Price"
                     value={item.basePrice}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   />
                 </div>
                 <div className="flex flex-col">
@@ -452,7 +453,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     placeholder="GST %"
                     value={item.gst}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   />
                 </div>
                 <div className="flex flex-col">
@@ -463,7 +464,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     placeholder="MOQ"
                     value={item.moq}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   />
                 </div>
                 <div className="flex flex-col">
@@ -472,7 +473,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     name="UOM"
                     value={item.UOM}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                     required
                   >
                     <option value="">Select UOM</option>
@@ -489,7 +490,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     name="qualityInspectionNeeded"
                     value={item.qualityInspectionNeeded}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   >
                     <option value="">Select Quality Inspection</option>
                     <option value={true}>Required</option>
@@ -502,7 +503,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     name="type"
                     value={item.type}
                     onChange={(e) => handleChange(index, e)}
-                    className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   >
                     <option value="">Select Type</option>
                     <option value="SFG">SFG</option>
@@ -514,7 +515,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     name="location"
                     value={item.location}
                     onChange={(e) => handleChange(index, e)}
-                    className=" p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className=" p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   >
                     <option value="">Select Location</option>
                     {locations.map((l) => (
@@ -531,8 +532,8 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     name="file"
                     multiple
                     onChange={(e) => handleChange(index, e)}
-                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-1 focus:ring-[#d8b76a] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
-                    // className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
+                    // className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   />
                 </div>
                 <div className="flex flex-col">
@@ -542,8 +543,8 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     name="printingFile"
                     multiple
                     onChange={(e) => handleChange(index, e)}
-                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-1 focus:ring-[#d8b76a] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
-                    // className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
+                    // className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   />
                 </div>
               </div>
@@ -554,7 +555,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   value={item.description}
                   onChange={(e) => handleChange(index, e)}
                   placeholder="Description (optional)"
-                  className="w-full p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                  className="w-full p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                 />
               </div>
               <div className="flex-col">
@@ -624,7 +625,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                         >
                           {/* Material Selector */}
                           <div className="flex flex-col md:col-span-2">
-                            <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
+                            <label className="text-[12px] font-semibold mb-[2px] text-black">
                               Material{" "}
                               <span className="text-primary capitalize">
                                 {mat.category ? `● ${mat.category}` : ""}
@@ -705,12 +706,12 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                               styles={{
                                 control: (base, state) => ({
                                   ...base,
-                                  borderColor: "#d8b76a",
+                                  borderColor: "var(--color-primary)",
                                   boxShadow: state.isFocused
-                                    ? "0 0 0 1px #d8b76a"
+                                    ? "0 0 0 1px var(--color-primary)"
                                     : "none",
                                   "&:hover": {
-                                    borderColor: "#d8b76a",
+                                    borderColor: "var(--color-primary)",
                                   },
                                 }),
                               }}
@@ -737,14 +738,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                           ].map((field) => {
                             // Hide based on category
                             if (
-                              [
-                                "slider",
-                                "bidding",
-                                "adjuster",
-                                "buckel",
-                                "dkadi",
-                                "accessories",
-                              ].includes(mat.category?.toLowerCase()) &&
+                              slider.includes(mat.category?.toLowerCase()) &&
                               (field === "height" || field === "width")
                             )
                               return null;
@@ -758,24 +752,27 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                             //   return null; // hide qty
                             // }
                             if (
-                              !["plastic", "non woven"].includes(
-                                mat.category?.toLowerCase()
-                              ) &&
+                              !plastic.includes(mat.category?.toLowerCase()) &&
                               field === "grams"
                             ) {
                               return null; // hide grams for others
                             }
                             // ✅ Add this new rule for zipper
                             if (
-                              mat.category?.toLowerCase() === "zipper" &&
+                              zipper.includes(mat.category?.toLowerCase()) &&
                               field === "height"
                             ) {
                               return null; // hide height only for zipper
                             }
-
+                            if (
+                              mat.category?.toLowerCase() === "ld cord" &&
+                              field === "height"
+                            ) {
+                              return null; // hide height only for zipper
+                            }
                             return (
                               <div className="flex flex-col" key={field}>
-                                <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                                   {field === "partName"
                                     ? "Part Name"
                                     : field === "qty"
@@ -801,7 +798,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                                       ? "qty"
                                       : `${field}`
                                   }
-                                  className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                                  className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                                   value={mat[field] || ""}
                                   onChange={(e) =>
                                     handleMaterialChange(
@@ -821,7 +818,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                           <div className="flex gap-4 items-center">
                             {/* Cutting Type Dropdown */}
                             <select
-                              className="border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition px-2 py-1 text-sm"
+                              className="border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition px-2 py-1 text-sm"
                               value={mat.cuttingType || ""}
                               onChange={(e) =>
                                 handleMaterialChange(
@@ -861,7 +858,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                                     e.target.checked
                                   )
                                 }
-                                className="rounded border-gray-300 accent-[#d8b76a]"
+                                className="rounded border-gray-300 accent-primary"
                               />
                               Print
                             </label>
@@ -883,7 +880,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   <button
                     type="button"
                     onClick={() => addMaterial(index)}
-                    className="bg-[#d8b76a] hover:bg-[#d8b76a91] text-[#292926] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
+                    className="bg-primary hover:bg-primary/80 text-secondary px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
                   >
                     <FiPlus /> Add RM/SFG
                   </button>
@@ -1107,7 +1104,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
             <button
               type="button"
               onClick={addRow}
-              className="bg-[#d8b76a] px-4 py-2 rounded flex items-center gap-1 cursor-pointer"
+              className="bg-primary text-secondary hover:bg-primary/80 px-4 py-2 rounded flex items-center gap-1 cursor-pointer"
             >
               <FiPlus /> Add SFG
             </button>
@@ -1117,19 +1114,19 @@ const AddSfgModal = ({ onClose, onAdded }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded cursor-pointer"
+              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-black rounded cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#d8b76a] flex justify-center items-center hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded cursor-pointer"
+              className="px-6 py-2 bg-primary flex justify-center items-center hover:bg-primary/80 text-secondary font-semibold rounded cursor-pointer"
             >
               {loading ? (
                 <>
                   <span className="mr-2">Saving...</span>
-                  <ClipLoader size={20} color="#292926" />
+                  <ClipLoader size={20} color="secondary" />
                 </>
               ) : (
                 "Save All"

@@ -31,7 +31,8 @@ import MaterialInward from "./components/materialInward/MaterialInward";
 import MaterialIssue from "./components/materialIssue/MaterialIssue";
 import MaterialReceive from "./components/materialReceive/MaterialReceive";
 import Cutting from "./components/jobWork/insideFactory/Cutting";
-import Printing from "./components/jobWork/outsideFactory/Printing";
+import Printing from "./components/jobWork/insideFactory/Printing";
+import OutsideFactory from "./components/jobWork/outsideFactory/OutsideFactory";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -177,7 +178,7 @@ const App = () => {
           />
 
           <Route
-            path="/inside-factory/cutting"
+            path="/inside-company/cutting"
             element={
               isAuthenticated ? (
                 <Dashboard>
@@ -190,11 +191,23 @@ const App = () => {
           />
 
           <Route
-            path="/outside-factory/printing"
+            path="/inside-company/printing"
             element={
               isAuthenticated ? (
                 <Dashboard>
                   <Printing />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+          <Route
+            path="/outside-company"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <OutsideFactory />
                 </Dashboard>
               ) : (
                 <Navigate to="/login" />

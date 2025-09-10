@@ -10,7 +10,7 @@ const SfgDetailsSection = ({ sfgData }) => {
   // console.log("sfgData", sfgData);
 
   return (
-    <div className=" rounded mx-2 mb-2 text-[11px] text-secondary">
+    <div className=" rounded mx-2 mb-2 text-[11px] text-black">
       {/* <h2 className="text-[14px] text-primary font-bold underline underline-offset-4 mb-2">
         FG Details
       </h2> */}

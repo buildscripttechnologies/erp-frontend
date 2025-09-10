@@ -27,6 +27,24 @@ export const availableModules = [
   "Cutting",
   "Printing",
   "PO",
+  "Cutting",
+  "Printing",
+  "Outside Company",
 ];
 
 export const availableActions = ["read", "write", "update", "delete"];
+
+export const fabric = ["fabric", "canvas", "cotton", "foam"];
+
+export const slider = [
+  "slider",
+  "bidding",
+  "adjuster",
+  "buckel",
+  "dkadi",
+  "accessories",
+];
+
+export const plastic = ["plastic", "non woven", "ld cord"];
+
+export const zipper = ["zipper", "webbing"];

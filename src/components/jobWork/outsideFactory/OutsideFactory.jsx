@@ -17,7 +17,7 @@ import { FaBarcode } from "react-icons/fa";
 import { useRef } from "react";
 import MIdetails from "../../materialIssue/Midetails";
 
-const Printing = () => {
+const OutsideFactory = () => {
   const { hasPermission } = useAuth();
   const [mi, setMis] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -106,7 +106,9 @@ const Printing = () => {
         // toDate: filters.toDate,
       });
 
-      const res = await axios.get(`/mi/cutting?${queryParams.toString()}`);
+      const res = await axios.get(
+        `/mi/outside-company?${queryParams.toString()}`
+      );
       console.log("mis res", res);
 
       if (res.data.status == 403) {
@@ -205,8 +207,15 @@ const Printing = () => {
               <th className="px-2 py-1.5 ">Prod No</th>
               <th className="px-2 py-1.5 ">BOM No</th>
               <th className="px-2 py-1.5 ">Product Name</th>
+              <th className="px-2 py-1.5 ">Sku Code</th>
+              <th className="px-2 py-1.5 ">Item Name</th>
+              <th className="px-2 py-1.5 ">Cutting Type</th>
+              <th className="px-2 py-1.5 ">Part Name</th>
+              <th className="px-2 py-1.5 ">Height</th>
+              <th className="px-2 py-1.5 ">Width</th>
+              <th className="px-2 py-1.5 ">Qty</th>
               <th className="px-2 py-1.5 ">Status</th>
-              <th className="px-2 py-1.5 ">Created By</th>
+
               <th className="px-2 py-1.5">Actions</th>
             </tr>
           </thead>
@@ -260,12 +269,34 @@ const Printing = () => {
                         {mi.bomNo}
                       </td>
                       <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.bom.productName}
+                        {mi.productName}
                       </td>
+                      <td className="px-2  border-r border-[#d8b76a]">
+                        {mi.skuCode}
+                      </td>
+                      <td className="px-2  border-r border-[#d8b76a]">
+                        {mi.itemName}
+                      </td>
+                      <td className="px-2  border-r border-[#d8b76a]">
+                        {mi.cuttingType}
+                      </td>
+                      <td className="px-2  border-r border-[#d8b76a]">
+                        {mi.partName}
+                      </td>
+                      <td className="px-2  border-r border-[#d8b76a]">
+                        {mi.height}
+                      </td>
+                      <td className="px-2  border-r border-[#d8b76a]">
+                        {mi.width}
+                      </td>
+                      <td className="px-2  border-r border-[#d8b76a]">
+                        {mi.qty}
+                      </td>
+
                       <td className="px-2  border-r border-[#d8b76a]">
                         <span
                           className={`${
-                            mi.status == "pending"
+                            mi.status == "in cutting"
                               ? "bg-yellow-200"
                               : "bg-green-200"
                           }  py-0.5 px-1 rounded font-bold capitalize `}
@@ -273,27 +304,12 @@ const Printing = () => {
                           {mi.status || "-"}
                         </span>
                       </td>
-
+                      {/* 
                       <td className="px-2  border-r border-[#d8b76a]">
                         {mi.createdBy?.fullName || "-"}
-                      </td>
+                      </td> */}
 
                       <td className="px-2 py-1 flex gap-3 text-sm text-[#d8b76a]">
-                        {/* <button
-                        disabled={generatingId === mi._id}
-                        onClick={() => handlePrint(mi)}
-                        className="text-[#d8b76a] hover:underline text-[11px] cursor-pointer"
-                      >
-                        {generatingId === stock._id ? (
-                          <ClipLoader size={11} color="primary" />
-                        ) : (
-                          <FaBarcode
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="View Barcodes"
-                          />
-                        )}
-                      </button> */}
-
                         {hasPermission("Material Inward", "update") ? (
                           <FiEdit
                             data-tooltip-id="statusTip"
@@ -330,13 +346,13 @@ const Printing = () => {
                         />
                       </td>
                     </tr>
-                    {expandedMIId === mi._id && (
+                    {/* {expandedMIId === mi._id && (
                       <tr className="">
                         <td colSpan="100%">
-                          <MIdetails MI={mi} filter="print" />
+                          <MIdetails MI={mi} filter="cutting" />
                         </td>
                       </tr>
-                    )}
+                    )} */}
                   </React.Fragment>
                 ))}
                 {mi.length === 0 && (
@@ -385,4 +401,4 @@ const Printing = () => {
   );
 };
 
-export default Printing;
+export default OutsideFactory;

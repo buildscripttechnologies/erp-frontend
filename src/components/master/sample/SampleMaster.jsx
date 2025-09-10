@@ -211,33 +211,33 @@ const SampleMaster = ({ isOpen }) => {
 
         <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
           <div className="relative w-full sm:w-80">
-            <FiSearch className="absolute left-3 top-2.5 text-[#d8b76a]" />
+            <FiSearch className="absolute left-3 top-2.5 text-primary" />
             <input
               type="text"
               placeholder="Search by Sample Number or Partyname..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:outline-none"
+              className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:outline-none"
             />
           </div>
           {hasPermission("Sample", "write") && (
             <button
               onClick={() => setShowModal(true)}
-              className="bg-[#d8b76a] hover:bg-[#b38a37]  justify-center text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
+              className="bg-primary hover:bg-primary/80  justify-center text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
             >
               <FiPlus /> Add Sample
             </button>
           )}
         </div>
 
-        <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
+        <div className="relative overflow-x-auto  overflow-y-auto rounded border border-primary shadow-sm">
           <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[98vw]`}`}>
             <table
               className={
                 "text-[11px] whitespace-nowrap min-w-[100vw] text-left"
               }
             >
-              <thead className="bg-[#d8b76a] text-[#292926]">
+              <thead className="bg-primary text-secondary">
                 <tr>
                   <th className="px-[8px] py-1.5 ">#</th>
                   <th className="px-[8px] ">Created At</th>
@@ -264,19 +264,19 @@ const SampleMaster = ({ isOpen }) => {
                     {Samples.map((b, i) => (
                       <React.Fragment key={b._id}>
                         <tr
-                          className="border-t border-[#d8b76a] hover:bg-gray-50 cursor-pointer"
+                          className="border-t border-primary hover:bg-gray-50 cursor-pointer"
                           onClick={() =>
                             setExpandedSampleId(
                               expandedSampleId === b._id ? null : b._id
                             )
                           }
                         >
-                          <td className="px-[8px] border-r border-[#d8b76a] py-1">
+                          <td className="px-[8px] border-r border-primary py-1">
                             {(pagination.currentPage - 1) * pagination.limit +
                               i +
                               1}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {new Date(b.createdAt).toLocaleString("en-IN", {
                               day: "2-digit",
                               month: "short",
@@ -286,7 +286,7 @@ const SampleMaster = ({ isOpen }) => {
                               hour12: true,
                             })}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {new Date(b.updatedAt).toLocaleString("en-IN", {
                               day: "2-digit",
                               month: "short",
@@ -296,29 +296,29 @@ const SampleMaster = ({ isOpen }) => {
                               hour12: true,
                             })}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] capitalize ">
+                          <td className="px-[8px] border-r border-primary capitalize ">
                             {b.sampleNo || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a]  capitalize">
+                          <td className="px-[8px] border-r border-primary  capitalize">
                             {b.partyName || "-"}
                           </td>
 
-                          <td className="px-[8px] border-r border-[#d8b76a]  capitalize">
+                          <td className="px-[8px] border-r border-primary  capitalize">
                             {b.product?.name || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {`${b.height ?? 0} x ${b.width ?? 0} x ${
                               b.depth ?? 0
                             }`}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {new Date(b.date).toLocaleString("en-IN", {
                               day: "2-digit",
                               month: "short",
                               year: "numeric",
                             })}
                           </td>
-                          {/* <td className="px-[8px] border-r border-[#d8b76a] ">
+                          {/* <td className="px-[8px] border-r border-primary ">
                             <Toggle
                               checked={b.isActive}
                               onChange={() =>
@@ -326,14 +326,14 @@ const SampleMaster = ({ isOpen }) => {
                               }
                             />
                           </td> */}
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {b.createdBy?.fullName || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {Array.isArray(b.file) && b.file.length > 0 ? (
                               <button
                                 onClick={() => setOpenAttachments(b.file)}
-                                className="cursor-pointer hover:text-[#d8b76a] hover:underline text-center items-center justify-center"
+                                className="cursor-pointer hover:text-primary hover:underline text-center items-center justify-center"
                               >
                                 View
                               </button>
@@ -348,15 +348,15 @@ const SampleMaster = ({ isOpen }) => {
                               />
                             )}
                           </td>
-                          <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-[#d8b76a]">
+                          <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-primary">
                             <FaFileDownload
                               onClick={() => handlePreviewSample(b)}
-                              className="cursor-pointer text-[#d8b76a] hover:text-green-600"
+                              className="cursor-pointer text-primary hover:text-green-600"
                             />
                             {hasPermission("Sample", "update") ? (
                               <FiEdit
                                 onClick={() => setEditingSample(b)}
-                                className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                                className="cursor-pointer text-primary hover:text-blue-600"
                               />
                             ) : (
                               "-"
@@ -364,7 +364,7 @@ const SampleMaster = ({ isOpen }) => {
                             {hasPermission("Sample", "delete") ? (
                               <FiTrash2
                                 onClick={() => handleDelete(b._id)}
-                                className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                                className="cursor-pointer text-primary hover:text-red-600"
                               />
                             ) : (
                               "-"

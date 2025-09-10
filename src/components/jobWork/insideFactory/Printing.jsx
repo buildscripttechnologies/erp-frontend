@@ -17,7 +17,7 @@ import { FaBarcode } from "react-icons/fa";
 import { useRef } from "react";
 import MIdetails from "../../materialIssue/Midetails";
 
-const Cutting = () => {
+const Printing = () => {
   const { hasPermission } = useAuth();
   const [mi, setMis] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -106,7 +106,7 @@ const Cutting = () => {
         // toDate: filters.toDate,
       });
 
-      const res = await axios.get(`/mi/cutting?${queryParams.toString()}`);
+      const res = await axios.get(`/mi/printing?${queryParams.toString()}`);
       console.log("mis res", res);
 
       if (res.data.status == 403) {
@@ -159,7 +159,7 @@ const Cutting = () => {
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Cutting Job{" "}
+        Printing Job{" "}
         <span className="text-gray-500">({pagination.totalResults})</span>
       </h2>
 
@@ -399,4 +399,4 @@ const Cutting = () => {
   );
 };
 
-export default Cutting;
+export default Printing;

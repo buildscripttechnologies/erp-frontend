@@ -177,9 +177,9 @@ const renderNestedMaterials = (
           (mat.rm?.length > 0 || mat.sfg?.length > 0) && (
             <tr>
               <td colSpan="12">
-                <div className="mt-2 border border-[#d8b76a]/30 rounded">
+                <div className="mt-2 border border-primary rounded">
                   <table className="min-w-full text-sm text-left">
-                    <thead className="bg-[#d8b76a]/20">
+                    <thead className="bg-primary/20">
                       <tr className="">
                         <th className="px-2 font-semibold rounded-sm pl-18">
                           SKU Code
@@ -436,19 +436,19 @@ const SfgMaster = ({ isOpen }) => {
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
         <div className="relative w-full sm:w-80">
-          <FiSearch className="absolute left-3 top-2 text-[#d8b76a]" />
+          <FiSearch className="absolute left-3 top-2 text-primary" />
           <input
             type="text"
             placeholder="Search by SKU, Item Name, etc..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+            className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
           />
         </div>
         {hasPermission("SFG", "update") && (
           <button
             onClick={() => toogleAddSFG(showAddSFG)}
-            className="w-full sm:w-auto justify-center bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
+            className="w-full sm:w-auto justify-center bg-primary hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
           >
             <FiPlus /> Add SFG
           </button>
@@ -461,10 +461,10 @@ const SfgMaster = ({ isOpen }) => {
         />
       )}
 
-      <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
+      <div className="relative overflow-x-auto  overflow-y-auto rounded border border-primary shadow-sm">
         <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[98vw]`}`}>
           <table className={"text-[11px] whitespace-nowrap min-w-[100vw]"}>
-            <thead className="bg-[#d8b76a] text-[#292926] text-left ">
+            <thead className="bg-primary text-secondary text-left ">
               <tr>
                 <th className="px-[8px] py-1">#</th>
                 <th className="px-[8px] py-1">Created At</th>
@@ -502,15 +502,15 @@ const SfgMaster = ({ isOpen }) => {
                               expandedSfgId === sfg.id ? null : sfg.id
                             ); // second funct
                         }}
-                        className="border-t  border-[#d8b76a] hover:bg-gray-50 cursor-pointer "
+                        className="border-t  border-primary hover:bg-gray-50 cursor-pointer "
                       >
-                        <td className="px-[8px]  border-r border-r-[#d8b76a] ">
+                        <td className="px-[8px]  border-r border-r-primary ">
                           {Number(pagination.currentPage - 1) *
                             Number(pagination.limit) +
                             index +
                             1}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a]">
+                        <td className="px-[8px]  border-r border-r-primary">
                           {new Date(sfg.createdAt).toLocaleString("en-IN", {
                             day: "2-digit",
                             month: "short",
@@ -520,7 +520,7 @@ const SfgMaster = ({ isOpen }) => {
                             hour12: true,
                           })}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a]">
+                        <td className="px-[8px]  border-r border-r-primary">
                           {new Date(sfg.updatedAt).toLocaleString("en-IN", {
                             day: "2-digit",
                             month: "short",
@@ -530,19 +530,19 @@ const SfgMaster = ({ isOpen }) => {
                             hour12: true,
                           })}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a]">
+                        <td className="px-[8px]  border-r border-r-primary">
                           {sfg.skuCode}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a] ">
+                        <td className="px-[8px]  border-r border-r-primary ">
                           {sfg.itemName}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a]  ">
+                        <td className="px-[8px]  border-r border-r-primary  ">
                           {sfg.description || "-"}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a]">
+                        <td className="px-[8px]  border-r border-r-primary">
                           {sfg.hsnOrSac || "-"}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a]">
+                        <td className="px-[8px]  border-r border-r-primary">
                           <Toggle
                             checked={sfg.qualityInspectionNeeded}
                             onChange={() =>
@@ -553,22 +553,22 @@ const SfgMaster = ({ isOpen }) => {
                             }
                           />
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a]">
+                        <td className="px-[8px]  border-r border-r-primary">
                           {sfg.location}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a]">
+                        <td className="px-[8px]  border-r border-r-primary">
                           {sfg.basePrice}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a]">
+                        <td className="px-[8px]  border-r border-r-primary">
                           {sfg.moq || "-"}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a]">
+                        <td className="px-[8px]  border-r border-r-primary">
                           {sfg.type}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a]">
+                        <td className="px-[8px]  border-r border-r-primary">
                           {sfg.uom}
                         </td>
-                        <td className="px-[8px]   border-r border-r-[#d8b76a]">
+                        <td className="px-[8px]   border-r border-r-primary">
                           <Toggle
                             className=""
                             checked={sfg.status == "Active"}
@@ -577,11 +577,11 @@ const SfgMaster = ({ isOpen }) => {
                             }
                           />
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a]">
+                        <td className="px-[8px]  border-r border-r-primary">
                           {Array.isArray(sfg.files) && sfg.files.length > 0 ? (
                             <button
                               onClick={() => setOpenAttachments(sfg.files)}
-                              className="cursor-pointer hover:text-[#d8b76a] hover:underline text-center items-center justify-center"
+                              className="cursor-pointer hover:text-primary hover:underline text-center items-center justify-center"
                             >
                               View
                             </button>
@@ -596,22 +596,22 @@ const SfgMaster = ({ isOpen }) => {
                             />
                           )}
                         </td>
-                        <td className="px-[8px]  border-r border-r-[#d8b76a]">
+                        <td className="px-[8px]  border-r border-r-primary">
                           {sfg.createdBy?.fullName || "-"}
                         </td>
-                        <td className="px-[8px] pt-2 text-sm flex gap-2 border-r border-r-[#d8b76a]/30 text-[#d8b76a]">
+                        <td className="px-[8px] pt-2 text-sm flex gap-2 border-r border-r-primary/30 text-primary">
                           <FaFileDownload
                             onClick={() => generateBOM(sfg)}
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Download"
-                            className="cursor-pointer text-[#d8b76a] hover:text-green-600"
+                            className="cursor-pointer text-primary hover:text-green-600"
                           />
 
                           {hasPermission("SFG", "update") ? (
                             <FiEdit
                               data-tooltip-id="statusTip"
                               data-tooltip-content="Edit"
-                              className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                              className="cursor-pointer text-primary hover:text-blue-600"
                               onClick={() => setEditingSfg(sfg)}
                             />
                           ) : (
@@ -621,7 +621,7 @@ const SfgMaster = ({ isOpen }) => {
                             <FiTrash2
                               data-tooltip-id="statusTip"
                               data-tooltip-content="Delete"
-                              className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                              className="cursor-pointer text-primary hover:text-red-600"
                               onClick={() => handleDelete(sfg.id)}
                             />
                           ) : (
@@ -632,7 +632,7 @@ const SfgMaster = ({ isOpen }) => {
                             place="top"
                             style={{
                               backgroundColor: "#292926",
-                              color: "#d8b76a",
+                              color: "white",
                               fontSize: "12px",
                               fontWeight: "bold",
                             }}
