@@ -106,11 +106,13 @@ const Receive = ({ onClose, onAdded }) => {
                       return {
                         ...c,
                         isReceived: false,
+                        originalQty: c.qty,
+                        originalWeight: c.weight,
                       };
                     }
                   );
 
-                  setConsumptionTable(actualItem.consumptionTable);
+                  setConsumptionTable(enhanced);
                 }}
                 placeholder="Item Name or SKU"
                 isSearchable
@@ -165,59 +167,6 @@ const Receive = ({ onClose, onAdded }) => {
                   {consumptionTable?.length > 0 ? (
                     consumptionTable.map((item, idx) => (
                       <tr key={idx} className="border-b border-[#d8b76a]">
-                        {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
-                          <input
-                            type="checkbox"
-                            checked={item.isChecked}
-                            onChange={(e) => {
-                              const updated = [...consumptionTable];
-                              const currentRow = updated[idx];
-
-                              // Deduction from weight or qty
-                              let deduction = 0;
-                              if (
-                                currentRow.weight &&
-                                currentRow.weight !== "N/A"
-                              ) {
-                                deduction = parseValue(currentRow.weight);
-                              } else if (
-                                currentRow.qty &&
-                                currentRow.qty !== "N/A"
-                              ) {
-                                deduction = parseValue(currentRow.qty);
-                              }
-
-                              if (e.target.checked) {
-                                if (currentRow.stockQty < deduction) {
-                                  toast.error("Insufficient StockQty!");
-                                  return;
-                                }
-                                currentRow.isChecked = true;
-                                currentRow.stockQty = parseFloat(
-                                  (currentRow.stockQty - deduction).toFixed(2)
-                                );
-                                setCheckedSkus((prev) => [
-                                  ...prev,
-                                  currentRow.skuCode,
-                                ]);
-                              } else {
-                                currentRow.isChecked = false;
-                                currentRow.stockQty = parseFloat(
-                                  (currentRow.stockQty + deduction).toFixed(2)
-                                );
-                                setCheckedSkus((prev) =>
-                                  prev.filter(
-                                    (sku) => sku !== currentRow.skuCode
-                                  )
-                                );
-                              }
-
-                              updated[idx] = currentRow;
-                              setConsumptionTable(updated);
-                            }}
-                            className="accent-primary"
-                          />
-                        </td> */}
                         <td className="px-2 py-1 border-r border-[#d8b76a]">
                           {idx + 1}
                         </td>
@@ -255,42 +204,89 @@ const Receive = ({ onClose, onAdded }) => {
                               const updated = [...consumptionTable];
                               const currentRow = { ...updated[idx] };
 
-                              // keep raw string while typing
-                              currentRow.receiveQty = raw;
+                              // ✅ Case: cleared input
+                              if (raw === "") {
+                                const prevReceive =
+                                  parseFloat(currentRow.prevReceive) || 0;
 
+                                currentRow.receiveQty = "";
+                                currentRow.isReceived = false;
+
+                                // reset stock by removing previous receive
+                                currentRow.stockQty = parseFloat(
+                                  (
+                                    (parseFloat(currentRow.stockQty) || 0) -
+                                    prevReceive
+                                  ).toFixed(3)
+                                );
+                                currentRow.prevReceive = 0;
+
+                                // reset issue qty/weight
+                                if (currentRow.originalQty > 0) {
+                                  currentRow.qty =
+                                    currentRow.originalQty.toFixed(3);
+                                  currentRow.weight = "N/A";
+                                } else if (currentRow.originalWeight > 0) {
+                                  currentRow.weight =
+                                    currentRow.originalWeight.toFixed(3);
+                                  currentRow.qty = "N/A";
+                                }
+
+                                updated[idx] = currentRow;
+                                setConsumptionTable(updated);
+                                return;
+                              }
+
+                              // ✅ Case: valid number
                               const value = parseFloat(raw);
                               const issueQty =
                                 parseFloat(
-                                  item.qty != "N/A" ? item.qty : item.weight
-                                ) || 0; // issued qty/weight
+                                  item.qty !== "N/A" ? item.qty : item.weight
+                                ) || 0;
+
+                              // keep raw string
+                              currentRow.receiveQty = raw;
 
                               if (!isNaN(value)) {
-                                // ✅ check max limit
                                 if (value > issueQty) {
                                   toast.error(
-                                    "Receive Qty cannot be greater than Issue Qty"
+                                    "Receive Qty cannot be greater than Issue Qty/Weight"
                                   );
-                                  return; // prevent updating
+                                  return;
                                 }
 
-                                currentRow.isReceived = true;
+                                currentRow.isReceived = value > 0;
 
                                 // restore stock before applying new received qty
                                 const prevReceive =
-                                  parseFloat(item.receiveQty) || 0;
+                                  parseFloat(currentRow.prevReceive) || 0;
                                 currentRow.stockQty = parseFloat(
                                   (
-                                    currentRow.stockQty -
+                                    (parseFloat(currentRow.stockQty) || 0) -
                                     prevReceive +
                                     value
                                   ).toFixed(3)
                                 );
+                                currentRow.prevReceive = value;
+
+                                // live decrease from issue qty/weight
+                                if (currentRow.originalQty > 0) {
+                                  currentRow.qty = (
+                                    currentRow.originalQty - value
+                                  ).toFixed(3);
+                                  currentRow.weight = "N/A";
+                                } else if (currentRow.originalWeight > 0) {
+                                  currentRow.weight = (
+                                    currentRow.originalWeight - value
+                                  ).toFixed(3);
+                                  currentRow.qty = "N/A";
+                                }
                               }
 
                               updated[idx] = currentRow;
                               setConsumptionTable(updated);
                             }}
-                            className="border px-2 py-1 rounded w-20"
+                            className="border border-[#d8b76a] px-2 py-1 rounded w-20"
                           />
                         </td>
 

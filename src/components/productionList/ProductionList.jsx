@@ -1,23 +1,26 @@
 import React, { useEffect, useState } from "react";
-import axios from "../../../utils/axios";
+import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
 
 // import EditstockModal from "./EditstockModal";
-import TableSkeleton from "../../TableSkeleton";
-import ScrollLock from "../../ScrollLock";
+import TableSkeleton from "../TableSkeleton";
+import ScrollLock from "../ScrollLock";
 import Toggle from "react-toggle";
-import PaginationControls from "../../PaginationControls";
+import PaginationControls from "../PaginationControls";
 import { Tooltip } from "react-tooltip";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
 // import LabelPrint from "./LabelPrint";
-import { FaArrowCircleRight, FaBarcode } from "react-icons/fa";
+import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
-import MIdetails from "../../materialIssue/Midetails";
+import MIdetails from "../materialIssue/Midetails";
 
-const OutsideFactory = () => {
+// import UpdateMI from "./UpdateMI";
+// import Add from "./Add";
+
+const ProductionList = () => {
   const { hasPermission } = useAuth();
   const [mi, setMis] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -106,9 +109,7 @@ const OutsideFactory = () => {
         // toDate: filters.toDate,
       });
 
-      const res = await axios.get(
-        `/mi/outside-company?${queryParams.toString()}`
-      );
+      const res = await axios.get(`/mi/get-all?${queryParams.toString()}`);
       console.log("mis res", res);
 
       if (res.data.status == 403) {
@@ -135,43 +136,10 @@ const OutsideFactory = () => {
     fetchMis();
   }, []);
 
-  const handleNextStage = async (item) => {
-    // decide next stage
-    const nextStage = "in stitching";
-
-    // confirm with user
-    if (!window.confirm(`Move this item to next stage: ${nextStage}?`)) return;
-
-    try {
-      const res = await axios.patch("/mi/next-stage", {
-        miId: item.miId,
-        itemId: item._id,
-        updates: { status: nextStage },
-      });
-
-      if (res.data.status === 403) {
-        toast.error(res.data.message);
-        return;
-      }
-
-      if (res.data.status === 200) {
-        toast.success(`Item moved to: ${nextStage}`);
-        fetchMis(); // refresh data
-      }
-    } catch (err) {
-      toast.error("Failed to move to next stage");
-    }
-  };
-
-  useEffect(() => {
-    fetchMis(1);
-    // fetchUoms();
-  }, []);
-
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Outside Company Jobs{" "}
+        Production List{" "}
         <span className="text-gray-500">({pagination.totalResults})</span>
       </h2>
 
@@ -186,26 +154,7 @@ const OutsideFactory = () => {
             className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
           />
         </div>
-
-        {/* {hasPermission("Material Issue", "create") && (
-          <button
-            onClick={() => setFormOpen(!formOpen)}
-            className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
-          >
-            <FiPlus />
-            {formOpen ? "Close Form" : "Issue Material"}
-          </button>
-        )} */}
       </div>
-
-      {formOpen && (
-        <Add
-          isOpen={formOpen}
-          setIsOpen={setFormOpen}
-          onClose={() => setFormOpen(false)}
-          onAdded={fetchMis}
-        />
-      )}
 
       <div className="overflow-x-auto rounded border border-[#d8b76a] shadow-sm">
         <table className="min-w-full text-[11px] ">
@@ -217,15 +166,8 @@ const OutsideFactory = () => {
               <th className="px-2 py-1.5 ">Prod No</th>
               <th className="px-2 py-1.5 ">BOM No</th>
               <th className="px-2 py-1.5 ">Product Name</th>
-              <th className="px-2 py-1.5 ">Sku Code</th>
-              <th className="px-2 py-1.5 ">Item Name</th>
-              <th className="px-2 py-1.5 ">Cutting Type</th>
-              <th className="px-2 py-1.5 ">Part Name</th>
-              <th className="px-2 py-1.5 ">Height</th>
-              <th className="px-2 py-1.5 ">Width</th>
-              <th className="px-2 py-1.5 ">Qty</th>
               <th className="px-2 py-1.5 ">Status</th>
-
+              <th className="px-2 py-1.5 ">Created By</th>
               <th className="px-2 py-1.5">Actions</th>
             </tr>
           </thead>
@@ -233,7 +175,7 @@ const OutsideFactory = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(15).fill({})}
+                columns={Array(9).fill({})}
               />
             ) : (
               <>
@@ -279,53 +221,67 @@ const OutsideFactory = () => {
                         {mi.bomNo}
                       </td>
                       <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.productName}
+                        {mi.bom.productName}
                       </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.skuCode}
-                      </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.itemName}
-                      </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.cuttingType}
-                      </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.partName}
-                      </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.height}
-                      </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.width}
-                      </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.qty}
-                      </td>
-
                       <td className="px-2  border-r border-[#d8b76a]">
                         <span
                           className={`${
-                            mi.status == "in cutting"
+                            mi.status == "pending"
                               ? "bg-yellow-200"
+                              : mi.status == "in progress" ||
+                                mi.status == "issued"
+                              ? "bg-orange-200"
                               : "bg-green-200"
                           }  py-0.5 px-1 rounded font-bold capitalize `}
                         >
                           {mi.status || "-"}
                         </span>
                       </td>
-                      {/* 
+
                       <td className="px-2  border-r border-[#d8b76a]">
                         {mi.createdBy?.fullName || "-"}
-                      </td> */}
+                      </td>
 
                       <td className="px-2 py-1 flex gap-3 text-sm text-[#d8b76a]">
-                        <FaArrowCircleRight
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Move to Next Stage"
-                          className="cursor-pointer text-[#d8b76a] hover:text-green-600"
-                          onClick={() => handleNextStage(mi)}
-                        />
+                        {/* <button
+                        disabled={generatingId === mi._id}
+                        onClick={() => handlePrint(mi)}
+                        className="text-[#d8b76a] hover:underline text-[11px] cursor-pointer"
+                      >
+                        {generatingId === stock._id ? (
+                          <ClipLoader size={11} color="primary" />
+                        ) : (
+                          <FaBarcode
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="View Barcodes"
+                          />
+                        )}
+                      </button> */}
+
+                        {hasPermission("Material Inward", "update") ? (
+                          <FiEdit
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Edit"
+                            className="hover:text-blue-500 cursor-pointer"
+                            // onClick={() => {
+                            //   setEditMIData(mi);
+                            //   setEditModalOpen(true);
+                            // }}
+                          />
+                        ) : (
+                          "-"
+                        )}
+
+                        {hasPermission("Material Inward", "delete") ? (
+                          <FiTrash2
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Delete"
+                            className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                            // onClick={() => handleDelete(mi._id)}
+                          />
+                        ) : (
+                          "-"
+                        )}
                         <Tooltip
                           id="statusTip"
                           place="top"
@@ -338,19 +294,19 @@ const OutsideFactory = () => {
                         />
                       </td>
                     </tr>
-                    {/* {expandedMIId === mi._id && (
+                    {expandedMIId === mi._id && (
                       <tr className="">
                         <td colSpan="100%">
-                          <MIdetails MI={mi} filter="cutting" />
+                          <MIdetails MI={mi} />
                         </td>
                       </tr>
-                    )} */}
+                    )}
                   </React.Fragment>
                 ))}
                 {mi.length === 0 && (
                   <tr>
                     <td colSpan="14" className="text-center py-4 text-gray-500">
-                      No Outside Company Jobs Found.
+                      No Products Found.
                     </td>
                   </tr>
                 )}
@@ -393,4 +349,4 @@ const OutsideFactory = () => {
   );
 };
 
-export default OutsideFactory;
+export default ProductionList;

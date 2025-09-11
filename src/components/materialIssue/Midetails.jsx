@@ -89,8 +89,16 @@ const MIdetails = ({ MI, filter }) => {
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
                   <span
                     className={`${
-                      item.status == "pending"
+                      [
+                        "pending",
+                        "in cutting",
+                        "in stitching",
+                        "in printing",
+                        "in progress",
+                      ].includes(item.status)
                         ? "bg-yellow-200"
+                        : item.status == "in quality check"
+                        ? "bg-orange-200"
                         : "bg-green-200"
                     }  py-0.5 px-1 rounded font-bold capitalize `}
                   >

@@ -29,6 +29,7 @@ export const availableModules = [
   "PO",
   "Cutting",
   "Printing",
+  "Stitching",
   "Outside Company",
 ];
 

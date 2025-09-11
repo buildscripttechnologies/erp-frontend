@@ -12,7 +12,7 @@ import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
 // import LabelPrint from "./LabelPrint";
-import { FaBarcode } from "react-icons/fa";
+import { FaArrowCircleRight, FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
 import MIdetails from "../../materialIssue/Midetails";
@@ -133,21 +133,31 @@ const Printing = () => {
     fetchMis();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this Material Issue?"))
-      return;
+  const handleNextStage = async (item) => {
+    // decide next stage
+    const nextStage = "in stitching";
+
+    // confirm with user
+    if (!window.confirm(`Move this item to next stage: ${nextStage}?`)) return;
+
     try {
-      let res = await axios.delete(`/mi/delete/${id}`);
-      if (res.data.status == 403) {
+      const res = await axios.patch("/mi/next-stage", {
+        miId: item.miId,
+        itemId: item._id,
+        updates: { status: nextStage },
+      });
+
+      if (res.data.status === 403) {
         toast.error(res.data.message);
         return;
       }
-      if (res.data.status == 200) {
-        toast.success("Material Issue deleted");
-        fetchMis();
+
+      if (res.data.status === 200) {
+        toast.success(`Item moved to: ${nextStage}`);
+        fetchMis(); // refresh data
       }
-    } catch {
-      toast.error("Delete failed");
+    } catch (err) {
+      toast.error("Failed to move to next stage");
     }
   };
 
@@ -221,7 +231,7 @@ const Printing = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(9).fill({})}
+                columns={Array(15).fill({})}
               />
             ) : (
               <>
@@ -294,7 +304,7 @@ const Printing = () => {
                       <td className="px-2  border-r border-[#d8b76a]">
                         <span
                           className={`${
-                            mi.status == "in cutting"
+                            mi.status == "in printing"
                               ? "bg-yellow-200"
                               : "bg-green-200"
                           }  py-0.5 px-1 rounded font-bold capitalize `}
@@ -308,30 +318,13 @@ const Printing = () => {
                       </td> */}
 
                       <td className="px-2 py-1 flex gap-3 text-sm text-[#d8b76a]">
-                        {hasPermission("Material Inward", "update") ? (
-                          <FiEdit
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Edit"
-                            className="hover:text-blue-500 cursor-pointer"
-                            // onClick={() => {
-                            //   setEditMIData(mi);
-                            //   setEditModalOpen(true);
-                            // }}
-                          />
-                        ) : (
-                          "-"
-                        )}
+                        <FaArrowCircleRight
+                          data-tooltip-id="statusTip"
+                          data-tooltip-content="Move to Next Stage"
+                          className="cursor-pointer text-[#d8b76a] hover:text-green-600"
+                          onClick={() => handleNextStage(mi)}
+                        />
 
-                        {hasPermission("Material Inward", "delete") ? (
-                          <FiTrash2
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Delete"
-                            className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                            // onClick={() => handleDelete(mi._id)}
-                          />
-                        ) : (
-                          "-"
-                        )}
                         <Tooltip
                           id="statusTip"
                           place="top"
@@ -356,7 +349,7 @@ const Printing = () => {
                 {mi.length === 0 && (
                   <tr>
                     <td colSpan="14" className="text-center py-4 text-gray-500">
-                      No Material Issue found.
+                      No Printing Jobs Available.
                     </td>
                   </tr>
                 )}

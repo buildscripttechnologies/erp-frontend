@@ -12,12 +12,13 @@ import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
 // import LabelPrint from "./LabelPrint";
-import { FaArrowCircleRight, FaBarcode } from "react-icons/fa";
+import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
 import MIdetails from "../../materialIssue/Midetails";
+import { FaArrowCircleRight } from "react-icons/fa";
 
-const OutsideFactory = () => {
+const Stitching = () => {
   const { hasPermission } = useAuth();
   const [mi, setMis] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -106,10 +107,8 @@ const OutsideFactory = () => {
         // toDate: filters.toDate,
       });
 
-      const res = await axios.get(
-        `/mi/outside-company?${queryParams.toString()}`
-      );
-      console.log("mis res", res);
+      const res = await axios.get(`/mi/stitching?${queryParams.toString()}`);
+      // console.log("mis res", res);
 
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -137,7 +136,7 @@ const OutsideFactory = () => {
 
   const handleNextStage = async (item) => {
     // decide next stage
-    const nextStage = "in stitching";
+    const nextStage = "in quality check";
 
     // confirm with user
     if (!window.confirm(`Move this item to next stage: ${nextStage}?`)) return;
@@ -171,7 +170,7 @@ const OutsideFactory = () => {
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Outside Company Jobs{" "}
+        Stitching Jobs{" "}
         <span className="text-gray-500">({pagination.totalResults})</span>
       </h2>
 
@@ -306,7 +305,7 @@ const OutsideFactory = () => {
                       <td className="px-2  border-r border-[#d8b76a]">
                         <span
                           className={`${
-                            mi.status == "in cutting"
+                            mi.status == "in stitching"
                               ? "bg-yellow-200"
                               : "bg-green-200"
                           }  py-0.5 px-1 rounded font-bold capitalize `}
@@ -326,6 +325,7 @@ const OutsideFactory = () => {
                           className="cursor-pointer text-[#d8b76a] hover:text-green-600"
                           onClick={() => handleNextStage(mi)}
                         />
+
                         <Tooltip
                           id="statusTip"
                           place="top"
@@ -350,7 +350,7 @@ const OutsideFactory = () => {
                 {mi.length === 0 && (
                   <tr>
                     <td colSpan="14" className="text-center py-4 text-gray-500">
-                      No Outside Company Jobs Found.
+                      No Stitching Jobs Available.
                     </td>
                   </tr>
                 )}
@@ -393,4 +393,4 @@ const OutsideFactory = () => {
   );
 };
 
-export default OutsideFactory;
+export default Stitching;

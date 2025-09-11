@@ -42,6 +42,11 @@ const Add = ({ onClose, onAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (checkedSkus.length < 1) {
+      toast.error("Issue Atleast One Material");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -116,7 +121,17 @@ const Add = ({ onClose, onAdded }) => {
                 onChange={(item) => {
                   setSelectedItem(item);
                   const actualItem = item.b;
-                  setItemDetails(actualItem.productDetails);
+
+                  const enhancedItems = (actualItem.productDetails || []).map(
+                    (c) => {
+                      return {
+                        ...c,
+                        status: "pending",
+                      };
+                    }
+                  );
+
+                  setItemDetails(enhancedItems);
                   // build enhanced consumption table
                   const enhanced = (actualItem.consumptionTable || []).map(
                     (c) => {

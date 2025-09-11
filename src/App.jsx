@@ -33,6 +33,9 @@ import MaterialReceive from "./components/materialReceive/MaterialReceive";
 import Cutting from "./components/jobWork/insideFactory/Cutting";
 import Printing from "./components/jobWork/insideFactory/Printing";
 import OutsideFactory from "./components/jobWork/outsideFactory/OutsideFactory";
+import Stitching from "./components/jobWork/insideFactory/Stitching";
+import ProductionList from "./components/productionList/ProductionList";
+import QualityCheck from "./components/jobWork/insideFactory/QualityCheck";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -178,6 +181,19 @@ const App = () => {
           />
 
           <Route
+            path="/production-list"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <ProductionList />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
+          <Route
             path="/inside-company/cutting"
             element={
               isAuthenticated ? (
@@ -202,6 +218,32 @@ const App = () => {
               )
             }
           />
+
+          <Route
+            path="/inside-company/stitching"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <Stitching />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+          <Route
+            path="/inside-company/quality-check"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <QualityCheck />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
           <Route
             path="/outside-company"
             element={

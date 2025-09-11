@@ -5,8 +5,8 @@ export const generateConsumptionTable = (productDetails = []) => {
   console.log("product details", productDetails);
 
   (productDetails || []).forEach((item) => {
-    const sku = item.skuCode || "N/A";
-    const category = (item.category || "N/A").toLowerCase();
+    const sku = item.skuCode || "";
+    const category = item.category || "";
     const qty = Number(item.qty) || 0;
     const width = Number(item.width) || 0;
     const height = Number(item.height) || 0;
@@ -23,10 +23,10 @@ export const generateConsumptionTable = (productDetails = []) => {
       };
     }
 
-    if (zipper) {
+    if (zipper.includes(category.toLowerCase())) {
       const totalInches = width * qty;
       mergedRawMaterials[sku].qty += totalInches / 39.37; // meters
-    } else if (fabric.includes(category)) {
+    } else if (fabric.includes(category.toLowerCase())) {
       if (width && height && qty && panno) {
         const perRowA = Math.floor(panno / width);
         const rowsA = perRowA > 0 ? Math.ceil(qty / perRowA) : Infinity;
@@ -40,10 +40,10 @@ export const generateConsumptionTable = (productDetails = []) => {
 
         mergedRawMaterials[sku].qty += bestInches / 39.37;
       }
-    } else if (plastic.includes(category)) {
+    } else if (plastic.includes(category.toLowerCase())) {
       mergedRawMaterials[sku].weight += grams / 1000;
       mergedRawMaterials[sku].qty += qty;
-    } else if (slider.includes(category)) {
+    } else if (slider.includes(category.toLowerCase())) {
       mergedRawMaterials[sku].qty += qty;
     } else {
       mergedRawMaterials[sku].qty += qty;
@@ -55,16 +55,24 @@ export const generateConsumptionTable = (productDetails = []) => {
       let weightDisplay = "N/A";
       let qtyDisplay = "N/A";
 
-      if (["plastic", "non woven", "ld cord"].includes(item.category))
+      if (
+        ["plastic", "non woven", "ld cord"].includes(
+          item.category.toLowerCase()
+        )
+      )
         weightDisplay = `${item.weight.toFixed(2)} kg`;
 
       if (
         ["zipper", "fabric", "canvas", "cotton", "webbing"].includes(
-          item.category
+          item.category.toLowerCase()
         )
       ) {
         qtyDisplay = `${Number(item.qty).toFixed(2)} m`;
-      } else if (["plastic", "non woven", "ld cord"].includes(item.category)) {
+      } else if (
+        ["plastic", "non woven", "ld cord"].includes(
+          item.category.toLowerCase()
+        )
+      ) {
         qtyDisplay = "N/A";
       } else if (
         [
@@ -74,7 +82,7 @@ export const generateConsumptionTable = (productDetails = []) => {
           "buckel",
           "dkadi",
           "accessories",
-        ].includes(item.category)
+        ].includes(item.category.toLowerCase())
       ) {
         qtyDisplay = item.qty;
       }

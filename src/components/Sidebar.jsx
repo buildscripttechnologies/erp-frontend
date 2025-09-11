@@ -11,6 +11,7 @@ import {
   FaAngleDown,
   FaAngleUp,
   FaCheckCircle,
+  FaListAlt,
   FaOpencart,
 } from "react-icons/fa";
 import {
@@ -27,7 +28,21 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
-import { LuShoppingBag } from "react-icons/lu";
+import {
+  LuMapPinCheckInside,
+  LuMapPinXInside,
+  LuShoppingBag,
+} from "react-icons/lu";
+import { BiImport, BiSolidPurchaseTag } from "react-icons/bi";
+
+import { GiCutDiamond } from "react-icons/gi";
+import { TbTruckDelivery } from "react-icons/tb";
+import { MdAssignmentInd, MdPrint } from "react-icons/md";
+import { RiBillFill, RiScissorsCutLine } from "react-icons/ri";
+import { AiOutlineShoppingCart } from "react-icons/ai";
+import { GrDomain } from "react-icons/gr";
+import { TbNeedleThread } from "react-icons/tb";
+import { PiEyedropperSampleFill } from "react-icons/pi";
 
 export function Sidebar({ isOpen }) {
   const navigate = useNavigate();
@@ -79,7 +94,7 @@ export function Sidebar({ isOpen }) {
       subMenu: [
         {
           label: "Purchase Order",
-          icon: LuShoppingBag,
+          icon: BiSolidPurchaseTag,
           path: "/purchase-order",
           module: "PO",
           action: "read",
@@ -99,20 +114,20 @@ export function Sidebar({ isOpen }) {
       subMenu: [
         {
           label: "Material Inward",
-          icon: FiBox,
+          icon: TbTruckDelivery,
           module: "Material Inward",
           path: "/material-inward",
           action: "read",
         },
         {
-          icon: FiBox,
+          icon: GiCutDiamond,
           label: "Material Issue",
           module: "Material Issue",
           path: "/material-issue",
           action: "read",
         },
         {
-          icon: FiBox,
+          icon: BiImport,
           label: "Material Receive",
           module: "Material Receive",
           path: "/material-receive",
@@ -121,9 +136,10 @@ export function Sidebar({ isOpen }) {
       ],
     },
     {
-      icon: FiShoppingCart,
+      icon: FaListAlt,
       label: "Production List",
-      module: "Dashboard",
+      module: "Production List",
+      path: "/production-list",
       action: "read",
     },
     {
@@ -132,40 +148,53 @@ export function Sidebar({ isOpen }) {
       subMenu: [
         {
           label: "Inside Company",
-          icon: FiClipboard,
+          icon: LuMapPinCheckInside,
           subMenu: [
             {
               label: "Cutting",
-              icon: FiClipboard,
+              icon: RiScissorsCutLine,
               path: "/inside-company/cutting",
               module: "Cutting",
               action: "read",
             },
             {
               label: "Printing",
-              icon: FiClipboard,
+              icon: MdPrint,
               path: "/inside-company/printing",
               module: "Printing",
+              action: "read",
+            },
+            {
+              label: "Stitching",
+              icon: TbNeedleThread,
+              path: "/inside-company/stitching",
+              module: "Stitching",
+              action: "read",
+            },
+            {
+              label: "Quality Check",
+              icon: FaCheckCircle,
+              path: "/inside-company/quality-check",
+              module: "Quality Check",
               action: "read",
             },
           ],
         },
         {
           label: "Outside Company",
-          icon: FiClipboard,
+          icon: LuMapPinXInside,
           path: "/outside-company",
           module: "Outside Company",
           action: "read",
         },
       ],
     },
-
     {
-      icon: FiUsers,
+      icon: GrDomain,
       label: "Master",
       subMenu: [
         {
-          label: "Users",
+          label: "User Master",
           icon: FaUserCog,
           path: "/master-users",
           module: "User",
@@ -180,7 +209,7 @@ export function Sidebar({ isOpen }) {
         },
         {
           label: "Role Master",
-          icon: FaBalanceScale,
+          icon: MdAssignmentInd,
           path: "/role-master",
           module: "Dashboard",
           action: "Role",
@@ -215,14 +244,14 @@ export function Sidebar({ isOpen }) {
         },
         {
           label: "Sample Master",
-          icon: FaUserFriends,
+          icon: PiEyedropperSampleFill,
           path: "/sample-master",
           module: "Sample",
           action: "read",
         },
         {
           label: "BOM Master",
-          icon: FaUserFriends,
+          icon: RiBillFill ,
           path: "/bom-master",
           module: "BOM",
           action: "read",
