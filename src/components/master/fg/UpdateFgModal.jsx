@@ -5,6 +5,7 @@ import { FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import Select from "react-select";
 import { calculateRate } from "../../../utils/calc";
+import { plastic, slider } from "../../../data/dropdownData";
 
 const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
   const [form, setForm] = useState(null);
@@ -15,6 +16,12 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
   const [existingFiles, setExistingFiles] = useState(fg.files || []);
   const [deletedFileIds, setDeletedFileIds] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
+
+  const [newPrintingFiles, setNewPrintingFiles] = useState([]);
+  const [existingPrintingFiles, setExistingPrintingFiles] = useState(
+    fg.printingFile || []
+  );
+  const [deletedPrintingFiles, setDeletedPrintingFiles] = useState([]);
 
   const [editSku, setEditSku] = useState(false);
 
@@ -81,6 +88,8 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
           category: r.category,
           itemRate: r.itemRate,
           baseQty: r.baseQty,
+          isPrint: r.isPrint,
+          cuttingType: r.cuttingType,
         });
       });
       (fg.sfg || []).forEach((s) => {
@@ -97,6 +106,8 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
           category: s.category,
           itemRate: s.itemRate,
           baseQty: s.baseQty,
+          isPrint: s.isPrint,
+          cuttingType: s.cuttingType,
         });
       });
 
@@ -133,6 +144,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         companyOverHead: fg.companyOverHead,
         indirectExpense: fg.indirectExpense,
         file: [],
+        printingFile: [],
         materials: mappedMaterials,
         isSample: fg.isSample,
       });
@@ -216,7 +228,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
       recalculateTotals({
         ...prev,
         [name]:
-          name === "file"
+          name === "file" || name == "printingFile"
             ? Array.from(files)
             : numericFields.includes(name)
             ? Number(value) || 0
@@ -275,6 +287,8 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
           category: "",
           itemRate: 0,
           baseQty: 0,
+          isPrint: false,
+          cuttingType: "",
         },
       ],
     }));
@@ -312,6 +326,8 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
             category: mat.category,
             itemRate: Number(mat.itemRate),
             baseQty: Number(mat.baseQty),
+            isPrint: mat.isPrint,
+            cuttingType: mat.cuttingType,
           });
         } else {
           sfgNested.push({
@@ -327,6 +343,8 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
             category: mat.category,
             itemRate: Number(mat.itemRate),
             baseQty: Number(mat.baseQty),
+            isPrint: mat.isPrint,
+            cuttingType: mat.cuttingType,
           });
         }
       });
@@ -364,20 +382,29 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
         companyOverHead: form.companyOverHead,
         indirectExpense: form.indirectExpense,
         rm,
-        isSample: editSku ? false : true,
+        isSample: editSku ? false : form.isSample,
         sfg: sfgNested,
         deletedFiles: deletedFileIds,
+        deletedPrintingFiles: deletedPrintingFiles,
       };
 
       // console.log("data", data);
       newFiles.forEach((file) => {
         payload.append("files", file);
       });
+      newPrintingFiles.forEach((file) => {
+        payload.append("printingFiles", file);
+      });
 
       payload.append("data", JSON.stringify(data));
 
       if (form.file.length) {
         form.file.forEach((file) => payload.append("files", file));
+      }
+      if (form.printingFile.length) {
+        form.printingFile.forEach((file) =>
+          payload.append("printingFiles", file)
+        );
       }
 
       let res = await axios.patch(`/fgs/edit/${fg.id}`, payload);
@@ -388,7 +415,9 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
       toast.success("FG updated successfully");
       onUpdated();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Update failed");
+      console.log("err", err);
+
+      toast.error(err.response?.data?.message);
     } finally {
       setLoading(false);
     }
@@ -547,54 +576,109 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
               </select>
             </div>
 
-            {/* Existing Files */}
-            <div className=" col-span-full">
-              <p className="font-semibold mb-2 text-secondary">
-                Existing Files
-              </p>
-              {existingFiles.length === 0 && (
-                <p className="text-sm text-gray-500">No files uploaded</p>
-              )}
-              {existingFiles.map((file) => (
-                <div
-                  key={file._id}
-                  className="flex justify-between items-center bg-[#fdf6e9] border border-primary rounded p-2 "
-                >
-                  <a
-                    href={file.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-secondary underline"
-                  >
-                    {file.fileName}
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDeletedFileIds((prev) => [...prev, file._id]);
-                      setExistingFiles((prev) =>
-                        prev.filter((f) => f._id !== file._id)
-                      );
-                    }}
-                    className="text-red-500 hover:text-red-700 cursor-pointer"
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))}
-            </div>
-
             {/* Upload New Files */}
-            <div className=" col-span-full">
-              <label className="block font-semibold mb-2 text-secondary">
-                Upload New Files
-              </label>
-              <input
-                type="file"
-                multiple
-                onChange={(e) => setNewFiles(Array.from(e.target.files))}
-                className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-secondary hover:file:bg-primary/10 file:cursor-pointer"
-              />
+            <div className="col-span-full gap-4 grid grid-cols-1 sm:grid-cols-2">
+              <div>
+                <div className=" ">
+                  <label className="block font-semibold mb-1 text-black">
+                    Product Files
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => setNewFiles(Array.from(e.target.files))}
+                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <p className="font-semibold mb-1 mt-2 text-black">
+                    Existing Product Files
+                  </p>
+                  {existingFiles.length === 0 && (
+                    <p className="text-sm text-gray-500">No files uploaded</p>
+                  )}
+                  {existingFiles.map((file) => (
+                    <div
+                      key={file._id}
+                      className="flex justify-between items-center mb-1 bg-primary/20 border border-primary rounded p-1 "
+                    >
+                      <a
+                        href={file.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-black underline truncate"
+                      >
+                        {file.fileName}
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeletedFileIds((prev) => [...prev, file._id]);
+                          setExistingFiles((prev) =>
+                            prev.filter((f) => f._id !== file._id)
+                          );
+                        }}
+                        className="text-red-500 hover:text-red-700 cursor-pointer"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className=" ">
+                  <label className="block font-semibold mb-1 text-black">
+                    Printing Files
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) =>
+                      setNewPrintingFiles(Array.from(e.target.files))
+                    }
+                    className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <p className="font-semibold mb-1 mt-2 text-black">
+                    Existing Printing Files
+                  </p>
+                  {existingPrintingFiles.length === 0 && (
+                    <p className="text-sm text-gray-500">No files uploaded</p>
+                  )}
+                  {existingPrintingFiles.map((file) => (
+                    <div
+                      key={file._id}
+                      className="flex justify-between items-center bg-primary/20 border border-primary rounded p-1 "
+                    >
+                      <a
+                        href={file.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-black underline truncate"
+                      >
+                        {file.fileName}
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeletedPrintingFiles((prev) => [
+                            ...prev,
+                            file._id,
+                          ]);
+                          setExistingPrintingFiles((prev) =>
+                            prev.filter((f) => f._id !== file._id)
+                          );
+                        }}
+                        className="text-red-500 hover:text-red-700 cursor-pointer"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
           <div className="flex flex-col">
@@ -666,7 +750,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                     } md:grid-cols-8 gap-3`}
                   >
                     <div className="flex flex-col md:col-span-2">
-                      <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
+                      <label className="text-[12px] font-semibold mb-[2px] text-black">
                         Material{" "}
                         <span className="text-primary capitalize">
                           {mat.category ? `● ${mat.category}` : ""}
@@ -768,14 +852,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                     ].map((field) => {
                       // Hide based on category
                       if (
-                        [
-                          "slider",
-                          "bidding",
-                          "adjuster",
-                          "buckel",
-                          "dkadi",
-                          "accessories",
-                        ].includes(mat.category?.toLowerCase()) &&
+                        slider.includes(mat.category?.toLowerCase()) &&
                         (field === "height" || field === "width")
                       )
                         return null;
@@ -789,16 +866,14 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                       //   return null; // hide qty
                       // }
                       if (
-                        !["plastic", "non woven", "ld cord"].includes(
-                          mat.category?.toLowerCase()
-                        ) &&
+                        !plastic.includes(mat.category?.toLowerCase()) &&
                         field === "grams"
                       ) {
                         return null; // hide grams for others
                       }
                       // ✅ Add this new rule for zipper
                       if (
-                        mat.category?.toLowerCase() === "zipper" &&
+                        zipper.includes(mat.category?.toLowerCase()) &&
                         field === "height"
                       ) {
                         return null; // hide height only for zipper
@@ -811,7 +886,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                       }
                       return (
                         <div className="flex flex-col" key={field}>
-                          <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                          <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                             {field === "partName"
                               ? "Part Name"
                               : field === "qty"
@@ -835,26 +910,63 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                                 ? "qty"
                                 : `${field}`
                             }
-                            className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                            className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                             value={mat[field] || ""}
                             onChange={(e) =>
-                              handleMaterialChange(
-                                index,
-
-                                field,
-                                e.target.value
-                              )
+                              handleMaterialChange(index, field, e.target.value)
                             }
                           />
                         </div>
                       );
                     })}
                   </div>
-                  <div className="mt-2">
+                  <div className="mt-2 flex w-full justify-between">
+                    <div className="flex gap-4 items-center">
+                      {/* Cutting Type Dropdown */}
+                      <select
+                        className="border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition px-2 py-1 text-sm"
+                        value={mat.cuttingType || ""}
+                        onChange={(e) =>
+                          handleMaterialChange(
+                            index,
+                            "cuttingType",
+                            e.target.value
+                          )
+                        }
+                      >
+                        <option value="">Cutting Type</option>
+                        <option value="Slitting Cutting">
+                          Slitting Cutting
+                        </option>
+                        <option value="Cutting">Cutting</option>
+                        <option value="Press Cutting">Press Cutting</option>
+                        <option value="Laser Cutting">Laser Cutting</option>
+                        <option value="Table Cutting">Table Cutting</option>
+                      </select>
+
+                      {/* Print Checkbox */}
+                      <label className="flex items-center gap-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={mat.isPrint || false}
+                          onChange={(e) =>
+                            handleMaterialChange(
+                              index,
+                              "isPrint",
+                              e.target.checked
+                            )
+                          }
+                          className="rounded border-gray-300 accent-primary"
+                        />
+                        Print
+                      </label>
+                    </div>
+
+                    {/* Remove Button */}
                     <button
                       type="button"
+                      className="text-red-600 text-xs hover:underline flex gap-1 cursor-pointer items-center"
                       onClick={() => removeMaterial(index)}
-                      className="text-red-600 cursor-pointer gap-1 flex items-center hover:underline"
                     >
                       <FiTrash2 /> Remove
                     </button>
@@ -864,7 +976,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
               <button
                 type="button"
                 onClick={addMaterial}
-                className="bg-[#d8b76a] hover:bg-[#d8b76a91] text-[#292926] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
+                className="bg-primary hover:bg-primary/80 text-secondary px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
               >
                 <FiPlus /> Add RM/SFG
               </button>

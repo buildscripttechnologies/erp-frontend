@@ -1,10 +1,12 @@
+import { fabric, plastic, slider, zipper } from "../data/dropdownData";
+
 // utils/calc.js
 export const calculateRate = (comp, qtyOverride = null) => {
   const category = (comp.category || "").toLowerCase();
   const qty = qtyOverride ?? (Number(comp.qty) || 0);
 
   // Fabric: uses height × width × qty × sqInchRate
-  if (["fabric", "canvas", "cotton"].includes(category)) {
+  if (fabric.includes(category)) {
     const height = Number(comp.height) || 0;
     const width = Number(comp.width) || 0;
     const sqInchRate = Number(comp.sqInchRate) || 0;
@@ -15,16 +17,7 @@ export const calculateRate = (comp, qtyOverride = null) => {
   }
 
   // Accessories: rate per piece = itemRate / baseQty
-  if (
-    [
-      "slider",
-      "bidding",
-      "adjuster",
-      "buckel",
-      "dkadi",
-      "accessories",
-    ].includes(category)
-  ) {
+  if (slider.includes(category)) {
     const baseQty = Number(comp.baseQty) || 0;
     const baseRate = Number(comp.itemRate) || 0;
 
@@ -36,7 +29,7 @@ export const calculateRate = (comp, qtyOverride = null) => {
   }
 
   // Plastic / Non-woven: calculate per gram
-  if (["plastic", "non woven", "ld cord"].includes(category)) {
+  if (plastic.includes(category)) {
     const grams = comp.grams || 0;
     const baseQtyKg = Number(comp.baseQty) || 1; // baseQty is in KG
     const baseQtyGrams = baseQtyKg * 1000;
@@ -47,7 +40,7 @@ export const calculateRate = (comp, qtyOverride = null) => {
     return Number(((grams / baseQtyGrams) * comp.itemRate).toFixed(2));
   }
 
-  if (category === "zipper") {
+  if (zipper.includes(category)) {
     const qty = Number(comp.qty) || 1;
     const inches = Number(comp.width) || 0; // qty here is already in inches
     const baseQtyMeter = Number(comp.baseQty) || 1; // baseQty in meters

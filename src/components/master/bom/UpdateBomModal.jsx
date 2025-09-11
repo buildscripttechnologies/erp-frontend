@@ -8,6 +8,7 @@ import { ClipLoader } from "react-spinners";
 import { capitalize } from "lodash";
 import { calculateRate } from "../../../utils/calc";
 import { generateConsumptionTable } from "../../../utils/consumptionTable";
+import { plastic, slider } from "../../../data/dropdownData";
 
 const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
   const [form, setForm] = useState({
@@ -34,6 +35,12 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
   const [newFiles, setNewFiles] = useState([]);
   const [existingFiles, setExistingFiles] = useState(bom.file || []);
   const [deletedFiles, setDeletedFiles] = useState([]);
+
+  const [newPrintingFiles, setNewPrintingFiles] = useState([]);
+  const [existingPrintingFiles, setExistingPrintingFiles] = useState(
+    bom.printingFile || []
+  );
+  const [deletedPrintingFiles, setDeletedPrintingFiles] = useState([]);
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -276,6 +283,8 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
         label: "",
         baseQty: 0,
         itemRate: 0,
+        isPrint: false,
+        cuttingType: "",
       },
     ]);
   };
@@ -311,11 +320,15 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
         productDetails: productDetails.map(({ label, ...rest }) => rest),
         consumptionTable,
         deletedFiles,
+        deletedPrintingFiles,
       };
       formData.append("data", JSON.stringify(payload));
 
       newFiles.forEach((file) => {
         formData.append("files", file);
+      });
+      newPrintingFiles.forEach((file) => {
+        formData.append("printingFiles", file);
       });
 
       const res = await axios.patch(`/boms/update/${bom._id}`, formData, {
@@ -336,7 +349,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-lg border border-[#d8b76a] text-[#292926]">
+      <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-lg border border-primary text-black">
         {/* Header */}
         <div className="flex justify-between items-center sticky top-0 p-4 bg-white z-10">
           <h2 className="text-xl font-semibold">Update Bill of Material</h2>
@@ -352,17 +365,19 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
           {/* Form */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm ">
             <div>
-              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                 Product Name
               </label>
               <Select
                 styles={{
                   control: (base, state) => ({
                     ...base,
-                    borderColor: "#d8b76a",
-                    boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
+                    borderColor: "var(--color-primary)",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 1px var(--color-primary)"
+                      : "none",
                     "&:hover": {
-                      borderColor: "#d8b76a",
+                      borderColor: "var(--color-primary)",
                     },
                   }),
                 }}
@@ -453,17 +468,19 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
             </div>
 
             <div>
-              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                 Party Name
               </label>
               <CreatableSelect
                 styles={{
                   control: (base, state) => ({
                     ...base,
-                    borderColor: "#d8b76a",
-                    boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
+                    borderColor: "var(--color-primary)",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 1px var(--color-primary)"
+                      : "none",
                     "&:hover": {
-                      borderColor: "#d8b76a",
+                      borderColor: "var(--color-primary)",
                     },
                   }),
                 }}
@@ -483,26 +500,26 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
             </div>
 
             <div className="flex flex-col">
-              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                 Order Qty
               </label>
               <input
                 type="number"
                 placeholder="Order Qty"
                 name="orderQty"
-                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                 value={form.orderQty}
                 onChange={(e) => handleFormChange(e)}
               />
             </div>
 
             <div className="flex flex-col">
-              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                 Date
               </label>
               <input
                 type="date"
-                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                 value={
                   form.date
                     ? new Date(form.date).toISOString().split("T")[0]
@@ -512,51 +529,111 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
               />
             </div>
             <div className="flex flex-col ">
-              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                Upload New Files
-              </label>
-              <input
-                type="file"
-                multiple
-                onChange={(e) => setNewFiles([...e.target.files])}
-                className="block text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2 my-2">
-            <h3 className="font-semibold text-[14px] mb-1 text-black">
-              Existing Files
-            </h3>
-            {existingFiles.length === 0 && (
-              <p className="text-sm text-gray-500">No files uploaded.</p>
-            )}
-
-            {existingFiles.map((file, idx) => (
-              <div
-                key={idx}
-                className="flex justify-between items-center bg-gray-100 px-3 py-1 rounded text-sm"
-              >
-                <a
-                  href={file.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#292926] underline break-all"
-                >
-                  {file.fileName}
-                </a>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDeletedFiles([...deletedFiles, file]);
-                    setExistingFiles(existingFiles.filter((_, i) => i !== idx));
-                  }}
-                  className="text-red-500 flex items-center gap-0.5 text-xs hover:underline cursor-pointer"
-                >
-                  <FiTrash2 /> Remove
-                </button>
+              <div className="">
+                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                  Product Files
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) => setNewFiles([...e.target.files])}
+                  className="block w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
+                />
               </div>
-            ))}
+              <div className="flex flex-col  mt-2">
+                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                  Existing Product Files
+                </label>
+                {existingFiles.length === 0 && (
+                  <p className="text-sm text-gray-500">
+                    No product files uploaded.
+                  </p>
+                )}
+
+                {existingFiles.map((file, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center bg-primary/20 border border-primary rounded p-1"
+                  >
+                    <a
+                      href={file.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-black underline break-all"
+                    >
+                      {file.fileName}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeletedFiles([...deletedFiles, file]);
+                        setExistingFiles(
+                          existingFiles.filter((_, i) => i !== idx)
+                        );
+                      }}
+                      className="text-red-500 flex items-center gap-0.5 text-xs hover:underline cursor-pointer"
+                    >
+                      <FiTrash2 /> Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col ">
+              <div>
+                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                  Printing Files
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) => setNewPrintingFiles([...e.target.files])}
+                  className="block w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
+                />
+              </div>
+              <div className="flex flex-col mt-2">
+                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                  Existing Printing Files
+                </label>
+                {existingPrintingFiles.length === 0 && (
+                  <p className="text-sm text-gray-500">
+                    No printing files uploaded.
+                  </p>
+                )}
+
+                {existingPrintingFiles.map((file, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center bg-primary/20 border border-primary rounded p-1"
+                  >
+                    <a
+                      href={file.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-black underline break-all"
+                    >
+                      {file.fileName}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeletedPrintingFiles([
+                          ...deletedPrintingFiles,
+                          file,
+                        ]);
+                        setExistingPrintingFiles(
+                          existingPrintingFiles.filter((_, i) => i !== idx)
+                        );
+                      }}
+                      className="text-red-500 flex items-center gap-0.5 text-xs hover:underline cursor-pointer"
+                    >
+                      <FiTrash2 /> Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="flex-col my-2">
@@ -603,7 +680,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
 
           {/* Components Section */}
           <div>
-            <h3 className="font-bold text-[14px] my-2 text-[#d8b76a] underline">
+            <h3 className="font-bold text-[14px] my-2 text-primary underline">
               RM/SFG Components
             </h3>
 
@@ -611,7 +688,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
               {productDetails.map((comp, index) => (
                 <div
                   key={index}
-                  className="border border-[#d8b76a] rounded p-3 flex flex-col gap-2"
+                  className="border border-primary rounded p-3 flex flex-col gap-2"
                 >
                   <div
                     className={`grid grid-cols-1 sm:grid-cols-2 ${
@@ -621,7 +698,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                     } md:grid-cols-8 gap-3`}
                   >
                     <div className="flex flex-col md:col-span-2">
-                      <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
+                      <label className="text-[12px] font-semibold mb-[2px] text-black">
                         Component{" "}
                         <span className="text-primary capitalize">
                           {comp.category ? `● ${comp.category}` : ""}
@@ -647,12 +724,12 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                         styles={{
                           control: (base, state) => ({
                             ...base,
-                            borderColor: "#d8b76a",
+                            borderColor: "var(--color-primary)",
                             boxShadow: state.isFocused
-                              ? "0 0 0 1px #d8b76a"
+                              ? "0 0 0 1px var(--color-primary)"
                               : "none",
                             "&:hover": {
-                              borderColor: "#d8b76a",
+                              borderColor: "var(--color-primary)",
                             },
                           }),
                         }}
@@ -670,14 +747,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                     ].map((field) => {
                       // Hide based on category
                       if (
-                        [
-                          "slider",
-                          "bidding",
-                          "adjuster",
-                          "buckel",
-                          "dkadi",
-                          "accessories",
-                        ].includes(comp.category?.toLowerCase()) &&
+                        slider.includes(comp.category?.toLowerCase()) &&
                         (field === "height" || field === "width")
                       )
                         return null;
@@ -691,16 +761,14 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                       //   return null; // hide qty
                       // }
                       if (
-                        !["plastic", "non woven", "ld cord"].includes(
-                          comp.category?.toLowerCase()
-                        ) &&
+                        !plastic.includes(comp.category?.toLowerCase()) &&
                         field === "grams"
                       ) {
                         return null; // hide grams for others
                       }
                       // ✅ Add this new rule for zipper
                       if (
-                        comp.category?.toLowerCase() === "zipper" &&
+                        zipper.includes(comp.category?.toLowerCase()) &&
                         field === "height"
                       ) {
                         return null; // hide height only for zipper
@@ -714,7 +782,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
 
                       return (
                         <div className="flex flex-col" key={field}>
-                          <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                          <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                             {field === "partName"
                               ? "Part Name"
                               : field === "qty"
@@ -738,7 +806,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                                 ? "qty"
                                 : `${field}`
                             }
-                            className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                            className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                             value={comp[field] || ""}
                             onChange={(e) =>
                               updateComponent(index, field, e.target.value)
@@ -749,10 +817,44 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                     })}
                   </div>
 
-                  <div className="mt-2">
+                  <div className="mt-2 flex w-full justify-between">
+                    <div className="flex gap-4 items-center">
+                      {/* Cutting Type Dropdown */}
+                      <select
+                        className="border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition px-2 py-1 text-sm"
+                        value={comp.cuttingType || ""}
+                        onChange={(e) =>
+                          updateComponent(index, "cuttingType", e.target.value)
+                        }
+                      >
+                        <option value="">Cutting Type</option>
+                        <option value="Slitting Cutting">
+                          Slitting Cutting
+                        </option>
+                        <option value="Cutting">Cutting</option>
+                        <option value="Press Cutting">Press Cutting</option>
+                        <option value="Laser Cutting">Laser Cutting</option>
+                        <option value="Table Cutting">Table Cutting</option>
+                      </select>
+
+                      {/* Print Checkbox */}
+                      <label className="flex items-center gap-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={comp.isPrint || false}
+                          onChange={(e) =>
+                            updateComponent(index, "isPrint", e.target.checked)
+                          }
+                          className="rounded border-gray-300 accent-primary"
+                        />
+                        Print
+                      </label>
+                    </div>
+
+                    {/* Remove Button */}
                     <button
                       type="button"
-                      className="text-red-600 text-xs hover:underline flex items-center gap-1 cursor-pointer"
+                      className="text-red-600 text-xs hover:underline flex gap-1 cursor-pointer items-center"
                       onClick={() => removeComponent(index)}
                     >
                       <FiTrash2 /> Remove
@@ -764,7 +866,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
               <button
                 type="button"
                 onClick={() => handleAddComponent({ label: "", value: "" })}
-                className="bg-[#d8b76a] hover:bg-[#d8b76a91] text-[#292926] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
+                className="bg-primary hover:bg-primary/80 text-secondary px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
               >
                 + Add RM/SFG
               </button>
@@ -1007,12 +1109,12 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
             <button
               disabled={loading}
               onClick={handleSubmit}
-              className="bg-[#d8b76a] text-black px-6 py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer"
+              className="bg-primary text-secondary px-6 py-2 rounded hover:bg-primary/80 cursor-pointer"
             >
               {loading ? (
                 <>
                   <span className="mr-2">Updating...</span>
-                  <ClipLoader size={20} color="#292926" />
+                  <ClipLoader size={20} color="secondary" />
                 </>
               ) : (
                 "Update"

@@ -232,7 +232,7 @@ const BomMaster = ({ isOpen }) => {
           {hasPermission("BOM", "write") && (
             <button
               onClick={() => setShowModal(true)}
-              className="bg-primary hover:bg-[#b38a37]  justify-center text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
+              className="bg-primary hover:bg-primary/80 justify-center text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
             >
               <FiPlus /> Add BOM
             </button>
@@ -246,7 +246,7 @@ const BomMaster = ({ isOpen }) => {
                 "text-[11px] whitespace-nowrap min-w-[100vw] text-left"
               }
             >
-              <thead className="bg-primary text-[#292926]">
+              <thead className="bg-primary text-secondary">
                 <tr>
                   <th className="px-[8px] py-1.5 ">#</th>
                   <th className="px-[8px] ">Created At</th>
@@ -307,20 +307,20 @@ const BomMaster = ({ isOpen }) => {
                               hour12: true,
                             })}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
+                          <td className="px-[8px] border-r border-primary capitalize ">
                             {b.sampleNo || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
+                          <td className="px-[8px] border-r border-primary  capitalize">
                             {b.bomNo || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
+                          <td className="px-[8px] border-r border-primary  capitalize">
                             {b.partyName || "-"}
                           </td>
 
-                          <td className="px-[8px] border-r border-primary ">
+                          <td className="px-[8px] border-r border-primary capitalize ">
                             {b.productName || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
+                          <td className="px-[8px] border-r border-primary  capitalize">
                             {b.orderQty || "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary ">
@@ -419,7 +419,7 @@ const BomMaster = ({ isOpen }) => {
             bom={editingBOM}
             onClose={() => setEditingBOM(null)}
             onSuccess={() => {
-              fetchBOMs(); // re-fetch or refresh list
+              fetchBOMs(pagination.currentPage); // re-fetch or refresh list
               setEditingBOM(null);
             }}
           />

@@ -5,6 +5,7 @@ import { FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import Select from "react-select";
 import { calculateRate } from "../../../utils/calc";
+import { plastic, slider } from "../../../data/dropdownData";
 const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -14,6 +15,12 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
   const [existingFiles, setExistingFiles] = useState(sfg.files || []);
   const [deletedFileIds, setDeletedFileIds] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
+
+  const [newPrintingFiles, setNewPrintingFiles] = useState([]);
+  const [existingPrintingFiles, setExistingPrintingFiles] = useState(
+    sfg.printingFile || []
+  );
+  const [deletedPrintingFiles, setDeletedPrintingFiles] = useState([]);
 
   useEffect(() => {
     const fetchDropdowns = async () => {
@@ -63,6 +70,8 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
           category: r.category,
           itemRate: r.itemRate,
           baseQty: r.baseQty,
+          isPrint: r.isPrint,
+          cuttingType: r.cuttingType,
         });
       });
       (sfg.sfg || []).forEach((s) => {
@@ -79,6 +88,8 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
           category: s.category,
           itemRate: s.itemRate,
           baseQty: s.baseQty,
+          isPrint: s.isPrint,
+          cuttingType: s.cuttingType,
         });
       });
 
@@ -118,6 +129,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         companyOverHead: sfg.companyOverHead,
         indirectExpense: sfg.indirectExpense,
         file: [],
+        printingFile: [],
         materials: mappedMaterials,
       });
     }
@@ -200,7 +212,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
       recalculateTotals({
         ...prev,
         [name]:
-          name === "file"
+          name === "file" || name == "printingFile"
             ? Array.from(files)
             : numericFields.includes(name)
             ? Number(value) || 0
@@ -258,6 +270,8 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
           category: "",
           itemRate: 0,
           baseQty: 0,
+          isPrint: false,
+          cuttingType: "",
         },
       ],
     }));
@@ -295,6 +309,8 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
             category: mat.category,
             itemRate: Number(mat.itemRate),
             baseQty: Number(mat.baseQty),
+            isPrint: mat.isPrint,
+            cuttingType: mat.cuttingType,
           });
         } else {
           sfgNested.push({
@@ -310,6 +326,8 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
             category: mat.category,
             itemRate: Number(mat.itemRate),
             baseQty: Number(mat.baseQty),
+            isPrint: mat.isPrint,
+            cuttingType: mat.cuttingType,
           });
         }
       });
@@ -351,10 +369,14 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         rm,
         sfg: sfgNested,
         deletedFiles: deletedFileIds,
+        deletedPrintingFiles: deletedPrintingFiles,
       };
 
       newFiles.forEach((file) => {
         payload.append("files", file);
+      });
+      newPrintingFiles.forEach((file) => {
+        payload.append("printingFiles", file);
       });
 
       payload.append("data", JSON.stringify(data));
@@ -362,7 +384,11 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
       if (form.file.length) {
         form.file.forEach((file) => payload.append("files", file));
       }
-
+      if (form.printingFile.length) {
+        form.printingFile.forEach((file) =>
+          payload.append("printingFiles", file)
+        );
+      }
       let res = await axios.patch(`/sfgs/edit/${sfg.id}`, payload);
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -410,8 +436,8 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-      <div className="bg-white w-[95vw] max-w-4xl p-6 rounded-lg border border-[#d8b76a] overflow-y-auto max-h-[90vh]">
-        <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">Edit SFG Item</h2>
+      <div className="bg-white w-[95vw] max-w-4xl p-6 rounded-lg border border-primary overflow-y-auto max-h-[90vh]">
+        <h2 className="text-xl font-bold mb-4 text-primary">Edit SFG Item</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div className="flex flex-col">
@@ -422,7 +448,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 placeholder="Sku Code"
                 value={form.skuCode}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200 disabled:cursor-not-allowed"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
                 required
               />
             </div>
@@ -433,7 +459,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 placeholder="Item Name"
                 value={form.itemName}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                 required
               />
             </div>
@@ -445,7 +471,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 placeholder="HSN/SAC"
                 value={form.hsnOrSac}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               />
             </div>
 
@@ -456,7 +482,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 placeholder="GST %"
                 value={form.gst}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               />
             </div>
 
@@ -467,7 +493,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 placeholder="MOQ"
                 value={form.moq}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               />
             </div>
 
@@ -478,7 +504,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 placeholder="Base Price"
                 value={form.basePrice}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               />
             </div>
 
@@ -488,7 +514,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 name="UOM"
                 value={form.UOM}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               >
                 <option value={form.UOM}>{form.UOM}</option>
                 {uoms.map((u) => (
@@ -505,7 +531,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 name="qualityInspectionNeeded"
                 value={form.qualityInspectionNeeded}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               >
                 <option value={true}>Required</option>
                 <option value={false}>Not-required</option>
@@ -518,7 +544,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 name="location"
                 value={form.location}
                 onChange={handleChange}
-                className="p-2 border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               >
                 <option value="">Select Location</option>
                 {locations.map((l) => (
@@ -535,7 +561,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 name="status"
                 value={form.status}
                 onChange={handleChange}
-                className="p-2  border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2  border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               >
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
@@ -548,11 +574,112 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 name="type"
                 value={form.type}
                 onChange={handleChange}
-                className="p-2  border border-[#d8b76a] rounded cursor-pointer focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+                className="p-2  border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
               >
                 <option value="">Select Type</option>
                 <option value="SFG">SFG</option>
               </select>
+            </div>
+          </div>
+          {/* Upload New Files */}
+          <div className="col-span-full gap-4 grid grid-cols-1 sm:grid-cols-2">
+            <div>
+              <div className=" ">
+                <label className="block font-semibold mb-1 text-black">
+                  Product Files
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) => setNewFiles(Array.from(e.target.files))}
+                  className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
+                />
+              </div>
+              <div>
+                <p className="font-semibold mb-1 mt-2 text-black">
+                  Existing Product Files
+                </p>
+                {existingFiles.length === 0 && (
+                  <p className="text-sm text-gray-500">No files uploaded</p>
+                )}
+                {existingFiles.map((file) => (
+                  <div
+                    key={file._id}
+                    className="flex justify-between items-center mb-1 bg-primary/20 border border-primary rounded p-1 "
+                  >
+                    <a
+                      href={file.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-black underline truncate"
+                    >
+                      {file.fileName}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeletedFileIds((prev) => [...prev, file._id]);
+                        setExistingFiles((prev) =>
+                          prev.filter((f) => f._id !== file._id)
+                        );
+                      }}
+                      className="text-red-500 hover:text-red-700 cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className=" ">
+                <label className="block font-semibold mb-1 text-black">
+                  Printing Files
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) =>
+                    setNewPrintingFiles(Array.from(e.target.files))
+                  }
+                  className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
+                />
+              </div>
+              <div>
+                <p className="font-semibold mb-1 mt-2 text-black">
+                  Existing Printing Files
+                </p>
+                {existingPrintingFiles.length === 0 && (
+                  <p className="text-sm text-gray-500">No files uploaded</p>
+                )}
+                {existingPrintingFiles.map((file) => (
+                  <div
+                    key={file._id}
+                    className="flex justify-between items-center bg-primary/20 border border-primary rounded p-1 "
+                  >
+                    <a
+                      href={file.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-black underline truncate"
+                    >
+                      {file.fileName}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeletedPrintingFiles((prev) => [...prev, file._id]);
+                        setExistingPrintingFiles((prev) =>
+                          prev.filter((f) => f._id !== file._id)
+                        );
+                      }}
+                      className="text-red-500 hover:text-red-700 cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <div className="flex flex-col">
@@ -562,7 +689,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
               value={form.description}
               onChange={handleChange}
               placeholder="Description"
-              className="w-full p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+              className="w-full p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
             />
           </div>
 
@@ -624,7 +751,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                     } md:grid-cols-8 gap-3`}
                   >
                     <div className="flex flex-col md:col-span-2">
-                      <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
+                      <label className="text-[12px] font-semibold mb-[2px] text-black">
                         Material{" "}
                         <span className="text-primary capitalize">
                           {mat.category ? `● ${mat.category}` : ""}
@@ -726,14 +853,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                     ].map((field) => {
                       // Hide based on category
                       if (
-                        [
-                          "slider",
-                          "bidding",
-                          "adjuster",
-                          "buckel",
-                          "dkadi",
-                          "accessories",
-                        ].includes(mat.category?.toLowerCase()) &&
+                        slider.includes(mat.category?.toLowerCase()) &&
                         (field === "height" || field === "width")
                       )
                         return null;
@@ -747,16 +867,20 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                       //   return null; // hide qty
                       // }
                       if (
-                        !["plastic", "non woven"].includes(
-                          mat.category?.toLowerCase()
-                        ) &&
+                        !plastic.includes(mat.category?.toLowerCase()) &&
                         field === "grams"
                       ) {
                         return null; // hide grams for others
                       }
                       // ✅ Add this new rule for zipper
                       if (
-                        mat.category?.toLowerCase() === "zipper" &&
+                        zipper.includes(mat.category?.toLowerCase()) &&
+                        field === "height"
+                      ) {
+                        return null; // hide height only for zipper
+                      }
+                      if (
+                        mat.category?.toLowerCase() === "ld cord" &&
                         field === "height"
                       ) {
                         return null; // hide height only for zipper
@@ -764,7 +888,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
 
                       return (
                         <div className="flex flex-col" key={field}>
-                          <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                          <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                             {field === "partName"
                               ? "Part Name"
                               : field === "qty"
@@ -788,7 +912,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                                 ? "qty"
                                 : `${field}`
                             }
-                            className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                            className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                             value={mat[field] || ""}
                             onChange={(e) =>
                               handleMaterialChange(
@@ -804,11 +928,53 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                     })}
                   </div>
 
-                  <div className="mt-2">
+                  <div className="mt-2 flex w-full justify-between">
+                    <div className="flex gap-4 items-center">
+                      {/* Cutting Type Dropdown */}
+                      <select
+                        className="border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition px-2 py-1 text-sm"
+                        value={mat.cuttingType || ""}
+                        onChange={(e) =>
+                          handleMaterialChange(
+                            index,
+                            "cuttingType",
+                            e.target.value
+                          )
+                        }
+                      >
+                        <option value="">Cutting Type</option>
+                        <option value="Slitting Cutting">
+                          Slitting Cutting
+                        </option>
+                        <option value="Cutting">Cutting</option>
+                        <option value="Press Cutting">Press Cutting</option>
+                        <option value="Laser Cutting">Laser Cutting</option>
+                        <option value="Table Cutting">Table Cutting</option>
+                      </select>
+
+                      {/* Print Checkbox */}
+                      <label className="flex items-center gap-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={mat.isPrint || false}
+                          onChange={(e) =>
+                            handleMaterialChange(
+                              index,
+                              "isPrint",
+                              e.target.checked
+                            )
+                          }
+                          className="rounded border-gray-300 accent-primary"
+                        />
+                        Print
+                      </label>
+                    </div>
+
+                    {/* Remove Button */}
                     <button
                       type="button"
+                      className="text-red-600 text-xs hover:underline flex gap-1 cursor-pointer items-center"
                       onClick={() => removeMaterial(index)}
-                      className="text-red-600 cursor-pointer flex items-center gap-1 hover:underline  "
                     >
                       <FiTrash2 /> Remove
                     </button>
@@ -818,7 +984,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
               <button
                 type="button"
                 onClick={addMaterial}
-                className="bg-[#d8b76a] hover:bg-[#d8b76a91] text-[#292926] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
+                className="bg-primary hover:bg-primary/80 text-secondary px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
               >
                 <FiPlus /> Add RM/SFG
               </button>
@@ -1024,19 +1190,19 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 bg-gray-300 cursor-pointer hover:bg-gray-400 text-[#292926] rounded"
+              className="px-5 py-2 bg-gray-300 cursor-pointer hover:bg-gray-400 text-black rounded"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#d8b76a] cursor-pointer flex justify-center items-center hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded"
+              className="px-6 py-2 bg-primary cursor-pointer flex justify-center items-center hover:bg-primary/80 text-secondary font-semibold rounded"
             >
               {loading ? (
                 <>
                   <span className="mr-2">Saving...</span>
-                  <ClipLoader size={20} color="#292926" />
+                  <ClipLoader size={20} color="secondary" />
                 </>
               ) : (
                 "Update"

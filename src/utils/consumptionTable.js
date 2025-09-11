@@ -1,3 +1,5 @@
+import { fabric, plastic, slider, zipper } from "../data/dropdownData";
+
 export const generateConsumptionTable = (productDetails = []) => {
   const mergedRawMaterials = {};
   console.log("product details", productDetails);
@@ -21,10 +23,10 @@ export const generateConsumptionTable = (productDetails = []) => {
       };
     }
 
-    if (category === "zipper") {
+    if (zipper) {
       const totalInches = width * qty;
       mergedRawMaterials[sku].qty += totalInches / 39.37; // meters
-    } else if (category === "fabric") {
+    } else if (fabric.includes(category)) {
       if (width && height && qty && panno) {
         const perRowA = Math.floor(panno / width);
         const rowsA = perRowA > 0 ? Math.ceil(qty / perRowA) : Infinity;
@@ -38,19 +40,10 @@ export const generateConsumptionTable = (productDetails = []) => {
 
         mergedRawMaterials[sku].qty += bestInches / 39.37;
       }
-    } else if (["plastic", "non woven", "ld cord"].includes(category)) {
+    } else if (plastic.includes(category)) {
       mergedRawMaterials[sku].weight += grams / 1000;
       mergedRawMaterials[sku].qty += qty;
-    } else if (
-      [
-        "slider",
-        "bidding",
-        "adjuster",
-        "buckel",
-        "dkadi",
-        "accessories",
-      ].includes(category)
-    ) {
+    } else if (slider.includes(category)) {
       mergedRawMaterials[sku].qty += qty;
     } else {
       mergedRawMaterials[sku].qty += qty;
@@ -65,7 +58,11 @@ export const generateConsumptionTable = (productDetails = []) => {
       if (["plastic", "non woven", "ld cord"].includes(item.category))
         weightDisplay = `${item.weight.toFixed(2)} kg`;
 
-      if (["zipper", "fabric", "canvas", "cotton"].includes(item.category)) {
+      if (
+        ["zipper", "fabric", "canvas", "cotton", "webbing"].includes(
+          item.category
+        )
+      ) {
         qtyDisplay = `${Number(item.qty).toFixed(2)} m`;
       } else if (["plastic", "non woven", "ld cord"].includes(item.category)) {
         qtyDisplay = "N/A";

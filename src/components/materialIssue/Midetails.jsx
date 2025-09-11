@@ -1,11 +1,24 @@
 import React from "react";
 
-const MIdetails = ({ MI }) => {
+const MIdetails = ({ MI, filter }) => {
   const formatDate = (date) =>
     new Date(date).toLocaleString("en-IN", {
       dateStyle: "medium",
       timeStyle: "short",
     });
+
+  let filteredDetails = MI.itemDetails || [];
+
+  console.log("filtered details", filteredDetails);
+
+  if (filter == "cutting") {
+    filteredDetails = filteredDetails.filter(
+      (item) => item.cuttingType && item.cuttingType.trim() != ""
+    );
+  }
+  if (filter === "print") {
+    filteredDetails = filteredDetails.filter((item) => item.isPrint == true);
+  }
 
   return (
     <div className="bg-white border border-[#d8b76a] rounded shadow pt-3 pb-4 px-4 mx-2 mb-2 text-[11px] text-[#292926]">
@@ -29,14 +42,19 @@ const MIdetails = ({ MI }) => {
               Width (Inch)
             </th>
             <th className="px-2 py-1 border-r border-[#d8b76a]">Quantity</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Rate (₹)</th>
+            {/* <th className="px-2 py-1 border-r border-[#d8b76a]">Rate (₹)</th> */}
             <th className="px-2 py-1 border-r border-[#d8b76a]">Status</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Assignee</th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">
+              {filter == "print" ? "Print" : "Cutting Type"}
+            </th>
+            <th className="px-2 py-1 border-r border-[#d8b76a]">
+              Jobwork Type
+            </th>
           </tr>
         </thead>
         <tbody>
-          {MI.itemDetails?.length > 0 ? (
-            MI.itemDetails.map((item, idx) => (
+          {filteredDetails?.length > 0 ? (
+            filteredDetails.map((item, idx) => (
               <tr key={idx} className="border-b border-[#d8b76a]">
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {idx + 1}
@@ -65,9 +83,9 @@ const MIdetails = ({ MI }) => {
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.grams ? `${item.grams} gm` : item.qty || "-"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.rate || "-"}
-                </td>
+                </td> */}
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
                   <span
                     className={`${
@@ -79,8 +97,13 @@ const MIdetails = ({ MI }) => {
                     {item.status || "-"}
                   </span>
                 </td>
+                <td className="px-2 py-1 border-r border-[#d8b76a] capitalize">
+                  {filter == "print" ? "print " : item.cuttingType || "-"}
+                </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.assignee?.fullName || "-"}
+                  {filter == "print"
+                    ? "Outside Company"
+                    : item.jobWorkType || "-"}
                 </td>
               </tr>
             ))

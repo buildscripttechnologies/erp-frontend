@@ -8,6 +8,7 @@ import { ClipLoader } from "react-spinners";
 import { capitalize } from "lodash";
 import { calculateRate } from "../../../utils/calc";
 import { generateConsumptionTable } from "../../../utils/consumptionTable";
+import { plastic, slider } from "../../../data/dropdownData";
 
 const AddSampleModal = ({ onClose, onSuccess }) => {
   const [form, setForm] = useState({
@@ -51,6 +52,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
   const [components, setComponents] = useState([]);
 
   const [files, setFiles] = useState([]);
+  const [printingFiles, setPrintingFiles] = useState([]);
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -305,6 +307,8 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
         itemRate: 0,
         itemName: "",
         skuCode: "",
+        isPrint: false,
+        cuttingType: "",
       },
     ]);
   };
@@ -340,6 +344,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
         JSON.stringify({ ...form, productDetails, consumptionTable })
       );
       files.forEach((f) => formData.append("files", f));
+      printingFiles.forEach((f) => formData.append("printingFiles", f));
 
       const res = await axios.post("/samples/add", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -359,7 +364,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto   shadow-lg border border-[#d8b76a] text-[#292926]">
+      <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto   shadow-lg border border-primary text-black">
         {/* Header */}
         <div className="flex justify-between items-center sticky top-0 p-4 bg-white z-10">
           <h2 className="text-xl font-semibold">Add Sample</h2>
@@ -375,17 +380,19 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
           {/* Form */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm ">
             <div>
-              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                 Product Name
               </label>
               <CreatableSelect
                 styles={{
                   control: (base, state) => ({
                     ...base,
-                    borderColor: "#d8b76a",
-                    boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
+                    borderColor: "var(--color-primary)",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 1px var(--color-primary)"
+                      : "none",
                     "&:hover": {
-                      borderColor: "#d8b76a",
+                      borderColor: "var(--color-primary)",
                     },
                   }),
                 }}
@@ -485,17 +492,19 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
             </div>
 
             <div>
-              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                 Party Name
               </label>
               <CreatableSelect
                 styles={{
                   control: (base, state) => ({
                     ...base,
-                    borderColor: "#d8b76a",
-                    boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
+                    borderColor: "var(--color-primary)",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 1px var(--color-primary)"
+                      : "none",
                     "&:hover": {
-                      borderColor: "#d8b76a",
+                      borderColor: "var(--color-primary)",
                     },
                   }),
                 }}
@@ -515,7 +524,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
             </div>
 
             <div className="flex flex-col">
-              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                 Order Qty
               </label>
               <input
@@ -523,7 +532,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                 type="number"
                 placeholder="Order Qty"
                 name="orderQty"
-                className="p-2 border border-[#d8b76a] cursor-not-allowed rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                className="p-2 border border-primary cursor-not-allowed rounded focus:border-2 focus:border-primary focus:outline-none transition"
                 value={form.orderQty}
                 // onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
                 onChange={(e) => handleFormChange(e)}
@@ -531,25 +540,36 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
             </div>
 
             <div className="flex flex-col">
-              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                 Date
               </label>
               <input
                 type="date"
-                className="p-2 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
               />
             </div>
             <div className="flex flex-col ">
-              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
-                Upload Files
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                Product Files
               </label>
               <input
                 type="file"
                 multiple
                 onChange={(e) => setFiles([...e.target.files])}
-                className="block text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
+                className="block text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
+              />
+            </div>
+            <div className="flex flex-col ">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                Printing Files
+              </label>
+              <input
+                type="file"
+                multiple
+                onChange={(e) => setPrintingFiles([...e.target.files])}
+                className="block text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
               />
             </div>
           </div>
@@ -598,7 +618,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
 
           {/* Components Section */}
           <div>
-            <h3 className="font-bold text-[14px] my-2 text-[#d8b76a] underline">
+            <h3 className="font-bold text-[14px] my-2 text-primary underline">
               RM/SFG Components
             </h3>
 
@@ -609,7 +629,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                   (
                     <div
                       key={index}
-                      className="border border-[#d8b76a] rounded p-3 flex flex-col gap-2"
+                      className="border border-primary rounded p-3 flex flex-col gap-2"
                     >
                       <div
                         className={`grid grid-cols-1 sm:grid-cols-2 ${
@@ -621,7 +641,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                       >
                         {/* Component Field - span 2 columns on medium+ screens */}
                         <div className="flex flex-col md:col-span-2">
-                          <label className="text-[12px] font-semibold mb-[2px] text-[#292926]">
+                          <label className="text-[12px] font-semibold mb-[2px] text-black">
                             Component{" "}
                             <span className="text-primary capitalize">
                               {comp.category ? `● ${comp.category}` : ""}
@@ -658,12 +678,12 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                             styles={{
                               control: (base, state) => ({
                                 ...base,
-                                borderColor: "#d8b76a",
+                                borderColor: "var(--color-primary)",
                                 boxShadow: state.isFocused
-                                  ? "0 0 0 1px #d8b76a"
+                                  ? "0 0 0 1px var(--color-primary)"
                                   : "none",
                                 "&:hover": {
-                                  borderColor: "#d8b76a",
+                                  borderColor: "var(--color-primary)",
                                 },
                               }),
                             }}
@@ -681,14 +701,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                         ].map((field) => {
                           // Hide based on category
                           if (
-                            [
-                              "slider",
-                              "bidding",
-                              "adjuster",
-                              "buckel",
-                              "dkadi",
-                              "accessories",
-                            ].includes(comp.category?.toLowerCase()) &&
+                            slider.includes(comp.category?.toLowerCase()) &&
                             (field === "height" || field === "width")
                           )
                             return null;
@@ -702,16 +715,14 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                           //   return null; // hide qty
                           // }
                           if (
-                            !["plastic", "non woven", "ld cord"].includes(
-                              comp.category?.toLowerCase()
-                            ) &&
+                            !plastic.includes(comp.category?.toLowerCase()) &&
                             field === "grams"
                           ) {
                             return null; // hide grams for others
                           }
                           // ✅ Add this new rule for zipper
                           if (
-                            comp.category?.toLowerCase() === "zipper" &&
+                            zipper.includes(comp.category?.toLowerCase()) &&
                             field === "height"
                           ) {
                             return null; // hide height only for zipper
@@ -725,7 +736,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
 
                           return (
                             <div className="flex flex-col" key={field}>
-                              <label className="text-[12px] font-semibold mb-[2px] text-[#292926] capitalize">
+                              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                                 {field === "partName"
                                   ? "Part Name"
                                   : field === "qty"
@@ -751,7 +762,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                                     ? "qty"
                                     : `${field}`
                                 }
-                                className="p-1.5 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition"
+                                className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                                 value={comp[field] || ""}
                                 onChange={(e) =>
                                   updateComponent(index, field, e.target.value)
@@ -762,10 +773,52 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                         })}
                       </div>
 
-                      <div className="mt-2">
+                      <div className="mt-2 flex w-full justify-between">
+                        <div className="flex gap-4 items-center">
+                          {/* Cutting Type Dropdown */}
+                          <select
+                            className="border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition px-2 py-1 text-sm"
+                            value={comp.cuttingType || ""}
+                            onChange={(e) =>
+                              updateComponent(
+                                index,
+                                "cuttingType",
+                                e.target.value
+                              )
+                            }
+                          >
+                            <option value="">Cutting Type</option>
+                            <option value="Slitting Cutting">
+                              Slitting Cutting
+                            </option>
+                            <option value="Cutting">Cutting</option>
+                            <option value="Press Cutting">Press Cutting</option>
+                            <option value="Laser Cutting">Laser Cutting</option>
+                            <option value="Table Cutting">Table Cutting</option>
+                          </select>
+
+                          {/* Print Checkbox */}
+                          <label className="flex items-center gap-1 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={comp.isPrint || false}
+                              onChange={(e) =>
+                                updateComponent(
+                                  index,
+                                  "isPrint",
+                                  e.target.checked
+                                )
+                              }
+                              className="rounded border-gray-300 accent-primary"
+                            />
+                            Print
+                          </label>
+                        </div>
+
+                        {/* Remove Button */}
                         <button
                           type="button"
-                          className="text-red-600 text-xs hover:underline flex items-center gap-1 cursor-pointer"
+                          className="text-red-600 text-xs hover:underline flex gap-1 cursor-pointer items-center"
                           onClick={() => removeComponent(index)}
                         >
                           <FiTrash2 /> Remove
@@ -779,7 +832,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
               <button
                 type="button"
                 onClick={() => handleAddComponent({ label: "", value: "" })}
-                className="bg-[#d8b76a] hover:bg-[#d8b76a91] text-[#292926] px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
+                className="bg-primary hover:bg-primary/80 text-secondary px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
               >
                 + Add RM/SFG
               </button>
@@ -986,12 +1039,12 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
             <button
               disabled={loading}
               onClick={handleSubmit}
-              className="bg-[#d8b76a] text-black px-6 py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer"
+              className="bg-primary text-secondary px-6 py-2 rounded hover:bg-primary/80 cursor-pointer"
             >
               {loading ? (
                 <>
                   <span className="mr-2">Saving...</span>
-                  <ClipLoader size={20} color="#292926" />
+                  <ClipLoader size={20} color="secondary" />
                 </>
               ) : (
                 "Save"
