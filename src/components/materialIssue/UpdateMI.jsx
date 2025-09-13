@@ -109,6 +109,7 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
       const payload = {
         bom: selectedItem.b._id,
         bomNo: selectedItem.b.bomNo,
+        productName: selectedItem.b.productName,
         itemDetails: itemDetails.map((item) => ({
           ...item,
           status:
@@ -120,7 +121,7 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                 : item.cuttingType &&
                   checkedSkus.includes(item.skuCode) &&
                   item.jobWorkType == "Outside Company"
-                ? "in progress"
+                ? "In Progress"
                 : "pending"
               : item.status,
         })),

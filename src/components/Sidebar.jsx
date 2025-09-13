@@ -33,7 +33,7 @@ import {
   LuMapPinXInside,
   LuShoppingBag,
 } from "react-icons/lu";
-import { BiImport, BiSolidPurchaseTag } from "react-icons/bi";
+import { BiExport, BiImport, BiSolidPurchaseTag } from "react-icons/bi";
 
 import { GiCutDiamond } from "react-icons/gi";
 import { TbTruckDelivery } from "react-icons/tb";
@@ -43,7 +43,7 @@ import { AiOutlineShoppingCart } from "react-icons/ai";
 import { GrDomain } from "react-icons/gr";
 import { TbNeedleThread } from "react-icons/tb";
 import { PiEyedropperSampleFill } from "react-icons/pi";
-
+import { CiInboxOut } from "react-icons/ci";
 export function Sidebar({ isOpen }) {
   const navigate = useNavigate();
   const { logout, hasPermission } = useAuth();
@@ -120,7 +120,7 @@ export function Sidebar({ isOpen }) {
           action: "read",
         },
         {
-          icon: GiCutDiamond,
+          icon: BiExport,
           label: "Material Issue",
           module: "Material Issue",
           path: "/material-issue",
@@ -251,7 +251,7 @@ export function Sidebar({ isOpen }) {
         },
         {
           label: "BOM Master",
-          icon: RiBillFill ,
+          icon: RiBillFill,
           path: "/bom-master",
           module: "BOM",
           action: "read",

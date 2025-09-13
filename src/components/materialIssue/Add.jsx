@@ -48,7 +48,7 @@ const Add = ({ onClose, onAdded }) => {
       return;
     }
     setLoading(true);
-
+    
     try {
       const mainStatus = itemDetails.every((it) => it.status !== "pending")
         ? "issued"
@@ -56,12 +56,21 @@ const Add = ({ onClose, onAdded }) => {
       const payload = {
         bom: selectedItem.b._id,
         bomNo: selectedItem.b.bomNo,
+        productName: selectedItem.b.productName,
         itemDetails: itemDetails.map((item) => ({
           ...item,
           status:
-            item.cuttingType && checkedSkus.includes(item.skuCode)
-              ? "in cutting"
-              : "pending",
+            item.status == "pending"
+              ? item.cuttingType &&
+                checkedSkus.includes(item.skuCode) &&
+                item.jobWorkType == "Inside Company"
+                ? "Yet to Cutting"
+                : item.cuttingType &&
+                  checkedSkus.includes(item.skuCode) &&
+                  item.jobWorkType == "Outside Company"
+                ? "In Progress"
+                : "pending"
+              : item.status,
         })),
         consumptionTable, // already has isChecked, stockQty, type
         status: mainStatus,

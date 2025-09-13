@@ -12,8 +12,10 @@ const MIdetails = ({ MI, filter }) => {
   console.log("filtered details", filteredDetails);
 
   if (filter == "cutting") {
-    filteredDetails = filteredDetails.filter(
-      (item) => item.cuttingType && item.cuttingType.trim() != ""
+    filteredDetails = filteredDetails.filter((item) =>
+      ["in cutting", "yet to cutting", "cutting paused"].includes(
+        item.status.toLowerCase()
+      )
     );
   }
   if (filter === "print") {

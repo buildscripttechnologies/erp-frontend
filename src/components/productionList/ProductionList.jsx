@@ -16,6 +16,7 @@ import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
 import MIdetails from "../materialIssue/Midetails";
+import JobDetails from "../jobWork/JobDetails";
 
 // import UpdateMI from "./UpdateMI";
 // import Add from "./Add";
@@ -297,7 +298,11 @@ const ProductionList = () => {
                     {expandedMIId === mi._id && (
                       <tr className="">
                         <td colSpan="100%">
-                          <MIdetails MI={mi} />
+                          <JobDetails
+                            MI={mi}
+                            filter="production"
+                            fetchMis={fetchMis}
+                          />
                         </td>
                       </tr>
                     )}
