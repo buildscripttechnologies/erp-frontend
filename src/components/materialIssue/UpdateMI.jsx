@@ -89,8 +89,8 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
     setLoading(true);
 
     try {
-      const mainStatus = itemDetails.every((it) => it.status !== "pending")
-        ? "issued"
+      const mainStatus = itemDetails.every((it) => it.status != "pending")
+        ? MIData.status
         : "pending";
 
       // Merge extra into qty/weight
@@ -109,12 +109,21 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
       const payload = {
         bom: selectedItem.b._id,
         bomNo: selectedItem.b.bomNo,
+        productName: selectedItem.b.productName,
         itemDetails: itemDetails.map((item) => ({
           ...item,
           status:
-            item.cuttingType && checkedSkus.includes(item.skuCode)
-              ? "in cutting"
-              : "pending",
+            item.status == "pending"
+              ? item.cuttingType &&
+                checkedSkus.includes(item.skuCode) &&
+                item.jobWorkType == "Inside Company"
+                ? "in cutting"
+                : item.cuttingType &&
+                  checkedSkus.includes(item.skuCode) &&
+                  item.jobWorkType == "Outside Company"
+                ? "In Progress"
+                : "pending"
+              : item.status,
         })),
         consumptionTable: updatedConsumption,
         status: mainStatus,
@@ -314,14 +323,10 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                           {item.category || "N/A"}
                         </td>
                         <td className="px-2 py-1 border-r border-[#d8b76a]">
-                          {item.weight != "N/A"
-                            ? Number(item.weight).toFixed(2)
-                            : "N/A"}
+                          {item.weight != "N/A" ? item.weight : "N/A"}
                         </td>
                         <td className="px-2 py-1 border-r border-[#d8b76a]">
-                          {item.qty != "N/A"
-                            ? Number(item.qty).toFixed(2)
-                            : "N/A"}
+                          {item.qty != "N/A" ? item.qty : "N/A"}
                         </td>
                         <td className="px-2 py-1 border-r border-[#d8b76a]">
                           <span
@@ -346,8 +351,32 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                             value={item.extra || 0}
                             onChange={(e) => {
                               const updated = [...consumptionTable];
-                              updated[idx].extra =
-                                parseFloat(e.target.value) || 0;
+                              const row = updated[idx];
+                              const newExtra = parseFloat(e.target.value) || 0;
+
+                              // Restore stockQty before applying new value
+                              const prevExtra = row.extra || 0;
+                              row.stockQty = parseFloat(
+                                (row.stockQty + prevExtra - newExtra).toFixed(3)
+                              );
+
+                              // Always calculate numeric qty/weight only (remove any units)
+                              const numericQty = parseValue(row.originalQty);
+                              const numericWeight = parseValue(
+                                row.originalWeight
+                              );
+
+                              if (numericQty > 0) {
+                                row.qty = (numericQty - newExtra).toFixed(3); // ✅ no unit here
+                                row.weight = "N/A";
+                              } else if (numericWeight > 0) {
+                                row.weight = (numericWeight - newExtra).toFixed(
+                                  3
+                                ); // ✅ no unit here
+                                row.qty = "N/A";
+                              }
+
+                              row.extra = newExtra;
                               setConsumptionTable(updated);
                             }}
                             className="w-20 border border-gray-300 rounded px-1"

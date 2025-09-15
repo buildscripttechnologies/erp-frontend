@@ -16,6 +16,11 @@ import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
 import MIdetails from "../../materialIssue/Midetails";
+import JobDetails from "../JobDetails";
+import PrintingFile from "../PrintingFile";
+
+// import UpdateMI from "./UpdateMI";
+// import Add from "./Add";
 
 const Printing = () => {
   const { hasPermission } = useAuth();
@@ -27,6 +32,7 @@ const Printing = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [expandedMIId, setExpandedMIId] = useState(null);
+  const [openAttachments, setOpenAttachments] = useState(null);
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -133,33 +139,10 @@ const Printing = () => {
     fetchMis();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this Material Issue?"))
-      return;
-    try {
-      let res = await axios.delete(`/mi/delete/${id}`);
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
-      if (res.data.status == 200) {
-        toast.success("Material Issue deleted");
-        fetchMis();
-      }
-    } catch {
-      toast.error("Delete failed");
-    }
-  };
-
-  useEffect(() => {
-    fetchMis(1);
-    // fetchUoms();
-  }, []);
-
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Printing Job{" "}
+        Printing Jobs{" "}
         <span className="text-gray-500">({pagination.totalResults})</span>
       </h2>
 
@@ -168,32 +151,13 @@ const Printing = () => {
           <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
           <input
             type="text"
-            placeholder="Search Material"
+            placeholder="Search Printing Jobs"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
           />
         </div>
-
-        {/* {hasPermission("Material Issue", "create") && (
-          <button
-            onClick={() => setFormOpen(!formOpen)}
-            className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
-          >
-            <FiPlus />
-            {formOpen ? "Close Form" : "Issue Material"}
-          </button>
-        )} */}
       </div>
-
-      {formOpen && (
-        <Add
-          isOpen={formOpen}
-          setIsOpen={setFormOpen}
-          onClose={() => setFormOpen(false)}
-          onAdded={fetchMis}
-        />
-      )}
 
       <div className="overflow-x-auto rounded border border-[#d8b76a] shadow-sm">
         <table className="min-w-full text-[11px] ">
@@ -205,15 +169,9 @@ const Printing = () => {
               <th className="px-2 py-1.5 ">Prod No</th>
               <th className="px-2 py-1.5 ">BOM No</th>
               <th className="px-2 py-1.5 ">Product Name</th>
-              <th className="px-2 py-1.5 ">Sku Code</th>
-              <th className="px-2 py-1.5 ">Item Name</th>
-              <th className="px-2 py-1.5 ">Cutting Type</th>
-              <th className="px-2 py-1.5 ">Part Name</th>
-              <th className="px-2 py-1.5 ">Height</th>
-              <th className="px-2 py-1.5 ">Width</th>
-              <th className="px-2 py-1.5 ">Qty</th>
+              <th className="px-2 py-1.5 ">Printing File</th>
               <th className="px-2 py-1.5 ">Status</th>
-
+              <th className="px-2 py-1.5 ">Created By</th>
               <th className="px-2 py-1.5">Actions</th>
             </tr>
           </thead>
@@ -267,47 +225,65 @@ const Printing = () => {
                         {mi.bomNo}
                       </td>
                       <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.productName}
+                        {mi.bom.productName}
                       </td>
                       <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.skuCode}
-                      </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.itemName}
-                      </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.cuttingType}
-                      </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.partName}
-                      </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.height}
-                      </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.width}
-                      </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
-                        {mi.qty}
-                      </td>
+                        {Array.isArray(mi.bom.printingFile) &&
+                        mi.bom.printingFile.length > 0 ? (
+                          <button
+                            onClick={() =>
+                              setOpenAttachments(mi.bom.printingFile)
+                            }
+                            className="cursor-pointer hover:text-primary hover:underline text-center items-center justify-center"
+                          >
+                            View
+                          </button>
+                        ) : (
+                          "-"
+                        )}
 
+                        {openAttachments && (
+                          <PrintingFile
+                            attachments={openAttachments}
+                            onClose={() => setOpenAttachments(null)}
+                          />
+                        )}
+                      </td>
                       <td className="px-2  border-r border-[#d8b76a]">
                         <span
                           className={`${
-                            mi.status == "in cutting"
+                            mi.status == "pending"
                               ? "bg-yellow-200"
+                              : mi.status == "in progress" ||
+                                mi.status == "issued"
+                              ? "bg-orange-200"
                               : "bg-green-200"
                           }  py-0.5 px-1 rounded font-bold capitalize `}
                         >
                           {mi.status || "-"}
                         </span>
                       </td>
-                      {/* 
+
                       <td className="px-2  border-r border-[#d8b76a]">
                         {mi.createdBy?.fullName || "-"}
-                      </td> */}
+                      </td>
 
                       <td className="px-2 py-1 flex gap-3 text-sm text-[#d8b76a]">
+                        {/* <button
+                        disabled={generatingId === mi._id}
+                        onClick={() => handlePrint(mi)}
+                        className="text-[#d8b76a] hover:underline text-[11px] cursor-pointer"
+                      >
+                        {generatingId === stock._id ? (
+                          <ClipLoader size={11} color="primary" />
+                        ) : (
+                          <FaBarcode
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="View Barcodes"
+                          />
+                        )}
+                      </button> */}
+
                         {hasPermission("Material Inward", "update") ? (
                           <FiEdit
                             data-tooltip-id="statusTip"
@@ -344,19 +320,23 @@ const Printing = () => {
                         />
                       </td>
                     </tr>
-                    {/* {expandedMIId === mi._id && (
+                    {expandedMIId === mi._id && (
                       <tr className="">
                         <td colSpan="100%">
-                          <MIdetails MI={mi} filter="cutting" />
+                          <JobDetails
+                            MI={mi}
+                            filter="printing"
+                            fetchMis={fetchMis}
+                          />
                         </td>
                       </tr>
-                    )} */}
+                    )}
                   </React.Fragment>
                 ))}
                 {mi.length === 0 && (
                   <tr>
                     <td colSpan="14" className="text-center py-4 text-gray-500">
-                      No Material Issue found.
+                      No Products Found.
                     </td>
                   </tr>
                 )}

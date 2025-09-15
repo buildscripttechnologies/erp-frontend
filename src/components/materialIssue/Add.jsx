@@ -42,8 +42,13 @@ const Add = ({ onClose, onAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
+    if (checkedSkus.length < 1) {
+      toast.error("Issue Atleast One Material");
+      return;
+    }
+    setLoading(true);
+    
     try {
       const mainStatus = itemDetails.every((it) => it.status !== "pending")
         ? "issued"
@@ -51,12 +56,21 @@ const Add = ({ onClose, onAdded }) => {
       const payload = {
         bom: selectedItem.b._id,
         bomNo: selectedItem.b.bomNo,
+        productName: selectedItem.b.productName,
         itemDetails: itemDetails.map((item) => ({
           ...item,
           status:
-            item.cuttingType && checkedSkus.includes(item.skuCode)
-              ? "in cutting"
-              : "pending",
+            item.status == "pending"
+              ? item.cuttingType &&
+                checkedSkus.includes(item.skuCode) &&
+                item.jobWorkType == "Inside Company"
+                ? "Yet to Cutting"
+                : item.cuttingType &&
+                  checkedSkus.includes(item.skuCode) &&
+                  item.jobWorkType == "Outside Company"
+                ? "In Progress"
+                : "pending"
+              : item.status,
         })),
         consumptionTable, // already has isChecked, stockQty, type
         status: mainStatus,
@@ -116,7 +130,17 @@ const Add = ({ onClose, onAdded }) => {
                 onChange={(item) => {
                   setSelectedItem(item);
                   const actualItem = item.b;
-                  setItemDetails(actualItem.productDetails);
+
+                  const enhancedItems = (actualItem.productDetails || []).map(
+                    (c) => {
+                      return {
+                        ...c,
+                        status: "pending",
+                      };
+                    }
+                  );
+
+                  setItemDetails(enhancedItems);
                   // build enhanced consumption table
                   const enhanced = (actualItem.consumptionTable || []).map(
                     (c) => {

@@ -282,7 +282,7 @@ const MaterialReceive = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(9).fill({})}
+                columns={Array(7).fill({})}
               />
             ) : (
               <>

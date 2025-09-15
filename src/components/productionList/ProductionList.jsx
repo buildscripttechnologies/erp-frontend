@@ -1,27 +1,27 @@
 import React, { useEffect, useState } from "react";
-import axios from "../../../utils/axios";
+import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
 
 // import EditstockModal from "./EditstockModal";
-import TableSkeleton from "../../TableSkeleton";
-import ScrollLock from "../../ScrollLock";
+import TableSkeleton from "../TableSkeleton";
+import ScrollLock from "../ScrollLock";
 import Toggle from "react-toggle";
-import PaginationControls from "../../PaginationControls";
+import PaginationControls from "../PaginationControls";
 import { Tooltip } from "react-tooltip";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
 // import LabelPrint from "./LabelPrint";
 import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
-import MIdetails from "../../materialIssue/Midetails";
-import JobDetails from "../JobDetails";
+import MIdetails from "../materialIssue/Midetails";
+import JobDetails from "../jobWork/JobDetails";
 
 // import UpdateMI from "./UpdateMI";
 // import Add from "./Add";
 
-const Cutting = () => {
+const ProductionList = () => {
   const { hasPermission } = useAuth();
   const [mi, setMis] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -110,8 +110,8 @@ const Cutting = () => {
         // toDate: filters.toDate,
       });
 
-      const res = await axios.get(`/mi/cutting?${queryParams?.toString()}`);
-      // console.log("mis res", res);
+      const res = await axios.get(`/mi/get-all?${queryParams.toString()}`);
+      console.log("mis res", res);
 
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -140,7 +140,7 @@ const Cutting = () => {
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Cutting Jobs{" "}
+        Production List{" "}
         <span className="text-gray-500">({pagination.totalResults})</span>
       </h2>
 
@@ -149,7 +149,7 @@ const Cutting = () => {
           <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
           <input
             type="text"
-            placeholder="Search Cutting Jobs"
+            placeholder="Search Material"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
@@ -300,7 +300,7 @@ const Cutting = () => {
                         <td colSpan="100%">
                           <JobDetails
                             MI={mi}
-                            filter="cutting"
+                            filter="production"
                             fetchMis={fetchMis}
                           />
                         </td>
@@ -354,4 +354,4 @@ const Cutting = () => {
   );
 };
 
-export default Cutting;
+export default ProductionList;

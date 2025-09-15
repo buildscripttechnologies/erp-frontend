@@ -12,8 +12,10 @@ const MIdetails = ({ MI, filter }) => {
   console.log("filtered details", filteredDetails);
 
   if (filter == "cutting") {
-    filteredDetails = filteredDetails.filter(
-      (item) => item.cuttingType && item.cuttingType.trim() != ""
+    filteredDetails = filteredDetails.filter((item) =>
+      ["in cutting", "yet to cutting", "cutting paused"].includes(
+        item.status.toLowerCase()
+      )
     );
   }
   if (filter === "print") {
@@ -89,8 +91,16 @@ const MIdetails = ({ MI, filter }) => {
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
                   <span
                     className={`${
-                      item.status == "pending"
+                      [
+                        "pending",
+                        "in cutting",
+                        "in stitching",
+                        "in printing",
+                        "in progress",
+                      ].includes(item.status)
                         ? "bg-yellow-200"
+                        : item.status == "in quality check"
+                        ? "bg-orange-200"
                         : "bg-green-200"
                     }  py-0.5 px-1 rounded font-bold capitalize `}
                   >

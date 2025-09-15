@@ -21,7 +21,7 @@ import JobDetails from "../JobDetails";
 // import UpdateMI from "./UpdateMI";
 // import Add from "./Add";
 
-const Cutting = () => {
+const QualityCheck = () => {
   const { hasPermission } = useAuth();
   const [mi, setMis] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -110,7 +110,9 @@ const Cutting = () => {
         // toDate: filters.toDate,
       });
 
-      const res = await axios.get(`/mi/cutting?${queryParams?.toString()}`);
+      const res = await axios.get(
+        `/mi/quality-check?${queryParams.toString()}`
+      );
       // console.log("mis res", res);
 
       if (res.data.status == 403) {
@@ -140,7 +142,7 @@ const Cutting = () => {
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Cutting Jobs{" "}
+        Quality Check{" "}
         <span className="text-gray-500">({pagination.totalResults})</span>
       </h2>
 
@@ -149,7 +151,7 @@ const Cutting = () => {
           <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
           <input
             type="text"
-            placeholder="Search Cutting Jobs"
+            placeholder="Search Products"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
@@ -229,8 +231,11 @@ const Cutting = () => {
                           className={`${
                             mi.status == "pending"
                               ? "bg-yellow-200"
-                              : mi.status == "in progress" ||
-                                mi.status == "issued"
+                              : [
+                                  "In Progress",
+                                  "in progress",
+                                  "issued",
+                                ].includes(mi.status)
                               ? "bg-orange-200"
                               : "bg-green-200"
                           }  py-0.5 px-1 rounded font-bold capitalize `}
@@ -300,7 +305,7 @@ const Cutting = () => {
                         <td colSpan="100%">
                           <JobDetails
                             MI={mi}
-                            filter="cutting"
+                            filter="stitching"
                             fetchMis={fetchMis}
                           />
                         </td>
@@ -354,4 +359,4 @@ const Cutting = () => {
   );
 };
 
-export default Cutting;
+export default QualityCheck;
