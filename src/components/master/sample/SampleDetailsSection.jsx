@@ -24,12 +24,8 @@ const SampleDetailsSection = ({ SampleData }) => {
             <th className="px-2 py-1 border-r border-primary">Type</th>
             <th className="px-2 py-1 border-r border-primary">Part Name</th>
             <th className="px-2 py-1 border-r border-primary">Category</th>
-            <th className="px-2 py-1 border-r border-primary">
-              Height (Inch)
-            </th>
-            <th className="px-2 py-1 border-r border-primary">
-              Width (Inch)
-            </th>
+            <th className="px-2 py-1 border-r border-primary">Height (Inch)</th>
+            <th className="px-2 py-1 border-r border-primary">Width (Inch)</th>
             <th className="px-2 py-1 border-r border-primary">Quantity</th>
             <th className="px-2 py-1 border-r border-primary">Weight</th>
             <th className="px-2 py-1 border-r border-primary">Rate (₹)</th>
@@ -40,28 +36,26 @@ const SampleDetailsSection = ({ SampleData }) => {
           {SampleData.productDetails?.length > 0 ? (
             SampleData.productDetails.map((item, idx) => (
               <tr key={idx} className="border-b border-primary">
-                <td className="px-2 py-1 border-r border-primary">
-                  {idx + 1}
-                </td>
-                <td className="px-2 py-1 border-r border-primary  capitalize">
+                <td className="px-2 py-1 border-r border-primary">{idx + 1}</td>
+                <td className="px-2 py-1 border-r border-primary  ">
                   {item.skuCode || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary capitalize">
+                <td className="px-2 py-1 border-r border-primary ">
                   {item.itemName || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary capitalize">
+                <td className="px-2 py-1 border-r border-primary ">
                   {item.type || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary capitalize">
+                <td className="px-2 py-1 border-r border-primary ">
                   {item.partName || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary capitalize">
+                <td className="px-2 py-1 border-r border-primary ">
                   {item.category || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary capitalize">
+                <td className="px-2 py-1 border-r border-primary ">
                   {item.height || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary capitalize">
+                <td className="px-2 py-1 border-r border-primary ">
                   {item.width || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
@@ -107,16 +101,14 @@ const SampleDetailsSection = ({ SampleData }) => {
           {SampleData.consumptionTable?.length > 0 ? (
             SampleData.consumptionTable.map((item, idx) => (
               <tr key={idx} className="border-b border-primary">
-                <td className="px-2 py-1 border-r border-primary">
-                  {idx + 1}
-                </td>
-                <td className="px-2 py-1 border-r border-primary capitalize">
+                <td className="px-2 py-1 border-r border-primary">{idx + 1}</td>
+                <td className="px-2 py-1 border-r border-primary ">
                   {item.skuCode || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary capitalize">
+                <td className="px-2 py-1 border-r border-primary ">
                   {item.itemName || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary capitalize">
+                <td className="px-2 py-1 border-r border-primary ">
                   {item.category || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">

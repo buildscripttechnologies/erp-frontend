@@ -55,9 +55,9 @@ export const generateSample = async (SampleData) => {
       // Row 1
       [
         { content: "Party Name:", styles: { fontStyle: "bold" } },
-        capitalize(SampleData.partyName) || "",
+        SampleData.partyName || "",
         { content: "Product Name:", styles: { fontStyle: "bold" } },
-        capitalize(SampleData.product.name) || "",
+        SampleData.product.name || "",
       ],
       // Row 2
       [
@@ -113,8 +113,8 @@ export const generateSample = async (SampleData) => {
     index + 1,
     item.skuCode || "N/A",
     item.itemName || "N/A",
-    capitalize(item.category) || "N/A",
-    capitalize(item.partName) || "N/A",
+    item.category || "N/A",
+    item.partName || "N/A",
     item.height || "N/A",
     item.width || "N/A",
     item.qty || "N/A",
@@ -266,7 +266,7 @@ export const generateSample = async (SampleData) => {
         index + 1,
         item.skuCode,
         item.itemName,
-        capitalize(item.category),
+        item.category,
         weightDisplay,
         qtyDisplay,
       ];

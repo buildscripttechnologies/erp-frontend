@@ -179,7 +179,7 @@ const Printing = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(9).fill({})}
+                columns={Array(10).fill({})}
               />
             ) : (
               <>
