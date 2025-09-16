@@ -169,14 +169,14 @@ const ProductionList = () => {
               <th className="px-2 py-1.5 ">Product Name</th>
               <th className="px-2 py-1.5 ">Status</th>
               <th className="px-2 py-1.5 ">Created By</th>
-              <th className="px-2 py-1.5">Actions</th>
+              {/* <th className="px-2 py-1.5">Actions</th> */}
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(9).fill({})}
+                columns={Array(8).fill({})}
               />
             ) : (
               <>
@@ -224,7 +224,7 @@ const ProductionList = () => {
                       <td className="px-2  border-r border-[#d8b76a]">
                         {mi.bom.productName}
                       </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
+                      <td className="px-2 py-1  border-r border-[#d8b76a]">
                         <span
                           className={`${
                             mi.status == "pending"
@@ -243,22 +243,8 @@ const ProductionList = () => {
                         {mi.createdBy?.fullName || "-"}
                       </td>
 
-                      <td className="px-2 py-1 flex gap-3 text-sm text-[#d8b76a]">
-                        {/* <button
-                        disabled={generatingId === mi._id}
-                        onClick={() => handlePrint(mi)}
-                        className="text-[#d8b76a] hover:underline text-[11px] cursor-pointer"
-                      >
-                        {generatingId === stock._id ? (
-                          <ClipLoader size={11} color="primary" />
-                        ) : (
-                          <FaBarcode
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="View Barcodes"
-                          />
-                        )}
-                      </button> */}
-
+                      {/* <td className="px-2 py-1 flex gap-3 text-sm text-[#d8b76a]">
+                      
                         {hasPermission("Material Inward", "update") ? (
                           <FiEdit
                             data-tooltip-id="statusTip"
@@ -293,7 +279,7 @@ const ProductionList = () => {
                             fontWeight: "bold",
                           }}
                         />
-                      </td>
+                      </td> */}
                     </tr>
                     {expandedMIId === mi._id && (
                       <tr className="">

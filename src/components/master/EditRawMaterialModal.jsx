@@ -78,9 +78,7 @@ const EditRawMaterialModal = ({
         category.includes("canvas") ||
         category.includes("foam"))
     ) {
-      updatedForm.sqInchRate = Number(
-        ((rate / panno / fabricRate) * 1.05).toFixed(2)
-      );
+      updatedForm.sqInchRate = Number((rate / panno / fabricRate) * 1.05);
     } else {
       updatedForm.sqInchRate = 0;
     }

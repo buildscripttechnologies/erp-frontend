@@ -6,6 +6,7 @@ export const cuttingType = [
   "Table Cutting",
 ];
 export const jobWorkType = ["Inside Company", "Outside Company"];
+export const vendors = ["vendor 1", "vendor 2", "vendor 3"];
 
 export const availableModules = [
   "UOM",

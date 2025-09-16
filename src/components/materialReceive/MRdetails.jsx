@@ -1,3 +1,4 @@
+import { isNumber } from "lodash";
 import React from "react";
 
 const MRdetails = ({ MR }) => {
@@ -49,7 +50,7 @@ const MRdetails = ({ MR }) => {
                   {item.weight || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.qty || "-"}
+                  {isNumber(item.qty) ? item.qty.toFixed(2) : item.qty || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.receiveQty || "-"}

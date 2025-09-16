@@ -2,16 +2,18 @@ import React from "react";
 import {
   FaArrowCircleRight,
   FaPauseCircle,
-  FaPlay,
   FaPlayCircle,
 } from "react-icons/fa";
 import { Tooltip } from "react-tooltip";
 import StageModal from "./StageModal";
 
 import axios from "../../utils/axios";
+
 const JobDetails = ({ MI, filter, fetchMis }) => {
   const [openStageModal, setOpenStageModal] = React.useState(false);
-  const [selectedItem, setSelectedItem] = React.useState(null);
+  const [selectedItem, setSelectedItem] = React.useState(null); // ✅ single item
+  const [selectedItems, setSelectedItems] = React.useState([]); // ✅ bulk items
+  const [bulkAction, setBulkAction] = React.useState(null);
 
   const formatDate = (date) =>
     new Date(date).toLocaleString("en-IN", {
@@ -21,275 +23,319 @@ const JobDetails = ({ MI, filter, fetchMis }) => {
 
   let filteredDetails = MI.itemDetails || [];
 
-  //   console.log("filtered details", filteredDetails);
+  const handleCheckboxChange = (itemId) => {
+    setSelectedItems((prev) =>
+      prev.includes(itemId)
+        ? prev.filter((id) => id !== itemId)
+        : [...prev, itemId]
+    );
+  };
 
-  //   if (filter == "cutting") {
-  //     filteredDetails = filteredDetails.filter((item) =>
-  //       ["in cutting", "yet to cutting", "cutting paused"].includes(
-  //         item.status.toLowerCase()
-  //       )
-  //     );
-  //   }
-  //   if (filter === "print") {
-  //     filteredDetails = filteredDetails.filter((item) => item.isPrint == true);
-  //   }
-
-  const handleNextStage = async (miId, itemId) => {
-    // decide next stage
-    const nextStage = "in stitching";
-
-    // confirm with user
-    if (!window.confirm(`Move this item to next stage: ${nextStage}?`)) return;
-
-    try {
-      const res = await axios.patch("/mi/next-stage", {
-        miId,
-        itemId,
-        updates: { status: nextStage },
-      });
-
-      if (res.data.status === 403) {
-        toast.error(res.data.message);
-        return;
-      }
-
-      if (res.data.status === 200) {
-        toast.success(`Item moved to: ${nextStage}`);
-        fetchMis(); // refresh data
-      }
-    } catch (err) {
-      toast.error("Failed to move to next stage");
+  const handleSelectAll = () => {
+    if (selectedItems.length === filteredDetails.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(filteredDetails.map((i) => i._id));
     }
   };
 
+  // ✅ bulk stage update
+  const handleBulkAction = (action) => {
+    if (selectedItems.length === 0) return;
+    setBulkAction(action);
+    setSelectedItem(null); // reset single item
+    setOpenStageModal(true);
+  };
+
   return (
-    <div className="bg-white border border-[#d8b76a] rounded shadow pt-3 pb-4 px-4 mx-2 mb-2 text-[11px] text-[#292926]">
+    <div className="bg-white border border-primary rounded shadow pt-3 pb-4 px-4 mx-2 mb-2 text-[11px] text-[#292926]">
       {/* Product Details Table */}
-      <h3 className="font-bold text-[#d8b76a] text-[14px] underline underline-offset-4 mb-2">
-        Product Details (Raw Material / SFG)
-      </h3>
-      <table className="w-full  text-[11px] border text-left">
-        <thead className="bg-[#d8b76a]/70">
+      <div className="flex items-center justify-between mb-2">
+        <div className="font-bold text-primary text-[14px] underline underline-offset-4">
+          Product Details (Raw Material / SFG)
+        </div>
+
+        {/* ✅ Show bulk action buttons only when items are selected */}
+        {selectedItems.length > 0 && (
+          <div className="flex gap-2 text-sm">
+            {["outside"].includes(filter) ? (
+              ""
+            ) : (
+              <>
+                {" "}
+                <FaPlayCircle
+                  className="cursor-pointer text-primary hover:text-green-600 "
+                  data-tooltip-id="statusTip"
+                  data-tooltip-content="Start / Resume Selected"
+                  onClick={() => handleBulkAction("start")}
+                />
+                <FaPauseCircle
+                  className="cursor-pointer text-primary hover:text-orange-600"
+                  data-tooltip-id="statusTip"
+                  data-tooltip-content="Pause Selected"
+                  onClick={() => handleBulkAction("pause")}
+                />
+              </>
+            )}
+            <FaArrowCircleRight
+              className="cursor-pointer text-primary hover:text-blue-600"
+              data-tooltip-id="statusTip"
+              data-tooltip-content="Next Stage"
+              onClick={() => handleBulkAction("next")}
+            />
+          </div>
+        )}
+      </div>
+
+      <table className="w-full text-[11px] border text-left">
+        <thead className="bg-primary/70">
           <tr>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">S. No.</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Sku Code</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Item Name</th>
+            {["production"].includes(filter) ? (
+              ""
+            ) : (
+              <th className="px-2 py-1 border-r border-primary flex gap-1">
+                <input
+                  type="checkbox"
+                  checked={
+                    selectedItems.length === filteredDetails.length &&
+                    filteredDetails.length > 0
+                  }
+                  onChange={handleSelectAll}
+                  className="accent-black"
+                />
+              </th>
+            )}
+            <th className="px-2 py-1 border-r border-primary">S. No.</th>
+            <th className="px-2 py-1 border-r border-primary">Sku Code</th>
+            <th className="px-2 py-1 border-r border-primary">Item Name</th>
             {["production"].includes(filter) ? (
               ""
             ) : (
               <>
-                <th className="px-2 py-1 border-r border-[#d8b76a]">Type</th>
-                <th className="px-2 py-1 border-r border-[#d8b76a]">
-                  Location
-                </th>
+                <th className="px-2 py-1 border-r border-primary">Type</th>
+                <th className="px-2 py-1 border-r border-primary">Location</th>
               </>
             )}
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Part Name</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">
-              Height (Inch)
-            </th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">
-              Width (Inch)
-            </th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Quantity</th>
-            {/* <th className="px-2 py-1 border-r border-[#d8b76a]">Rate (₹)</th> */}
+            <th className="px-2 py-1 border-r border-primary">Part Name</th>
+            <th className="px-2 py-1 border-r border-primary">Height (Inch)</th>
+            <th className="px-2 py-1 border-r border-primary">Width (Inch)</th>
+            <th className="px-2 py-1 border-r border-primary">Quantity</th>
             {["printing", "stitching"].includes(filter) ? (
               ""
             ) : (
-              <th className="px-2 py-1 border-r border-[#d8b76a]">
+              <th className="px-2 py-1 border-r border-primary">
                 Cutting Type
               </th>
             )}
             {["production"].includes(filter) ? (
-              <th className="px-2 py-1 border-r border-[#d8b76a]">Printing</th>
+              <th className="px-2 py-1 border-r border-primary">Printing</th>
             ) : (
               ""
             )}
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Status</th>
-            <th className="px-2 py-1 border-r border-[#d8b76a]">Actions</th>
+            {["outside"].includes(filter) ? (
+              <th className="px-2 py-1 border-r border-primary">Vendor</th>
+            ) : (
+              ""
+            )}
+            <th className="px-2 py-1 border-r border-primary">Status</th>
+            {["production"].includes(filter) ? (
+              ""
+            ) : (
+              <th className="px-2 py-1 border-r border-primary">Actions</th>
+            )}
           </tr>
         </thead>
         <tbody>
           {filteredDetails?.length > 0 ? (
             filteredDetails.map((item, idx) => (
-              <tr key={idx} className="border-b border-[#d8b76a]">
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {idx + 1}
-                </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+              <tr key={item._id} className="border-b border-primary">
+                {["production"].includes(filter) ? (
+                  ""
+                ) : (
+                  <td className="px-2 py-1 border-r border-primary accent-primary">
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.includes(item._id)}
+                      onChange={() => handleCheckboxChange(item._id)}
+                    />
+                  </td>
+                )}
+                <td className="px-2 py-1 border-r border-primary">{idx + 1}</td>
+                <td className="px-2 py-1 border-r border-primary">
                   {item.itemId.skuCode || "-"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-primary">
                   {item.itemId.itemName || "-"}
                 </td>
                 {["production"].includes(filter) ? (
                   ""
                 ) : (
                   <>
-                    <td className="px-2 py-1 border-r border-[#d8b76a]">
+                    <td className="px-2 py-1 border-r border-primary">
                       {item.type || "-"}
                     </td>
-                    <td className="px-2 py-1 border-r border-[#d8b76a]">
+                    <td className="px-2 py-1 border-r border-primary">
                       {item.itemId.location?.locationId || "-"}
                     </td>
                   </>
                 )}
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-primary">
                   {item.partName || "-"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-primary">
                   {item.height || "-"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                <td className="px-2 py-1 border-r border-primary">
                   {item.width || "-"}
                 </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.grams ? `${item.grams} gm` : item.qty || "-"}
+                <td className="px-2 py-1 border-r border-primary">
+                  {item.grams ? `${item.grams / 1000} kg` : item.qty || "-"}
                 </td>
-                {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.rate || "-"}
-                </td> */}
                 {["printing", "stitching"].includes(filter) ? (
                   ""
                 ) : (
-                  <td className="px-2 py-1 border-r border-[#d8b76a] capitalize">
+                  <td className="px-2 py-1 border-r border-primary ">
                     {item.cuttingType || "-"}
                   </td>
-                )}{" "}
+                )}
                 {["production"].includes(filter) ? (
-                  <th className="px-2 py-1 border-r border-[#d8b76a]">
+                  <td className="px-2 py-1 font-semibold border-r border-primary">
                     {item.isPrint ? "Yes" : "-" || "-"}
-                  </th>
+                  </td>
                 ) : (
                   ""
-                )}{" "}
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
+                )}
+                {["outside"].includes(filter) ? (
+                  <td className="px-2 py-1 border-r border-primary">
+                    {item.vendor || "-"}
+                  </td>
+                ) : (
+                  ""
+                )}
+                <td className="px-2 py-1 border-r border-primary">
                   <span
                     className={`${
-                      [
-                        "Yet to Cutting",
-                        "In Cutting",
-                        "Cutting Paused",
-                        "Yet to Print",
-                        "In Printing",
-                        "Printing Paused",
-                        "Yet to Stitch",
-                        "In Stitching",
-                        "Stitching Paused",
-                        "In Progress",
-                      ].includes(item.status)
+                      item.status.includes("Yet")
+                        ? "bg-gray-200"
+                        : [
+                            "In Cutting",
+                            "In Stitching",
+                            "In Printing",
+                            "In Checking",
+                            "In Progress",
+                          ].includes(item.status)
                         ? "bg-yellow-200"
-                        : ["In Checking", "Yet to Check"].includes(item.status)
+                        : item.status.includes("Paused")
                         ? "bg-orange-200"
                         : "bg-green-200"
-                    }  py-0.5 px-1 rounded font-bold  `}
+                    }  py-0.5 px-1 rounded font-bold`}
                   >
                     {item.status || "-"}
                   </span>
                 </td>
                 {/* Actions */}
-                <td className="px-2 py-1 flex gap-1 text-[12px]">
-                  {item.jobWorkType == "Outside Company" ? (
-                    <>
-                      {/* ▶️ Start outside job */}
-                      {item.status != "In Progress" && (
-                        <FaPlayCircle
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Start Outside Job"
-                          className="cursor-pointer text-[#d8b76a] hover:text-green-600"
-                          onClick={() => {
-                            setSelectedItem({ ...item, action: "play" });
-                            setOpenStageModal(true);
-                          }}
-                        />
-                      )}
-
-                      {/* ⏭ Move outside job to next stage */}
-                      {item.status == "In Progress" && (
-                        <FaArrowCircleRight
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Move to Next Stage"
-                          className="cursor-pointer text-[#d8b76a] hover:text-green-600"
-                          onClick={() => {
-                            setSelectedItem({ ...item, action: "next" });
-                            setOpenStageModal(true);
-                          }}
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      {/* ▶️ Play button */}
-                      {[
-                        "Yet to Cutting",
-                        "Yet to Print",
-                        "Yet to Stitch",
-                        "Yet to Check",
-                        "Cutting Paused",
-                        "Printing Paused",
-                        "Stitching Paused",
-                        "Checking Paused",
-                      ].includes(item.status) && (
-                        <FaPlayCircle
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Start / Resume"
-                          className="cursor-pointer text-[#d8b76a] hover:text-green-600"
-                          onClick={() => {
-                            setSelectedItem({ ...item, action: "play" });
-                            setOpenStageModal(true);
-                          }}
-                        />
-                      )}
-
-                      {/* ⏸ Pause button */}
-                      {[
-                        "In Cutting",
-                        "In Printing",
-                        "In Stitching",
-                        "In Checking",
-                      ].includes(item.status) && (
-                        <FaPauseCircle
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Pause"
-                          className="cursor-pointer text-[#d8b76a] hover:text-green-600"
-                          onClick={() => {
-                            setSelectedItem({ ...item, action: "pause" });
-                            setOpenStageModal(true);
-                          }}
-                        />
-                      )}
-
-                      {/* ⏭ Next Stage button */}
-                      {[
-                        "In Cutting",
-                        "In Printing",
-                        "In Stitching",
-                        "In Checking",
-                      ].includes(item.status) && (
-                        <FaArrowCircleRight
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Move to Next Stage"
-                          className="cursor-pointer text-[#d8b76a] hover:text-green-600"
-                          onClick={() => {
-                            setSelectedItem({ ...item, action: "next" });
-                            setOpenStageModal(true);
-                          }}
-                        />
-                      )}
-                    </>
-                  )}
-
-                  <Tooltip
-                    id="statusTip"
-                    place="top"
-                    style={{
-                      backgroundColor: "#292926",
-                      color: "#d8b76a",
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                    }}
-                  />
-                </td>
+                {["production"].includes(filter) ? (
+                  ""
+                ) : (
+                  <td className="px-2 py-1 flex gap-1 text-[12px]">
+                    {item.jobWorkType == "Outside Company" ? (
+                      <>
+                        {item.status !== "In Progress" && (
+                          <FaPlayCircle
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Start Outside Job"
+                            className="cursor-pointer text-primary hover:text-green-600"
+                            onClick={() => {
+                              setSelectedItem({ ...item, action: "play" });
+                              setBulkAction(null);
+                              setOpenStageModal(true);
+                            }}
+                          />
+                        )}
+                        {item.status === "In Progress" && (
+                          <FaArrowCircleRight
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Move to Next Stage"
+                            className="cursor-pointer text-primary hover:text-blue-600"
+                            onClick={() => {
+                              setSelectedItem({ ...item, action: "next" });
+                              setBulkAction(null);
+                              setOpenStageModal(true);
+                            }}
+                          />
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {[
+                          "Yet to Cutting",
+                          "Yet to Print",
+                          "Yet to Stitch",
+                          "Yet to Check",
+                          "Cutting Paused",
+                          "Printing Paused",
+                          "Stitching Paused",
+                          "Checking Paused",
+                        ].includes(item.status) && (
+                          <FaPlayCircle
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Start / Resume"
+                            className="cursor-pointer text-primary hover:text-green-600"
+                            onClick={() => {
+                              setSelectedItem({ ...item, action: "start" });
+                              setBulkAction(null);
+                              setOpenStageModal(true);
+                            }}
+                          />
+                        )}
+                        {[
+                          "In Cutting",
+                          "In Printing",
+                          "In Stitching",
+                          "In Checking",
+                        ].includes(item.status) && (
+                          <FaPauseCircle
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Pause"
+                            className="cursor-pointer text-primary hover:text-red-600"
+                            onClick={() => {
+                              setSelectedItem({ ...item, action: "pause" });
+                              setBulkAction(null);
+                              setOpenStageModal(true);
+                            }}
+                          />
+                        )}
+                        {[
+                          "In Cutting",
+                          "In Printing",
+                          "In Stitching",
+                          "In Checking",
+                        ].includes(item.status) && (
+                          <FaArrowCircleRight
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Move to Next Stage"
+                            className="cursor-pointer text-primary hover:text-blue-600"
+                            onClick={() => {
+                              setSelectedItem({ ...item, action: "next" });
+                              setBulkAction(null);
+                              setOpenStageModal(true);
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                    <Tooltip
+                      id="statusTip"
+                      place="top"
+                      style={{
+                        backgroundColor: "#292926",
+                        color: "#d8b76a",
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                      }}
+                    />
+                  </td>
+                )}
               </tr>
             ))
           ) : (
@@ -301,10 +347,18 @@ const JobDetails = ({ MI, filter, fetchMis }) => {
           )}
         </tbody>
       </table>
+
+      {/* ✅ Updated StageModal */}
       <StageModal
         open={openStageModal}
         onClose={() => setOpenStageModal(false)}
-        item={selectedItem}
+        item={selectedItem} // single item
+        items={
+          bulkAction
+            ? filteredDetails.filter((i) => selectedItems.includes(i._id))
+            : []
+        } // bulk items
+        bulkAction={bulkAction}
         fetchData={fetchMis}
         miId={MI._id}
       />

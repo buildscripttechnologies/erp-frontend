@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import axios from "../../utils/axios";
 import Select from "react-select";
 import { ClipLoader } from "react-spinners";
-import { cuttingType, jobWorkType } from "../../data/dropdownData";
+import { cuttingType, jobWorkType, vendors } from "../../data/dropdownData";
 
 const Add = ({ onClose, onAdded }) => {
   const [selectedItem, setSelectedItem] = useState(null);
@@ -48,7 +48,7 @@ const Add = ({ onClose, onAdded }) => {
       return;
     }
     setLoading(true);
-    
+
     try {
       const mainStatus = itemDetails.every((it) => it.status !== "pending")
         ? "issued"
@@ -363,6 +363,9 @@ const Add = ({ onClose, onAdded }) => {
                     <th className="px-2 py-1 border-r border-[#d8b76a]">
                       Jobwork Type
                     </th>
+                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                      Vendor
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -402,7 +405,9 @@ const Add = ({ onClose, onAdded }) => {
                           {item.width || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-[#d8b76a]">
-                          {item.grams ? `${item.grams} gm` : item.qty || "-"}
+                          {item.grams
+                            ? `${item.grams / 1000} kg`
+                            : item.qty || "-"}
                         </td>
                         {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
                           {item.rate || "-"}
@@ -449,6 +454,31 @@ const Add = ({ onClose, onAdded }) => {
                           >
                             <option value="">Select</option>
                             {jobWorkType.map((type, idx) => (
+                              <option key={idx} value={type}>
+                                {type}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                          <select
+                            className="disabled:cursor-not-allowed"
+                            disabled={item.jobWorkType != "Outside Company"}
+                            value={item.vendor || ""}
+                            onChange={(e) => {
+                              let updated = [...itemDetails];
+                              const targetIndex = updated.findIndex(
+                                (pd) => pd._id === item._id
+                              );
+
+                              if (targetIndex !== -1) {
+                                updated[targetIndex].vendor = e.target.value; // ✅ direct assign
+                                setItemDetails(updated);
+                              }
+                            }}
+                          >
+                            <option value="">Select</option>
+                            {vendors.map((type, idx) => (
                               <option key={idx} value={type}>
                                 {type}
                               </option>

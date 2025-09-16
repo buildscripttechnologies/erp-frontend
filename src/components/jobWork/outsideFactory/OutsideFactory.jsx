@@ -302,7 +302,7 @@ const OutsideFactory = () => {
                         <td colSpan="100%">
                           <JobDetails
                             MI={mi}
-                            filter="cutting"
+                            filter="outside"
                             fetchMis={fetchMis}
                           />
                         </td>

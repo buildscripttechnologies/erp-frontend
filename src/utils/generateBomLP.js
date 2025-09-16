@@ -113,10 +113,10 @@ export const generateBomLP = async (bomData) => {
 
   const tableBody = (bomData.productDetails || []).map((item, index) => [
     index + 1,
-    capitalize(item.skuCode) || "N/A",
-    capitalize(item.itemName) || "N/A",
-    capitalize(item.category) || "N/A",
-    capitalize(item.partName) || "N/A",
+    item.skuCode || "N/A",
+    item.itemName || "N/A",
+    item.category || "N/A",
+    item.partName || "N/A",
     item.height || "N/A",
     item.width || "N/A",
     item.qty || "N/A",
@@ -173,9 +173,9 @@ export const generateBomLP = async (bomData) => {
   const consumptionBody = (bomData.consumptionTable || []).map(
     (item, index) => [
       index + 1,
-      capitalize(item.skuCode) || "N/A",
-      capitalize(item.itemName) || "N/A",
-      capitalize(item.category) || "N/A",
+      item.skuCode || "N/A",
+      item.itemName || "N/A",
+      item.category || "N/A",
       item.weight || "N/A",
       item.qty || "N/A",
     ]

@@ -35,19 +35,19 @@ const BomDetailsSection = ({ bomData }) => {
             bomData.productDetails.map((item, idx) => (
               <tr key={idx} className="border-b border-primary">
                 <td className="px-2 py-1 border-r border-primary">{idx + 1}</td>
-                <td className="px-2 py-1 border-r border-primary  capitalize">
+                <td className="px-2 py-1 border-r border-primary  ">
                   {item.skuCode || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary  capitalize">
+                <td className="px-2 py-1 border-r border-primary  ">
                   {item.itemName || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary  capitalize">
+                <td className="px-2 py-1 border-r border-primary  ">
                   {item.type || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary  capitalize">
+                <td className="px-2 py-1 border-r border-primary  ">
                   {item.partName || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary capitalize">
+                <td className="px-2 py-1 border-r border-primary ">
                   {item.category || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
@@ -100,13 +100,13 @@ const BomDetailsSection = ({ bomData }) => {
             bomData.consumptionTable.map((item, idx) => (
               <tr key={idx} className="border-b border-primary">
                 <td className="px-2 py-1 border-r border-primary">{idx + 1}</td>
-                <td className="px-2 py-1 border-r border-primary capitalize">
+                <td className="px-2 py-1 border-r border-primary ">
                   {item.skuCode || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary  capitalize">
+                <td className="px-2 py-1 border-r border-primary  ">
                   {item.itemName || "N/A"}
                 </td>
-                <td className="px-2 py-1 border-r border-primary  capitalize">
+                <td className="px-2 py-1 border-r border-primary  ">
                   {item.category || "N/A"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
