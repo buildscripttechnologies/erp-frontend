@@ -32,6 +32,7 @@ export const availableModules = [
   "Printing",
   "Stitching",
   "Outside Company",
+  "Customer Order",
 ];
 
 export const availableActions = ["read", "write", "update", "delete"];

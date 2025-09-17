@@ -89,9 +89,11 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
     setLoading(true);
 
     try {
-      const mainStatus = itemDetails.every((it) => it.status != "pending")
+      const mainStatus = itemDetails.every(
+        (it) => it.currentStatus != "Pending"
+      )
         ? MIData.status
-        : "pending";
+        : "Pending";
 
       // Merge extra into qty/weight
       const updatedConsumption = consumptionTable.map((row) => {
@@ -112,18 +114,32 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
         productName: selectedItem.b.productName,
         itemDetails: itemDetails.map((item) => ({
           ...item,
-          status:
-            item.status == "pending"
+          currentStatus:
+            item.currentStatus == "Pending"
               ? item.cuttingType &&
                 checkedSkus.includes(item.skuCode) &&
                 item.jobWorkType == "Inside Company"
-                ? "in cutting"
+                ? "Yet to Start"
                 : item.cuttingType &&
                   checkedSkus.includes(item.skuCode) &&
                   item.jobWorkType == "Outside Company"
                 ? "In Progress"
-                : "pending"
-              : item.status,
+                : "Pending"
+              : item.currentStatus,
+          stages:
+            item.currentStatus == "Pending" &&
+            item.cuttingType &&
+            checkedSkus.includes(item.skuCode)
+              ? [
+                  {
+                    stage: "Cutting",
+                    status:
+                      item.jobWorkType === "Inside Company"
+                        ? "Yet to Start"
+                        : "In Progress",
+                  },
+                ]
+              : item.stages,
         })),
         consumptionTable: updatedConsumption,
         status: mainStatus,

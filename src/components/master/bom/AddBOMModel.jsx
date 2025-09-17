@@ -17,6 +17,7 @@ const AddBomModal = ({ onClose, onSuccess }) => {
     sampleNo: "",
     orderQty: 1,
     date: new Date().toISOString().split("T")[0],
+    deliveryDate: "",
     height: 0,
     width: 0,
     depth: 0,
@@ -548,16 +549,31 @@ const AddBomModal = ({ onClose, onSuccess }) => {
               />
             </div>
 
-            <div className="flex flex-col">
-              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                Date
-              </label>
-              <input
-                type="date"
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
-                value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
-              />
+            <div className="flex flex-col sm:flex-row justify-between gap-2">
+              <div className="flex flex-col w-full">
+                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                  value={form.date}
+                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                />
+              </div>
+              <div className="flex flex-col w-full">
+                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                  Delivery Date
+                </label>
+                <input
+                  type="date"
+                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                  value={form.deliveryDate}
+                  onChange={(e) =>
+                    setForm({ ...form, deliveryDate: e.target.value })
+                  }
+                />
+              </div>
             </div>
             <div className="flex flex-col ">
               <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">

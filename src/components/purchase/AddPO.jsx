@@ -7,7 +7,7 @@ import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { add } from "lodash";
 import DatePicker from "react-datepicker";
 
-const AddPO = ({ onClose, onAdded }) => {
+const AddPO = ({ onClose, onAdded, prefillItem }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [orderQty, setOrderQty] = useState("");
@@ -58,6 +58,31 @@ const AddPO = ({ onClose, onAdded }) => {
     };
     fetchDropdowns();
   }, []);
+
+  // helper function
+  const prefillFromItem = (prefillItem, rms) => {
+    if (!prefillItem || !rms || rms.length === 0) return null;
+
+    const found = rms.find((r) => r.skuCode === prefillItem.skuCode);
+    if (!found) return null;
+
+    return {
+      value: found.id,
+      label: `${found.skuCode} - ${found.itemName} - ${found.description}`,
+      r: found,
+    };
+  };
+
+  useEffect(() => {
+    if (prefillItem && rms.length > 0) {
+      const matchedItem = prefillFromItem(prefillItem, rms);
+      if (matchedItem) {
+        setSelectedItem(matchedItem);
+        setItemDetails(matchedItem.r);
+        setMoq(matchedItem.r.moq || 1);
+      }
+    }
+  }, [prefillItem, rms]);
 
   // NEW STATE
 
@@ -133,7 +158,11 @@ const AddPO = ({ onClose, onAdded }) => {
     setPoItems(updated);
   };
 
+  console.log("po items", poItems);
+
   const handleSubmit = async (e) => {
+    console.log("in handle submit");
+
     e.preventDefault();
     if (poItems.length === 0) return toast.error("Add at least one item");
 
@@ -159,7 +188,11 @@ const AddPO = ({ onClose, onAdded }) => {
         totalAmountWithGst: totalAmountWithGst.toFixed(2),
       };
 
+      console.log("payload", payload);
+
       const res = await axios.post("/pos/add-po", payload);
+      console.log("res", res);
+
       if (res.data.status === 403) {
         toast.error(res.data.message);
         return;

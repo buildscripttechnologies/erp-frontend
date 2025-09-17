@@ -4,6 +4,7 @@ import axios from "../../utils/axios";
 import Select from "react-select";
 import { ClipLoader } from "react-spinners";
 import { cuttingType, jobWorkType, vendors } from "../../data/dropdownData";
+import AddPO from "../purchase/AddPO";
 
 const Add = ({ onClose, onAdded }) => {
   const [selectedItem, setSelectedItem] = useState(null);
@@ -20,21 +21,24 @@ const Add = ({ onClose, onAdded }) => {
   // multiple items state
   const [poItems, setPoItems] = useState([]);
 
+  const [poModalItem, setPoModalItem] = useState(null);
+
   // ---- Your existing total amount
 
+  const fetchDropdowns = async () => {
+    try {
+      const [bomRes, userRes] = await Promise.all([
+        axios.get("/boms/get-all"),
+        axios.get("/users/all-users"),
+      ]);
+      setBoms(bomRes.data.data || []);
+      setUsers(userRes.data.users || []);
+    } catch {
+      toast.error("Failed to fetch vendors or items");
+    }
+  };
+
   useEffect(() => {
-    const fetchDropdowns = async () => {
-      try {
-        const [bomRes, userRes] = await Promise.all([
-          axios.get("/boms/get-all"),
-          axios.get("/users/all-users"),
-        ]);
-        setBoms(bomRes.data.data || []);
-        setUsers(userRes.data.users || []);
-      } catch {
-        toast.error("Failed to fetch vendors or items");
-      }
-    };
     fetchDropdowns();
   }, []);
 
@@ -50,27 +54,43 @@ const Add = ({ onClose, onAdded }) => {
     setLoading(true);
 
     try {
-      const mainStatus = itemDetails.every((it) => it.status !== "pending")
-        ? "issued"
-        : "pending";
+      const mainStatus = itemDetails.every(
+        (it) => it.currentStatus !== "Pending"
+      )
+        ? "Issued"
+        : "Pending";
       const payload = {
         bom: selectedItem.b._id,
         bomNo: selectedItem.b.bomNo,
         productName: selectedItem.b.productName,
         itemDetails: itemDetails.map((item) => ({
           ...item,
-          status:
-            item.status == "pending"
+          currentStatus:
+            item.currentStatus == "Pending"
               ? item.cuttingType &&
                 checkedSkus.includes(item.skuCode) &&
                 item.jobWorkType == "Inside Company"
-                ? "Yet to Cutting"
+                ? "Yet to Start"
                 : item.cuttingType &&
                   checkedSkus.includes(item.skuCode) &&
                   item.jobWorkType == "Outside Company"
                 ? "In Progress"
-                : "pending"
-              : item.status,
+                : "Pending"
+              : item.currentStatus,
+          stages:
+            item.currentStatus == "Pending" &&
+            item.cuttingType &&
+            checkedSkus.includes(item.skuCode)
+              ? [
+                  {
+                    stage: "Cutting",
+                    status:
+                      item.jobWorkType === "Inside Company"
+                        ? "Yet to Start"
+                        : "In Progress",
+                  },
+                ]
+              : item.stages,
         })),
         consumptionTable, // already has isChecked, stockQty, type
         status: mainStatus,
@@ -117,7 +137,7 @@ const Add = ({ onClose, onAdded }) => {
       >
         <h2 className="text-xl font-bold mb-4 text-primary">Issue Material</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-4">
           {/* Item & Vendor Select */}
           <div className="flex flex-wrap gap-5">
             <div className="w-full ">
@@ -135,7 +155,7 @@ const Add = ({ onClose, onAdded }) => {
                     (c) => {
                       return {
                         ...c,
-                        status: "pending",
+                        currentStatus: "Pending",
                       };
                     }
                   );
@@ -278,29 +298,46 @@ const Add = ({ onClose, onAdded }) => {
                           {item.qty || "N/A"}
                         </td>
                         <td className="px-2 py-1 border-r border-[#d8b76a]">
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-semibold ${(() => {
-                              const qtyVal =
-                                item.qty && item.qty !== "N/A"
-                                  ? parseFloat(
-                                      item.qty.replace(/[^0-9.]/g, "")
-                                    ) || 0
-                                  : 0;
-                              const weightVal =
-                                item.weight && item.weight !== "N/A"
-                                  ? parseFloat(
-                                      item.weight.replace(/[^0-9.]/g, "")
-                                    ) || 0
-                                  : 0;
+                          {(() => {
+                            const qtyVal =
+                              item.qty && item.qty !== "N/A"
+                                ? parseFloat(
+                                    item.qty.replace(/[^0-9.]/g, "")
+                                  ) || 0
+                                : 0;
+                            const weightVal =
+                              item.weight && item.weight !== "N/A"
+                                ? parseFloat(
+                                    item.weight.replace(/[^0-9.]/g, "")
+                                  ) || 0
+                                : 0;
 
-                              return (qtyVal && item.stockQty < qtyVal) ||
-                                (weightVal && item.stockQty < weightVal)
-                                ? "bg-red-200 "
-                                : "bg-green-100 ";
-                            })()}`}
-                          >
-                            {item.stockQty.toFixed(2)}
-                          </span>
+                            const isLowStock =
+                              (qtyVal && item.stockQty < qtyVal) ||
+                              (weightVal && item.stockQty < weightVal);
+
+                            return (
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                    isLowStock ? "bg-red-200" : "bg-green-100"
+                                  }`}
+                                >
+                                  {item.stockQty.toFixed(2)}
+                                </span>
+                                {isLowStock ? (
+                                  <button
+                                    className="px-2 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600"
+                                    onClick={() => setPoModalItem(item)}
+                                  >
+                                    Add PO
+                                  </button>
+                                ) : (
+                                  ""
+                                )}
+                              </div>
+                            );
+                          })()}
                         </td>
                       </tr>
                     ))
@@ -314,6 +351,16 @@ const Add = ({ onClose, onAdded }) => {
                 </tbody>
               </table>
             </div>
+          )}
+          {poModalItem && (
+            <AddPO
+              prefillItem={poModalItem} // 👈 pass the selected row
+              onClose={() => setPoModalItem(null)}
+              onAdded={() => {
+                setPoModalItem(null);
+                fetchDropdowns();
+              }}
+            />
           )}
 
           {/* Item details */}
@@ -502,8 +549,9 @@ const Add = ({ onClose, onAdded }) => {
           {/* Final Save */}
           <div className="flex justify-end gap-4 mt-4">
             <button
-              type="submit"
+              type="button"
               disabled={loading}
+              onSubmit={handleSubmit}
               className="px-6 py-2 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer"
             >
               {loading ? (
@@ -523,7 +571,7 @@ const Add = ({ onClose, onAdded }) => {
               Cancel
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

@@ -513,20 +513,39 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
               />
             </div>
 
-            <div className="flex flex-col">
-              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                Date
-              </label>
-              <input
-                type="date"
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
-                value={
-                  form.date
-                    ? new Date(form.date).toISOString().split("T")[0]
-                    : ""
-                }
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
-              />
+            <div className="flex flex-col sm:flex-row justify-between gap-2">
+              <div className="flex flex-col w-full">
+                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                  value={
+                    form.date
+                      ? new Date(form.date).toISOString().split("T")[0]
+                      : ""
+                  }
+                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                />
+              </div>
+              <div className="flex flex-col w-full">
+                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                  Delivery Date
+                </label>
+                <input
+                  type="date"
+                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                  value={
+                    form.deliveryDate
+                      ? new Date(form.deliveryDate).toISOString().split("T")[0]
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setForm({ ...form, deliveryDate: e.target.value })
+                  }
+                />
+              </div>
             </div>
             <div className="flex flex-col ">
               <div className="">

@@ -167,6 +167,7 @@ const ProductionList = () => {
               <th className="px-2 py-1.5 ">Prod No</th>
               <th className="px-2 py-1.5 ">BOM No</th>
               <th className="px-2 py-1.5 ">Product Name</th>
+              <th className="px-2 py-1.5 ">Party Name</th>
               <th className="px-2 py-1.5 ">Status</th>
               <th className="px-2 py-1.5 ">Created By</th>
               {/* <th className="px-2 py-1.5">Actions</th> */}
@@ -224,13 +225,16 @@ const ProductionList = () => {
                       <td className="px-2  border-r border-[#d8b76a]">
                         {mi.bom.productName}
                       </td>
+                      <td className="px-2  border-r border-[#d8b76a]">
+                        {mi.bom.partyName?.customerName}
+                      </td>
                       <td className="px-2 py-1  border-r border-[#d8b76a]">
                         <span
                           className={`${
-                            mi.status == "pending"
+                            mi.status == "Pending"
                               ? "bg-yellow-200"
-                              : mi.status == "in progress" ||
-                                mi.status == "issued"
+                              : mi.status == "In Progress" ||
+                                mi.status == "Issued"
                               ? "bg-orange-200"
                               : "bg-green-200"
                           }  py-0.5 px-1 rounded font-bold capitalize `}

@@ -177,68 +177,6 @@ const MaterialIssue = () => {
             className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
           />
         </div>
-        {/* <div className="flex flex-wrap gap-4 items-center ">
-          <select
-            value={filters.type}
-            onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
-          >
-            <option value="">All Types</option>
-            <option value="RM">RM</option>
-            <option value="SFG">SFG</option>
-            <option value="FG">FG</option>
-          </select>
-
-          <select
-            value={filters.uom}
-            onChange={(e) => setFilters({ ...filters, uom: e.target.value })}
-            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
-          >
-            <option value="">All UOM</option>
-            {uoms.map((u) => (
-              <option key={u._id} value={u.unitName}>
-                {u.unitName}
-              </option>
-            ))}
-          </select>
-
-          <div>
-            <label htmlFor="date from">From : </label>
-            <input
-              type="date"
-              value={filters.fromDate}
-              onChange={(e) =>
-                setFilters({ ...filters, fromDate: e.target.value })
-              }
-              className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="to date">To : </label>
-            <input
-              type="date"
-              value={filters.toDate}
-              onChange={(e) =>
-                setFilters({ ...filters, toDate: e.target.value })
-              }
-              className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
-            />
-          </div>
-
-          <button
-            disabled={
-              filters.type == "" &&
-              filters.fromDate == "" &&
-              filters.toDate == "" &&
-              filters.uom == ""
-            }
-            onClick={handleResetFilters}
-            className="bg-[#d8b76a] hover:bg-[#b38a37] disabled:hover:bg-[#d8b76a]/50 disabled:bg-[#d8b76a]/50 disabled:cursor-not-allowed text-[#292926] font-semibold px-4 py-1.5 rounded transition duration-200 cursor-pointer"
-          >
-            Reset Filters
-          </button>
-        </div> */}
 
         {hasPermission("Material Issue", "create") && (
           <button
@@ -330,8 +268,11 @@ const MaterialIssue = () => {
                       <td className="px-2  border-r border-[#d8b76a]">
                         <span
                           className={`${
-                            mi.status == "pending"
+                            mi.status == "Pending"
                               ? "bg-yellow-200"
+                              : mi.status == "In Progress" ||
+                                mi.status == "Issued"
+                              ? "bg-orange-200"
                               : "bg-green-200"
                           }  py-0.5 px-1 rounded font-bold capitalize `}
                         >

@@ -229,13 +229,10 @@ const QualityCheck = () => {
                       <td className="px-2  border-r border-[#d8b76a]">
                         <span
                           className={`${
-                            mi.status == "pending"
+                            mi.status == "Pending"
                               ? "bg-yellow-200"
-                              : [
-                                  "In Progress",
-                                  "in progress",
-                                  "issued",
-                                ].includes(mi.status)
+                              : mi.status == "In Progress" ||
+                                mi.status == "Issued"
                               ? "bg-orange-200"
                               : "bg-green-200"
                           }  py-0.5 px-1 rounded font-bold capitalize `}
@@ -305,7 +302,7 @@ const QualityCheck = () => {
                         <td colSpan="100%">
                           <JobDetails
                             MI={mi}
-                            filter="stitching"
+                            filter="checking"
                             fetchMis={fetchMis}
                           />
                         </td>

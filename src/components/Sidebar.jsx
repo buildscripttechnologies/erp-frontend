@@ -78,7 +78,8 @@ export function Sidebar({ isOpen }) {
     {
       icon: FiShoppingCart,
       label: "Customer Order",
-      module: "Dashboard",
+      path: "/customer-order",
+      module: "Customer Order",
       action: "read",
     },
     {

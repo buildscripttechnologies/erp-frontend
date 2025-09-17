@@ -22,6 +22,10 @@ const MIdetails = ({ MI, filter }) => {
     filteredDetails = filteredDetails.filter((item) => item.isPrint == true);
   }
 
+  const getStageByFilter = (item) => {
+    return item.stages[item.stages.length - 1];
+  };
+
   return (
     <div className="bg-white border border-[#d8b76a] rounded shadow pt-3 pb-4 px-4 mx-2 mb-2 text-[11px] text-[#292926]">
       {/* Product Details Table */}
@@ -56,67 +60,72 @@ const MIdetails = ({ MI, filter }) => {
         </thead>
         <tbody>
           {filteredDetails?.length > 0 ? (
-            filteredDetails.map((item, idx) => (
-              <tr key={idx} className="border-b border-[#d8b76a]">
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {idx + 1}
-                </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.itemId.skuCode || "-"}
-                </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.itemId.itemName || "-"}
-                </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.type || "-"}
-                </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.itemId.location?.locationId || "-"}
-                </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.partName || "-"}
-                </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.height || "-"}
-                </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.width || "-"}
-                </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {item.grams ? `${item.grams/1000} kg` : item.qty || "-"}
-                </td>
-                {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
+            filteredDetails.map((item, idx) => {
+              const stage = getStageByFilter(item);
+              if (!stage) return null;
+
+              const statusLabel = `${stage.stage} - ${stage.status}`;
+
+              return (
+                <tr key={idx} className="border-b border-[#d8b76a]">
+                  <td className="px-2 py-1 border-r border-[#d8b76a]">
+                    {idx + 1}
+                  </td>
+                  <td className="px-2 py-1 border-r border-[#d8b76a]">
+                    {item.itemId.skuCode || "-"}
+                  </td>
+                  <td className="px-2 py-1 border-r border-[#d8b76a]">
+                    {item.itemId.itemName || "-"}
+                  </td>
+                  <td className="px-2 py-1 border-r border-[#d8b76a]">
+                    {item.type || "-"}
+                  </td>
+                  <td className="px-2 py-1 border-r border-[#d8b76a]">
+                    {item.itemId.location?.locationId || "-"}
+                  </td>
+                  <td className="px-2 py-1 border-r border-[#d8b76a]">
+                    {item.partName || "-"}
+                  </td>
+                  <td className="px-2 py-1 border-r border-[#d8b76a]">
+                    {item.height || "-"}
+                  </td>
+                  <td className="px-2 py-1 border-r border-[#d8b76a]">
+                    {item.width || "-"}
+                  </td>
+                  <td className="px-2 py-1 border-r border-[#d8b76a]">
+                    {item.grams ? `${item.grams / 1000} kg` : item.qty || "-"}
+                  </td>
+                  {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
                   {item.rate || "-"}
                 </td> */}
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  <span
-                    className={`${
-                      [
-                        "pending",
-                        "in cutting",
-                        "in stitching",
-                        "in printing",
-                        "in progress",
-                      ].includes(item.status)
-                        ? "bg-yellow-200"
-                        : item.status == "in quality check"
-                        ? "bg-orange-200"
-                        : "bg-green-200"
-                    }  py-0.5 px-1 rounded font-bold capitalize `}
-                  >
-                    {item.status || "-"}
-                  </span>
-                </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a] capitalize">
-                  {filter == "print" ? "print " : item.cuttingType || "-"}
-                </td>
-                <td className="px-2 py-1 border-r border-[#d8b76a]">
-                  {filter == "print"
-                    ? "Outside Company"
-                    : item.jobWorkType || "-"}
-                </td>
-              </tr>
-            ))
+                  <td className="px-2 py-1 border-r border-[#d8b76a]">
+                    <span
+                      className={`${
+                        stage?.status?.includes("Yet")
+                          ? "bg-gray-200"
+                          : stage?.status?.includes("In Progress")
+                          ? "bg-yellow-200"
+                          : stage?.status?.includes("Paused")
+                          ? "bg-orange-200"
+                          : stage?.status?.includes("Completed")
+                          ? "bg-green-200"
+                          : "bg-gray-100"
+                      }  py-0.5 px-1 rounded font-bold`}
+                    >
+                      {statusLabel}
+                    </span>
+                  </td>
+                  <td className="px-2 py-1 border-r border-[#d8b76a] capitalize">
+                    {filter == "print" ? "print " : item.cuttingType || "-"}
+                  </td>
+                  <td className="px-2 py-1 border-r border-[#d8b76a]">
+                    {filter == "print"
+                      ? "Outside Company"
+                      : item.jobWorkType || "-"}
+                  </td>
+                </tr>
+              );
+            })
           ) : (
             <tr>
               <td className="px-2 py-1 text-center" colSpan={8}>
