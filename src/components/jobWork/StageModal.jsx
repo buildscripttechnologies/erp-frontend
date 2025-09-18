@@ -229,7 +229,9 @@ const StageModal = ({
           {current ? `${current.stage} - ${current.status}` : "-"}
         </td>
         <td className="px-2 py-1 text-primary font-bold">
-          → {next ? `${next.stage} - ${next.status}` : "-"}
+          {next?.stage == "Completed"
+            ? ` ${next.stage}`
+            : ` ${next.stage} - ${next.status}`}
         </td>
       </tr>
     );
@@ -237,7 +239,7 @@ const StageModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl p-6">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl p-6">
         <h2 className="text-lg font-bold mb-4 text-primary">Confirm Update</h2>
 
         <p className="mb-4 text-sm text-gray-700">
@@ -254,11 +256,13 @@ const StageModal = ({
               </span>{" "}
               →{" "}
               <span className="font-bold text-primary">
-                {getFinalStage(item)?.newStage?.stage ||
-                  getFinalStage(item)?.stage}{" "}
-                -{" "}
-                {getFinalStage(item)?.newStage?.status ||
-                  getFinalStage(item)?.status}
+                {getFinalStage(item)?.newStage?.stage == "Completed"
+                  ? getFinalStage(item)?.newStage?.stage ||
+                    getFinalStage(item)?.stage
+                  : getFinalStage(item)?.newStage?.stage ||
+                    getFinalStage(item)?.stage -
+                      getFinalStage(item)?.newStage?.status ||
+                    getFinalStage(item)?.status}
               </span>
               ?
             </>

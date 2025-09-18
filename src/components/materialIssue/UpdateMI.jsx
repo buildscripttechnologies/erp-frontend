@@ -226,9 +226,11 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                 styles={{
                   control: (base, state) => ({
                     ...base,
-                    borderColor: "#d8b76a",
-                    boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
-                    "&:hover": { borderColor: "#d8b76a" },
+                    borderColor: "var(--color-primary)",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 1px var(--color-primary)"
+                      : "none",
+                    "&:hover": { borderColor: "var(--color-primary)" },
                   }),
                 }}
               />
@@ -237,34 +239,34 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
 
           {/* Consumption Table */}
           {consumptionTable && (
-            <div className="bg-white border border-[#d8b76a] rounded shadow pt-3  px-4  mb-4 text-[11px] text-[#292926]">
-              <h3 className="font-bold text-[#d8b76a] text-[14px] underline underline-offset-4 mb-2">
+            <div className="bg-white border border-primary rounded shadow pt-3  px-4  mb-4 text-[11px] text-[#292926]">
+              <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
                 Raw Material Consumption
               </h3>
               <table className="w-full mb-4 text-[11px] border text-left">
-                <thead className="bg-[#d8b76a]/70">
+                <thead className="bg-primary/70">
                   <tr>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">#</th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">#</th>
+                    <th className="px-2 py-1 border-r border-primary">
                       S. No.
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Sku Code
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Item Name
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Category
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Weight
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">Qty</th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">Qty</th>
+                    <th className="px-2 py-1 border-r border-primary">
                       Stock Qty
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Issue Extra Q/W
                     </th>
                   </tr>
@@ -272,8 +274,8 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                 <tbody>
                   {consumptionTable?.length > 0 ? (
                     consumptionTable.map((item, idx) => (
-                      <tr key={idx} className="border-b border-[#d8b76a]">
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                      <tr key={idx} className="border-b border-primary">
+                        <td className="px-2 py-1 border-r border-primary">
                           <input
                             type="checkbox"
                             checked={item.isChecked}
@@ -326,25 +328,25 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                             className="accent-primary"
                           />
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {idx + 1}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.skuCode || "N/A"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.itemName || "N/A"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.category || "N/A"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.weight != "N/A" ? item.weight : "N/A"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.qty != "N/A" ? item.qty : "N/A"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           <span
                             className={`px-2 py-0.5 rounded text-xs font-semibold ${(() => {
                               const qtyVal = parseValue(item.qty);
@@ -359,7 +361,7 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                             {item.stockQty.toFixed(2)}
                           </span>
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           <input
                             type="number"
                             step="0.001"
@@ -414,52 +416,50 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
 
           {/* Item details */}
           {checkedSkus.length > 0 && (
-            <div className="bg-white border border-[#d8b76a] rounded shadow pt-3 pb-4 px-4  mb-2 text-[11px] text-[#292926]">
+            <div className="bg-white border border-primary rounded shadow pt-3 pb-4 px-4  mb-2 text-[11px] text-[#292926]">
               {/* Product Details Table */}
-              <h3 className="font-bold text-[#d8b76a] text-[14px] underline underline-offset-4 mb-2">
+              <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
                 Product Details (Raw Material / SFG)
               </h3>
               <table className="w-full  text-[11px] border text-left">
-                <thead className="bg-[#d8b76a]/70">
+                <thead className="bg-primary/70">
                   <tr>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">#</th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">#</th>
+                    <th className="px-2 py-1 border-r border-primary">
                       S. No.
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Sku Code
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Item Name
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
-                      Type
-                    </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">Type</th>
+                    <th className="px-2 py-1 border-r border-primary">
                       Location
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Part Name
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Height (Inch)
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Width (Inch)
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Quantity
                     </th>
-                    {/* <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    {/* <th className="px-2 py-1 border-r border-primary">
                       Rate (₹)
                     </th> */}
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Cutting Type
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Jobwork Type
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Vendor
                     </th>
                   </tr>
@@ -467,8 +467,8 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                 <tbody>
                   {filteredDetails.length > 0 ? (
                     filteredDetails.map((item, idx) => (
-                      <tr key={idx} className="border-b border-[#d8b76a]">
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                      <tr key={idx} className="border-b border-primary">
+                        <td className="px-2 py-1 border-r border-primary">
                           <input
                             type="checkbox"
                             checked={!!item.cuttingType}
@@ -476,39 +476,39 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                             className="accent-primary"
                           />
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {idx + 1}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.skuCode || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.itemName || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.type || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.location?.locationId || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.partName || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.height || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.width || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.grams
                             ? `${item.grams / 1000} kg`
                             : item.qty || "-"}
                         </td>
-                        {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        {/* <td className="px-2 py-1 border-r border-primary">
                           {item.rate || "-"}
                         </td> */}
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           <select
                             value={item.cuttingType || ""}
                             onChange={(e) => {
@@ -532,7 +532,7 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                             ))}
                           </select>
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           <select
                             value={item.jobWorkType || ""}
                             onChange={(e) => {
@@ -556,7 +556,7 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                             ))}
                           </select>
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           <select
                             className="disabled:cursor-not-allowed"
                             disabled={item.jobWorkType != "Outside Company"}

@@ -157,10 +157,10 @@ const AddStockModal = ({ onClose, onAdded }) => {
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white w-[92vw] max-w-xl rounded-lg p-6 border border-[#d8b76a] overflow-y-auto max-h-[90vh]">
+      <div className="bg-white w-[92vw] max-w-xl rounded-lg p-6 border border-primary overflow-y-auto max-h-[90vh]">
         <div className="flex  items-center justify-between">
-          <h2 className="text-xl font-bold mb-4 text-[#d8b76a]">Inward</h2>
-          <button className="px-4 py-2 bg-[#d8b76a] cursor-pointer text-[#292926] rounded hover:bg-[#d8b76a]/80 font-semibold">
+          <h2 className="text-xl font-bold mb-4 text-primary">Inward</h2>
+          <button className="px-4 py-2 bg-primary cursor-pointer text-[#292926] rounded hover:bg-primary/80 font-semibold">
             Inward by PO
           </button>
         </div>
@@ -201,7 +201,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
           {itemDetails &&
             (console.log("item", itemDetails),
             (
-              <div className="bg-gray-100 border border-[#d8b76a] rounded p-4 mt-3 text-sm space-y-1">
+              <div className="bg-gray-100 border border-primary rounded p-4 mt-3 text-sm space-y-1">
                 <div className="grid sm:grid-cols-2  ">
                   <div>
                     <strong className="mr-1">Purchase UOM:</strong>{" "}
@@ -265,7 +265,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
                     placeholder="Add quality notes (optional)"
                     value={qualityNote}
                     onChange={(e) => setQualityNote(e.target.value)}
-                    className="mt-2 w-full p-2 border border-[#d8b76a] rounded focus:border-[#d8b76a] focus:ring-1 focus:ring-[#d8b76a] focus:outline-none transition duration-200"
+                    className="mt-2 w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
                     rows={3}
                   />
                 </div>
@@ -282,7 +282,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
                 placeholder="Stock Quantity"
                 value={manualEntries.length > 0 ? totalStockQty : stockQty}
                 onChange={(e) => setStockQty(e.target.value)}
-                className="w-full p-2 border border-[#d8b76a] rounded focus:border-[#d8b76a] focus:ring-1 focus:ring-[#d8b76a] focus:outline-none transition duration-200"
+                className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
                 required
                 min={0}
                 disabled={manualEntries.length > 0}
@@ -298,7 +298,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
                 placeholder="Base Quantity"
                 value={baseQty}
                 onChange={(e) => setBaseQty(e.target.value)}
-                className="w-full p-2 border border-[#d8b76a] rounded focus:border-[#d8b76a] focus:ring-1 focus:ring-[#d8b76a] focus:outline-none transition duration-200"
+                className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
                 required
                 min={0}
                 disabled={manualEntries.length > 0}
@@ -314,7 +314,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
                 placeholder="Damaged Quantity"
                 value={manualEntries.length > 0 ? totalDamagedQty : damagedQty}
                 onChange={(e) => setDamagedQty(e.target.value)}
-                className="w-full p-2 border border-[#d8b76a] rounded focus:border-[#d8b76a] focus:ring-1 focus:ring-[#d8b76a] focus:outline-none transition duration-200"
+                className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
                 required
                 min={0}
                 disabled={manualEntries.length > 0}
@@ -325,7 +325,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
           {manualEntries.map((entry, index) => (
             <div
               key={index}
-              className="flex items-center gap-4 border border-[#d8b76a] rounded-md p-3 mb-2"
+              className="flex items-center gap-4 border border-primary rounded-md p-3 mb-2"
             >
               <div className="flex-1">
                 <label className="block text-sm font-semibold text-[#292926] mb-1">
@@ -334,7 +334,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
                 <input
                   type="number"
                   placeholder="Base Quantity"
-                  className="w-full p-2 cursor-pointer border border-[#d8b76a] rounded focus:border-[#d8b76a] focus:ring-1 focus:ring-[#d8b76a] focus:outline-none transition duration-200"
+                  className="w-full p-2 cursor-pointer border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
                   value={entry.baseQty}
                   onChange={(e) => {
                     const updated = [...manualEntries];
@@ -352,7 +352,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
                 <input
                   type="number"
                   placeholder="Damaged Quantity"
-                  className="w-full p-2 cursor-pointer border border-[#d8b76a] rounded focus:border-[#d8b76a] focus:ring-1 focus:ring-[#d8b76a] focus:outline-none transition duration-200"
+                  className="w-full p-2 cursor-pointer border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
                   value={entry.damagedQty}
                   onChange={(e) => {
                     const updated = [...manualEntries];
@@ -381,7 +381,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
             <button
               type="button"
               onClick={addManualRow}
-              className="px-4 py-2 bg-[#d8b76a] cursor-pointer text-[#292926] rounded hover:bg-[#d8b76a]/80 font-semibold"
+              className="px-4 py-2 bg-primary cursor-pointer text-[#292926] rounded hover:bg-primary/80 font-semibold"
             >
               + Manual Inward
             </button>
@@ -391,7 +391,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded cursor-pointer"
+              className="px-6 py-2 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer"
             >
               {loading ? (
                 <>

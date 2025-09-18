@@ -37,6 +37,7 @@ import Stitching from "./components/jobWork/insideFactory/Stitching";
 import ProductionList from "./components/productionList/ProductionList";
 import QualityCheck from "./components/jobWork/insideFactory/QualityCheck";
 import CustomerOrder from "./components/customerOrder/CustomerOrder";
+import COP from "./components/coPendency/COP";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -121,6 +122,18 @@ const App = () => {
               isAuthenticated ? (
                 <Dashboard>
                   <CustomerOrder />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+          <Route
+            path="/co-pendency"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <COP />
                 </Dashboard>
               ) : (
                 <Navigate to="/login" />

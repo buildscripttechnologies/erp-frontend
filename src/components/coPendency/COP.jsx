@@ -18,9 +18,9 @@ import { useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
 import AttachmentsModal2 from "../AttachmentsModal2";
-import AddCO from "./AddCO";
+// import AddCO from "./AddCO";
 
-const CustomerOrder = ({ isOpen }) => {
+const COP = ({ isOpen }) => {
   const { hasPermission } = useAuth();
 
   const [BOMs, setBOMs] = useState([]);
@@ -58,7 +58,7 @@ const CustomerOrder = ({ isOpen }) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/boms/get-all?page=${page}&search=${search}&limit=${limit}`
+        `/cos/get-all?page=${page}&search=${search}&limit=${limit}`
       );
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -214,7 +214,7 @@ const CustomerOrder = ({ isOpen }) => {
     <>
       <div className="p-3 max-w-[99vw] mx-auto">
         <h2 className="text-2xl font-bold mb-4">
-          Customer Order{" "}
+          CO Pendency
           <span className="text-gray-500">({pagination.totalResults})</span>
         </h2>
 
@@ -229,14 +229,14 @@ const CustomerOrder = ({ isOpen }) => {
               className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:outline-none"
             />
           </div>
-          {hasPermission("BOM", "write") && (
+          {/* {hasPermission("BOM", "write") && (
             <button
               onClick={() => setShowModal(true)}
               className="bg-primary hover:bg-primary/80 justify-center text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
             >
               <FiPlus /> Add Customer Order
             </button>
-          )}
+          )} */}
         </div>
 
         <div className="relative overflow-x-auto  overflow-y-auto rounded border border-primary shadow-sm">
@@ -252,18 +252,17 @@ const CustomerOrder = ({ isOpen }) => {
                   <th className="px-[8px] ">Created At</th>
                   <th className="px-[8px] ">Updated At</th>
                   <th className="px-[8px] ">SMP / FG No</th>
-                  <th className="px-[8px] ">BOM No.</th>
-                  <th className="px-[8px] ">Prod No.</th>
+                  <th className="px-[8px] ">CO No.</th>
+                  {/* <th className="px-[8px] ">Prod No.</th> */}
                   <th className="px-[8px] ">Party Name</th>
                   <th className="px-[8px] ">Product Name</th>
                   <th className="px-[8px] ">Order Qty</th>
-                  <th className="px-[8px] ">Product Size</th>
-                  <th className="px-[8px] ">BOM Date</th>
-                  <th className="px-[8px] ">Production Date</th>
+                  {/* <th className="px-[8px] ">Product Size</th> */}
+                  <th className="px-[8px] ">Date</th>
                   <th className="px-[8px] ">Delivery Date</th>
                   <th className="px-[8px] ">Status</th>
                   <th className="px-[8px] ">Created By</th>
-                  <th className="px-[8px] ">Attachments</th>
+                  {/* <th className="px-[8px] ">Attachments</th> */}
                   <th className="px-[8px] ">Actions</th>
                 </tr>
               </thead>
@@ -271,7 +270,7 @@ const CustomerOrder = ({ isOpen }) => {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={Array(17).fill({})}
+                    columns={Array(13).fill({})}
                   />
                 ) : (
                   <>
@@ -314,11 +313,9 @@ const CustomerOrder = ({ isOpen }) => {
                             {b.sampleNo || "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary  capitalize">
-                            {b.bomNo || "-"}
+                            {b.coNo || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary  capitalize">
-                            {b.prodNo || "-"}
-                          </td>
+
                           <td className="px-[8px] border-r border-primary  capitalize">
                             {b.partyName || "-"}
                           </td>
@@ -329,11 +326,11 @@ const CustomerOrder = ({ isOpen }) => {
                           <td className="px-[8px] border-r border-primary  capitalize">
                             {b.orderQty || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
+                          {/* <td className="px-[8px] border-r border-primary ">
                             {`${b.height ?? 0} x ${b.width ?? 0} x ${
                               b.depth ?? 0
                             }`}
-                          </td>
+                          </td> */}
 
                           <td className="px-[8px] border-r border-primary ">
                             {new Date(b.date).toLocaleString("en-IN", {
@@ -342,7 +339,7 @@ const CustomerOrder = ({ isOpen }) => {
                               year: "numeric",
                             }) || "-"}{" "}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
+                          {/* <td className="px-[8px] border-r border-primary ">
                             {b.productionDate
                               ? new Date(b.productionDate).toLocaleString(
                                   "en-IN",
@@ -353,7 +350,7 @@ const CustomerOrder = ({ isOpen }) => {
                                   }
                                 )
                               : "-"}
-                          </td>
+                          </td> */}
                           <td className="px-[8px] border-r border-primary ">
                             {b.deliveryDate
                               ? new Date(b.deliveryDate).toLocaleString(
@@ -371,9 +368,8 @@ const CustomerOrder = ({ isOpen }) => {
                               className={`${
                                 b.status == "Pending"
                                   ? "bg-yellow-200"
-                                  : b.status == "In Progress" ||
-                                    b.status == "Issued"
-                                  ? "bg-orange-200"
+                                  : b.status == "Rejected"
+                                  ? "bg-red-200"
                                   : "bg-green-200"
                               }  py-0.5 px-1 rounded font-bold capitalize `}
                             >
@@ -383,7 +379,7 @@ const CustomerOrder = ({ isOpen }) => {
                           <td className="px-[8px] border-r border-primary ">
                             {b.createdBy?.fullName || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
+                          {/* <td className="px-[8px] border-r border-primary ">
                             {Array.isArray(b.file) && b.file.length > 0 ? (
                               <button
                                 onClick={() => setOpenAttachments(b.file)}
@@ -401,7 +397,7 @@ const CustomerOrder = ({ isOpen }) => {
                                 onClose={() => setOpenAttachments(null)}
                               />
                             )}
-                          </td>
+                          </td> */}
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-primary">
                             <FaFileDownload
                               //   onClick={() => handlePreviewBom(b)}
@@ -484,4 +480,4 @@ const CustomerOrder = ({ isOpen }) => {
   );
 };
 
-export default CustomerOrder;
+export default COP;

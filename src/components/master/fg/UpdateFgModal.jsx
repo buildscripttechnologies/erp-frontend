@@ -5,7 +5,7 @@ import { FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import Select from "react-select";
 import { calculateRate } from "../../../utils/calc";
-import { plastic, slider } from "../../../data/dropdownData";
+import { zipper, plastic, slider } from "../../../data/dropdownData";
 
 const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
   const [form, setForm] = useState(null);

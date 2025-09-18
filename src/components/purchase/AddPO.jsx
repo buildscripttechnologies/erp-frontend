@@ -270,9 +270,11 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
                 styles={{
                   control: (base, state) => ({
                     ...base,
-                    borderColor: "#d8b76a",
-                    boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
-                    "&:hover": { borderColor: "#d8b76a" },
+                    borderColor: "var(--color-primary)",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 1px var(--color-primary)"
+                      : "none",
+                    "&:hover": { borderColor: "var(--color-primary)" },
                   }),
                 }}
               />
@@ -291,9 +293,11 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
                 styles={{
                   control: (base, state) => ({
                     ...base,
-                    borderColor: "#d8b76a",
-                    boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
-                    "&:hover": { borderColor: "#d8b76a" },
+                    borderColor: "var(--color-primary)",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 1px var(--color-primary)"
+                      : "none",
+                    "&:hover": { borderColor: "var(--color-primary)" },
                   }),
                 }}
               />
@@ -441,13 +445,13 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
             <button
               type="button"
               onClick={handleAddItem}
-              className="px-4 py-1 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer"
+              className="px-4 py-1 bg-primary hover:bg-primary/80 text-secondary font-semibold rounded cursor-pointer"
             >
               {editIndex != null ? "Update Item" : "Add Item"}
             </button>
             {/* Total Summary */}
             {poItems.length > 0 && (
-              <div className="px-4 py-2 bg-primary text-[#292926] font-semibold rounded shadow-sm text-center space-y-1">
+              <div className="px-4 py-2 bg-primary text-secondary font-semibold rounded shadow-sm text-center space-y-1">
                 {/* <div>Total Amount (₹): {totalAmount.toFixed(2)}</div> */}
                 <div>
                   Total Amount with GST (₹): {totalAmountWithGst.toFixed(2)}
@@ -478,7 +482,7 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
                         <button
                           type="button"
                           onClick={() => handleEdit(i)}
-                          className="px-2 py-1 rounded bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-xs"
+                          className="px-2 py-1 rounded-full bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-xs"
                         >
                           <FiEdit2 size={16} />
                         </button>
@@ -555,7 +559,7 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer"
+              className="px-6 py-2 bg-primary hover:bg-primary/80 text-secondary font-semibold rounded cursor-pointer"
             >
               {loading ? (
                 <>
@@ -569,7 +573,7 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded cursor-pointer"
+              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-secondary rounded cursor-pointer"
             >
               Cancel
             </button>

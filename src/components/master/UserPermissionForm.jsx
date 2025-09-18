@@ -68,8 +68,8 @@ export default function UserPermissionForm({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm px-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-3xl shadow-xl border border-[#d8b76a] overflow-y-auto max-h-[90vh]">
-        <h2 className="text-xl font-semibold text-[#292926] mb-4">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-3xl shadow-xl border border-primary overflow-y-auto max-h-[90vh]">
+        <h2 className="text-xl font-semibold text-black mb-4">
           Set User Permissions
         </h2>
 
@@ -77,11 +77,11 @@ export default function UserPermissionForm({
           {permissions.map((perm, index) => (
             <div
               key={index}
-              className="border border-[#d8b76a] rounded-xl p-4 space-y-3"
+              className="border border-primary rounded-xl p-4 space-y-3"
             >
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <select
-                  className="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-1/2 focus:border-2 focus:border-[#d8b76a] focus:outline-none transition cursor-pointer"
+                  className="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-1/2 focus:border-2 focus:border-primary focus:outline-none transition cursor-pointer"
                   value={perm.module}
                   onChange={(e) => handleModuleChange(index, e.target.value)}
                   required
@@ -103,7 +103,7 @@ export default function UserPermissionForm({
                         type="checkbox"
                         checked={perm.actions.includes(action)}
                         onChange={() => handleActionToggle(index, action)}
-                        className="accent-[#d8b76a]"
+                        className="accent-primary"
                       />
                       <span>{action}</span>
                     </label>
@@ -124,7 +124,7 @@ export default function UserPermissionForm({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
             <button
               type="button"
-              className="bg-[#d8b76a] text-[#292926] text-sm font-medium px-4 py-2 rounded hover:bg-[#d8b76a]/90 cursor-pointer"
+              className="bg-primary text-secondary text-sm font-medium px-4 py-2 rounded hover:bg-primary/90 cursor-pointer"
               onClick={handleAddPermission}
             >
               + Add Permission
@@ -141,7 +141,7 @@ export default function UserPermissionForm({
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 bg-[#d8b76a] text-[#292926] font-semibold text-sm rounded hover:bg-[#d8b76a]/90 disabled:opacity-60 cursor-pointer"
+                className="px-4 py-2 bg-primary text-secondary font-semibold text-sm rounded hover:bg-primary/90 disabled:opacity-60 cursor-pointer"
               >
                 {loading ? "Saving..." : "Save"}
               </button>

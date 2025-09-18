@@ -170,20 +170,20 @@ const StockRegister = () => {
 
       <div className="flex flex-wrap gap-4 items-stretch sm:items-center justify-between mb-6">
         <div className="relative w-full sm:w-80">
-          <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
+          <FiSearch className="absolute left-2 top-2 text-primary" />
           <input
             type="text"
             placeholder="Search Stock"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+            className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
           />
         </div>
         <div className="flex flex-wrap gap-4 items-center ">
           <select
             value={filters.type}
             onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+            className="border border-primary rounded px-2 py-1.5 text-sm"
           >
             <option value="">All Types</option>
             <option value="RM">RM</option>
@@ -194,7 +194,7 @@ const StockRegister = () => {
           <select
             value={filters.uom}
             onChange={(e) => setFilters({ ...filters, uom: e.target.value })}
-            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+            className="border border-primary rounded px-2 py-1.5 text-sm"
           >
             <option value="">All UOM</option>
             {uoms.map((u) => (
@@ -212,7 +212,7 @@ const StockRegister = () => {
               onChange={(e) =>
                 setFilters({ ...filters, fromDate: e.target.value })
               }
-              className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+              className="border border-primary rounded px-2 py-1.5 text-sm"
             />
           </div>
 
@@ -224,7 +224,7 @@ const StockRegister = () => {
               onChange={(e) =>
                 setFilters({ ...filters, toDate: e.target.value })
               }
-              className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+              className="border border-primary rounded px-2 py-1.5 text-sm"
             />
           </div>
 
@@ -236,7 +236,7 @@ const StockRegister = () => {
               filters.uom == ""
             }
             onClick={() => fetchstocks(1)}
-            className="bg-[#d8b76a] hover:bg-[#b38a37] disabled:hover:bg-[#d8b76a]/50 disabled:bg-[#d8b76a]/50 disabled:cursor-not-allowed text-[#292926] font-semibold px-4 py-1.5 rounded transition duration-200 cursor-pointer"
+            className="bg-primary hover:bg-[#b38a37] disabled:hover:bg-primary/50 disabled:bg-primary/50 disabled:cursor-not-allowed text-[#292926] font-semibold px-4 py-1.5 rounded transition duration-200 cursor-pointer"
           >
             Apply Filters
           </button> */}
@@ -248,7 +248,7 @@ const StockRegister = () => {
               filters.uom == ""
             }
             onClick={handleResetFilters}
-            className="bg-[#d8b76a] hover:bg-[#b38a37] disabled:hover:bg-[#d8b76a]/50 disabled:bg-[#d8b76a]/50 disabled:cursor-not-allowed text-[#292926] font-semibold px-4 py-1.5 rounded transition duration-200 cursor-pointer"
+            className="bg-primary hover:bg-[#b38a37] disabled:hover:bg-primary/50 disabled:bg-primary/50 disabled:cursor-not-allowed text-[#292926] font-semibold px-4 py-1.5 rounded transition duration-200 cursor-pointer"
           >
             Reset Filters
           </button>
@@ -262,9 +262,9 @@ const StockRegister = () => {
         />
       )}
 
-      <div className="overflow-x-auto rounded border border-[#d8b76a] shadow-sm">
+      <div className="overflow-x-auto rounded border border-primary shadow-sm">
         <table className="min-w-full text-[11px] ">
-          <thead className="bg-[#d8b76a]  text-[#292926] text-left whitespace-nowrap">
+          <thead className="bg-primary  text-[#292926] text-left whitespace-nowrap">
             <tr>
               <th className="px-2 py-1.5 ">#</th>
               <th className="px-2 py-1.5 ">Type</th>
@@ -273,6 +273,7 @@ const StockRegister = () => {
               <th className="px-2 py-1.5 ">Description</th>
               <th className="px-2 py-1.5 ">Stock UOM</th>
               <th className="px-2 py-1.5 ">Stock Qty</th>
+              <th className="px-2 py-1.5 ">Available Qty</th>
               <th className="px-2 py-1.5 ">Damaged Qty</th>
               <th className="px-2 py-1.5 ">MOQ</th>
             </tr>
@@ -288,35 +289,38 @@ const StockRegister = () => {
                 {stocks.map((stock, index) => (
                   <tr
                     key={stock._id}
-                    className="border-t text-[11px] border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
+                    className="border-t text-[11px] border-primary hover:bg-gray-50 whitespace-nowrap"
                   >
-                    <td className="px-2 border-r border-[#d8b76a]">
+                    <td className="px-2 border-r border-primary">
                       {Number(pagination.currentPage - 1) *
                         Number(pagination.limit) +
                         index +
                         1}
                     </td>
 
-                    <td className="px-2  border-r border-[#d8b76a]">
+                    <td className="px-2  border-r border-primary">
                       {stock.type || "-"}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
+                    <td className="px-2  border-r border-primary">
                       {stock.skuCode}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
+                    <td className="px-2  border-r border-primary">
                       {stock.itemName}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
+                    <td className="px-2  border-r border-primary">
                       {stock.description || "-"}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
+                    <td className="px-2  border-r border-primary">
                       {stock.stockUOM?.unitName || "-"}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {stock.stockQty}
+                    <td className="px-2  border-r border-primary">
+                      {stock.stockQty.toFixed(2) || 0}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {stock.damagedQty || 0}
+                    <td className="px-2  border-r border-primary">
+                      {stock.availableQty.toFixed(2) || 0}
+                    </td>
+                    <td className="px-2  border-r border-primary">
+                      {stock.damagedQty.toFixed(2) || 0}
                     </td>
 
                     <td className="px-2 ">{stock.moq || 0}</td>

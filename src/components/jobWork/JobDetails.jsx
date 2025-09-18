@@ -115,7 +115,7 @@ const JobDetails = ({ MI, filter, fetchMis }) => {
   console.log("actions", actions);
 
   return (
-    <div className="bg-white border border-primary rounded shadow pt-3 pb-4 px-4 mx-2 mb-2 text-[11px] text-[#292926]">
+    <div className="bg-white border border-primary rounded shadow pt-3 pb-4 px-4 mx-2 mb-2 text-[11px] text-black">
       {/* Header + Bulk Actions */}
       <div className="flex items-center justify-between mb-2">
         <div className="font-bold text-primary text-[14px] underline underline-offset-4">
@@ -209,8 +209,10 @@ const JobDetails = ({ MI, filter, fetchMis }) => {
               const stage = getStageByFilter(item);
               if (!stage) return null;
 
-              const statusLabel = `${stage.stage} - ${stage.status}`;
-
+              const statusLabel =
+                stage.stage == "Completed"
+                  ? `${stage.stage} `
+                  : `${stage.stage} - ${stage.status}`;
               return (
                 <tr key={item._id} className="border-b border-primary">
                   {["production"].includes(filter) ? null : (
