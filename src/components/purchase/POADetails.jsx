@@ -84,7 +84,7 @@ const POADetails = ({ PO }) => {
                   {poItem.item?.gst || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
-                  {poItem.item?.stockQty || "-"}
+                  {poItem.item?.stockQty?.toFixed(2) || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
                   {poItem.item?.stockUOM?.unitName || "-"}

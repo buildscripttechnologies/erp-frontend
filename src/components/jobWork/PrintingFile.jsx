@@ -54,15 +54,13 @@ const PrintingFile = ({ attachments = [], onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-xs  px-4">
-      <div className="bg-white w-full max-w-md rounded-lg border border-[#d8b76a] p-4 shadow-md relative max-h-[90vh] overflow-y-auto">
+      <div className="bg-white w-full max-w-md rounded-lg border border-primary p-4 shadow-md relative max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-[#292926]">
-            Printing File
-          </h3>
+          <h3 className="text-xl font-semibold text-black">Printing File</h3>
           <button
             onClick={onClose}
-            className="text-[#292926] hover:text-red-500 text-xl font-bold cursor-pointer"
+            className="text-black hover:text-red-500 text-xl font-bold cursor-pointer"
           >
             &times;
           </button>
@@ -74,7 +72,7 @@ const PrintingFile = ({ attachments = [], onClose }) => {
             {attachments.map((att, index) => (
               <div
                 key={index}
-                className="flex flex-col items-center border border-[#d8b76a] rounded bg-[#fffaf0] p-3"
+                className="flex flex-col items-center border border-primary rounded bg-[#fffaf0] p-3"
               >
                 {isImage(att.fileName) ? (
                   <img
@@ -91,14 +89,14 @@ const PrintingFile = ({ attachments = [], onClose }) => {
                 <div className="flex justify-center gap-6 w-full">
                   <button
                     onClick={() => handlePreview(att)}
-                    className="flex items-center gap-1 text-[#292926] hover:underline  text-sm cursor-pointer  "
+                    className="flex items-center gap-1 text-black hover:underline  text-sm cursor-pointer  "
                   >
                     <FiExternalLink />
                     Preview
                   </button>
                   <button
                     onClick={() => handleDownload(att)}
-                    className="flex items-center gap-1 text-[#292926] hover:underline  text-sm cursor-pointer"
+                    className="flex items-center gap-1 text-black hover:underline  text-sm cursor-pointer"
                   >
                     <FiDownload />
                     Download

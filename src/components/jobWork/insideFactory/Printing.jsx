@@ -148,20 +148,20 @@ const Printing = () => {
 
       <div className="flex flex-wrap gap-4 items-stretch sm:items-center justify-between mb-6">
         <div className="relative w-full sm:w-80">
-          <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
+          <FiSearch className="absolute left-2 top-2 text-primary" />
           <input
             type="text"
             placeholder="Search Printing Jobs"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+            className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
           />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded border border-[#d8b76a] shadow-sm">
+      <div className="overflow-x-auto rounded border border-primary shadow-sm">
         <table className="min-w-full text-[11px] ">
-          <thead className="bg-[#d8b76a]  text-[#292926] text-left whitespace-nowrap">
+          <thead className="bg-primary  text-secondary text-left whitespace-nowrap">
             <tr>
               <th className="px-2 py-1.5 ">#</th>
               <th className="px-2 py-1.5  ">Created At</th>
@@ -187,18 +187,18 @@ const Printing = () => {
                   <React.Fragment key={mi._id}>
                     <tr
                       key={mi._id}
-                      className="border-t text-[11px] border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
+                      className="border-t text-[11px] border-primary hover:bg-gray-50 whitespace-nowrap"
                       onClick={() =>
                         setExpandedMIId(expandedMIId === mi._id ? null : mi._id)
                       }
                     >
-                      <td className="px-2 border-r border-[#d8b76a]">
+                      <td className="px-2 border-r border-primary">
                         {Number(pagination.currentPage - 1) *
                           Number(pagination.limit) +
                           index +
                           1}
                       </td>
-                      <td className="px-2 hidden md:table-cell  border-r border-[#d8b76a]">
+                      <td className="px-2 hidden md:table-cell  border-r border-primary">
                         {new Date(mi.createdAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -208,7 +208,7 @@ const Printing = () => {
                           hour12: true,
                         })}
                       </td>
-                      <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
+                      <td className="px-2  hidden md:table-cell border-r border-primary">
                         {new Date(mi.updatedAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -218,16 +218,16 @@ const Printing = () => {
                           hour12: true,
                         })}
                       </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
+                      <td className="px-2  border-r border-primary">
                         {mi.prodNo || "-"}
                       </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
+                      <td className="px-2  border-r border-primary">
                         {mi.bomNo}
                       </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
+                      <td className="px-2  border-r border-primary">
                         {mi.bom.productName}
                       </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
+                      <td className="px-2  border-r border-primary">
                         {Array.isArray(mi.bom.printingFile) &&
                         mi.bom.printingFile.length > 0 ? (
                           <button
@@ -249,13 +249,13 @@ const Printing = () => {
                           />
                         )}
                       </td>
-                      <td className="px-2  border-r border-[#d8b76a]">
+                      <td className="px-2  border-r border-primary">
                         <span
                           className={`${
-                            mi.status == "pending"
+                            mi.status == "Pending"
                               ? "bg-yellow-200"
-                              : mi.status == "in progress" ||
-                                mi.status == "issued"
+                              : mi.status == "In Progress" ||
+                                mi.status == "Issued"
                               ? "bg-orange-200"
                               : "bg-green-200"
                           }  py-0.5 px-1 rounded font-bold capitalize `}
@@ -264,15 +264,15 @@ const Printing = () => {
                         </span>
                       </td>
 
-                      <td className="px-2  border-r border-[#d8b76a]">
+                      <td className="px-2  border-r border-primary">
                         {mi.createdBy?.fullName || "-"}
                       </td>
 
-                      <td className="px-2 py-1 flex gap-3 text-sm text-[#d8b76a]">
+                      <td className="px-2 py-1 flex gap-3 text-sm text-primary">
                         {/* <button
                         disabled={generatingId === mi._id}
                         onClick={() => handlePrint(mi)}
-                        className="text-[#d8b76a] hover:underline text-[11px] cursor-pointer"
+                        className="text-primary hover:underline text-[11px] cursor-pointer"
                       >
                         {generatingId === stock._id ? (
                           <ClipLoader size={11} color="primary" />
@@ -302,7 +302,7 @@ const Printing = () => {
                           <FiTrash2
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Delete"
-                            className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                            className="cursor-pointer text-primary hover:text-red-600"
                             // onClick={() => handleDelete(mi._id)}
                           />
                         ) : (

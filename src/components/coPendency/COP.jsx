@@ -1,26 +1,26 @@
 // src/components/BOMMaster.jsx
 import React, { useEffect, useState } from "react";
-import axios from "../../../utils/axios";
+import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
-import TableSkeleton from "../../TableSkeleton";
-import ScrollLock from "../../ScrollLock";
+import TableSkeleton from "../TableSkeleton";
+import ScrollLock from "../ScrollLock";
 import Toggle from "react-toggle";
-import PaginationControls from "../../PaginationControls";
-import BomDetailsSection from "./BomDetailsSection";
-import AddBomModal from "./AddBOMModel";
-import UpdateBomModal from "./UpdateBomModal";
+import PaginationControls from "../PaginationControls";
+// import BomDetailsSection from "./BomDetailsSection";
+// import AddBomModal from "./AddBOMModel";
+// import UpdateBomModal from "./UpdateBomModal";
 import { FaFileDownload } from "react-icons/fa";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useRef } from "react";
-import { generateBom } from "../../../utils/generateBom";
-import { generateBomLP } from "../../../utils/generateBomLP";
-import { useAuth } from "../../../context/AuthContext";
+// import { generateBomLP } from "../../../utils/generateBomLP";
+import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
-import AttachmentsModal2 from "../../AttachmentsModal2";
+import AttachmentsModal2 from "../AttachmentsModal2";
+// import AddCO from "./AddCO";
 
-const BomMaster = ({ isOpen }) => {
+const COP = ({ isOpen }) => {
   const { hasPermission } = useAuth();
 
   const [BOMs, setBOMs] = useState([]);
@@ -58,7 +58,7 @@ const BomMaster = ({ isOpen }) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/boms/get-all?page=${page}&search=${search}&limit=${limit}`
+        `/cos/get-all?page=${page}&search=${search}&limit=${limit}`
       );
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -214,7 +214,7 @@ const BomMaster = ({ isOpen }) => {
     <>
       <div className="p-3 max-w-[99vw] mx-auto">
         <h2 className="text-2xl font-bold mb-4">
-          Bill Of Materials{" "}
+          CO Pendency
           <span className="text-gray-500">({pagination.totalResults})</span>
         </h2>
 
@@ -229,14 +229,14 @@ const BomMaster = ({ isOpen }) => {
               className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:outline-none"
             />
           </div>
-          {hasPermission("BOM", "write") && (
+          {/* {hasPermission("BOM", "write") && (
             <button
               onClick={() => setShowModal(true)}
               className="bg-primary hover:bg-primary/80 justify-center text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
             >
-              <FiPlus /> Add BOM
+              <FiPlus /> Add Customer Order
             </button>
-          )}
+          )} */}
         </div>
 
         <div className="relative overflow-x-auto  overflow-y-auto rounded border border-primary shadow-sm">
@@ -252,15 +252,17 @@ const BomMaster = ({ isOpen }) => {
                   <th className="px-[8px] ">Created At</th>
                   <th className="px-[8px] ">Updated At</th>
                   <th className="px-[8px] ">SMP / FG No</th>
-                  <th className="px-[8px] ">BOM No.</th>
+                  <th className="px-[8px] ">CO No.</th>
+                  {/* <th className="px-[8px] ">Prod No.</th> */}
                   <th className="px-[8px] ">Party Name</th>
                   <th className="px-[8px] ">Product Name</th>
                   <th className="px-[8px] ">Order Qty</th>
-                  <th className="px-[8px] ">Product Size</th>
+                  {/* <th className="px-[8px] ">Product Size</th> */}
                   <th className="px-[8px] ">Date</th>
-                  {/* <th className="px-[8px] ">Status</th> */}
+                  <th className="px-[8px] ">Delivery Date</th>
+                  <th className="px-[8px] ">Status</th>
                   <th className="px-[8px] ">Created By</th>
-                  <th className="px-[8px] ">Attachments</th>
+                  {/* <th className="px-[8px] ">Attachments</th> */}
                   <th className="px-[8px] ">Actions</th>
                 </tr>
               </thead>
@@ -311,8 +313,9 @@ const BomMaster = ({ isOpen }) => {
                             {b.sampleNo || "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary  capitalize">
-                            {b.bomNo || "-"}
+                            {b.coNo || "-"}
                           </td>
+
                           <td className="px-[8px] border-r border-primary  capitalize">
                             {b.partyName || "-"}
                           </td>
@@ -323,31 +326,60 @@ const BomMaster = ({ isOpen }) => {
                           <td className="px-[8px] border-r border-primary  capitalize">
                             {b.orderQty || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
+                          {/* <td className="px-[8px] border-r border-primary ">
                             {`${b.height ?? 0} x ${b.width ?? 0} x ${
                               b.depth ?? 0
                             }`}
-                          </td>
+                          </td> */}
 
                           <td className="px-[8px] border-r border-primary ">
                             {new Date(b.date).toLocaleString("en-IN", {
                               day: "2-digit",
                               month: "short",
                               year: "numeric",
-                            })}
+                            }) || "-"}{" "}
                           </td>
                           {/* <td className="px-[8px] border-r border-primary ">
-                            <Toggle
-                              checked={b.isActive}
-                              onChange={() =>
-                                handleToggleStatus(b._id, b.isActive)
-                              }
-                            />
+                            {b.productionDate
+                              ? new Date(b.productionDate).toLocaleString(
+                                  "en-IN",
+                                  {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  }
+                                )
+                              : "-"}
                           </td> */}
+                          <td className="px-[8px] border-r border-primary ">
+                            {b.deliveryDate
+                              ? new Date(b.deliveryDate).toLocaleString(
+                                  "en-IN",
+                                  {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  }
+                                )
+                              : "-"}
+                          </td>
+                          <td className="px-[8px] border-r border-primary ">
+                            <span
+                              className={`${
+                                b.status == "Pending"
+                                  ? "bg-yellow-200"
+                                  : b.status == "Rejected"
+                                  ? "bg-red-200"
+                                  : "bg-green-200"
+                              }  py-0.5 px-1 rounded font-bold capitalize `}
+                            >
+                              {b.status || "-"}
+                            </span>
+                          </td>
                           <td className="px-[8px] border-r border-primary ">
                             {b.createdBy?.fullName || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
+                          {/* <td className="px-[8px] border-r border-primary ">
                             {Array.isArray(b.file) && b.file.length > 0 ? (
                               <button
                                 onClick={() => setOpenAttachments(b.file)}
@@ -365,15 +397,15 @@ const BomMaster = ({ isOpen }) => {
                                 onClose={() => setOpenAttachments(null)}
                               />
                             )}
-                          </td>
+                          </td> */}
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-primary">
                             <FaFileDownload
-                              onClick={() => handlePreviewBom(b)}
+                              //   onClick={() => handlePreviewBom(b)}
                               className="cursor-pointer text-primary hover:text-green-600"
                             />
                             {hasPermission("BOM", "update") ? (
                               <FiEdit
-                                onClick={() => setEditingBOM(b)}
+                                // onClick={() => setEditingBOM(b)}
                                 className="cursor-pointer text-primary hover:text-blue-600"
                               />
                             ) : (
@@ -381,7 +413,7 @@ const BomMaster = ({ isOpen }) => {
                             )}
                             {hasPermission("BOM", "delete") ? (
                               <FiTrash2
-                                onClick={() => handleDelete(b._id)}
+                                // onClick={() => handleDelete(b._id)}
                                 className="cursor-pointer text-primary hover:text-red-600"
                               />
                             ) : (
@@ -389,13 +421,13 @@ const BomMaster = ({ isOpen }) => {
                             )}
                           </td>
                         </tr>
-                        {expandedBOMId === b._id && (
+                        {/* {expandedBOMId === b._id && (
                           <tr className="">
                             <td colSpan="100%">
                               <BomDetailsSection bomData={b} />
                             </td>
                           </tr>
-                        )}
+                        )} */}
                       </React.Fragment>
                     ))}
                     {BOMs.length === 0 && (
@@ -426,10 +458,7 @@ const BomMaster = ({ isOpen }) => {
         )}
 
         {showModal && (
-          <AddBomModal
-            onClose={() => setShowModal(false)}
-            onSuccess={fetchBOMs}
-          />
+          <AddCO onClose={() => setShowModal(false)} onSuccess={fetchBOMs} />
         )}
 
         <PaginationControls
@@ -451,4 +480,4 @@ const BomMaster = ({ isOpen }) => {
   );
 };
 
-export default BomMaster;
+export default COP;

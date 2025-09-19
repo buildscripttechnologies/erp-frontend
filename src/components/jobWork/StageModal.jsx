@@ -11,99 +11,182 @@ const StageModal = ({
   bulkAction,
   fetchData,
   miId,
+  MI,
 }) => {
   const [note, setNote] = useState("");
 
   if (!open) return null;
 
   const isBulk = items.length > 0;
-  const currentStage = !isBulk ? item?.status : null;
 
-  const getNextStage = (itm) => {
-    if (itm.jobWorkType === "Outside Company") {
-      // Outside flow: only two steps
-      return itm.isPrint ? "Yet to Print" : "Yet to Stitch";
-    }
+  // 👉 Helper: get latest stage of an item
+  const getCurrentStage = (itm) => {
+    console.log("itm", itm);
 
-    // Normal flow
-    const stage = itm.status.toLowerCase();
-    if (stage.includes("cutting")) {
-      return itm.isPrint ? "Yet to Print" : "Yet to Stitch";
-    }
-    if (stage.includes("print")) return "Yet to Stitch";
-    if (stage.includes("stitch")) return "Job Completed";
-    if (stage.includes("check")) return "Approved";
-    return null;
+    if (!itm.stages || itm.stages.length === 0) return null;
+    return itm.stages[itm.stages.length - 1];
   };
 
-  const getFinalStage = (itm) => {
-    const currentStage = itm.status;
+  // 👉 Define next stage flow
+  const getNextStageName = (itm) => {
+    const current = getCurrentStage(itm);
+    console.log("current stage", current);
 
-    if (itm.jobWorkType === "Outside Company") {
-      if ((isBulk ? bulkAction : itm.action) === "play") return "In Progress";
-      if ((isBulk ? bulkAction : itm.action) === "next")
-        return getNextStage(itm);
-      return currentStage;
-    }
+    if (!current) return null;
 
-    switch (isBulk ? bulkAction : itm.action) {
-      case "start":
-        if (currentStage.includes("Cutting")) return "In Cutting";
-        if (currentStage.includes("Print")) return "In Printing";
-        if (currentStage.includes("Stitch")) return "In Stitching";
-        if (currentStage.includes("Check")) return "In Checking";
-        return currentStage;
-      case "pause":
-        if (currentStage.includes("In Cutting")) return "Cutting Paused";
-        if (currentStage.includes("In Printing")) return "Printing Paused";
-        if (currentStage.includes("In Stitching")) return "Stitching Paused";
-        if (currentStage.includes("In Check")) return "Checking Paused";
-        return currentStage;
-      case "next":
-        return getNextStage(itm);
+    // if (itm.jobWorkType === "Outside Company") {
+    //   return current.stage === "Cutting" ? "Cutting" : "Stitching";
+    // }
+
+    switch (current.stage) {
+      case "Cutting":
+        return itm.isPrint ? "Printing" : "Stitching";
+      case "Printing":
+        return "Stitching";
+      case "Stitching":
+        return "Checking";
+      case "Checking":
+        return "Completed";
       default:
-        return currentStage;
+        return null;
     }
   };
 
+  // 👉 Decide final update depending on action
+  const getFinalStage = (itm) => {
+    const current = getCurrentStage(itm);
+    if (!current) return null;
+
+    const action = isBulk ? bulkAction : itm.action;
+
+    // if (itm.jobWorkType === "Outside Company") {
+    //   if (action === "start") return { ...current, status: "In Progress" };
+    //   if (action === "next") {
+    //     return {
+    //       completedStage: { ...current, status: "Completed" },
+    //       newStage: { stage: getNextStageName(itm), status: "Yet to Start" },
+    //     };
+    //   }
+    //   return current;
+    // }
+
+    switch (action) {
+      case "start":
+        return { ...current, status: "In Progress" };
+      case "pause":
+        return { ...current, status: "Paused" };
+      case "next":
+        const nextStageName = getNextStageName(itm);
+
+        if (nextStageName === "Completed") {
+          // Final stage → only mark current as completed, no new push
+          return {
+            completedStage: { ...current, status: "Completed" },
+            newStage: { stage: nextStageName, status: "Completed" },
+          };
+        }
+
+        return {
+          completedStage: { ...current, status: "Completed" },
+          newStage: { stage: nextStageName, status: "Yet to Start" },
+        };
+
+      default:
+        return current;
+    }
+  };
+
+  const readyForNextStage = (stage, action) => {
+    if (!MI?.itemDetails || MI.itemDetails.length === 0) return false;
+
+    if (stage == "Stitching" && action == "start") {
+      // All items must already have Stitching stage (any status) OR be beyond
+      console.log("stitch", MI.readyForStitching);
+
+      return MI.readyForStitching;
+    }
+
+    if (stage == "Checking" && action == "start") {
+      // All items must have Stitching marked Completed
+      console.log("stitch", MI.readyForChecking);
+      return MI.readyForChecking;
+    }
+
+    return true; // If moving to Yet to Start → always allow
+  };
+
+  // 👉 Save handler
+  // 👉 Save handler
   const handleSave = async () => {
     try {
-      let updates;
-
-      if (isBulk) {
-        updates = items.map((itm) => ({
-          itemId: itm._id,
-          status: getFinalStage(itm),
-          jobWorkType:
-            itm.jobWorkType === "Outside Company" && bulkAction === "next"
-              ? "Inside Company"
-              : itm.jobWorkType,
-          note,
-        }));
-      } else {
-        updates = [
-          {
-            itemId: item._id,
-            status: getFinalStage(item),
-            jobWorkType:
-              item.jobWorkType === "Outside Company" && item.action === "next"
-                ? "Inside Company"
-                : item.jobWorkType,
-            note,
-          },
-        ];
+      // 🟢 Normalize items list (bulk or single)
+      const allItems = (isBulk ? items : [item]).filter(Boolean);
+      if (allItems.length === 0) {
+        toast.error("No items selected");
+        return;
       }
 
-      const res = await axios.patch(`/mi/next-stage`, {
-        miId,
-        updates,
+      // 🟢 Collect latest stages
+      const latestStages = allItems.map((it) => getCurrentStage(it));
+
+      // 🟢 Determine action
+      const currentAction = isBulk ? bulkAction : item?.action;
+
+      // RULE CHECKS
+      if (currentAction === "start") {
+        // When bulk, check the first one (they should all be in same stage in practice)
+        const targetStage = getCurrentStage(isBulk ? items[0] : item)?.stage;
+        console.log("target stage", targetStage);
+
+        if (
+          targetStage === "Stitching" &&
+          readyForNextStage("Stitching", "start") === false
+        ) {
+          toast.error(
+            "Cannot start Stitching until all items are ready for Stitching"
+          );
+          return;
+        }
+
+        if (
+          targetStage === "Checking" &&
+          readyForNextStage("Checking", "start") === false
+        ) {
+          toast.error("Cannot start Checking until all items finish Stitching");
+          return;
+        }
+      }
+
+      // 🟢 Build updates payload
+      let updates = allItems.map((itm) => {
+        const result = getFinalStage(itm);
+
+        if (result?.completedStage && result?.newStage) {
+          return {
+            itemId: itm._id,
+            note,
+            completeStage: result.completedStage,
+            pushStage: result.newStage,
+          };
+        } else {
+          return {
+            itemId: itm._id,
+            note,
+            updateStage: result,
+          };
+        }
       });
+
+      // 🟢 API call
+      const res = await axios.patch(`/mi/next-stage`, { miId, updates });
 
       if (res.data.success) {
         toast.success(
           isBulk
-            ? `Updated ${items.length} items successfully`
-            : `Stage updated to ${updates[0].status}`
+            ? `Updated ${allItems.length} items successfully`
+            : `Stage updated to ${
+                getFinalStage(item).newStage?.stage || getFinalStage(item).stage
+              }`
         );
         fetchData();
         onClose();
@@ -116,38 +199,49 @@ const StageModal = ({
     }
   };
 
-  const renderItemRow = (it, idx) => (
-    <tr key={it._id} className="border-b border-primary">
-      <td className="px-2 py-1 border-r border-primary">{idx + 1}</td>
-      <td className="px-2 py-1 border-r border-primary">
-        {it.itemId?.skuCode || "-"}
-      </td>
-      <td className="px-2 py-1 border-r border-primary">
-        {it.itemId?.itemName || "-"}
-      </td>
-      <td className="px-2 py-1 border-r border-primary">
-        {it.partName || "-"}
-      </td>
-      <td className="px-2 py-1 border-r border-primary">
-        {" "}
-        {it.grams ? `${it.grams / 1000} kg` : it.qty || "-"}
-      </td>
-      <td className="px-2 py-1 border-r border-primary">{it.height || "-"}</td>
-      <td className="px-2 py-1 border-r border-primary">{it.width || "-"}</td>
-      <td className="px-2 py-1 border-r border-primary">{it.status || "-"}</td>
-      <td className="px-2 py-1 text-primary font-bold">
-        → {getFinalStage(it)}
-      </td>
-    </tr>
-  );
+  // 👉 Render item row
+  const renderItemRow = (it, idx) => {
+    const current = getCurrentStage(it);
+    const finalStage = getFinalStage(it);
+
+    const next = finalStage.newStage || finalStage;
+
+    return (
+      <tr key={it._id} className="border-b border-primary">
+        <td className="px-2 py-1 border-r border-primary">{idx + 1}</td>
+        <td className="px-2 py-1 border-r border-primary">
+          {it.itemId?.skuCode || "-"}
+        </td>
+        <td className="px-2 py-1 border-r border-primary">
+          {it.itemId?.itemName || "-"}
+        </td>
+        <td className="px-2 py-1 border-r border-primary">
+          {it.partName || "-"}
+        </td>
+        <td className="px-2 py-1 border-r border-primary">
+          {it.grams ? `${it.grams / 1000} kg` : it.qty || "-"}
+        </td>
+        <td className="px-2 py-1 border-r border-primary">
+          {it.height || "-"}
+        </td>
+        <td className="px-2 py-1 border-r border-primary">{it.width || "-"}</td>
+        <td className="px-2 py-1 border-r border-primary">
+          {current ? `${current.stage} - ${current.status}` : "-"}
+        </td>
+        <td className="px-2 py-1 text-primary font-bold">
+          {next?.stage == "Completed"
+            ? ` ${next.stage}`
+            : ` ${next.stage} - ${next.status}`}
+        </td>
+      </tr>
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl p-6">
-        {/* Header */}
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl p-6">
         <h2 className="text-lg font-bold mb-4 text-primary">Confirm Update</h2>
 
-        {/* Info */}
         <p className="mb-4 text-sm text-gray-700">
           {isBulk ? (
             <>
@@ -157,16 +251,24 @@ const StageModal = ({
           ) : (
             <>
               Are you sure you want to change stage from{" "}
-              <span className="font-bold">{currentStage}</span> →{" "}
+              <span className="font-bold">
+                {getCurrentStage(item)?.stage} - {getCurrentStage(item)?.status}
+              </span>{" "}
+              →{" "}
               <span className="font-bold text-primary">
-                {getFinalStage(item)}
+                {getFinalStage(item)?.newStage?.stage == "Completed"
+                  ? getFinalStage(item)?.newStage?.stage ||
+                    getFinalStage(item)?.stage
+                  : getFinalStage(item)?.newStage?.stage ||
+                    getFinalStage(item)?.stage -
+                      getFinalStage(item)?.newStage?.status ||
+                    getFinalStage(item)?.status}
               </span>
               ?
             </>
           )}
         </p>
 
-        {/* Item details table */}
         <div className="overflow-x-auto mb-4">
           <table className="w-full text-xs border border-primary">
             <thead className="bg-primary/70 text-black text-left">
@@ -190,7 +292,6 @@ const StageModal = ({
           </table>
         </div>
 
-        {/* Note */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Note
@@ -203,7 +304,6 @@ const StageModal = ({
           />
         </div>
 
-        {/* Actions */}
         <div className="flex justify-end gap-2">
           <button
             className="px-4 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"

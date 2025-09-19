@@ -78,13 +78,15 @@ export function Sidebar({ isOpen }) {
     {
       icon: FiShoppingCart,
       label: "Customer Order",
-      module: "Dashboard",
+      path: "/customer-order",
+      module: "Customer Order",
       action: "read",
     },
     {
       icon: FiLayers,
       label: "CO Pendency",
-      module: "Dashboard",
+      path: "/co-pendency",
+      module: "CO Pendency",
       action: "read",
     },
 
@@ -341,7 +343,7 @@ export function Sidebar({ isOpen }) {
         isOpen ? "translate-x-0" : "-translate-x-full"
       } transition-transform duration-300 ease-in-out overflow-y-auto `}
     >
-      <div className="flex h-15 justify-between bg-[#d8b76a]/50 items-center p-3">
+      <div className="flex h-15 justify-between bg-primary/50 items-center p-3">
         <img src="/images/logo4.png" alt="smartflow360 logo" />
       </div>
 
@@ -359,7 +361,7 @@ export function Sidebar({ isOpen }) {
 
         <button
           onClick={logout}
-          className="flex items-center border-t border-[#d8b76a] text-lg gap-3 text-[#d8b76a] hover:bg-gray-100 p-2 mt-4 cursor-pointer"
+          className="flex items-center border-t border-primary text-lg gap-3 text-primary hover:bg-gray-100 p-2 mt-4 cursor-pointer"
         >
           <FiLogOut /> Logout
         </button>

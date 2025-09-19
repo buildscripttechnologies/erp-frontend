@@ -352,7 +352,7 @@ const RmMaster = ({ isOpen }) => {
               <select
                 value={exportScope}
                 onChange={(e) => setExportScope(e.target.value)}
-                className="border border-[#d8b76a] px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
+                className="border border-primary px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
               >
                 <option value="current">This Page</option>
                 <option value="filtered">Filtered Data</option>
@@ -362,7 +362,7 @@ const RmMaster = ({ isOpen }) => {
               <select
                 value={exportFormat}
                 onChange={(e) => setExportFormat(e.target.value)}
-                className="border border-[#d8b76a] px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
+                className="border border-primary px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
               >
                 <option value="excel">Excel</option>
                 <option value="pdf">PDF</option>
@@ -371,7 +371,7 @@ const RmMaster = ({ isOpen }) => {
               <button
                 disabled={downloading}
                 onClick={handleExport}
-                className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
+                className="bg-primary hover:bg-primary/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
               >
                 {downloading ? (
                   <span className="flex justify-center items-center gap-1">
@@ -386,7 +386,7 @@ const RmMaster = ({ isOpen }) => {
           )}
           <button
             onClick={toggleExportOptions}
-            className="bg-[#d8b76a] cursor-pointer hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded flex justify-center items-center whitespace-nowrap transition"
+            className="bg-primary cursor-pointer hover:bg-primary/80 text-black font-semibold px-4 py-1.5 rounded flex justify-center items-center whitespace-nowrap transition"
           >
             <FiDownload className="mr-2" /> Export
           </button>
@@ -394,7 +394,7 @@ const RmMaster = ({ isOpen }) => {
           <button
             disabled={sampleDownloading}
             onClick={handleSampleDownload}
-            className="flex items-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
+            className="flex items-center gap-2 bg-primary hover:bg-primary/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
           >
             {sampleDownloading ? (
               <span className="flex justify-center items-center gap-1">
@@ -408,7 +408,7 @@ const RmMaster = ({ isOpen }) => {
             )}
           </button>
 
-          <div className="flex items-center justify-center gap-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 px-4 py-1.5 rounded cursor-pointer text-[#292926] font-semibold ">
+          <div className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/80 px-4 py-1.5 rounded cursor-pointer text-[#292926] font-semibold ">
             <label
               title={file ? file.name : "Upload Excel"}
               className="flex items-center justify-center gap-2 cursor-pointer"
@@ -438,7 +438,7 @@ const RmMaster = ({ isOpen }) => {
           <button
             disabled={uploading}
             onClick={handleFileUpload}
-            className="bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
+            className="bg-primary hover:bg-primary/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
           >
             {uploading ? (
               <span className="flex justify-center items-center gap-1">
@@ -460,14 +460,14 @@ const RmMaster = ({ isOpen }) => {
             placeholder="Search raw materials..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-80 pl-10 pr-4 py-1 text-[#292926] border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+            className="w-full sm:w-80 pl-10 pr-4 py-1 text-[#292926] border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
           />
-          <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
+          <FiSearch className="absolute left-2 top-2 text-primary" />
         </div>
         {hasPermission("RawMaterial", "write") && (
           <button
             onClick={() => setShowBulkPanel(true)}
-            className="w-full sm:w-40 justify-center bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-black font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer transition duration-200"
+            className="w-full sm:w-40 justify-center bg-primary hover:bg-primary/80 text-black font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer transition duration-200"
           >
             <FiPlus /> Add R.M.
           </button>
@@ -476,11 +476,11 @@ const RmMaster = ({ isOpen }) => {
 
       {/* Table */}
       <div
-        className={`relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm`}
+        className={`relative overflow-x-auto  overflow-y-auto rounded border border-primary shadow-sm`}
       >
         <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[99vw]`}`}>
           <table className={`text-[11px] min-w-[100vw]`}>
-            <thead className="bg-[#d8b76a] text-[#292926] text-left">
+            <thead className="bg-primary text-[#292926] text-left">
               <tr>
                 {[
                   "#",
@@ -531,15 +531,15 @@ const RmMaster = ({ isOpen }) => {
                   {rawMaterials.map((rm, i) => (
                     <tr
                       key={rm.id}
-                      className="border-b text-[11px] whitespace-nowrap border-[#d8b76a] hover:bg-gray-50"
+                      className="border-b text-[11px] whitespace-nowrap border-primary hover:bg-gray-50"
                     >
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {Number(pagination.currentPage - 1) *
                           Number(pagination.limit) +
                           i +
                           1}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {new Date(rm.createdAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -549,7 +549,7 @@ const RmMaster = ({ isOpen }) => {
                           hour12: true,
                         })}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {new Date(rm.updatedAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -559,28 +559,28 @@ const RmMaster = ({ isOpen }) => {
                           hour12: true,
                         })}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.skuCode}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a] ">
+                      <td className="px-2 border-r border-r-primary ">
                         {rm.itemName}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.description || "-"}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.itemCategory || "-"}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.itemColor || "-"}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.hsnOrSac}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.type}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         <Toggle
                           checked={rm.qualityInspectionNeeded}
                           onChange={() =>
@@ -592,49 +592,49 @@ const RmMaster = ({ isOpen }) => {
                         />
                       </td>
 
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.location || "-"}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.baseQty}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.pkgQty}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.moq}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.panno || "0"}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         ₹{(Number(rm.sqInchRate) || 0).toFixed(4)}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         ₹{rm.rate || "0"}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.purchaseUOM || "-"}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.gst ? rm.gst + "%" : "-"}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
-                        {rm.stockQty}
+                      <td className="px-2 border-r border-r-primary">
+                        {rm.stockQty?.toFixed(2)}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a] ">
+                      <td className="px-2 border-r border-r-primary ">
                         {rm.stockUOM || "-"}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a] ">
-                        ₹{rm.totalRate || "0"}
+                      <td className="px-2 border-r border-r-primary ">
+                        ₹{rm.totalRate?.toFixed(2) || "0"}
                       </td>
 
-                      <td className="text-center items-center justify-center border-r border-r-[#d8b76a]">
+                      <td className="text-center items-center justify-center border-r border-r-primary">
                         {Array.isArray(rm.attachments) &&
                         rm.attachments.length > 0 ? (
                           <button
                             onClick={() => setOpenAttachments(rm.attachments)}
-                            className="cursor-pointer hover:text-[#d8b76a] hover:underline text-center items-center justify-center"
+                            className="cursor-pointer hover:text-primary hover:underline text-center items-center justify-center"
                           >
                             View
                           </button>
@@ -649,13 +649,13 @@ const RmMaster = ({ isOpen }) => {
                           />
                         )}
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         <Toggle
                           checked={rm.status === "Active"}
                           onChange={() => handleToggleStatus(rm.id, rm.status)}
                         />
                       </td>
-                      <td className="px-2 border-r border-r-[#d8b76a]">
+                      <td className="px-2 border-r border-r-primary">
                         {rm.createdByName || "-"}
                       </td>
                       <td className="px-2 ">

@@ -4,6 +4,7 @@ import axios from "../../utils/axios";
 import Select from "react-select";
 import { ClipLoader } from "react-spinners";
 import { cuttingType, jobWorkType, vendors } from "../../data/dropdownData";
+import AddPO from "../purchase/AddPO";
 
 const Add = ({ onClose, onAdded }) => {
   const [selectedItem, setSelectedItem] = useState(null);
@@ -20,21 +21,24 @@ const Add = ({ onClose, onAdded }) => {
   // multiple items state
   const [poItems, setPoItems] = useState([]);
 
+  const [poModalItem, setPoModalItem] = useState(null);
+
   // ---- Your existing total amount
 
+  const fetchDropdowns = async () => {
+    try {
+      const [bomRes, userRes] = await Promise.all([
+        axios.get("/boms/get-all"),
+        axios.get("/users/all-users"),
+      ]);
+      setBoms(bomRes.data.data || []);
+      setUsers(userRes.data.users || []);
+    } catch {
+      toast.error("Failed to fetch vendors or items");
+    }
+  };
+
   useEffect(() => {
-    const fetchDropdowns = async () => {
-      try {
-        const [bomRes, userRes] = await Promise.all([
-          axios.get("/boms/get-all"),
-          axios.get("/users/all-users"),
-        ]);
-        setBoms(bomRes.data.data || []);
-        setUsers(userRes.data.users || []);
-      } catch {
-        toast.error("Failed to fetch vendors or items");
-      }
-    };
     fetchDropdowns();
   }, []);
 
@@ -44,33 +48,73 @@ const Add = ({ onClose, onAdded }) => {
     e.preventDefault();
 
     if (checkedSkus.length < 1) {
-      toast.error("Issue Atleast One Material");
+      toast.error("Issue At least One Material");
       return;
     }
+
+    if (checkedSkus.length > 0) {
+      const selectedItems = itemDetails.filter((it) =>
+        checkedSkus.includes(it.skuCode)
+      );
+
+      const isInvalid = selectedItems.some((it) => {
+        if (!it.cuttingType || !it.jobWorkType) {
+          return true; // missing cuttingType/jobWorkType
+        }
+        if (it.jobWorkType === "Outside Company" && !it.vendor) {
+          return true; // vendor required for outside company
+        }
+        return false;
+      });
+
+      if (isInvalid) {
+        toast.error(
+          "Please select Cutting Type, Job Work Type, and Vendor (if Outside Company) for all issued items"
+        );
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
-      const mainStatus = itemDetails.every((it) => it.status !== "pending")
-        ? "issued"
-        : "pending";
+      const mainStatus = itemDetails.every(
+        (it) => it.currentStatus !== "Pending"
+      )
+        ? "Issued"
+        : "Pending";
       const payload = {
         bom: selectedItem.b._id,
         bomNo: selectedItem.b.bomNo,
         productName: selectedItem.b.productName,
         itemDetails: itemDetails.map((item) => ({
           ...item,
-          status:
-            item.status == "pending"
+          currentStatus:
+            item.currentStatus == "Pending"
               ? item.cuttingType &&
                 checkedSkus.includes(item.skuCode) &&
                 item.jobWorkType == "Inside Company"
-                ? "Yet to Cutting"
+                ? "Yet to Start"
                 : item.cuttingType &&
                   checkedSkus.includes(item.skuCode) &&
                   item.jobWorkType == "Outside Company"
                 ? "In Progress"
-                : "pending"
-              : item.status,
+                : "Pending"
+              : item.currentStatus,
+          stages:
+            item.currentStatus == "Pending" &&
+            item.cuttingType &&
+            checkedSkus.includes(item.skuCode)
+              ? [
+                  {
+                    stage: "Cutting",
+                    status:
+                      item.jobWorkType === "Inside Company"
+                        ? "Yet to Start"
+                        : "In Progress",
+                  },
+                ]
+              : item.stages,
         })),
         consumptionTable, // already has isChecked, stockQty, type
         status: mainStatus,
@@ -117,11 +161,11 @@ const Add = ({ onClose, onAdded }) => {
       >
         <h2 className="text-xl font-bold mb-4 text-primary">Issue Material</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-4">
           {/* Item & Vendor Select */}
           <div className="flex flex-wrap gap-5">
             <div className="w-full ">
-              <label className="block text-sm font-semibold text-[#292926] mb-1">
+              <label className="block text-sm font-semibold text-black mb-1">
                 Select BOM
               </label>
               <Select
@@ -135,7 +179,7 @@ const Add = ({ onClose, onAdded }) => {
                     (c) => {
                       return {
                         ...c,
-                        status: "pending",
+                        currentStatus: "Pending",
                       };
                     }
                   );
@@ -162,9 +206,9 @@ const Add = ({ onClose, onAdded }) => {
                 styles={{
                   control: (base, state) => ({
                     ...base,
-                    borderColor: "#d8b76a",
-                    boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
-                    "&:hover": { borderColor: "#d8b76a" },
+                    borderColor: "var(--color-primary)",
+                    boxShadow: state.isFocused ? "0 0 0 1px var(--color-primary)" : "none",
+                    "&:hover": { borderColor: "var(--color-primary)" },
                   }),
                 }}
               />
@@ -173,31 +217,31 @@ const Add = ({ onClose, onAdded }) => {
 
           {/* Consumption Table */}
           {consumptionTable && (
-            <div className="bg-white border border-[#d8b76a] rounded shadow pt-3  px-4  mb-4 text-[11px] text-[#292926]">
-              <h3 className="font-bold text-[#d8b76a] text-[14px] underline underline-offset-4 mb-2">
+            <div className="bg-white border border-primary rounded shadow pt-3  px-4  mb-4 text-[11px] text-black">
+              <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
                 Raw Material Consumption
               </h3>
               <table className="w-full mb-4 text-[11px] border text-left">
-                <thead className="bg-[#d8b76a]/70">
+                <thead className="bg-primary/70">
                   <tr>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">#</th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">#</th>
+                    <th className="px-2 py-1 border-r border-primary">
                       S. No.
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Sku Code
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Item Name
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Category
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Weight
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">Qty</th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">Qty</th>
+                    <th className="px-2 py-1 border-r border-primary">
                       Stock Qty
                     </th>
                   </tr>
@@ -205,8 +249,8 @@ const Add = ({ onClose, onAdded }) => {
                 <tbody>
                   {consumptionTable?.length > 0 ? (
                     consumptionTable.map((item, idx) => (
-                      <tr key={idx} className="border-b border-[#d8b76a]">
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                      <tr key={idx} className="border-b border-primary">
+                        <td className="px-2 py-1 border-r border-primary">
                           <input
                             type="checkbox"
                             checked={item.isChecked}
@@ -259,48 +303,65 @@ const Add = ({ onClose, onAdded }) => {
                             className="accent-primary"
                           />
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {idx + 1}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.skuCode || "N/A"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.itemName || "N/A"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.category || "N/A"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.weight || "N/A"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.qty || "N/A"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-semibold ${(() => {
-                              const qtyVal =
-                                item.qty && item.qty !== "N/A"
-                                  ? parseFloat(
-                                      item.qty.replace(/[^0-9.]/g, "")
-                                    ) || 0
-                                  : 0;
-                              const weightVal =
-                                item.weight && item.weight !== "N/A"
-                                  ? parseFloat(
-                                      item.weight.replace(/[^0-9.]/g, "")
-                                    ) || 0
-                                  : 0;
+                        <td className="px-2 py-1 border-r border-primary">
+                          {(() => {
+                            const qtyVal =
+                              item.qty && item.qty !== "N/A"
+                                ? parseFloat(
+                                    item.qty.replace(/[^0-9.]/g, "")
+                                  ) || 0
+                                : 0;
+                            const weightVal =
+                              item.weight && item.weight !== "N/A"
+                                ? parseFloat(
+                                    item.weight.replace(/[^0-9.]/g, "")
+                                  ) || 0
+                                : 0;
 
-                              return (qtyVal && item.stockQty < qtyVal) ||
-                                (weightVal && item.stockQty < weightVal)
-                                ? "bg-red-200 "
-                                : "bg-green-100 ";
-                            })()}`}
-                          >
-                            {item.stockQty.toFixed(2)}
-                          </span>
+                            const isLowStock =
+                              (qtyVal && item.stockQty < qtyVal) ||
+                              (weightVal && item.stockQty < weightVal);
+
+                            return (
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                    isLowStock ? "bg-red-200" : "bg-green-100"
+                                  }`}
+                                >
+                                  {item.stockQty.toFixed(2)}
+                                </span>
+                                {isLowStock ? (
+                                  <button
+                                    className="px-2 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600"
+                                    onClick={() => setPoModalItem(item)}
+                                  >
+                                    Add PO
+                                  </button>
+                                ) : (
+                                  ""
+                                )}
+                              </div>
+                            );
+                          })()}
                         </td>
                       </tr>
                     ))
@@ -315,55 +376,65 @@ const Add = ({ onClose, onAdded }) => {
               </table>
             </div>
           )}
+          {poModalItem && (
+            <AddPO
+              prefillItem={poModalItem} // 👈 pass the selected row
+              onClose={() => setPoModalItem(null)}
+              onAdded={() => {
+                setPoModalItem(null);
+                fetchDropdowns();
+              }}
+            />
+          )}
 
           {/* Item details */}
           {checkedSkus.length > 0 && (
-            <div className="bg-white border border-[#d8b76a] rounded shadow pt-3 pb-4 px-4  mb-2 text-[11px] text-[#292926]">
+            <div className="bg-white border border-primary rounded shadow pt-3 pb-4 px-4  mb-2 text-[11px] text-black">
               {/* Product Details Table */}
-              <h3 className="font-bold text-[#d8b76a] text-[14px] underline underline-offset-4 mb-2">
+              <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
                 Product Details (Raw Material / SFG)
               </h3>
               <table className="w-full  text-[11px] border text-left">
-                <thead className="bg-[#d8b76a]/70">
+                <thead className="bg-primary/70">
                   <tr>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">#</th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">#</th>
+                    <th className="px-2 py-1 border-r border-primary">
                       S. No.
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Sku Code
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Item Name
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Type
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Location
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Part Name
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Height (Inch)
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Width (Inch)
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Quantity
                     </th>
-                    {/* <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    {/* <th className="px-2 py-1 border-r border-primary">
                       Rate (₹)
                     </th> */}
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Cutting Type
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Jobwork Type
                     </th>
-                    <th className="px-2 py-1 border-r border-[#d8b76a]">
+                    <th className="px-2 py-1 border-r border-primary">
                       Vendor
                     </th>
                   </tr>
@@ -371,8 +442,8 @@ const Add = ({ onClose, onAdded }) => {
                 <tbody>
                   {filteredDetails.length > 0 ? (
                     filteredDetails.map((item, idx) => (
-                      <tr key={idx} className="border-b border-[#d8b76a]">
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                      <tr key={idx} className="border-b border-primary">
+                        <td className="px-2 py-1 border-r border-primary">
                           <input
                             type="checkbox"
                             checked={!!item.cuttingType}
@@ -380,39 +451,39 @@ const Add = ({ onClose, onAdded }) => {
                             className="accent-primary"
                           />
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {idx + 1}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.skuCode || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.itemName || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.type || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.location?.locationId || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.partName || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.height || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.width || "-"}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           {item.grams
                             ? `${item.grams / 1000} kg`
                             : item.qty || "-"}
                         </td>
-                        {/* <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        {/* <td className="px-2 py-1 border-r border-primary">
                           {item.rate || "-"}
                         </td> */}
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           <select
                             value={item.cuttingType || ""}
                             onChange={(e) => {
@@ -436,7 +507,7 @@ const Add = ({ onClose, onAdded }) => {
                             ))}
                           </select>
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           <select
                             value={item.jobWorkType || ""}
                             onChange={(e) => {
@@ -460,7 +531,7 @@ const Add = ({ onClose, onAdded }) => {
                             ))}
                           </select>
                         </td>
-                        <td className="px-2 py-1 border-r border-[#d8b76a]">
+                        <td className="px-2 py-1 border-r border-primary">
                           <select
                             className="disabled:cursor-not-allowed"
                             disabled={item.jobWorkType != "Outside Company"}
@@ -502,9 +573,10 @@ const Add = ({ onClose, onAdded }) => {
           {/* Final Save */}
           <div className="flex justify-end gap-4 mt-4">
             <button
-              type="submit"
+              type="button"
               disabled={loading}
-              className="px-6 py-2 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer"
+              onClick={handleSubmit}
+              className="px-6 py-2 bg-primary hover:bg-primary/80 text-black font-semibold rounded cursor-pointer"
             >
               {loading ? (
                 <>
@@ -518,12 +590,12 @@ const Add = ({ onClose, onAdded }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-[#292926] rounded cursor-pointer"
+              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-black rounded cursor-pointer"
             >
               Cancel
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import { ClipLoader } from "react-spinners";
 import Select from "react-select";
 import { calculateRate } from "../../../utils/calc";
-import { plastic, slider } from "../../../data/dropdownData";
+import { zipper, plastic, slider } from "../../../data/dropdownData";
 
 const AddFgModal = ({ onClose, onAdded }) => {
   const [uoms, setUoms] = useState([]);
