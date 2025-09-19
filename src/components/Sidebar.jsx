@@ -48,6 +48,8 @@ export function Sidebar({ isOpen }) {
   const navigate = useNavigate();
   const { logout, hasPermission } = useAuth();
 
+  // console.log("haspermission", hasPermission("User", "read"));
+
   const [openMenus, setOpenMenus] = useState({
     Purchase: false,
     Master: false,
@@ -72,7 +74,7 @@ export function Sidebar({ isOpen }) {
       icon: FiClipboard,
       label: "Stock Register",
       path: "/stock-register",
-      module: "Dashboard",
+      module: "Stock",
       action: "read",
     },
     {
@@ -98,14 +100,14 @@ export function Sidebar({ isOpen }) {
           label: "Purchase Order",
           icon: BiSolidPurchaseTag,
           path: "/purchase-order",
-          module: "PO",
+          module: "Purchase Order",
           action: "read",
         },
         {
           label: "P. O. Approval",
           icon: FaCheckCircle,
           path: "/purchase-order-approval",
-          module: "PO",
+          module: "PO Approval",
           action: "read",
         },
       ],
@@ -284,13 +286,27 @@ export function Sidebar({ isOpen }) {
     hasPermission,
   }) => {
     const { icon: Icon, label, path, subMenu, module, action } = item;
+    // console.log("item", item);
 
     // Permission check
     if (!subMenu && module && !hasPermission(module, action)) return null;
 
-    const filteredSubMenu = subMenu?.filter((sm) =>
-      hasPermission(sm.module, sm.action)
-    );
+    const filterSubMenu = (subMenu) => {
+      return subMenu
+        .map((sm) => {
+          if (sm.subMenu) {
+            const children = filterSubMenu(sm.subMenu);
+            if (children.length > 0) {
+              return { ...sm, subMenu: children };
+            }
+            return null;
+          }
+          return hasPermission(sm.module, sm.action) ? sm : null;
+        })
+        .filter(Boolean);
+    };
+
+    const filteredSubMenu = subMenu ? filterSubMenu(subMenu) : [];
 
     if (subMenu && filteredSubMenu.length === 0) return null;
 

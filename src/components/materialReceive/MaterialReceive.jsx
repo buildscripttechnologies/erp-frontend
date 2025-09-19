@@ -243,7 +243,7 @@ const MaterialReceive = () => {
           </button>
         </div> */}
 
-        {hasPermission("Material Issue", "create") && (
+        {hasPermission("Material Receive", "write") && (
           <button
             onClick={() => setFormOpen(!formOpen)}
             className="w-full sm:w-auto justify-center cursor-pointer bg-primary hover:bg-[#b38a37] text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
@@ -362,7 +362,7 @@ const MaterialReceive = () => {
                         )}
                       </button> */}
 
-                        {/* {hasPermission("Material Inward", "update") ? (
+                        {/* {hasPermission("Material Receive", "update") ? (
                           <FiEdit
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Edit"

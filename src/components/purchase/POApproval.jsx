@@ -20,6 +20,7 @@ import PurchaseOrderBill from "./POBill";
 import { generateLPPO } from "./generateLPPO";
 import PreviewPO from "./PreviewPO";
 import { ClipLoader } from "react-spinners";
+import { useAuth } from "../../context/AuthContext";
 
 const POApprovel = ({ isOpen }) => {
   const [pos, setPos] = useState([]);
@@ -38,6 +39,8 @@ const POApprovel = ({ isOpen }) => {
     limit: 10,
   });
   const [downloading, setDownloading] = useState();
+
+  const { hasPermission } = useAuth();
 
   const hasMountedRef = useRef(false);
   ScrollLock(
@@ -362,17 +365,19 @@ const POApprovel = ({ isOpen }) => {
                               {po.status == "rejected" && (
                                 <p className="text-sm ">
                                   Rejection Reason:{" "}
-                                  {po.items[0].rejectionReason || ""}
+                                  {po.items?.[0].rejectionReason || ""}
                                 </p>
                               )}
                             </td>
                             <td className="max-w-[70px] pb-2 font-bold">
-                              <button
-                                onClick={() => setPreviewPO(po)}
-                                className="px-4 py-1 mr-2  bg-primary hover:bg-primary/80 text-[#292926]  rounded cursor-pointer"
-                              >
-                                Review PO
-                              </button>
+                              {hasPermission("PO Approval", "update") && (
+                                <button
+                                  onClick={() => setPreviewPO(po)}
+                                  className="px-4 py-1 mr-2  bg-primary hover:bg-primary/80 text-[#292926]  rounded cursor-pointer"
+                                >
+                                  Review PO
+                                </button>
+                              )}
                             </td>
                           </tr>
                         </>
