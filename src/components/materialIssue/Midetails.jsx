@@ -1,6 +1,6 @@
 import React from "react";
 
-const MIdetails = ({ MI, filter }) => {
+const MIdetails = ({ MI, filter = "" }) => {
   const formatDate = (date) =>
     new Date(date).toLocaleString("en-IN", {
       dateStyle: "medium",
@@ -11,16 +11,16 @@ const MIdetails = ({ MI, filter }) => {
 
   console.log("filtered details", filteredDetails);
 
-  if (filter == "cutting") {
-    filteredDetails = filteredDetails.filter((item) =>
-      ["in cutting", "yet to cutting", "cutting paused"].includes(
-        item.status.toLowerCase()
-      )
-    );
-  }
-  if (filter === "print") {
-    filteredDetails = filteredDetails.filter((item) => item.isPrint == true);
-  }
+  // if (filter == "cutting") {
+  //   filteredDetails = filteredDetails.filter((item) =>
+  //     ["in cutting", "yet to cutting", "cutting paused"].includes(
+  //       item.status.toLowerCase()
+  //     )
+  //   );
+  // }
+  // if (filter === "print") {
+  //   filteredDetails = filteredDetails.filter((item) => item.isPrint == true);
+  // }
 
   const getStageByFilter = (item) => {
     return item.stages[item.stages.length - 1];
@@ -41,33 +41,27 @@ const MIdetails = ({ MI, filter }) => {
             <th className="px-2 py-1 border-r border-primary">Type</th>
             <th className="px-2 py-1 border-r border-primary">Location</th>
             <th className="px-2 py-1 border-r border-primary">Part Name</th>
-            <th className="px-2 py-1 border-r border-primary">
-              Height (Inch)
-            </th>
-            <th className="px-2 py-1 border-r border-primary">
-              Width (Inch)
-            </th>
+            <th className="px-2 py-1 border-r border-primary">Height (Inch)</th>
+            <th className="px-2 py-1 border-r border-primary">Width (Inch)</th>
             <th className="px-2 py-1 border-r border-primary">Quantity</th>
             {/* <th className="px-2 py-1 border-r border-primary">Rate (₹)</th> */}
             <th className="px-2 py-1 border-r border-primary">Status</th>
             <th className="px-2 py-1 border-r border-primary">
               {filter == "print" ? "Print" : "Cutting Type"}
             </th>
-            <th className="px-2 py-1 border-r border-primary">
-              Jobwork Type
-            </th>
+            <th className="px-2 py-1 border-r border-primary">Jobwork Type</th>
           </tr>
         </thead>
         <tbody>
           {filteredDetails?.length > 0 ? (
             filteredDetails.map((item, idx) => {
               const stage = getStageByFilter(item);
-              if (!stage) return null;
-
-              const statusLabel =
-                stage.stage == "Completed"
-                  ? `${stage.stage} `
-                  : `${stage.stage} - ${stage.status}`;
+              let statusLabel;
+              if (!stage) {
+                statusLabel = "Pending";
+              } else {
+                statusLabel = "Completed";
+              }
 
               return (
                 <tr key={idx} className="border-b border-primary">
@@ -104,15 +98,9 @@ const MIdetails = ({ MI, filter }) => {
                   <td className="px-2 py-1 border-r border-primary">
                     <span
                       className={`${
-                        stage?.status?.includes("Yet")
-                          ? "bg-gray-200"
-                          : stage?.status?.includes("In Progress")
-                          ? "bg-yellow-200"
-                          : stage?.status?.includes("Paused")
-                          ? "bg-orange-200"
-                          : stage?.status?.includes("Completed")
+                        statusLabel == "Completed"
                           ? "bg-green-200"
-                          : "bg-gray-100"
+                          : "bg-yellow-200"
                       }  py-0.5 px-1 rounded font-bold`}
                     >
                       {statusLabel}

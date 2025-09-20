@@ -152,17 +152,6 @@ const EditRawMaterialModal = ({
           <h2 className="w-full text-xl font-bold  text-[#d8b76a] flex justify-center sm:justify-start">
             Edit Raw Material
           </h2>
-          {/* <div className="w-full flex flex-wrap items-center justify-center">
-            <label className="text-base font-semibold text-red-600 mr-2">
-              Total Rate (Rate x Stock Qty) :{" "}
-            </label>
-            <span className="text-red-600 font-semibold text-sm">
-              ₹{" "}
-              {(Number(formData.stockQty) * Number(formData.rate) || 0).toFixed(
-                2
-              )}
-            </span>
-          </div> */}
         </div>
         <form
           onSubmit={handleUpdate}
@@ -391,8 +380,11 @@ const EditRawMaterialModal = ({
               // disabled
               type="number"
               placeholder="Stock Quantiy"
-              value={formData.stockQty}
-              onChange={(e) => handleChange("stockQty", e.target.value)}
+              value={formData.stockQty ?? 0} // fallback to 0
+              onChange={(e) => {
+                const val = e.target.value;
+                handleChange("stockQty", val === "" ? 0 : Number(val));
+              }}
               className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] disabled:cursor-not-allowed"
             />
           </div>

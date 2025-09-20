@@ -207,7 +207,9 @@ const Add = ({ onClose, onAdded }) => {
                   control: (base, state) => ({
                     ...base,
                     borderColor: "var(--color-primary)",
-                    boxShadow: state.isFocused ? "0 0 0 1px var(--color-primary)" : "none",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 1px var(--color-primary)"
+                      : "none",
                     "&:hover": { borderColor: "var(--color-primary)" },
                   }),
                 }}
@@ -224,7 +226,71 @@ const Add = ({ onClose, onAdded }) => {
               <table className="w-full mb-4 text-[11px] border text-left">
                 <thead className="bg-primary/70">
                   <tr>
-                    <th className="px-2 py-1 border-r border-primary">#</th>
+                    <th className="px-2 py-1 border-r border-primary">
+                      <input
+                        type="checkbox"
+                        className="accent-black"
+                        checked={consumptionTable.every(
+                          (item) => item.isChecked
+                        )}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            // Try to select all (only if stock is enough)
+                            const updated = consumptionTable.map((row) => {
+                              let deduction = 0;
+                              if (row.weight && row.weight !== "N/A") {
+                                deduction = parseValue(row.weight);
+                              } else if (row.qty && row.qty !== "N/A") {
+                                deduction = parseValue(row.qty);
+                              }
+
+                              if (row.stockQty < deduction) {
+                                toast.error(
+                                  `Insufficient StockQty for ${row.skuCode}!`
+                                );
+                                return row; // keep unchecked
+                              }
+
+                              return {
+                                ...row,
+                                isChecked: true,
+                                stockQty: parseFloat(
+                                  (row.stockQty - deduction).toFixed(2)
+                                ),
+                              };
+                            });
+
+                            setConsumptionTable(updated);
+                            setCheckedSkus(
+                              updated
+                                .filter((r) => r.isChecked)
+                                .map((r) => r.skuCode)
+                            );
+                          } else {
+                            // Uncheck all → restore stock
+                            const updated = consumptionTable.map((row) => {
+                              let deduction = 0;
+                              if (row.weight && row.weight !== "N/A") {
+                                deduction = parseValue(row.weight);
+                              } else if (row.qty && row.qty !== "N/A") {
+                                deduction = parseValue(row.qty);
+                              }
+
+                              return {
+                                ...row,
+                                isChecked: false,
+                                stockQty: parseFloat(
+                                  (row.stockQty + deduction).toFixed(2)
+                                ),
+                              };
+                            });
+
+                            setConsumptionTable(updated);
+                            setCheckedSkus([]);
+                          }
+                        }}
+                      />
+                    </th>
                     <th className="px-2 py-1 border-r border-primary">
                       S. No.
                     </th>
@@ -246,6 +312,7 @@ const Add = ({ onClose, onAdded }) => {
                     </th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {consumptionTable?.length > 0 ? (
                     consumptionTable.map((item, idx) => (
@@ -407,9 +474,7 @@ const Add = ({ onClose, onAdded }) => {
                     <th className="px-2 py-1 border-r border-primary">
                       Item Name
                     </th>
-                    <th className="px-2 py-1 border-r border-primary">
-                      Type
-                    </th>
+                    <th className="px-2 py-1 border-r border-primary">Type</th>
                     <th className="px-2 py-1 border-r border-primary">
                       Location
                     </th>

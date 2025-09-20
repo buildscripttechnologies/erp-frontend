@@ -60,14 +60,19 @@ export const generateConsumptionTable = (productDetails = []) => {
           item.category.toLowerCase()
         )
       )
-        weightDisplay = `${item.weight.toFixed(2)} kg`;
+        weightDisplay = `${item.weight.toFixed(4)} kg`;
 
       if (
-        ["zipper", "fabric", "canvas", "cotton", "webbing"].includes(
-          item.category.toLowerCase()
-        )
+        [
+          "zipper",
+          "fabric",
+          "canvas",
+          "cotton",
+          "webbing",
+          "inner dori",
+        ].includes(item.category.toLowerCase())
       ) {
-        qtyDisplay = `${Number(item.qty).toFixed(2)} m`;
+        qtyDisplay = `${Number(item.qty).toFixed(4)} m`;
       } else if (
         ["plastic", "non woven", "ld cord"].includes(
           item.category.toLowerCase()
@@ -76,6 +81,7 @@ export const generateConsumptionTable = (productDetails = []) => {
         qtyDisplay = "N/A";
       } else if (
         [
+          "runner",
           "slider",
           "bidding",
           "adjuster",
@@ -100,8 +106,8 @@ export const generateConsumptionTable = (productDetails = []) => {
   //   skuCode: item.skuCode,
   //   itemName: item.itemName,
   //   category: item.category,
-  //   qty: item.qty.toFixed(2),
-  //   weight: item.weight.toFixed(2),
+  //   qty: item.qty.toFixed(4),
+  //   weight: item.weight.toFixed(4),
   // }));
 
   return consumptionTable;
