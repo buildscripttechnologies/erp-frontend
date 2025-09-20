@@ -4,6 +4,7 @@ import { fabric, plastic, slider, zipper } from "../data/dropdownData";
 export const calculateRate = (comp, qtyOverride = null) => {
   const category = (comp.category || "").toLowerCase();
   const qty = qtyOverride ?? (Number(comp.qty) || 0);
+  console.log("qty", qty);
 
   // Fabric: uses height × width × qty × sqInchRate
   if (fabric.includes(category)) {
@@ -12,7 +13,7 @@ export const calculateRate = (comp, qtyOverride = null) => {
     const sqInchRate = Number(comp.sqInchRate) || 0;
 
     return height && width && qty && sqInchRate
-      ? Number((height * width * qty * sqInchRate).toFixed(2))
+      ? Number((height * width * qty * sqInchRate).toFixed(4))
       : null;
   }
 
@@ -23,7 +24,7 @@ export const calculateRate = (comp, qtyOverride = null) => {
 
     if (baseQty && baseRate && qty) {
       const perPieceRate = baseRate / baseQty;
-      return Number((perPieceRate * qty).toFixed(2));
+      return Number((perPieceRate * qty).toFixed(4));
     }
     return null;
   }
@@ -37,20 +38,34 @@ export const calculateRate = (comp, qtyOverride = null) => {
     if (!grams || !baseQtyGrams || !comp.itemRate) return null;
 
     // Rate = proportion of grams relative to baseQty in grams × itemRate
-    return Number(((grams / baseQtyGrams) * comp.itemRate).toFixed(2));
+    return Number(((grams / baseQtyGrams) * comp.itemRate).toFixed(4));
   }
 
   if (zipper.includes(category)) {
-    const qty = Number(comp.qty) || 1;
+    // const qty = Number(comp.qty) || 1;
     const inches = Number(comp.width) || 0; // qty here is already in inches
     const baseQtyMeter = Number(comp.baseQty) || 1; // baseQty in meters
     const baseQtyInches = baseQtyMeter * 39.37; // convert meters → inches
 
+    // console.log(
+    //   "q",
+    //   qty,
+    //   "w",
+    //   inches,
+    //   "base qty",
+    //   baseQtyMeter,
+    //   "base inch",
+    //   baseQtyInches
+    // );
+
     if (!inches || !baseQtyInches || !comp.itemRate) return null;
 
     const perInchRate = comp.itemRate / baseQtyInches;
-    const inchesRate = Number((perInchRate * inches).toFixed(2));
-    return Number((inchesRate * qty).toFixed(2));
+    const inchesRate = Number((perInchRate * inches).toFixed(4));
+
+    console.log("pwe rate", perInchRate, " inches rate", inchesRate);
+
+    return Number((inchesRate * qty).toFixed(4));
   }
 
   // fallback

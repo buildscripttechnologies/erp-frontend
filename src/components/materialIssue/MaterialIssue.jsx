@@ -159,6 +159,29 @@ const MaterialIssue = () => {
     // fetchUoms();
   }, []);
 
+  function getTableStatus(items, table) {
+    if (!Array.isArray(items) || items.length === 0) return "Pending";
+
+    // Normalize stage name (case insensitive)
+    const stageName = table;
+
+    // Check every item's stage
+    const allCompleted = items.every((item) => {
+      if (!Array.isArray(item.stages)) return false;
+
+      // Find the stage for this item
+      const stage = item.stages.find((s) => s.stage && s.stage === stageName);
+
+      // Consider completed only if stage exists AND its status = "Completed"
+
+      // console.log("stage", stage.stage);
+
+      return stage?.stage == "Cutting";
+    });
+
+    return allCompleted ? "Completed" : "Pending";
+  }
+
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
@@ -266,18 +289,27 @@ const MaterialIssue = () => {
                         {mi.bom.productName}
                       </td>
                       <td className="px-2  border-r border-primary">
-                        <span
-                          className={`${
-                            mi.status == "Pending"
-                              ? "bg-yellow-200"
-                              : mi.status == "In Progress" ||
-                                mi.status == "Issued"
-                              ? "bg-orange-200"
-                              : "bg-green-200"
-                          }  py-0.5 px-1 rounded font-bold capitalize `}
-                        >
-                          {mi.status || "-"}
-                        </span>
+                        {(() => {
+                          const tableStatus = getTableStatus(
+                            mi.itemDetails || [],
+                            "Cutting"
+                          );
+                          // console.log("status", tableStatus);
+
+                          return (
+                            <span
+                              className={`${
+                                tableStatus === "Pending"
+                                  ? "bg-yellow-200"
+                                  : tableStatus === "In Progress"
+                                  ? "bg-orange-200"
+                                  : "bg-green-200"
+                              } py-0.5 px-1 rounded font-bold capitalize`}
+                            >
+                              {tableStatus}
+                            </span>
+                          );
+                        })()}
                       </td>
 
                       <td className="px-2  border-r border-primary">

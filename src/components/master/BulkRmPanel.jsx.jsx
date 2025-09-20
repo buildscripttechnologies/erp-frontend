@@ -94,9 +94,7 @@ const BulkRmPanel = ({ onClose }) => {
           category.includes("canvas") ||
           category.includes("foam"))
       ) {
-        updated[index].sqInchRate = Number(
-          ((rate / panno / fabricRate) * 1.05)
-        );
+        updated[index].sqInchRate = Number((rate / panno / fabricRate) * 1.05);
       } else {
         updated[index].sqInchRate = 0;
       }
@@ -449,14 +447,19 @@ const BulkRmPanel = ({ onClose }) => {
                     Stock Qty
                   </label>
                   <input
-                    disabled
+                    // disabled
                     type="number"
                     placeholder="Stock Qty"
-                    value={rm.stockQty}
-                    onChange={(e) =>
-                      handleChange(index, "stockQty", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] cursor-not-allowed"
+                    value={rm.stockQty ?? 0} // fallback to 0 if null/undefined
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      handleChange(
+                        index,
+                        "stockQty",
+                        val === "" ? 0 : Number(val)
+                      );
+                    }}
+                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] disabled:cursor-not-allowed"
                   />
                 </div>
 

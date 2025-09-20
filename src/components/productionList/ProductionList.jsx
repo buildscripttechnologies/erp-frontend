@@ -177,7 +177,7 @@ const ProductionList = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(8).fill({})}
+                columns={Array(9).fill({})}
               />
             ) : (
               <>
