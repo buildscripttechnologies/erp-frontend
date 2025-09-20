@@ -15,7 +15,7 @@ const JobDetails = ({ MI, filter, fetchMis }) => {
 
   let filteredDetails = MI.itemDetails || [];
 
-  console.log("filtered details", filteredDetails);
+  // console.log("filtered details", filteredDetails);
 
   const handleCheckboxChange = (itemId) => {
     setSelectedItems((prev) =>
@@ -67,47 +67,39 @@ const JobDetails = ({ MI, filter, fetchMis }) => {
       return { start: false, pause: false, next: false };
     }
 
-    const stages = MI.itemDetails.map((it) => {
-      const last = it.stages?.[it.stages.length - 1];
-      return last ? last.stage : null;
-    });
+    // ✅ get stage for each item based on current filter
+    const stageStatuses = MI.itemDetails
+      .map((it) => getStageByFilter(it))
+      .filter(Boolean) // remove nulls
+      .map((s) => s.status);
 
-    const statuses = MI.itemDetails.map((it) => {
-      const last = it.stages?.[it.stages.length - 1];
-      return last ? last.status : null;
-    });
-
-    // 👉 Default all to false
     let permissions = { start: false, pause: false, next: false };
 
-    // ✅ Rule 1: If any item is "Yet to Start", only Start is allowed
-    if (statuses.includes("Yet to Start")) {
-      permissions.start = true;
-      return permissions; // exit early
-    }
-    if (statuses.includes("Paused")) {
-      permissions.start = true;
-      return permissions; // exit early
+    // ✅ Rule 0: If ALL items in this stage are Completed → disable bulk actions
+    if (
+      stageStatuses.length > 0 &&
+      stageStatuses.every((s) => s === "Completed")
+    ) {
+      return permissions;
     }
 
-    // ✅ Rule 2: If all items are "In Progress", allow Pause + Next
-    if (statuses.every((s) => s === "In Progress")) {
+    // ✅ Rule 1: If any item is "Yet to Start" → allow Start
+    if (stageStatuses.includes("Yet to Start")) {
+      permissions.start = true;
+      return permissions;
+    }
+
+    // ✅ Rule 2: If any item is "Paused" → allow Resume
+    if (stageStatuses.includes("Paused")) {
+      permissions.start = true;
+      return permissions;
+    }
+
+    // ✅ Rule 3: If all items are "In Progress" → allow Pause + Next
+    if (stageStatuses.every((s) => s === "In Progress")) {
       permissions.pause = true;
       permissions.next = true;
     }
-
-    // ✅ Rule 3: Handle Stitching + Checking readiness
-    // if (stages.includes("Stitching") && !MI.readyForStitching) {
-    //   permissions.start = false; // block starting Stitching
-    // } else if (stages.includes("Stitching")) {
-    //   permissions.start = true;
-    // }
-
-    // if (stages.includes("Checking") && !MI.readyForChecking) {
-    //   permissions.start = false; // block starting Checking
-    // } else if (stages.includes("Checking")) {
-    //   permissions.start = true;
-    // }
 
     return permissions;
   };

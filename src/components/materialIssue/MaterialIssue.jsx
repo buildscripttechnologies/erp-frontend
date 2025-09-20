@@ -178,7 +178,7 @@ const MaterialIssue = () => {
           />
         </div>
 
-        {hasPermission("Material Issue", "create") && (
+        {hasPermission("Material Issue", "write") && (
           <button
             onClick={() => setFormOpen(!formOpen)}
             className="w-full sm:w-auto justify-center cursor-pointer bg-primary hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
@@ -300,7 +300,7 @@ const MaterialIssue = () => {
                         )}
                       </button> */}
 
-                        {hasPermission("Material Inward", "update") ? (
+                        {hasPermission("Material Issue", "update") ? (
                           <FiEdit
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Edit"
@@ -314,7 +314,7 @@ const MaterialIssue = () => {
                           "-"
                         )}
 
-                        {hasPermission("Material Inward", "delete") ? (
+                        {hasPermission("Material Issue", "delete") ? (
                           <FiTrash2
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Delete"

@@ -19,6 +19,7 @@ import UpdatePO from "./UpdatePO";
 import { generateLPPO } from "./generateLPPO";
 import { ClipLoader } from "react-spinners";
 import POADetails from "./POADetails";
+import { useAuth } from "../../context/AuthContext";
 
 const PurchaseOrder = ({ isOpen }) => {
   const [pos, setPos] = useState([]);
@@ -35,6 +36,8 @@ const PurchaseOrder = ({ isOpen }) => {
     totalResults: 0,
     limit: 10,
   });
+
+  const { hasPermission } = useAuth();
 
   const hasMountedRef = useRef(false);
   ScrollLock(showAddPO == true || editingPO != null);
@@ -189,12 +192,14 @@ const PurchaseOrder = ({ isOpen }) => {
             className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
           />
         </div>
-        <button
-          onClick={() => toogleAddPO(showAddPO)}
-          className="w-full sm:w-auto justify-center bg-primary hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
-        >
-          <FiPlus /> Create PO
-        </button>
+        {hasPermission("Purchase Order", "write") && (
+          <button
+            onClick={() => toogleAddPO(showAddPO)}
+            className="w-full sm:w-auto justify-center bg-primary hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
+          >
+            <FiPlus /> Create PO
+          </button>
+        )}
       </div>
       {showAddPO && (
         <AddPO
@@ -320,22 +325,24 @@ const PurchaseOrder = ({ isOpen }) => {
                               </>
                             )}
 
-                          {po.status == "approved" ? (
-                            ""
-                          ) : (
-                            <FiEdit
+                          {po.status == "approved"
+                            ? ""
+                            : hasPermission("Purchase Order", "update") && (
+                                <FiEdit
+                                  data-tooltip-id="statusTip"
+                                  data-tooltip-content="Edit"
+                                  className="cursor-pointer text-primary hover:text-blue-600"
+                                  onClick={() => setEditingPO(po)}
+                                />
+                              )}
+                          {hasPermission("Purchase Order", "delete") && (
+                            <FiTrash2
                               data-tooltip-id="statusTip"
-                              data-tooltip-content="Edit"
-                              className="cursor-pointer text-primary hover:text-blue-600"
-                              onClick={() => setEditingPO(po)}
+                              data-tooltip-content="Delete"
+                              className="cursor-pointer text-primary hover:text-red-600"
+                              onClick={() => handleDelete(po._id)}
                             />
                           )}
-                          <FiTrash2
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Delete"
-                            className="cursor-pointer text-primary hover:text-red-600"
-                            onClick={() => handleDelete(po._id)}
-                          />
                           <Tooltip
                             id="statusTip"
                             place="top"

@@ -137,6 +137,26 @@ const Cutting = () => {
     fetchMis();
   }, []);
 
+  function getJobTableStatus(items, table) {
+    if (!Array.isArray(items) || items.length === 0) return "Pending";
+
+    // Normalize stage name (case insensitive)
+    const stageName = table;
+
+    // Check every item's stage
+    const allCompleted = items.every((item) => {
+      if (!Array.isArray(item.stages)) return false;
+
+      // Find the stage for this item
+      const stage = item.stages.find((s) => s.stage && s.stage === stageName);
+
+      // Consider completed only if stage exists AND its status = "Completed"
+      return stage && stage.status === "Completed";
+    });
+
+    return allCompleted ? "Completed" : "Pending";
+  }
+
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
@@ -169,14 +189,13 @@ const Cutting = () => {
               <th className="px-2 py-1.5 ">Product Name</th>
               <th className="px-2 py-1.5 ">Status</th>
               <th className="px-2 py-1.5 ">Created By</th>
-              <th className="px-2 py-1.5">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(9).fill({})}
+                columns={Array(8).fill({})}
               />
             ) : (
               <>
@@ -224,75 +243,31 @@ const Cutting = () => {
                       <td className="px-2  border-r border-primary">
                         {mi.bom.productName}
                       </td>
-                      <td className="px-2  border-r border-primary">
-                        <span
-                          className={`${
-                            mi.status == "Pending"
-                              ? "bg-yellow-200"
-                              : mi.status == "In Progress" ||
-                                mi.status == "Issued"
-                              ? "bg-orange-200"
-                              : "bg-green-200"
-                          }  py-0.5 px-1 rounded font-bold capitalize `}
-                        >
-                          {mi.status || "-"}
-                        </span>
+                      <td className="px-2 border-r border-primary py-1">
+                        {(() => {
+                          const tableStatus = getJobTableStatus(
+                            mi.itemDetails || [],
+                            "Cutting"
+                          );
+
+                          return (
+                            <span
+                              className={`${
+                                tableStatus === "Pending"
+                                  ? "bg-yellow-200"
+                                  : tableStatus === "In Progress"
+                                  ? "bg-orange-200"
+                                  : "bg-green-200"
+                              } py-0.5 px-1 rounded font-bold capitalize`}
+                            >
+                              {tableStatus}
+                            </span>
+                          );
+                        })()}
                       </td>
 
                       <td className="px-2  border-r border-primary">
                         {mi.createdBy?.fullName || "-"}
-                      </td>
-
-                      <td className="px-2 py-1 flex gap-3 text-sm text-primary">
-                        {/* <button
-                        disabled={generatingId === mi._id}
-                        onClick={() => handlePrint(mi)}
-                        className="text-primary hover:underline text-[11px] cursor-pointer"
-                      >
-                        {generatingId === stock._id ? (
-                          <ClipLoader size={11} color="primary" />
-                        ) : (
-                          <FaBarcode
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="View Barcodes"
-                          />
-                        )}
-                      </button> */}
-
-                        {hasPermission("Material Inward", "update") ? (
-                          <FiEdit
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Edit"
-                            className="hover:text-blue-500 cursor-pointer"
-                            // onClick={() => {
-                            //   setEditMIData(mi);
-                            //   setEditModalOpen(true);
-                            // }}
-                          />
-                        ) : (
-                          "-"
-                        )}
-
-                        {hasPermission("Material Inward", "delete") ? (
-                          <FiTrash2
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="Delete"
-                            className="cursor-pointer text-primary hover:text-red-600"
-                            // onClick={() => handleDelete(mi._id)}
-                          />
-                        ) : (
-                          "-"
-                        )}
-                        <Tooltip
-                          id="statusTip"
-                          place="top"
-                          style={{
-                            backgroundColor: "#292926",
-                            color: "#d8b76a",
-                            fontSize: "12px",
-                            fontWeight: "bold",
-                          }}
-                        />
                       </td>
                     </tr>
                     {expandedMIId === mi._id && (

@@ -155,7 +155,9 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                   control: (base, state) => ({
                     ...base,
                     borderColor: "var(--color-primary)",
-                    boxShadow: state.isFocused ? "0 0 0 1px var(--color-primary)" : "none",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 1px var(--color-primary)"
+                      : "none",
                     "&:hover": { borderColor: "var(--color-primary)" },
                   }),
                 }}
@@ -332,9 +334,7 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                     <th className="px-2 py-1 border-r border-primary">
                       Item Name
                     </th>
-                    <th className="px-2 py-1 border-r border-primary">
-                      Type
-                    </th>
+                    <th className="px-2 py-1 border-r border-primary">Type</th>
                     <th className="px-2 py-1 border-r border-primary">
                       Location
                     </th>

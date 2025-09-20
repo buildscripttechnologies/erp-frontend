@@ -329,7 +329,7 @@ const MaterialInward = () => {
           </button>
         </div>
 
-        {hasPermission("Material Inward", "create") && (
+        {hasPermission("Material Inward", "write") && (
           <button
             onClick={() => setFormOpen(!formOpen)}
             className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"

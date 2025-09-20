@@ -229,7 +229,7 @@ const CustomerOrder = ({ isOpen }) => {
               className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:outline-none"
             />
           </div>
-          {hasPermission("BOM", "write") && (
+          {hasPermission("Customer Order", "write") && (
             <button
               onClick={() => setShowModal(true)}
               className="bg-primary hover:bg-primary/80 justify-center text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
@@ -407,7 +407,7 @@ const CustomerOrder = ({ isOpen }) => {
                               //   onClick={() => handlePreviewBom(b)}
                               className="cursor-pointer text-primary hover:text-green-600"
                             />
-                            {hasPermission("BOM", "update") ? (
+                            {hasPermission("Customer Order", "update") ? (
                               <FiEdit
                                 // onClick={() => setEditingBOM(b)}
                                 className="cursor-pointer text-primary hover:text-blue-600"
@@ -415,7 +415,7 @@ const CustomerOrder = ({ isOpen }) => {
                             ) : (
                               "-"
                             )}
-                            {hasPermission("BOM", "delete") ? (
+                            {hasPermission("Customer Order", "delete") ? (
                               <FiTrash2
                                 // onClick={() => handleDelete(b._id)}
                                 className="cursor-pointer text-primary hover:text-red-600"
