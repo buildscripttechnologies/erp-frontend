@@ -38,6 +38,7 @@ import ProductionList from "./components/productionList/ProductionList";
 import QualityCheck from "./components/jobWork/insideFactory/QualityCheck";
 import CustomerOrder from "./components/customerOrder/CustomerOrder";
 import COP from "./components/coPendency/COP";
+import IndiaMartLeads from "./components/leads/indiamart/IndiaMartLeads";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -104,6 +105,18 @@ const App = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/change-password" element={<ChangePassword />} />
 
+          <Route
+            path="/leads"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <IndiaMartLeads />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
           <Route
             path="/stock-register"
             element={

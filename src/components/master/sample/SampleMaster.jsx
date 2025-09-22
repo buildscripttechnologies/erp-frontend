@@ -17,6 +17,8 @@ import { debounce } from "lodash";
 
 import { useRef } from "react";
 
+import { useLocation, useNavigate } from "react-router-dom";
+
 const SampleMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
 
@@ -33,6 +35,18 @@ const SampleMaster = ({ isOpen }) => {
     totalResults: 0,
     limit: 10,
   });
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state?.showModal) {
+      setShowModal(true);
+
+      // Remove showModal from location state so refresh doesn't reopen
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   const hasMountedRef = useRef(false);
 
@@ -296,14 +310,14 @@ const SampleMaster = ({ isOpen }) => {
                               hour12: true,
                             })}
                           </td>
-                          <td className="px-[8px] border-r border-primary capitalize ">
+                          <td className="px-[8px] border-r border-primary  ">
                             {b.sampleNo || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary  capitalize">
+                          <td className="px-[8px] border-r border-primary  ">
                             {b.partyName || "-"}
                           </td>
 
-                          <td className="px-[8px] border-r border-primary  capitalize">
+                          <td className="px-[8px] border-r border-primary  ">
                             {b.product?.name || "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary ">

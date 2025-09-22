@@ -9,6 +9,7 @@ import { capitalize } from "lodash";
 import { calculateRate } from "../../utils/calc";
 import { generateConsumptionTable } from "../../utils/consumptionTable";
 import { plastic, slider, zipper } from "../../data/dropdownData";
+import { useNavigate } from "react-router-dom";
 
 const AddCO = ({ onClose, onSuccess }) => {
   const [form, setForm] = useState({
@@ -32,6 +33,8 @@ const AddCO = ({ onClose, onSuccess }) => {
 
   const [files, setFiles] = useState([]);
   const [printingFiles, setPrintingFiles] = useState([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -172,6 +175,10 @@ const AddCO = ({ onClose, onSuccess }) => {
       : value;
 
     setForm((prev) => ({ ...prev, [name]: newValue }));
+  };
+
+  const addSample = () => {
+    navigate("/sample-master", { state: { showModal: true } });
   };
 
   const handleSubmit = async () => {
@@ -370,7 +377,13 @@ const AddCO = ({ onClose, onSuccess }) => {
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end mt-5">
+          <div className="flex justify-between mt-5">
+            <button
+              onClick={addSample}
+              className="bg-primary text-secondary px-6 py-2 rounded hover:bg-primary/80 cursor-pointer"
+            >
+              Add Sample
+            </button>
             <button
               disabled={loading}
               onClick={handleSubmit}

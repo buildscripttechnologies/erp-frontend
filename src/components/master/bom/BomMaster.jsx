@@ -307,20 +307,20 @@ const BomMaster = ({ isOpen }) => {
                               hour12: true,
                             })}
                           </td>
-                          <td className="px-[8px] border-r border-primary capitalize ">
+                          <td className="px-[8px] border-r border-primary  ">
                             {b.sampleNo || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary  capitalize">
+                          <td className="px-[8px] border-r border-primary  ">
                             {b.bomNo || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary  capitalize">
+                          <td className="px-[8px] border-r border-primary  ">
                             {b.partyName || "-"}
                           </td>
 
-                          <td className="px-[8px] border-r border-primary capitalize ">
+                          <td className="px-[8px] border-r border-primary  ">
                             {b.productName || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary  capitalize">
+                          <td className="px-[8px] border-r border-primary  ">
                             {b.orderQty || "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary ">

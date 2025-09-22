@@ -10,7 +10,9 @@ import { calculateRate } from "../../../utils/calc";
 import { generateConsumptionTable } from "../../../utils/consumptionTable";
 import { plastic, slider, zipper } from "../../../data/dropdownData";
 
-const AddBomModal = ({ onClose, onSuccess }) => {
+const AddBomModal = ({ onClose, onSuccess, coData }) => {
+  // console.log("coData", coData);
+
   const [form, setForm] = useState({
     partyName: "",
     productName: "",
@@ -54,6 +56,9 @@ const AddBomModal = ({ onClose, onSuccess }) => {
 
   const [files, setFiles] = useState([]);
   const [printingFiles, setPrintingFiles] = useState([]);
+
+  const [isPrefilled, setIsPrefilled] = useState(false);
+  const [prefillLoading, setPrefillLoading] = useState(false);
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -358,6 +363,13 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       });
       if (res.data.status === 403) return toast.error(res.data.message);
 
+      // ✅ Mark CO as approved here
+      if (coData?._id) {
+        await axios.patch(`/cos/update/${coData._id}`, {
+          status: "Approved",
+        });
+      }
+
       toast.success("Bill of Materials added successfully");
       onSuccess();
       onClose();
@@ -368,6 +380,149 @@ const AddBomModal = ({ onClose, onSuccess }) => {
       setLoading(false);
     }
   };
+
+  // code for add bom from co helper function
+
+  // inside your modal component, above useEffect
+
+  const prefillFromCoData = (coData, productOptions, customers) => {
+    if (!coData) return null;
+
+    // match FG/SAMPLE
+    let matchedProduct = productOptions.find(
+      (opt) =>
+        opt.value === coData.productId ||
+        opt.label.includes(coData.productName || "")
+    );
+
+    // match customer
+    let matchedCustomer = customers.find(
+      (c) =>
+        c.customerName?.trim().toLowerCase() ===
+        (coData.partyName || "").trim().toLowerCase()
+    );
+
+    return {
+      product: matchedProduct || null,
+      customer: matchedCustomer
+        ? {
+            label: matchedCustomer.customerName,
+            value: matchedCustomer.customerName,
+          }
+        : coData.partyName
+        ? { label: coData.partyName, value: coData.partyName }
+        : null,
+      defaults: {
+        orderQty: coData.orderQty || 1,
+        date: coData.date || new Date().toISOString().split("T")[0],
+        deliveryDate: coData.deliveryDate || "",
+      },
+    };
+  };
+
+  const applyPrefill = (prefill) => {
+    if (!prefill) return;
+
+    // handle product selection
+    if (prefill.product) {
+      const e = prefill.product;
+      let selectedProduct = null;
+
+      if (e.type === "FG") {
+        selectedProduct = e.fg;
+      } else if (e.type === "SAMPLE") {
+        selectedProduct = e.sample;
+      }
+
+      if (selectedProduct) {
+        const allDetails = [
+          ...(selectedProduct.rm || []),
+          ...(selectedProduct.sfg || []),
+          ...(selectedProduct.productDetails || []),
+        ];
+
+        const enrichedDetails = allDetails.map((item) => ({
+          itemId: item.itemId || item.id || "",
+          type: item.type,
+          tempQty: item.qty || 0,
+          tempGrams: item.grams || 0,
+          qty: item.qty || 0,
+          category: item.category || "",
+          grams: item.grams || 0,
+          height: item.height || "",
+          width: item.width || "",
+          panno: item.panno || 0,
+          rate: item.rate || "",
+          sqInchRate: item.sqInchRate || "",
+          partName: item.partName || "",
+          baseQty: item.baseQty || 0,
+          itemRate: item.itemRate || 0,
+          itemName: item.itemName || "",
+          skuCode: item.skuCode || "",
+          label: `${item.skuCode}: ${item.itemName}${
+            item.description ? ` - ${item.description}` : ""
+          }`,
+        }));
+
+        setProductDetails(enrichedDetails);
+
+        setForm((prev) => ({
+          ...prev,
+          productName:
+            selectedProduct.itemName || selectedProduct.product?.name || "",
+          sampleNo: selectedProduct.sampleNo || selectedProduct.skuCode || "",
+          partyName: selectedProduct.partyName || prev.partyName || "",
+          orderQty: selectedProduct.orderQty || prefill.defaults.orderQty,
+          date: prefill.defaults.date
+            ? new Date(prefill.defaults.date).toISOString().split("T")[0]
+            : "",
+          deliveryDate: prefill.defaults.deliveryDate
+            ? new Date(prefill.defaults.deliveryDate)
+                .toISOString()
+                .split("T")[0]
+            : "",
+          height: selectedProduct.height || 0,
+          width: selectedProduct.width || 0,
+          depth: selectedProduct.depth || 0,
+        }));
+      }
+    }
+
+    // handle customer
+    if (prefill.customer) {
+      setForm((prev) => ({
+        ...prev,
+        partyName: prefill.customer.value,
+      }));
+    }
+  };
+
+  useEffect(() => {
+    const doPrefill = async () => {
+      if (!isPrefilled && coData && productOptions.length && customers.length) {
+        setPrefillLoading(true); // show loader
+
+        // Yield to allow loader to render
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        const prefill = prefillFromCoData(coData, productOptions, customers);
+        if (prefill) {
+          applyPrefill(prefill);
+          setIsPrefilled(true); // prevent re-run
+        }
+
+        setPrefillLoading(false); // hide loader
+      }
+    };
+
+    doPrefill();
+  }, [coData, productOptions, customers, isPrefilled]);
+  // Trigger loader immediately when modal opens
+  useEffect(() => {
+    if (coData) {
+      setPrefillLoading(true); // loader appears instantly
+    }
+  }, [coData]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4">
@@ -382,6 +537,11 @@ const AddBomModal = ({ onClose, onSuccess }) => {
             ×
           </button>
         </div>
+        {prefillLoading && (
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-50 ">
+            <ClipLoader size={50} color="#fff" />
+          </div>
+        )}
 
         <div className="px-4 pb-5">
           {/* Form */}

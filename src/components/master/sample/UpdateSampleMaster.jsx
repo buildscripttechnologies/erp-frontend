@@ -8,7 +8,7 @@ import { ClipLoader } from "react-spinners";
 import { capitalize } from "lodash";
 import { calculateRate } from "../../../utils/calc";
 import { generateConsumptionTable } from "../../../utils/consumptionTable";
-import { plastic, slider } from "../../../data/dropdownData";
+import { zipper, plastic, slider } from "../../../data/dropdownData";
 
 const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
   const [form, setForm] = useState({
