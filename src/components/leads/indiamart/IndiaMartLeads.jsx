@@ -13,6 +13,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
 
 import { useRef } from "react";
+import { QUERY_TYPE_MAP } from "../../../data/dropdownData";
 
 const UomMaster = () => {
   const { hasPermission } = useAuth();
@@ -97,41 +98,6 @@ const UomMaster = () => {
     }
   };
 
-  const handleToggleStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === true ? false : true;
-    try {
-      const res = await axios.patch(`/leads/update-lead/${id}`, {
-        status: newStatus,
-      });
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
-
-      if (res.data.status == 200) {
-        toast.success(`lead status updated`);
-
-        // ✅ Update local state without refetch
-        setLeads((prev) =>
-          prev.map((lead) =>
-            lead._id === id ? { ...lead, status: newStatus } : lead
-          )
-        );
-      } else {
-        toast.error("Failed to update status");
-      }
-    } catch (err) {
-      toast.error("Failed to update status");
-    }
-  };
-
-  // const filteredUoms = leads.filter(
-  //   (u) =>
-  //     u.unitName?.toLowerCase().includes(search.toLowerCase()) ||
-  //     u.unitDescription?.toLowerCase().includes(search.toLowerCase()) ||
-  //     u.createdBy?.fullName.toLowerCase().includes(search.toLocaleLowerCase())
-  // );
-
   useEffect(() => {
     fetchLeads(1);
   }, []);
@@ -160,20 +126,20 @@ const UomMaster = () => {
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
         <div className="relative w-full sm:w-80">
-          <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
+          <FiSearch className="absolute left-2 top-2 text-primary" />
           <input
             type="text"
             placeholder="Search Leads"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+            className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
           />
         </div>
 
         {/* {hasPermission("User", "create") && (
           <button
             onClick={() => setFormOpen(!formOpen)}
-            className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
+            className="w-full sm:w-auto justify-center cursor-pointer bg-primary hover:bg-[#b38a37] text-black font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
           >
             <FiPlus />
             {formOpen ? "Close Form" : "Add lead"}
@@ -185,9 +151,9 @@ const UomMaster = () => {
         <AddUomModal onClose={() => setFormOpen(false)} onAdded={fetchLeads} />
       )} */}
 
-      <div className="overflow-x-auto rounded border border-[#d8b76a] shadow-sm">
+      <div className="overflow-x-auto rounded border border-primary shadow-sm">
         <table className="min-w-full text-[11px] ">
-          <thead className="bg-[#d8b76a]  text-[#292926] text-left whitespace-nowrap">
+          <thead className="bg-primary  text-secondary text-left whitespace-nowrap">
             <tr>
               <th className="px-2 py-1.5 ">#</th>
               <th className="px-2 py-1.5  ">Query Time</th>
@@ -216,15 +182,15 @@ const UomMaster = () => {
                 {leads.map((lead, index) => (
                   <tr
                     key={lead._id}
-                    className="border-t text-[11px] border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
+                    className="border-t text-[11px] border-primary hover:bg-gray-50 whitespace-nowrap"
                   >
-                    <td className="px-2 border-r border-[#d8b76a]">
+                    <td className="px-2 border-r border-primary">
                       {Number(pagination.currentPage - 1) *
                         Number(pagination.limit) +
                         index +
                         1}
                     </td>
-                    <td className="px-2 hidden md:table-cell  border-r border-[#d8b76a]">
+                    <td className="px-2 hidden md:table-cell  border-r border-primary">
                       {new Date(lead.QUERY_TIME).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
@@ -234,51 +200,53 @@ const UomMaster = () => {
                         hour12: true,
                       })}
                     </td>
-                    <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
+                    <td className="px-2  hidden md:table-cell border-r border-primary">
                       {lead.UNIQUE_QUERY_ID}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {lead.QUERY_TYPE}
+                    <td className="px-2 border-r border-primary">
+                      {QUERY_TYPE_MAP[lead.QUERY_TYPE] ||
+                        lead.QUERY_TYPE ||
+                        "-"}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
+                    <td className="px-2  border-r border-primary">
                       {lead.SENDER_NAME || "-"}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
+                    <td className="px-2  border-r border-primary">
                       {lead.SENDER_EMAIL || "-"}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
+                    <td className="px-2  border-r border-primary">
                       {lead.SENDER_MOBILE || "-"}
                     </td>
 
-                    <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
+                    <td className="px-2  hidden md:table-cell border-r border-primary">
                       {lead.rawData?.SENDER_CITY +
                         ", " +
                         lead.rawData?.SENDER_STATE || "-"}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
+                    <td className="px-2  border-r border-primary">
                       {lead.rawData.SUBJECT || "-"}
                     </td>
                     <td
-                      className="px-2 py-2 border-r border-[#d8b76a] max-w-xs md:max-w-[50px] truncate cursor-pointer text-blue-600"
+                      className="px-2 py-2 border-r border-primary max-w-xs md:max-w-[50px] truncate cursor-pointer text-blue-600 hover:underline"
                       onClick={() =>
                         setSelectedMessage(lead.rawData.QUERY_MESSAGE || "-")
                       }
                     >
-                      {lead.rawData.QUERY_MESSAGE || "-"}
+                      {(lead.rawData.QUERY_MESSAGE && "View") || "-"}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
+                    <td className="px-2  border-r border-primary">
                       {lead.rawData.QUERY_PRODUCT_NAME || "-"}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
+                    <td className="px-2  border-r border-primary">
                       {lead.rawData.QUERY_MCAT_NAME || "-"}
                     </td>
 
-                    <td className="px-2 mt-1.5 flex gap-3 text-sm text-[#d8b76a]">
+                    <td className="px-2 mt-1.5 flex gap-3 text-sm text-primary">
                       {hasPermission("lead", "update") ? (
                         <FiEdit
                           data-tooltip-id="statusTip"
                           data-tooltip-content="Edit"
-                          className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
+                          className="cursor-pointer text-primary hover:text-blue-600"
                           onClick={() => setEditUom(lead)}
                         />
                       ) : (
@@ -288,7 +256,7 @@ const UomMaster = () => {
                         <FiTrash2
                           data-tooltip-id="statusTip"
                           data-tooltip-content="Delete"
-                          className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                          className="cursor-pointer text-primary hover:text-red-600"
                           onClick={() => handleDelete(lead._id)}
                         />
                       ) : (
@@ -340,7 +308,7 @@ const UomMaster = () => {
               </span>
             </button>
             <h2 className="text-lg font-bold mb-2 text-primary">
-              Full Query Message
+              Query Message
             </h2>
             <div
               className="whitespace-pre-wrap text-sm text-gray-700"

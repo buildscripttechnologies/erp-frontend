@@ -19,6 +19,8 @@ import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
 import AttachmentsModal2 from "../AttachmentsModal2";
 import AddCO from "./AddCO";
+import { generateCOPdf } from "./generateCOPdf";
+import { ClipLoader } from "react-spinners";
 
 const CustomerOrder = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -37,6 +39,8 @@ const CustomerOrder = ({ isOpen }) => {
     totalResults: 0,
     limit: 10,
   });
+
+  const [downloading, setDownloading] = useState();
 
   const hasMountedRef = useRef(false);
 
@@ -144,69 +148,31 @@ const CustomerOrder = ({ isOpen }) => {
     }
   };
 
-  const handlePreviewBom = async (bomData) => {
+  const handleDownload = async (b) => {
+    setDownloading(true);
     try {
-      const blobUrl = await generateBomLP(bomData);
+      let p = await generateCOPdf(b);
+      const blob = p.blob;
+      const url = window.URL.createObjectURL(blob);
 
-      // Open a new tab with preview and print/download buttons
-      const printWindow = window.open("", "_blank");
+      // Open in new tab for preview
+      window.open(url, "_blank");
 
-      const html = `
-        <html>
-          <head>
-            <title>BOM Preview</title>
-            <style>
-              body { margin: 0; font-family: sans-serif; }
-              .controls {
-                padding: 10px;
-                background-color: #292926;
-                color: #d8b76a;
-                display: flex;
-                gap: 10px;
-                justify-content: center;
-              }
-              .controls button {
-                padding: 6px 12px;
-                font-size: 14px;
-                border: none;
-                cursor: pointer;
-                background-color: #d8b76a;
-                color: #292926;
-                border-radius: 4px;
-              }
-              iframe {
-                width: 100%;
-                height: calc(100vh - 50px);
-                border: none;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="controls">
-              <button onclick="document.getElementById('pdfFrame').contentWindow.print()">🖨️ Print</button>
-              <button onclick="downloadPdf()">⬇️ Download</button>
-            </div>
-            <iframe id="pdfFrame" src="${blobUrl}"></iframe>
-            <script>
-              function downloadPdf() {
-                const link = document.createElement('a');
-                link.href = '${blobUrl}';
-                link.download = '${
-                  bomData.bomNo + "_" + bomData.partyName || "Details"
-                }.pdf';
-                link.click();
-              }
-            </script>
-          </body>
-        </html>
-      `;
+      // Optionally, if you also want to allow download later:
+      // const a = document.createElement("a");
+      // a.href = url;
+      // a.download = `${po.poNo} Details.pdf`;
+      // document.body.appendChild(a);
+      // a.click();
+      // a.remove();
 
-      printWindow.document.open();
-      printWindow.document.write(html);
-      printWindow.document.close();
-    } catch (err) {
-      console.error("Error generating BOM PDF preview:", err);
-      toast.error("Failed to generate PDF preview.");
+      // Don’t revoke immediately, or the preview tab will break
+      // Instead, revoke after some delay
+      setTimeout(() => window.URL.revokeObjectURL(url), 60 * 1000);
+    } catch (error) {
+      console.error("Download failed:", error);
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -403,10 +369,18 @@ const CustomerOrder = ({ isOpen }) => {
                             )}
                           </td>
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-primary">
-                            <FaFileDownload
-                              //   onClick={() => handlePreviewBom(b)}
-                              className="cursor-pointer text-primary hover:text-green-600"
-                            />
+                            {b.status == "Completed" && (
+                              <>
+                                {expandedBOMId === b._id && downloading ? (
+                                  <ClipLoader size={11} color="#d8b76a" />
+                                ) : (
+                                  <FaFileDownload
+                                    onClick={() => handleDownload(b)}
+                                    className="cursor-pointer text-primary hover:text-green-600"
+                                  />
+                                )}
+                              </>
+                            )}
                             {hasPermission("Customer Order", "update") ? (
                               <FiEdit
                                 // onClick={() => setEditingBOM(b)}

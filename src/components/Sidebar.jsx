@@ -29,6 +29,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import {
+  LuMagnet,
   LuMapPinCheckInside,
   LuMapPinXInside,
   LuShoppingBag,
@@ -71,7 +72,7 @@ export function Sidebar({ isOpen }) {
       action: "read",
     },
     {
-      icon: FiHome,
+      icon: LuMagnet,
       label: "Leads",
       path: "/leads",
       module: "Leads",
