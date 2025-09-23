@@ -10,6 +10,7 @@ export const vendors = ["vendor 1", "vendor 2", "vendor 3"];
 
 export const availableModules = [
   "Dashboard",
+  "Leads",
   "Stock",
   "Customer Order",
   "CO Pendency",

@@ -71,6 +71,13 @@ export function Sidebar({ isOpen }) {
       action: "read",
     },
     {
+      icon: FiHome,
+      label: "Leads",
+      path: "/leads",
+      module: "Leads",
+      action: "read",
+    },
+    {
       icon: FiClipboard,
       label: "Stock Register",
       path: "/stock-register",

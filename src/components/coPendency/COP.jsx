@@ -9,8 +9,8 @@ import Toggle from "react-toggle";
 import PaginationControls from "../PaginationControls";
 // import BomDetailsSection from "./BomDetailsSection";
 // import AddBomModal from "./AddBOMModel";
-// import UpdateBomModal from "./UpdateBomModal";
-import { FaFileDownload } from "react-icons/fa";
+import UpdateBomModal from "../master/bom/UpdateBomModal";
+import { FaCheckCircle, FaFileDownload } from "react-icons/fa";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useRef } from "react";
@@ -18,18 +18,23 @@ import { useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
 import AttachmentsModal2 from "../AttachmentsModal2";
+import AddBomModal from "../master/bom/AddBOMModel";
+import { MdCancel, MdCheck } from "react-icons/md";
+import { IoMdCheckmarkCircle } from "react-icons/io";
+import { Tooltip } from "react-tooltip";
+
 // import AddCO from "./AddCO";
 
 const COP = ({ isOpen }) => {
   const { hasPermission } = useAuth();
 
-  const [BOMs, setBOMs] = useState([]);
+  const [COs, setCOs] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [bomModalItem, setBomModalItem] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
   const [editingBOM, setEditingBOM] = useState(null);
-  const [expandedBOMId, setExpandedBOMId] = useState(null);
+  const [expandedCOId, setExpandedCOId] = useState(null);
   const [openAttachments, setOpenAttachments] = useState(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -46,7 +51,7 @@ const COP = ({ isOpen }) => {
       return; // skip first debounce on mount
     }
     const debouncedSearch = debounce(() => {
-      fetchBOMs(1); // Always fetch from page 1 for new search
+      fetchCOs(1); // Always fetch from page 1 for new search
     }, 400); // 400ms delay
 
     debouncedSearch();
@@ -54,7 +59,7 @@ const COP = ({ isOpen }) => {
     return () => debouncedSearch.cancel(); // Cleanup on unmount/change
   }, [search]); // Re-run on search change
 
-  const fetchBOMs = async (page = 1, limit = pagination.limit) => {
+  const fetchCOs = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
       const res = await axios.get(
@@ -64,7 +69,7 @@ const COP = ({ isOpen }) => {
         toast.error(res.data.message);
         return;
       }
-      setBOMs(res.data.data || []);
+      setCOs(res.data.data || []);
       setPagination({
         currentPage: res.data.currentPage,
         totalPages: res.data.totalPages,
@@ -78,15 +83,15 @@ const COP = ({ isOpen }) => {
     }
   };
 
-  ScrollLock(showModal || editingBOM != null);
+  ScrollLock(bomModalItem != null);
 
   useEffect(() => {
-    fetchBOMs();
+    fetchCOs();
   }, []);
 
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
-    fetchBOMs(page);
+    fetchCOs(page);
   };
 
   // const filtered = BOMs.filter(
@@ -98,11 +103,11 @@ const COP = ({ isOpen }) => {
   //     c.createdBy?.fullName.toLowerCase().includes(search.toLowerCase())
   // );
 
-  const handleToggleStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === true ? false : true;
+  const handleReject = async (id) => {
+    if (!window.confirm("Are you sure you want to Reject this CO?")) return;
     try {
-      const res = await axios.patch(`/boms/edit/${id}`, {
-        isActive: newStatus,
+      const res = await axios.patch(`/cos/update/${id}`, {
+        status: "Rejected",
       });
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -110,11 +115,11 @@ const COP = ({ isOpen }) => {
       }
 
       if (res.data.status == 200) {
-        toast.success(`BOM status updated`);
+        toast.success(`CO Status Updated`);
 
         // ✅ Update local state without refetch
-        setBOMs((prev) =>
-          prev.map((c) => (c._id === id ? { ...c, isActive: newStatus } : c))
+        setCOs((prev) =>
+          prev.map((c) => (c._id === id ? { ...c, status: "Rejected" } : c))
         );
       } else {
         toast.error("Failed to update status");
@@ -135,78 +140,12 @@ const COP = ({ isOpen }) => {
 
       if (res.data.status == 200) {
         toast.success(`BOM Deleted Successfully`);
-        fetchBOMs(pagination.currentPage);
+        fetchCOs(pagination.currentPage);
       } else {
         toast.error("Failed to Delete BOM");
       }
     } catch (err) {
       toast.error("Failed to Delete BOM");
-    }
-  };
-
-  const handlePreviewBom = async (bomData) => {
-    try {
-      const blobUrl = await generateBomLP(bomData);
-
-      // Open a new tab with preview and print/download buttons
-      const printWindow = window.open("", "_blank");
-
-      const html = `
-        <html>
-          <head>
-            <title>BOM Preview</title>
-            <style>
-              body { margin: 0; font-family: sans-serif; }
-              .controls {
-                padding: 10px;
-                background-color: #292926;
-                color: #d8b76a;
-                display: flex;
-                gap: 10px;
-                justify-content: center;
-              }
-              .controls button {
-                padding: 6px 12px;
-                font-size: 14px;
-                border: none;
-                cursor: pointer;
-                background-color: #d8b76a;
-                color: #292926;
-                border-radius: 4px;
-              }
-              iframe {
-                width: 100%;
-                height: calc(100vh - 50px);
-                border: none;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="controls">
-              <button onclick="document.getElementById('pdfFrame').contentWindow.print()">🖨️ Print</button>
-              <button onclick="downloadPdf()">⬇️ Download</button>
-            </div>
-            <iframe id="pdfFrame" src="${blobUrl}"></iframe>
-            <script>
-              function downloadPdf() {
-                const link = document.createElement('a');
-                link.href = '${blobUrl}';
-                link.download = '${
-                  bomData.bomNo + "_" + bomData.partyName || "Details"
-                }.pdf';
-                link.click();
-              }
-            </script>
-          </body>
-        </html>
-      `;
-
-      printWindow.document.open();
-      printWindow.document.write(html);
-      printWindow.document.close();
-    } catch (err) {
-      console.error("Error generating BOM PDF preview:", err);
-      toast.error("Failed to generate PDF preview.");
     }
   };
 
@@ -223,20 +162,12 @@ const COP = ({ isOpen }) => {
             <FiSearch className="absolute left-3 top-2.5 text-primary" />
             <input
               type="text"
-              placeholder="Search by BOM Number or Partyname..."
+              placeholder="Search by CO Number or Partyname..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:outline-none"
             />
           </div>
-          {/* {hasPermission("BOM", "write") && (
-            <button
-              onClick={() => setShowModal(true)}
-              className="bg-primary hover:bg-primary/80 justify-center text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
-            >
-              <FiPlus /> Add Customer Order
-            </button>
-          )} */}
         </div>
 
         <div className="relative overflow-x-auto  overflow-y-auto rounded border border-primary shadow-sm">
@@ -274,13 +205,13 @@ const COP = ({ isOpen }) => {
                   />
                 ) : (
                   <>
-                    {BOMs.map((b, i) => (
+                    {COs.map((b, i) => (
                       <React.Fragment key={b._id}>
                         <tr
                           className="border-t border-primary hover:bg-gray-50 cursor-pointer"
                           onClick={() =>
-                            setExpandedBOMId(
-                              expandedBOMId === b._id ? null : b._id
+                            setExpandedCOId(
+                              expandedCOId === b._id ? null : b._id
                             )
                           }
                         >
@@ -309,21 +240,21 @@ const COP = ({ isOpen }) => {
                               hour12: true,
                             })}
                           </td>
-                          <td className="px-[8px] border-r border-primary capitalize ">
+                          <td className="px-[8px] border-r border-primary  ">
                             {b.sampleNo || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary  capitalize">
+                          <td className="px-[8px] border-r border-primary  ">
                             {b.coNo || "-"}
                           </td>
 
-                          <td className="px-[8px] border-r border-primary  capitalize">
+                          <td className="px-[8px] border-r border-primary  ">
                             {b.partyName || "-"}
                           </td>
 
-                          <td className="px-[8px] border-r border-primary capitalize ">
+                          <td className="px-[8px] border-r border-primary  ">
                             {b.productName || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary  capitalize">
+                          <td className="px-[8px] border-r border-primary  ">
                             {b.orderQty || "-"}
                           </td>
                           {/* <td className="px-[8px] border-r border-primary ">
@@ -379,48 +310,47 @@ const COP = ({ isOpen }) => {
                           <td className="px-[8px] border-r border-primary ">
                             {b.createdBy?.fullName || "-"}
                           </td>
-                          {/* <td className="px-[8px] border-r border-primary ">
-                            {Array.isArray(b.file) && b.file.length > 0 ? (
-                              <button
-                                onClick={() => setOpenAttachments(b.file)}
-                                className="cursor-pointer hover:text-primary hover:underline text-center items-center justify-center"
-                              >
-                                View
-                              </button>
-                            ) : (
-                              "-"
-                            )}
 
-                            {openAttachments && (
-                              <AttachmentsModal2
-                                attachments={openAttachments}
-                                onClose={() => setOpenAttachments(null)}
-                              />
-                            )}
-                          </td> */}
-                          <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-primary">
-                            <FaFileDownload
+                          <td className="px-[8px] pt-1.5   flex gap-2 text-primary text-base">
+                            {/* <FaFileDownload
                               //   onClick={() => handlePreviewBom(b)}
                               className="cursor-pointer text-primary hover:text-green-600"
-                            />
-                            {hasPermission("BOM", "update") ? (
-                              <FiEdit
-                                // onClick={() => setEditingBOM(b)}
+                            /> */}
+                            {hasPermission("CO Pendency", "update") &&
+                            b.status == "Pending" ? (
+                              <IoMdCheckmarkCircle
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Approve"
+                                onClick={() => setBomModalItem(b)}
                                 className="cursor-pointer text-primary hover:text-blue-600"
                               />
                             ) : (
                               "-"
                             )}
-                            {hasPermission("BOM", "delete") ? (
-                              <FiTrash2
-                                // onClick={() => handleDelete(b._id)}
+                            {hasPermission("CO Pendency", "update") &&
+                            b.status == "Pending" ? (
+                              <MdCancel
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Reject"
+                                onClick={() => handleReject(b._id)}
                                 className="cursor-pointer text-primary hover:text-red-600"
                               />
                             ) : (
                               "-"
                             )}
+                            <Tooltip
+                              id="statusTip"
+                              place="top"
+                              style={{
+                                backgroundColor: "#292926",
+                                color: "#d8b76a",
+                                fontSize: "12px",
+                                fontWeight: "bold",
+                              }}
+                            />
                           </td>
                         </tr>
+
                         {/* {expandedBOMId === b._id && (
                           <tr className="">
                             <td colSpan="100%">
@@ -430,13 +360,13 @@ const COP = ({ isOpen }) => {
                         )} */}
                       </React.Fragment>
                     ))}
-                    {BOMs.length === 0 && (
+                    {COs.length === 0 && (
                       <tr>
                         <td
                           colSpan="16"
                           className="text-center py-4 text-gray-500"
                         >
-                          No BOMs found.
+                          No COs found.
                         </td>
                       </tr>
                     )}
@@ -446,19 +376,15 @@ const COP = ({ isOpen }) => {
             </table>
           </div>
         </div>
-        {editingBOM && (
-          <UpdateBomModal
-            bom={editingBOM}
-            onClose={() => setEditingBOM(null)}
+        {bomModalItem && (
+          <AddBomModal
+            coData={bomModalItem}
+            onClose={() => setBomModalItem(null)}
             onSuccess={() => {
-              fetchBOMs(pagination.currentPage); // re-fetch or refresh list
+              fetchCOs(pagination.currentPage); // re-fetch or refresh list
               setEditingBOM(null);
             }}
           />
-        )}
-
-        {showModal && (
-          <AddCO onClose={() => setShowModal(false)} onSuccess={fetchBOMs} />
         )}
 
         <PaginationControls
@@ -468,11 +394,11 @@ const COP = ({ isOpen }) => {
           totalResults={pagination.totalResults}
           onEntriesChange={(limit) => {
             setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-            fetchBOMs(1, limit);
+            fetchCOs(1, limit);
           }}
           onPageChange={(page) => {
             setPagination((prev) => ({ ...prev, currentPage: page }));
-            fetchBOMs(page, pagination.limit);
+            fetchCOs(page, pagination.limit);
           }}
         />
       </div>
