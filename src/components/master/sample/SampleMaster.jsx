@@ -151,7 +151,9 @@ const SampleMaster = ({ isOpen }) => {
 
   const handlePreviewSample = async (SampleData) => {
     try {
-      const blobUrl = await generateSample(SampleData);
+      const res = await axios.get("/settings/letterpad");
+      const letterpadUrl = res.data.path;
+      const blobUrl = await generateSample(SampleData, letterpadUrl);
 
       // Open a new tab with preview and print/download buttons
       const printWindow = window.open("", "_blank");

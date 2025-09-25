@@ -120,7 +120,9 @@ const Receive = ({ onClose, onAdded }) => {
                   control: (base, state) => ({
                     ...base,
                     borderColor: "var(--color-primary)",
-                    boxShadow: state.isFocused ? "0 0 0 1px var(--color-primary)" : "none",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 1px var(--color-primary)"
+                      : "none",
                     "&:hover": { borderColor: "var(--color-primary)" },
                   }),
                 }}
@@ -130,7 +132,7 @@ const Receive = ({ onClose, onAdded }) => {
 
           {/* Consumption Table */}
           {consumptionTable && (
-            <div className="bg-white border border-primary rounded shadow pt-3  px-4  mb-4 text-[11px] text-black">
+            <div className="bg-white border border-primary rounded shadow pt-3  px-4  mb-4 text-[11px] text-black  overflow-x-auto">
               <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
                 Raw Material Consumption
               </h3>

@@ -146,7 +146,9 @@ const BomMaster = ({ isOpen }) => {
 
   const handlePreviewBom = async (bomData) => {
     try {
-      const blobUrl = await generateBomLP(bomData);
+      const res = await axios.get("/settings/letterpad");
+      const letterpadUrl = res.data.path;
+      const blobUrl = await generateBomLP(bomData, letterpadUrl);
 
       // Open a new tab with preview and print/download buttons
       const printWindow = window.open("", "_blank");

@@ -36,6 +36,7 @@ export const availableModules = [
   "BOM",
   "Vendor",
   "Customer",
+  "Settings",
 ];
 
 export const availableActions = ["read", "write", "update", "delete"];
@@ -55,3 +56,11 @@ export const slider = [
 export const plastic = ["plastic", "non woven", "ld cord"];
 
 export const zipper = ["zipper", "webbing", "inner dori"];
+
+export const QUERY_TYPE_MAP = {
+  W: "Direct Enquiries",
+  B: "Buy-Leads",
+  P: "PNS Calls",
+  BIZ: "Catalog Views",
+  WA: "WhatsApp Enquiries",
+};

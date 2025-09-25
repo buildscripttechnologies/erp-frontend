@@ -301,7 +301,7 @@ const MaterialReceive = () => {
                           index +
                           1}
                       </td>
-                      <td className="px-2 hidden md:table-cell  border-r border-primary">
+                      <td className="px-2   border-r border-primary">
                         {new Date(mr.createdAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",

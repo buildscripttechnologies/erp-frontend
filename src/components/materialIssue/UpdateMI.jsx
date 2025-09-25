@@ -239,7 +239,7 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
 
           {/* Consumption Table */}
           {consumptionTable && (
-            <div className="bg-white border border-primary rounded shadow pt-3  px-4  mb-4 text-[11px] text-[#292926]">
+            <div className="bg-white border border-primary rounded shadow pt-3  px-4  mb-4 text-[11px] text-[#292926]  overflow-x-auto">
               <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
                 Raw Material Consumption
               </h3>
@@ -480,7 +480,7 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
 
           {/* Item details */}
           {checkedSkus.length > 0 && (
-            <div className="bg-white border border-primary rounded shadow pt-3 pb-4 px-4  mb-2 text-[11px] text-[#292926]">
+            <div className="bg-white border border-primary rounded shadow pt-3 pb-4 px-4  mb-2 text-[11px] text-[#292926]  overflow-x-auto">
               {/* Product Details Table */}
               <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
                 Product Details (Raw Material / SFG)

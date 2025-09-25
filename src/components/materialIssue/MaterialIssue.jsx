@@ -259,7 +259,7 @@ const MaterialIssue = () => {
                           index +
                           1}
                       </td>
-                      <td className="px-2 hidden md:table-cell  border-r border-primary">
+                      <td className="px-2   border-r border-primary">
                         {new Date(mi.createdAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
@@ -269,7 +269,7 @@ const MaterialIssue = () => {
                           hour12: true,
                         })}
                       </td>
-                      <td className="px-2  hidden md:table-cell border-r border-primary">
+                      <td className="px-2   border-r border-primary">
                         {new Date(mi.updatedAt).toLocaleString("en-IN", {
                           day: "2-digit",
                           month: "short",
