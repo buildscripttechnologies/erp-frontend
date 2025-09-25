@@ -11,7 +11,7 @@ const TERMS = `1. I Khodal Bag Pvt. Ltd. submission of the purchase Order is con
 6. I Khodal Bag Pvt. Ltd. may terminate this Purchase Order for no reason or for any reason, upon 15 days written notice to Supplier. Upon receipt of notice of such termination, Supplier will inform I Khodal Bag Pvt. Ltd. of the extent to which it has completed performance as of the date of the notice, and Supplier will collect and deliver to I Khodal Bag Pvt. Ltd. whatever Work then exists, I Khodal Bag Pvt. Ltd. will pay Supplier for all Work performed and accepted through the effective date of the termination, provided that I Khodal Bag Pvt. Ltd. will not be obligated to pay any more than the payment that would have become due had Supplier completed and I Khodal Bag Pvt. Ltd. had accepted the Work. I Khodal Bag Pvt. Ltd. will have no further payment obligation in connection with any termination. 
 7. Payment credit period is stipulated as within 30 days from the receipt of goods `;
 
-export const generateCOPdf = async (co) => {
+export const generateCOPdf = async (co, letterpadUrl) => {
   const doc = new jsPDF("portrait", "mm", "a4");
   const margin = 6;
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -25,8 +25,8 @@ export const generateCOPdf = async (co) => {
   };
 
   // Letterpad images
-  const lpFirstPage = await getBase64ImageFromPDF("/lp2.pdf", 0);
-  const lpLastPage = await getBase64ImageFromPDF("/lp2.pdf", 1);
+  const lpFirstPage = await getBase64ImageFromPDF(letterpadUrl, 0);
+  const lpLastPage = await getBase64ImageFromPDF(letterpadUrl, 1);
 
   const addLetterPad = (isLast = false) => {
     const img = isLast ? lpLastPage : lpFirstPage;

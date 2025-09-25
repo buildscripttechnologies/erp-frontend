@@ -36,6 +36,7 @@ export const availableModules = [
   "BOM",
   "Vendor",
   "Customer",
+  "Settings",
 ];
 
 export const availableActions = ["read", "write", "update", "delete"];

@@ -4,17 +4,17 @@ import { getBase64ImageFromPDF } from "./convertPDFPageToImage"; // You need thi
 import { calculateRate } from "./calc";
 import { capitalize } from "lodash";
 
-export const generateBomLP = async (bomData) => {
+export const generateBomLP = async (bomData, letterpadUrl) => {
   const doc = new jsPDF("portrait", "mm", "a4");
   const margin = 6;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  console.log("bom file", bomData.file);
+  // console.log("bom file", bomData.file);
 
   // Load both pages of lp2.pdf
-  const lp2Page1 = await getBase64ImageFromPDF("/lp2.pdf", 0);
-  const lp2Page2 = await getBase64ImageFromPDF("/lp2.pdf", 1);
+  const lp2Page1 = await getBase64ImageFromPDF(letterpadUrl, 0);
+  const lp2Page2 = await getBase64ImageFromPDF(letterpadUrl, 1);
 
   // Helper to draw lp2 background
   const addBackground = (pageNo) => {

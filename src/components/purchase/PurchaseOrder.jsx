@@ -132,7 +132,9 @@ const PurchaseOrder = ({ isOpen }) => {
   const handleDownload = async (po) => {
     setDownloading(true);
     try {
-      let p = await generateLPPO(po);
+      const res = await axios.get("/settings/letterpad");
+      const letterpadUrl = res.data.path;
+      let p = await generateLPPO(po, letterpadUrl);
       const blob = p.blob;
       const url = window.URL.createObjectURL(blob);
 

@@ -38,7 +38,7 @@ import { BiExport, BiImport, BiSolidPurchaseTag } from "react-icons/bi";
 
 import { GiCutDiamond } from "react-icons/gi";
 import { TbTruckDelivery } from "react-icons/tb";
-import { MdAssignmentInd, MdPrint } from "react-icons/md";
+import { MdAssignmentInd, MdOutlineSettings, MdPrint } from "react-icons/md";
 import { RiBillFill, RiScissorsCutLine } from "react-icons/ri";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { GrDomain } from "react-icons/gr";
@@ -283,6 +283,13 @@ export function Sidebar({ isOpen }) {
           action: "read",
         },
       ],
+    },
+    {
+      icon: MdOutlineSettings,
+      label: "Settings",
+      module: "Settings",
+      path: "/settings",
+      action: "read",
     },
   ];
 

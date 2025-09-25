@@ -151,7 +151,9 @@ const CustomerOrder = ({ isOpen }) => {
   const handleDownload = async (b) => {
     setDownloading(true);
     try {
-      let p = await generateCOPdf(b);
+      const res = await axios.get("/settings/letterpad");
+      const letterpadUrl = res.data.path;
+      let p = await generateCOPdf(b, letterpadUrl);
       const blob = p.blob;
       const url = window.URL.createObjectURL(blob);
 

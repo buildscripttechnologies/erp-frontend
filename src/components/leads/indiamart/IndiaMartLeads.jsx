@@ -190,7 +190,7 @@ const UomMaster = () => {
                         index +
                         1}
                     </td>
-                    <td className="px-2 hidden md:table-cell  border-r border-primary">
+                    <td className="px-2   border-r border-primary">
                       {new Date(lead.QUERY_TIME).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
@@ -200,7 +200,7 @@ const UomMaster = () => {
                         hour12: true,
                       })}
                     </td>
-                    <td className="px-2  hidden md:table-cell border-r border-primary">
+                    <td className="px-2   border-r border-primary">
                       {lead.UNIQUE_QUERY_ID}
                     </td>
                     <td className="px-2 border-r border-primary">
@@ -218,7 +218,7 @@ const UomMaster = () => {
                       {lead.SENDER_MOBILE || "-"}
                     </td>
 
-                    <td className="px-2  hidden md:table-cell border-r border-primary">
+                    <td className="px-2   border-r border-primary">
                       {lead.rawData?.SENDER_CITY +
                         ", " +
                         lead.rawData?.SENDER_STATE || "-"}

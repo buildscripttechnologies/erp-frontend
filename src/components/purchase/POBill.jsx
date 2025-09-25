@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 import { generateLPPO } from "./generateLPPO";
 import { FaArrowCircleRight, FaRegArrowAltCircleRight } from "react-icons/fa";
+import axios from "../../utils/axios";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
@@ -27,8 +28,10 @@ export default function PurchaseOrderBill({ po, onClose }) {
 
   useEffect(() => {
     async function setUrl() {
+      const res = await axios.get("/settings/letterpad");
+      const letterpadUrl = res.data.path;
       if (po) {
-        let p = await generateLPPO(po);
+        let p = await generateLPPO(po, letterpadUrl);
         setPdfUrl(p.url);
       }
     }

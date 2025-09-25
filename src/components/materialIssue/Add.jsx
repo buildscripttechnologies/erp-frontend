@@ -157,7 +157,7 @@ const Add = ({ onClose, onAdded }) => {
       <div
         className={`bg-white w-[92vw]  ${
           itemDetails ? "max-w-6xl" : "max-w-2xl"
-        } rounded-lg p-6 border border-primary overflow-y-auto max-h-[90vh] `}
+        } rounded-lg p-6 border border-primary overflow-auto max-h-[90vh] `}
       >
         <h2 className="text-xl font-bold mb-4 text-primary">Issue Material</h2>
 
@@ -219,11 +219,11 @@ const Add = ({ onClose, onAdded }) => {
 
           {/* Consumption Table */}
           {consumptionTable && (
-            <div className="bg-white border border-primary rounded shadow pt-3  px-4  mb-4 text-[11px] text-black">
+            <div className="bg-white border border-primary rounded shadow pt-3  px-4  mb-4 text-[11px] text-black  overflow-x-auto">
               <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
                 Raw Material Consumption
               </h3>
-              <table className="w-full mb-4 text-[11px] border text-left">
+              <table className="w-full mb-4 text-[11px] border text-left ">
                 <thead className="bg-primary/70">
                   <tr>
                     <th className="px-2 py-1 border-r border-primary">
@@ -456,7 +456,7 @@ const Add = ({ onClose, onAdded }) => {
 
           {/* Item details */}
           {checkedSkus.length > 0 && (
-            <div className="bg-white border border-primary rounded shadow pt-3 pb-4 px-4  mb-2 text-[11px] text-black">
+            <div className="bg-white border border-primary rounded shadow pt-3 pb-4 px-4  mb-2 text-[11px] text-black overflow-x-auto">
               {/* Product Details Table */}
               <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
                 Product Details (Raw Material / SFG)
