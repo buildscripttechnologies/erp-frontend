@@ -104,7 +104,6 @@ const JobDetails = ({ MI, filter, fetchMis }) => {
     return permissions;
   };
   const actions = allowedActions(MI);
-  console.log("actions", actions);
 
   return (
     <div className="bg-white border border-primary rounded shadow pt-3 pb-4 px-4 mx-2 mb-2 text-[11px] text-black">
@@ -149,7 +148,7 @@ const JobDetails = ({ MI, filter, fetchMis }) => {
       </div>
 
       {/* Table */}
-      <table className="w-full text-[11px] border text-left">
+      <table className="w-full text-[11px] border text-left  whitespace-nowrap">
         <thead className="bg-primary/70">
           <tr>
             {["production"].includes(filter) ? null : (

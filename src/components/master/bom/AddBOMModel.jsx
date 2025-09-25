@@ -4,7 +4,7 @@ import Select from "react-select";
 import toast from "react-hot-toast";
 import CreatableSelect from "react-select/creatable";
 import { FiTrash2 } from "react-icons/fi";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader, PuffLoader } from "react-spinners";
 import { capitalize } from "lodash";
 import { calculateRate } from "../../../utils/calc";
 import { generateConsumptionTable } from "../../../utils/consumptionTable";
@@ -538,8 +538,8 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
           </button>
         </div>
         {prefillLoading && (
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-50 ">
-            <ClipLoader size={50} color="#fff" />
+          <div className="absolute inset-0 bg-gray-50/60 flex items-center justify-center z-50 ">
+            <PuffLoader size={60} color="#d8b76a" />
           </div>
         )}
 
@@ -1241,12 +1241,12 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
             <button
               disabled={loading}
               onClick={handleSubmit}
-              className="bg-primary text-secondary px-6 py-2 rounded hover:bg-primary/80 cursor-pointer"
+              className="flex items-center bg-primary text-secondary px-6 py-2 rounded hover:bg-primary/80 cursor-pointer"
             >
               {loading ? (
                 <>
-                  <span className="mr-2">Saving...</span>
-                  <ClipLoader size={20} color="secondary" />
+                  <span className="mr-2">Saving</span>
+                  <BeatLoader size={5} color="#292926" />
                 </>
               ) : (
                 "Save"

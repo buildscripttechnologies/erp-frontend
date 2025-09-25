@@ -21,8 +21,6 @@ const StageModal = ({
 
   // 👉 Helper: get latest stage of an item
   const getCurrentStage = (itm) => {
-    console.log("itm", itm);
-
     if (!itm.stages || itm.stages.length === 0) return null;
     return itm.stages[itm.stages.length - 1];
   };
@@ -30,7 +28,6 @@ const StageModal = ({
   // 👉 Define next stage flow
   const getNextStageName = (itm) => {
     const current = getCurrentStage(itm);
-    console.log("current stage", current);
 
     if (!current) return null;
 
@@ -239,7 +236,7 @@ const StageModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl p-6">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl p-6 ">
         <h2 className="text-lg font-bold mb-4 text-primary">Confirm Update</h2>
 
         <p className="mb-4 text-sm text-gray-700">
@@ -270,7 +267,7 @@ const StageModal = ({
         </p>
 
         <div className="overflow-x-auto mb-4">
-          <table className="w-full text-xs border border-primary">
+          <table className="w-full text-xs border border-primary  whitespace-nowrap">
             <thead className="bg-primary/70 text-black text-left">
               <tr>
                 <th className="px-2 py-1">#</th>

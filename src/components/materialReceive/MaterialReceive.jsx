@@ -111,7 +111,6 @@ const MaterialReceive = () => {
       });
 
       const res = await axios.get(`/mr/get-all?${queryParams.toString()}`);
-      console.log("mis res", res);
 
       if (res.data.status == 403) {
         toast.error(res.data.message);

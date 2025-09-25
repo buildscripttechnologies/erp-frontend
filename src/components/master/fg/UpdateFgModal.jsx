@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
 import { FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 import Select from "react-select";
 import { calculateRate } from "../../../utils/calc";
 import { zipper, plastic, slider } from "../../../data/dropdownData";
@@ -1209,8 +1209,8 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
               >
                 {loading ? (
                   <>
-                    <span className="mr-2">Saving...</span>
-                    <ClipLoader size={20} color="#292926" />
+                    <span className="mr-2">Saving</span>
+                    <BeatLoader size={5} color="#292926" />
                   </>
                 ) : (
                   "Update"

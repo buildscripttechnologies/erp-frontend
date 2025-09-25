@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FiX } from "react-icons/fi";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 
 const AddRoleModal = ({ onClose, onAdded }) => {
   const [name, setName] = useState("");
@@ -61,8 +61,8 @@ const AddRoleModal = ({ onClose, onAdded }) => {
           >
             {loading ? (
               <>
-                <span className="mr-2">Saving...</span>
-                <ClipLoader size={20} color="#292926" />
+                <span className="mr-2">Saving</span>
+                <BeatLoader size={5} color="#292926" />
               </>
             ) : (
               "Save"

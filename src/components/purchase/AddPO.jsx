@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "../../utils/axios";
 import Select from "react-select";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { add } from "lodash";
 import DatePicker from "react-datepicker";
@@ -559,12 +559,12 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-primary hover:bg-primary/80 text-secondary font-semibold rounded cursor-pointer"
+              className="flex items-center px-6 py-2 bg-primary hover:bg-primary/80 text-secondary font-semibold rounded cursor-pointer"
             >
               {loading ? (
                 <>
-                  <span className="mr-2">Saving...</span>
-                  <ClipLoader size={20} color="#292926" />
+                  <span className="mr-2">Saving</span>
+                  <BeatLoader size={5} color="#292926" />
                 </>
               ) : (
                 "Save"

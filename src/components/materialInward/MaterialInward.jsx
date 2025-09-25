@@ -19,7 +19,7 @@ import { FaBarcode } from "react-icons/fa";
 import { useRef } from "react";
 import UpdateStockModal from "./UpdateStockModal";
 import { makeLabelPdf } from "./makeStickerPdf";
-import { ClipLoader } from "react-spinners";
+import { PulseLoader } from "react-spinners";
 
 const MaterialInward = () => {
   const { hasPermission } = useAuth();
@@ -374,7 +374,7 @@ const MaterialInward = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(13).fill({})}
+                columns={Array(15).fill({})}
               />
             ) : (
               <>
@@ -455,7 +455,7 @@ const MaterialInward = () => {
                         className="text-[#d8b76a] hover:underline text-[11px] cursor-pointer"
                       >
                         {generatingId === stock._id ? (
-                          <ClipLoader size={11} color="primary" />
+                          <PulseLoader size={4} color="#d8b76a" />
                         ) : (
                           <FaBarcode
                             data-tooltip-id="statusTip"

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "../../../utils/axios";
 import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 
 const AddLocationModal = ({ onClose, onAdded }) => {
   const [formList, setFormList] = useState([
@@ -164,8 +164,8 @@ const AddLocationModal = ({ onClose, onAdded }) => {
             >
               {loading ? (
                 <>
-                  <span className="mr-2">Saving...</span>
-                  <ClipLoader size={20} color="#292926" />
+                  <span className="mr-2">Saving</span>
+                  <BeatLoader size={5} color="#292926" />
                 </>
               ) : (
                 "Save Locations"

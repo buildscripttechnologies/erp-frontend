@@ -10,8 +10,6 @@ const LetterpadSetting = () => {
     try {
       const res = await axios.get("/settings/letterpad"); // GET returns path of current letterpad
 
-      console.log("res", res);
-
       if (res.data?.path) {
         setCurrentLetterpad(res.data.path);
       } else {
@@ -73,7 +71,7 @@ const LetterpadSetting = () => {
             download="lp2.pdf"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow hover:bg-primary/90 transition"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-secondary shadow hover:bg-primary/90 transition"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -118,7 +116,7 @@ const LetterpadSetting = () => {
             type="file"
             accept="application/pdf"
             onChange={handleFileChange}
-            className="block w-full cursor-pointer rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-primary/90"
+            className="block w-full cursor-pointer rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-black hover:file:bg-primary/90"
           />
           {file && (
             <p className="mt-2 text-xs text-gray-500">
@@ -130,7 +128,7 @@ const LetterpadSetting = () => {
         <button
           onClick={handleUpload}
           disabled={!file}
-          className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-white shadow hover:bg-primary/90 transition disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-secondary shadow hover:bg-primary/90 transition disabled:cursor-not-allowed disabled:opacity-50"
         >
           Update Letterpad
         </button>

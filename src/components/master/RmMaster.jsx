@@ -22,7 +22,7 @@ import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
 import AttachmentsModal from "../AttachmentsModal.jsx";
 import ScrollLock from "../ScrollLock.js";
 import PaginationControls from "../PaginationControls.jsx";
-import { ClipLoader } from "react-spinners";
+import { ClipLoader, PulseLoader } from "react-spinners";
 import { span } from "framer-motion/client";
 import AttachmentsModal2 from "../AttachmentsModal2.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -374,9 +374,9 @@ const RmMaster = ({ isOpen }) => {
                 className="bg-primary hover:bg-primary/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
               >
                 {downloading ? (
-                  <span className="flex justify-center items-center gap-1">
+                  <span className="flex justify-center items-center gap-1 px-4 py-2">
                     {/* Downloading */}
-                    <ClipLoader size={20} color="#292926" />
+                    <PulseLoader size={5} color="#292926" />
                   </span>
                 ) : (
                   "Download"
@@ -399,7 +399,7 @@ const RmMaster = ({ isOpen }) => {
             {sampleDownloading ? (
               <span className="flex justify-center items-center gap-1">
                 {/* Downloading */}
-                <ClipLoader size={20} color="#292926" />
+                <PulseLoader size={5} color="#292926" />
               </span>
             ) : (
               <>
@@ -443,7 +443,7 @@ const RmMaster = ({ isOpen }) => {
             {uploading ? (
               <span className="flex justify-center items-center gap-1">
                 {/* Downloading */}
-                <ClipLoader size={20} color="#292926" />
+                <PulseLoader size={5} color="#292926" />
               </span>
             ) : (
               "Submit"

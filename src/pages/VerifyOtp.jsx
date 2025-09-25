@@ -3,7 +3,7 @@ import AuthLayout from "../layouts/AuthLayout";
 import axios from "../utils/axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 import { useAuth } from "../context/AuthContext";
 
 const VerifyOtp = () => {
@@ -134,8 +134,8 @@ const VerifyOtp = () => {
         >
           {loading ? (
             <>
-              <span className="mr-2">Verifying...</span>
-              <ClipLoader size={20} color="#292926" />
+              <span className="mr-2">Verifying</span>
+              <BeatLoader size={5} color="#292926" />
             </>
           ) : (
             "Verify OTP"

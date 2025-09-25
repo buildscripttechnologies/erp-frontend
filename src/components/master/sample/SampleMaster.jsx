@@ -18,6 +18,7 @@ import { debounce } from "lodash";
 import { useRef } from "react";
 
 import { useLocation, useNavigate } from "react-router-dom";
+import { PulseLoader } from "react-spinners";
 
 const SampleMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -35,6 +36,7 @@ const SampleMaster = ({ isOpen }) => {
     totalResults: 0,
     limit: 10,
   });
+  const [downloading, setDownloading] = useState();
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -150,6 +152,7 @@ const SampleMaster = ({ isOpen }) => {
   };
 
   const handlePreviewSample = async (SampleData) => {
+    setDownloading(true);
     try {
       const res = await axios.get("/settings/letterpad");
       const letterpadUrl = res.data.path;
@@ -214,6 +217,8 @@ const SampleMaster = ({ isOpen }) => {
     } catch (err) {
       console.error("Error generating Sample PDF preview:", err);
       toast.error("Failed to generate PDF preview.");
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -273,7 +278,7 @@ const SampleMaster = ({ isOpen }) => {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={Array(9).fill({})}
+                    columns={Array(11).fill({})}
                   />
                 ) : (
                   <>
@@ -365,10 +370,14 @@ const SampleMaster = ({ isOpen }) => {
                             )}
                           </td>
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-primary">
-                            <FaFileDownload
-                              onClick={() => handlePreviewSample(b)}
-                              className="cursor-pointer text-primary hover:text-green-600"
-                            />
+                            {expandedSampleId === b._id && downloading ? (
+                              <PulseLoader size={4} color="#d8b76a" />
+                            ) : (
+                              <FaFileDownload
+                                onClick={() => handlePreviewSample(b)}
+                                className="cursor-pointer text-primary hover:text-green-600"
+                              />
+                            )}
                             {hasPermission("Sample", "update") ? (
                               <FiEdit
                                 onClick={() => setEditingSample(b)}

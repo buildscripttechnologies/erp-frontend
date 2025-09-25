@@ -1,6 +1,4 @@
 export const getBase64ImageFromPDF = (pdfPath, pageNumber = 0) => {
-  console.log("pdfpath", pdfPath);
-
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");

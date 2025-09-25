@@ -3,7 +3,7 @@ import AuthLayout from "../layouts/AuthLayout";
 import axios from "../utils/axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const Register = () => {
@@ -165,8 +165,8 @@ const Register = () => {
         >
           {loading ? (
             <>
-              <span className="mr-2">Registering User...</span>
-              <ClipLoader size={20} color="#292926" />
+              <span className="mr-2">Registering User</span>
+              <BeatLoader size={5} color="#292926" />
             </>
           ) : (
             "Register"
