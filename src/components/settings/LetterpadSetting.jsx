@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../utils/axios";
 import { getBase64ImageFromPDF } from "../../utils/convertPDFPageToImage";
-import { BeatLoader } from "react-spinners";
+import { BeatLoader, PuffLoader } from "react-spinners";
 import toast from "react-hot-toast";
 
 const LetterpadSetting = () => {
   const [file, setFile] = useState(null);
   const [currentLetterpad, setCurrentLetterpad] = useState(null);
   const [previewImg, setPreviewImg] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
@@ -75,14 +75,14 @@ const LetterpadSetting = () => {
   if (loading) {
     return (
       <div className="p-6 flex items-center justify-center">
-        <BeatLoader color="#3B82F6" size={12} />
+        <PuffLoader color="#d8b76a" size={20} />
         <span className="ml-3 text-gray-600">Loading letterpad...</span>
       </div>
     );
   }
 
   return (
-    <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-md">
+    <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-md  overflow-x-auto whitespace-nowrap">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-gray-800">Letterpad</h3>

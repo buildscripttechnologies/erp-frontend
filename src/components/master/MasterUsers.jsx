@@ -28,6 +28,7 @@ import ScrollLock from "../ScrollLock";
 import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
 import { useRef } from "react";
+import { BeatLoader } from "react-spinners";
 
 export default function MasterUsers() {
   const { hasPermission } = useAuth();
@@ -457,7 +458,18 @@ export default function MasterUsers() {
                   type="submit"
                   className="w-full bg-[#d8b76a] hover:bg-[#c3a14f] text-white font-semibold py-2 rounded"
                 >
-                  {editMode ? "Update User" : "Register User"}
+                  {loading ? (
+                    <>
+                      <span className="mr-2">
+                        {editMode ? "Update User" : "Register User"}
+                      </span>
+                      <BeatLoader size={5} color="#292926" />
+                    </>
+                  ) : editMode ? (
+                    "Update User"
+                  ) : (
+                    "Register User"
+                  )}
                 </button>
               </form>
             </div>

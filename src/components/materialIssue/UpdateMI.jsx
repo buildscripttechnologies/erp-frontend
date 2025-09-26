@@ -243,7 +243,7 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
               <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
                 Raw Material Consumption
               </h3>
-              <table className="w-full mb-4 text-[11px] border text-left">
+              <table className="w-full mb-4 text-[11px] border text-left whitespace-nowrap">
                 <thead className="bg-primary/70">
                   <tr>
                     <th className="px-2 py-1 border-r border-primary">
@@ -485,7 +485,7 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
               <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
                 Product Details (Raw Material / SFG)
               </h3>
-              <table className="w-full  text-[11px] border text-left">
+              <table className="w-full  text-[11px] border text-left whitespace-nowrap ">
                 <thead className="bg-primary/70">
                   <tr>
                     <th className="px-2 py-1 border-r border-primary">#</th>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import Select from "react-select";
+import { BeatLoader } from "react-spinners";
 
 const EditRawMaterialModal = ({
   rawMaterial = [],
@@ -502,7 +503,14 @@ const EditRawMaterialModal = ({
               disabled={loading}
               className="px-6 py-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded cursor-pointer"
             >
-              {loading ? "Updating..." : "Update"}
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <span>Updating</span>
+                  <BeatLoader size={5} color="#292926" />
+                </div>
+              ) : (
+                "Updating"
+              )}
             </button>
           </div>
         </form>

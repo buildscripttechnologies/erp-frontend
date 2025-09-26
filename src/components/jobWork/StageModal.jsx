@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "../../utils/axios";
+import { BeatLoader } from "react-spinners";
 
 const StageModal = ({
   open,
@@ -14,6 +15,7 @@ const StageModal = ({
   MI,
 }) => {
   const [note, setNote] = useState("");
+  const [loading, setLoading] = useState(false);
 
   if (!open) return null;
 
@@ -116,6 +118,7 @@ const StageModal = ({
   // 👉 Save handler
   const handleSave = async () => {
     try {
+      setLoading(true);
       // 🟢 Normalize items list (bulk or single)
       const allItems = (isBulk ? items : [item]).filter(Boolean);
       if (allItems.length === 0) {
@@ -193,6 +196,8 @@ const StageModal = ({
     } catch (err) {
       toast.error("Error updating stage");
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -312,7 +317,14 @@ const StageModal = ({
             className="px-4 py-2 text-sm bg-primary text-secondary rounded hover:bg-primary/80 font-semibold cursor-pointer"
             onClick={handleSave}
           >
-            Confirm
+            {loading ? (
+              <>
+                <span className="mr-2">Updating</span>
+                <BeatLoader size={5} color="white" />
+              </>
+            ) : (
+              "Confirm"
+            )}
           </button>
         </div>
       </div>

@@ -147,8 +147,8 @@ const BomMaster = ({ isOpen }) => {
   };
 
   const handlePreviewBom = async (bomData) => {
-    setDownloading(true);
     try {
+      setDownloading(true);
       const res = await axios.get("/settings/letterpad");
       const letterpadUrl = res.data.path;
       const blobUrl = await generateBomLP(bomData, letterpadUrl);
