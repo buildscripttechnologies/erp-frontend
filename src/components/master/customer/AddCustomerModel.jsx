@@ -5,6 +5,7 @@ import axios from "../../../utils/axios";
 import { Country, State, City } from "country-state-city";
 import toast from "react-hot-toast";
 import PropTypes from "prop-types";
+import { BeatLoader } from "react-spinners";
 
 const AddCustomerModal = ({ onClose, onAdded }) => {
   const [customerSets, setCustomerSets] = useState([
@@ -45,6 +46,8 @@ const AddCustomerModal = ({ onClose, onAdded }) => {
       ],
     },
   ]);
+
+  const [loading, setLoading] = useState(false);
 
   AddCustomerModal.propTypes = {
     onClose: PropTypes.func.isRequired,
@@ -157,6 +160,7 @@ const AddCustomerModal = ({ onClose, onAdded }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       const payload = {
         customers: customerSets.map((cs) => ({
           ...cs.form,
@@ -177,6 +181,8 @@ const AddCustomerModal = ({ onClose, onAdded }) => {
       }
     } catch (err) {
       toast.error("Failed to add customer(s)");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -509,9 +515,16 @@ const AddCustomerModal = ({ onClose, onAdded }) => {
             </button>
             <button
               type="submit"
-              className="bg-[#d8b76a] text-black px-5 py-[4px] text-sm rounded hover:bg-[#d8b76a]/80 cursor-pointer"
+              className="flex items-center bg-[#d8b76a] text-black px-5 py-[4px] text-sm rounded hover:bg-[#d8b76a]/80 cursor-pointer"
             >
-              Submit
+              {loading ? (
+                <>
+                  <span className="mr-2">Saving</span>
+                  <BeatLoader size={5} color="#292926" />
+                </>
+              ) : (
+                "Save"
+              )}
             </button>
           </div>
         </form>

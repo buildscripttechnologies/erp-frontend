@@ -4,12 +4,13 @@ import axios from "../../../utils/axios";
 import { Country, State, City } from "country-state-city";
 import toast from "react-hot-toast";
 import PropTypes from "prop-types";
+import { BeatLoader } from "react-spinners";
 
 const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
   const [form, setForm] = useState({ ...customer });
   const [contacts, setContacts] = useState(customer.contactPersons || []);
   const [locations, setLocations] = useState(customer.deliveryLocations || []);
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     setForm({ ...customer });
     setContacts(customer.contactPersons || []);
@@ -68,6 +69,7 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       const payload = {
         ...form,
         contactPersons: contacts,
@@ -89,6 +91,8 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
       }
     } catch (err) {
       toast.error("Failed to update customer");
+    } finally {
+      setLoading(true);
     }
   };
 
@@ -357,9 +361,16 @@ const EditCustomerModal = ({ customer, onClose, onUpdated }) => {
             </button>
             <button
               type="submit"
-              className="bg-[#d8b76a] text-black px-5 py-[4px] text-sm rounded hover:bg-[#d8b76a]/80 cursor-pointer"
+              className="flex items-center bg-[#d8b76a] text-black px-5 py-[4px] text-sm rounded hover:bg-[#d8b76a]/80 cursor-pointer"
             >
-              Update
+              {loading ? (
+                <>
+                  <span className="mr-2">Updating</span>
+                  <BeatLoader size={5} color="#292926" />
+                </>
+              ) : (
+                "Update"
+              )}
             </button>
           </div>
         </form>

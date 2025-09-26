@@ -17,7 +17,7 @@ import { debounce } from "lodash";
 import AddPO from "./AddPO";
 import UpdatePO from "./UpdatePO";
 import { generateLPPO } from "./generateLPPO";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader, ClipLoader } from "react-spinners";
 import POADetails from "./POADetails";
 import { useAuth } from "../../context/AuthContext";
 
@@ -240,7 +240,7 @@ const PurchaseOrder = ({ isOpen }) => {
               {loading ? (
                 <TableSkeleton
                   rows={pagination.limit}
-                  columns={Array(9).fill({})}
+                  columns={Array(10).fill({})}
                 />
               ) : (
                 <>
@@ -315,7 +315,7 @@ const PurchaseOrder = ({ isOpen }) => {
                             po.status != "pending" && (
                               <>
                                 {expandedPOId === po._id && downloading ? (
-                                  <ClipLoader size={11} color="#d8b76a" />
+                                  <BeatLoader size={4} color="#d8b76a" />
                                 ) : (
                                   <FaFileDownload
                                     onClick={() => handleDownload(po)}

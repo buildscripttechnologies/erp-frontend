@@ -158,8 +158,6 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
     setPoItems(updated);
   };
 
-  console.log("po items", poItems);
-
   const handleSubmit = async (e) => {
     console.log("in handle submit");
 
@@ -300,6 +298,7 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
                     "&:hover": { borderColor: "var(--color-primary)" },
                   }),
                 }}
+                className="truncate"
               />
             </div>
           </div>
@@ -314,7 +313,7 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
                 </div>
                 <div className="flex sm:justify-end">
                   <strong className="mr-1">Stock Qty:</strong>
-                  {itemDetails.stockQty || "—"}
+                  {itemDetails.stockQty?.toFixed(2) || "—"}
                 </div>
                 <div>
                   <strong className="mr-1">Category:</strong>{" "}

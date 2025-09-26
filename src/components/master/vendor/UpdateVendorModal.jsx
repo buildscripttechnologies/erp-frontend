@@ -5,6 +5,7 @@ import { Country, State, City } from "country-state-city";
 import toast from "react-hot-toast";
 import PropTypes from "prop-types";
 import Select from "react-select";
+import { BeatLoader } from "react-spinners";
 
 const UpdateVendorModal = ({
   vendorData,
@@ -31,6 +32,7 @@ const UpdateVendorModal = ({
         })) || [],
     },
   ]);
+  const [loading, setLoading] = useState(false);
 
   const handleFormChange = (vendorIdx, e) => {
     const newVendors = [...vendors];
@@ -104,6 +106,7 @@ const UpdateVendorModal = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const v = vendors[0];
     const payload = {
       ...v.form,
@@ -120,6 +123,7 @@ const UpdateVendorModal = ({
     };
 
     try {
+      setLoading(true);
       let res = await axios.patch(`/vendors/update/${vendorData._id}`, payload);
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -130,6 +134,8 @@ const UpdateVendorModal = ({
     } catch (err) {
       console.error("Update Error:", err);
       toast.error("Failed to update vendor");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -607,9 +613,16 @@ const UpdateVendorModal = ({
             </button>
             <button
               type="submit"
-              className="bg-[#d8b76a] text-black px-5 py-[4px] text-sm rounded cursor-pointer hover:bg-[#d8b76a]/80"
+              className="flex items-center bg-[#d8b76a] text-black px-5 py-[4px] text-sm rounded cursor-pointer hover:bg-[#d8b76a]/80"
             >
-              Update
+              {loading ? (
+                <>
+                  <span className="mr-2">Updating</span>
+                  <BeatLoader size={5} color="#292926" />
+                </>
+              ) : (
+                "Update"
+              )}
             </button>
           </div>
         </form>
