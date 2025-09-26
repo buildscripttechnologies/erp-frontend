@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "../../utils/axios";
 import Select from "react-select";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 import { cuttingType, jobWorkType, vendors } from "../../data/dropdownData";
 import AddPO from "../purchase/AddPO";
 
@@ -223,7 +223,7 @@ const Add = ({ onClose, onAdded }) => {
               <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
                 Raw Material Consumption
               </h3>
-              <table className="w-full mb-4 text-[11px] border text-left ">
+              <table className="w-full mb-4 text-[11px] border text-left whitespace-nowrap">
                 <thead className="bg-primary/70">
                   <tr>
                     <th className="px-2 py-1 border-r border-primary">
@@ -408,7 +408,7 @@ const Add = ({ onClose, onAdded }) => {
                               (weightVal && item.stockQty < weightVal);
 
                             return (
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 whitespace-nowrap">
                                 <span
                                   className={`px-2 py-0.5 rounded text-xs font-semibold ${
                                     isLowStock ? "bg-red-200" : "bg-green-100"
@@ -461,7 +461,7 @@ const Add = ({ onClose, onAdded }) => {
               <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
                 Product Details (Raw Material / SFG)
               </h3>
-              <table className="w-full  text-[11px] border text-left">
+              <table className="w-full  text-[11px] border text-left whitespace-nowrap">
                 <thead className="bg-primary/70">
                   <tr>
                     <th className="px-2 py-1 border-r border-primary">#</th>
@@ -641,12 +641,12 @@ const Add = ({ onClose, onAdded }) => {
               type="button"
               disabled={loading}
               onClick={handleSubmit}
-              className="px-6 py-2 bg-primary hover:bg-primary/80 text-black font-semibold rounded cursor-pointer"
+              className="flex items-center px-6 py-2 bg-primary hover:bg-primary/80 text-black font-semibold rounded cursor-pointer"
             >
               {loading ? (
                 <>
-                  <span className="mr-2">Saving...</span>
-                  <ClipLoader size={20} color="#292926" />
+                  <span className="mr-2">Saving</span>
+                  <BeatLoader size={5} color="#292926" />
                 </>
               ) : (
                 "Save"

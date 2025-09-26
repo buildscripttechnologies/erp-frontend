@@ -20,7 +20,7 @@ import { debounce } from "lodash";
 import AttachmentsModal2 from "../AttachmentsModal2";
 import AddCO from "./AddCO";
 import { generateCOPdf } from "./generateCOPdf";
-import { ClipLoader } from "react-spinners";
+import { PulseLoader } from "react-spinners";
 
 const CustomerOrder = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -374,7 +374,7 @@ const CustomerOrder = ({ isOpen }) => {
                             {b.status == "Completed" && (
                               <>
                                 {expandedBOMId === b._id && downloading ? (
-                                  <ClipLoader size={11} color="#d8b76a" />
+                                  <PulseLoader size={4} color="#d8b76a" />
                                 ) : (
                                   <FaFileDownload
                                     onClick={() => handleDownload(b)}

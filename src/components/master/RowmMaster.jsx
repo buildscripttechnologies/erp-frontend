@@ -36,7 +36,7 @@ const RmMaster = () => {
   const [exportFormat, setExportFormat] = useState("excel");
   const [showExportOptions, setShowExportOptions] = useState(false);
 
-  ScrollLock(editData != null || showBulkPanel || openAttachments!=null);
+  ScrollLock(editData != null || showBulkPanel || openAttachments != null);
 
   const toggleExportOptions = () => {
     setShowExportOptions((prev) => !prev);
@@ -283,9 +283,7 @@ const RmMaster = () => {
 
   return (
     <Dashboard>
-      <div
-        className={`p-2 md:px-4 mx-auto overflow-x-hidden mt-4`}
-      >
+      <div className={`p-2 md:px-4 mx-auto overflow-x-hidden mt-4`}>
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">

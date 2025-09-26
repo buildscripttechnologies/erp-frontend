@@ -113,7 +113,6 @@ const Printing = () => {
       });
 
       const res = await axios.get(`/mi/printing?${queryParams.toString()}`);
-      console.log("mis res", res);
 
       if (res.data.status == 403) {
         toast.error(res.data.message);

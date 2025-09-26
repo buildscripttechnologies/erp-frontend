@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "../../../utils/axios";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 
 const UpdateLocationModal = ({ location, onClose, onUpdated }) => {
   const [formData, setFormData] = useState({
@@ -22,7 +22,10 @@ const UpdateLocationModal = ({ location, onClose, onUpdated }) => {
     setLoading(true);
 
     try {
-      await axios.patch(`/locations/update-location/${location._id}`, formData);
+      let res = await axios.patch(
+        `/locations/update-location/${location._id}`,
+        formData
+      );
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
@@ -98,8 +101,8 @@ const UpdateLocationModal = ({ location, onClose, onUpdated }) => {
             >
               {loading ? (
                 <>
-                  <span className="mr-2">Saving...</span>
-                  <ClipLoader size={20} color="#292926" />
+                  <span className="mr-2">Saving</span>
+                  <BeatLoader size={5} color="#292926" />
                 </>
               ) : (
                 "Update Location"

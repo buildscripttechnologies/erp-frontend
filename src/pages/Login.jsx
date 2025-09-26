@@ -3,7 +3,7 @@ import AuthLayout from "../layouts/AuthLayout";
 import axios from "../utils/axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 import { useAuth } from "../context/AuthContext";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 const Login = () => {
@@ -99,12 +99,12 @@ const Login = () => {
         <button
           disabled={loading}
           type="submit"
-          className="w-full bg-[#d8b76a] text-xl text-[#292926] font-bold hover:text-[#292926] py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer transition duration-200"
+          className=" w-full bg-[#d8b76a] text-xl text-[#292926] font-bold hover:text-[#292926] py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer transition duration-200"
         >
           {loading ? (
             <>
-              <span className="mr-2">Logging in...</span>
-              <ClipLoader size={20} color="#292926" />
+              <span className="mr-2">Logging in</span>
+              <BeatLoader size={5} color="#292926" />
             </>
           ) : (
             "Login"

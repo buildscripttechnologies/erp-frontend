@@ -182,7 +182,7 @@ const UomMaster = () => {
       )}
 
       <div className="overflow-x-auto rounded border border-[#d8b76a] shadow-sm">
-        <table className="min-w-full text-[11px] ">
+        <table className="min-w-full text-[11px]  whitespace-nowrap">
           <thead className="bg-[#d8b76a]  text-[#292926] text-left whitespace-nowrap">
             <tr>
               <th className="px-2 py-1.5 ">#</th>

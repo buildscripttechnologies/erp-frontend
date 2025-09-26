@@ -5,7 +5,7 @@ import AuthLayout from "../layouts/AuthLayout";
 import axios from "../utils/axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -55,8 +55,8 @@ const ResetPassword = () => {
         >
           {loading ? (
             <>
-              <span className="mr-2">Sending OTP...</span>
-              <ClipLoader size={20} color="#292926" />
+              <span className="mr-2">Sending OTP</span>
+              <BeatLoader size={5} color="#292926" />
             </>
           ) : (
             "Send OTP"

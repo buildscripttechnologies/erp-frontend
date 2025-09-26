@@ -555,7 +555,7 @@ export default function MasterUsers() {
 
           {/* Table */}
           <div className="bg-white rounded border border-[#d8b76a]  overflow-x-auto">
-            <table className="min-w-full text-[11px]">
+            <table className="min-w-full text-[11px]  whitespace-nowrap">
               <thead className="bg-[#d8b76a] text-[#292927] text-left">
                 <tr>
                   <th className="py-1.5 px-2">#</th>

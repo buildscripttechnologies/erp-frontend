@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 
 const EditUomModal = ({ uom, onClose, onUpdated }) => {
   const [formData, setFormData] = useState({
@@ -76,8 +76,8 @@ const EditUomModal = ({ uom, onClose, onUpdated }) => {
             >
               {loading ? (
                 <>
-                  <span className="mr-2">Updating...</span>
-                  <ClipLoader size={20} color="#292926" />
+                  <span className="mr-2">Updating</span>
+                  <BeatLoader size={5} color="#292926" />
                 </>
               ) : (
                 "Update"

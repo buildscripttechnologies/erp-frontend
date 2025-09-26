@@ -84,7 +84,7 @@ export const generateCOPdf = async (co, letterpadUrl) => {
         { content: "GST:", styles: { fontStyle: "bold" } },
         "24AAGCI1188Q1Z2",
         { content: "Customer GST:", styles: { fontStyle: "bold" } },
-        co.party?.gst || "",
+        co.party?.gst ? co.party?.gst : "" || "",
       ],
       [
         { content: "Payment Terms:", styles: { fontStyle: "bold" } },
@@ -255,7 +255,7 @@ export const generateCOPdf = async (co, letterpadUrl) => {
 
   const pdfBlob = doc.output("blob");
   const pdfUrl = URL.createObjectURL(pdfBlob);
-  window.open(pdfUrl, "_blank");
+  // window.open(pdfUrl, "_blank");
   return { blob: pdfBlob, url: pdfUrl };
 };
 
@@ -381,7 +381,7 @@ function getGstSummary(co, customerState, companyState = "GJ") {
   const summary = {};
 
   // GST rate for this order
-  const gstRate = co.product.gst || 0;
+  const gstRate = co?.product?.gst || 0;
 
   // Calculate GST amount from total rate
   const gstAmount = (co.totalRate * gstRate) / 100;

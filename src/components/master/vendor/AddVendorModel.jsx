@@ -5,6 +5,7 @@ import { Country, State, City } from "country-state-city";
 import toast from "react-hot-toast";
 import PropTypes from "prop-types";
 import Select from "react-select";
+import { BeatLoader } from "react-spinners";
 
 const AddVendorModal = ({ onClose, onAdded }) => {
   const [vendors, setVendors] = useState([
@@ -63,6 +64,7 @@ const AddVendorModal = ({ onClose, onAdded }) => {
   const [rms, setRms] = useState([]);
   const [sfgs, setSfgs] = useState([]);
   const [fgs, setFgs] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchDropdowns = async () => {
@@ -204,6 +206,7 @@ const AddVendorModal = ({ onClose, onAdded }) => {
     e.preventDefault();
 
     try {
+      setLoading(true);
       const payload = vendors.map(({ form, contactPersons, rm }) => ({
         // venderCode: form.venderCode,
         vendorName: form.vendorName,
@@ -268,6 +271,8 @@ const AddVendorModal = ({ onClose, onAdded }) => {
     } catch (err) {
       console.error("Submit Error:", err.response?.data || err.message);
       toast.error("Failed to add vendors");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -746,10 +751,18 @@ const AddVendorModal = ({ onClose, onAdded }) => {
               Close
             </button>
             <button
+              disabled={loading}
               type="submit"
-              className="bg-[#d8b76a] text-black px-5 py-[4px] text-sm rounded cursor-pointer hover:bg-[#d8b76a]/80"
+              className="flex items-center bg-[#d8b76a] text-black px-5 py-[4px] text-sm rounded cursor-pointer hover:bg-[#d8b76a]/80"
             >
-              Submit
+              {loading ? (
+                <>
+                  <span className="mr-2">Saving</span>
+                  <BeatLoader size={5} color="#292926" />
+                </>
+              ) : (
+                "Save"
+              )}
             </button>
           </div>
         </form>

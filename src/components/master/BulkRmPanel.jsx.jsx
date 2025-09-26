@@ -4,7 +4,7 @@ import { FiTrash2, FiArrowLeft, FiPlus } from "react-icons/fi";
 import { RiResetRightLine } from "react-icons/ri";
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 
 import Select from "react-select";
 
@@ -555,12 +555,12 @@ const BulkRmPanel = ({ onClose }) => {
           </button>
           <button
             onClick={handleSubmit}
-            className="bg-[#d8b76a] text-[#292926] px-4 py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer"
+            className=" bg-[#d8b76a] text-[#292926] px-4 py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer"
           >
             {loading ? (
               <div className="flex items-center gap-2">
                 <span>Saving...</span>
-                <ClipLoader size={18} color="#292926" />
+                <BeatLoader size={5} color="#292926" />
               </div>
             ) : (
               "Save"

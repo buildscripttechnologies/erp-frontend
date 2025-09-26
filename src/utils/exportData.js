@@ -13,8 +13,6 @@ export const exportToExcel = (data) => {
 export const exportToPDF = (rawMaterials) => {
   const doc = new jsPDF("l"); // landscape mode
 
-  console.log("raw materials", rawMaterials);
-
   const headers = [
     "SKU Code",
     "Item Name",
@@ -49,17 +47,17 @@ export const exportToPDF = (rawMaterials) => {
     e.location,
     e.moq,
     e.panno,
-    e.sqInchRate,
+    e.sqInchRate?.toFixed(4),
     e.rate,
     e.gst,
-    e.stockQty,
+    e.stockQty?.toFixed(4),
     e.baseQty,
     e.pkgQty,
     e.purchaseUOM,
     e.stockUOM,
     (e.qualityInspectionNeeded =
       e.qualityInspectionNeeded == "Required" ? "Yes" : "No"),
-    e.totalRate,
+    e.totalRate?.toFixed(4),
   ]);
 
   autoTable(doc, {
@@ -76,14 +74,9 @@ export const exportToPDF = (rawMaterials) => {
       fontStyle: "bold",
     },
     columnStyles: {
-      //   0: { cellWidth: 17 }, // SKU
-      1: { cellWidth: 30 }, // Item Name
-      2: { cellWidth: 30 }, // Description
-      //   5: { cellWidth: 15 }, // Location
-      //   12: { cellWidth: 14 }, // Qual. Insp.
-      //   13: { cellWidth: 14 }, // Qual. Insp.
-      //   14: { cellWidth: 18 }, // Qual. Insp.
-      //   // 15: { cellWidth: 80 }, // Attachments
+      0: { cellWidth: 25 }, // SKU
+      1: { cellWidth: 25 }, // Item Name
+      2: { cellWidth: 25 }, // Description
     },
     margin: { top: 5, left: 5, right: 5, bottom: 5 }, // 🔑 super small margins
     startY: 5,

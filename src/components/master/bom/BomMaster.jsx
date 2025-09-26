@@ -19,6 +19,7 @@ import { generateBomLP } from "../../../utils/generateBomLP";
 import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
 import AttachmentsModal2 from "../../AttachmentsModal2";
+import { PulseLoader } from "react-spinners";
 
 const BomMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -37,6 +38,7 @@ const BomMaster = ({ isOpen }) => {
     totalResults: 0,
     limit: 10,
   });
+  const [downloading, setDownloading] = useState();
 
   const hasMountedRef = useRef(false);
 
@@ -145,6 +147,7 @@ const BomMaster = ({ isOpen }) => {
   };
 
   const handlePreviewBom = async (bomData) => {
+    setDownloading(true);
     try {
       const res = await axios.get("/settings/letterpad");
       const letterpadUrl = res.data.path;
@@ -209,6 +212,8 @@ const BomMaster = ({ isOpen }) => {
     } catch (err) {
       console.error("Error generating BOM PDF preview:", err);
       toast.error("Failed to generate PDF preview.");
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -369,10 +374,14 @@ const BomMaster = ({ isOpen }) => {
                             )}
                           </td>
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-primary">
-                            <FaFileDownload
-                              onClick={() => handlePreviewBom(b)}
-                              className="cursor-pointer text-primary hover:text-green-600"
-                            />
+                            {expandedBOMId === b._id && downloading ? (
+                              <PulseLoader size={4} color="#d8b76a" />
+                            ) : (
+                              <FaFileDownload
+                                onClick={() => handlePreviewBom(b)}
+                                className="cursor-pointer text-primary hover:text-green-600"
+                              />
+                            )}
                             {hasPermission("BOM", "update") ? (
                               <FiEdit
                                 onClick={() => setEditingBOM(b)}

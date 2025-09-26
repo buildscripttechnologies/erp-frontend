@@ -33,7 +33,6 @@ const UomMaster = () => {
 
   const hasMountedRef = useRef(false);
   ScrollLock(formOpen || editUom != null);
-  console.log("leads", leads);
 
   useEffect(() => {
     if (!hasMountedRef.current) {
@@ -55,7 +54,6 @@ const UomMaster = () => {
       const res = await axios.get(
         `/indiamart/leads?page=${page}&limit=${limit}`
       );
-      console.log("res leads", res);
 
       if (res.data.status == 403) {
         toast.error(res.data.message);

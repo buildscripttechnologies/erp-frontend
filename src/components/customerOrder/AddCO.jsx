@@ -4,12 +4,12 @@ import Select from "react-select";
 import toast from "react-hot-toast";
 import CreatableSelect from "react-select/creatable";
 import { FiTrash2 } from "react-icons/fi";
-import { ClipLoader } from "react-spinners";
 import { capitalize } from "lodash";
 import { calculateRate } from "../../utils/calc";
 import { generateConsumptionTable } from "../../utils/consumptionTable";
 import { plastic, slider, zipper } from "../../data/dropdownData";
 import { useNavigate } from "react-router-dom";
+import { BeatLoader } from "react-spinners";
 
 const AddCO = ({ onClose, onSuccess }) => {
   const [form, setForm] = useState({
@@ -387,12 +387,12 @@ const AddCO = ({ onClose, onSuccess }) => {
             <button
               disabled={loading}
               onClick={handleSubmit}
-              className="bg-primary text-secondary px-6 py-2 rounded hover:bg-primary/80 cursor-pointer"
+              className="flex items-center bg-primary text-secondary px-6 py-2 rounded hover:bg-primary/80 cursor-pointer"
             >
               {loading ? (
                 <>
-                  <span className="mr-2">Saving...</span>
-                  <ClipLoader size={20} color="secondary" />
+                  <span className="mr-2">Saving </span>{" "}
+                  <BeatLoader size={5} color="#292926" />
                 </>
               ) : (
                 "Save"

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "../../utils/axios";
 import Select from "react-select";
-import { ClipLoader } from "react-spinners";
+import { BeatLoader } from "react-spinners";
 import { useMemo } from "react";
 import { FiTrash2 } from "react-icons/fi";
 import { FcApproval } from "react-icons/fc";
@@ -183,7 +183,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
                 // Auto-approve if no quality inspection is needed
                 setQualityApproved(!actualItem.qualityInspectionNeeded);
               }}
-              placeholder="Search item by name, SKU, or type..."
+              placeholder="Search Item Name or SKU"
               isSearchable
               className="react-select-container cursor-pointer"
               classNamePrefix="react-select"
@@ -272,10 +272,10 @@ const AddStockModal = ({ onClose, onAdded }) => {
               </div>
             ))}
 
-          <div className="flex flex-wrap gap-5">
+          <div className="flex flex-wrap gap-2 sm:gap-6 w-full">
             <div className="w-[30%]">
-              <label className="block text-sm font-semibold text-[#292926] mb-1">
-                Stock Quantity
+              <label className="block text-xs font-semibold text-[#292926] mb-1">
+                Stock Qty
               </label>
               <input
                 type="number"
@@ -290,8 +290,8 @@ const AddStockModal = ({ onClose, onAdded }) => {
             </div>
 
             <div className="w-[30%]">
-              <label className="block text-sm font-semibold text-[#292926] mb-1">
-                Base Quantity
+              <label className="block text-xs font-semibold text-[#292926] mb-1">
+                Base Qty
               </label>
               <input
                 type="number"
@@ -306,8 +306,8 @@ const AddStockModal = ({ onClose, onAdded }) => {
             </div>
 
             <div className="w-[30%]">
-              <label className="block text-sm font-semibold text-[#292926] mb-1">
-                Damaged Quantity
+              <label className="block text-xs font-semibold text-[#292926] mb-1">
+                Damaged Qty
               </label>
               <input
                 type="number"
@@ -377,11 +377,11 @@ const AddStockModal = ({ onClose, onAdded }) => {
             </div>
           ))}
 
-          <div className="mt-4">
+          <div className="mt-4 w-full">
             <button
               type="button"
               onClick={addManualRow}
-              className="px-4 py-2 bg-primary cursor-pointer text-[#292926] rounded hover:bg-primary/80 font-semibold"
+              className="px-4 py-2 w-full bg-primary cursor-pointer text-[#292926] rounded hover:bg-primary/80 font-semibold"
             >
               + Manual Inward
             </button>
@@ -391,12 +391,12 @@ const AddStockModal = ({ onClose, onAdded }) => {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer"
+              className="flex items-center px-6 py-2 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer"
             >
               {loading ? (
                 <>
-                  <span className="mr-2">Saving...</span>
-                  <ClipLoader size={20} color="#292926" />
+                  <span className="mr-2">Saving</span>
+                  <BeatLoader size={5} color="#292926" />
                 </>
               ) : (
                 "Save"
