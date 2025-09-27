@@ -11,7 +11,8 @@ const TERMS = `1. I Khodal Bag Pvt. Ltd. submission of the purchase Order is con
 6. I Khodal Bag Pvt. Ltd. may terminate this Purchase Order for no reason or for any reason, upon 15 days written notice to Supplier. Upon receipt of notice of such termination, Supplier will inform I Khodal Bag Pvt. Ltd. of the extent to which it has completed performance as of the date of the notice, and Supplier will collect and deliver to I Khodal Bag Pvt. Ltd. whatever Work then exists, I Khodal Bag Pvt. Ltd. will pay Supplier for all Work performed and accepted through the effective date of the termination, provided that I Khodal Bag Pvt. Ltd. will not be obligated to pay any more than the payment that would have become due had Supplier completed and I Khodal Bag Pvt. Ltd. had accepted the Work. I Khodal Bag Pvt. Ltd. will have no further payment obligation in connection with any termination. 
 7. Payment credit period is stipulated as within 30 days from the receipt of goods `;
 
-export const generateCOPdf = async (co, letterpadUrl) => {
+// ✅ SAFE PDF Generator
+export const generateCOPdf = async (co = {}, letterpadUrl) => {
   const doc = new jsPDF("portrait", "mm", "a4");
   const margin = 6;
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -24,18 +25,27 @@ export const generateCOPdf = async (co, letterpadUrl) => {
     white: [255, 255, 255],
   };
 
-  // Letterpad images
-  const lpFirstPage = await getBase64ImageFromPDF(letterpadUrl, 0);
-  const lpLastPage = await getBase64ImageFromPDF(letterpadUrl, 1);
+  // ---- Letterpad Background ----
+  let lpFirstPage = null;
+  let lpLastPage = null;
+
+  try {
+    lpFirstPage = await getBase64ImageFromPDF(letterpadUrl, 0);
+    lpLastPage = await getBase64ImageFromPDF(letterpadUrl, 1);
+  } catch (err) {
+    console.error("Letterpad load failed:", err);
+  }
 
   const addLetterPad = (isLast = false) => {
     const img = isLast ? lpLastPage : lpFirstPage;
-    doc.addImage(img, "PNG", 0, 0, pageWidth, pageHeight);
+    if (img) {
+      doc.addImage(img, "PNG", 0, 0, pageWidth, pageHeight);
+    }
   };
 
-  addLetterPad(false); // first page
+  addLetterPad(false);
 
-  // ---------- 1) Company + Ship To ----------
+  // ---- Company & Ship To ----
   autoTable(doc, {
     startY: CONTENT_TOP,
     margin: { left: margin },
@@ -59,8 +69,8 @@ export const generateCOPdf = async (co, letterpadUrl) => {
           styles: { fontStyle: "bold" },
         },
         {
-          content: `${co.party?.customerName || ""} (${
-            co.party?.customerCode || ""
+          content: `${co?.party?.customerName || ""} (${
+            co?.party?.customerCode || ""
           })`,
           colSpan: 2,
           styles: { fontStyle: "bold" },
@@ -72,25 +82,25 @@ export const generateCOPdf = async (co, letterpadUrl) => {
             "132,133,134, ALPINE INDUSTRIAL PARK, NR. CHORYASI TOLL PLAZA, SURAT-394150, GUJARAT, INDIA",
           colSpan: 2,
         },
-        { content: co.party?.address || "", colSpan: 2 },
+        { content: co?.party?.address || "", colSpan: 2 },
       ],
       [
         { content: "PAN:", styles: { fontStyle: "bold" } },
         "ABCDE1234F",
         { content: "PAN:", styles: { fontStyle: "bold" } },
-        co.party?.pan || "",
+        co?.party?.pan || "",
       ],
       [
         { content: "GST:", styles: { fontStyle: "bold" } },
         "24AAGCI1188Q1Z2",
         { content: "Customer GST:", styles: { fontStyle: "bold" } },
-        co.party?.gst ? co.party?.gst : "" || "",
+        co?.party?.gst || "",
       ],
       [
         { content: "Payment Terms:", styles: { fontStyle: "bold" } },
-        co.party?.paymentTerms || "",
+        co?.party?.paymentTerms || "",
         { content: "Delivery Date:", styles: { fontStyle: "bold" } },
-        new Date(co.deliveryDate || Date.now()).toLocaleDateString("en-GB", {
+        new Date(co?.deliveryDate || Date.now()).toLocaleDateString("en-GB", {
           day: "2-digit",
           month: "short",
           year: "numeric",
@@ -100,7 +110,6 @@ export const generateCOPdf = async (co, letterpadUrl) => {
     styles: {
       fontSize: 9,
       textColor: colors.text,
-      halign: "left",
       valign: "middle",
       fillColor: false,
     },
@@ -119,7 +128,7 @@ export const generateCOPdf = async (co, letterpadUrl) => {
 
   let tableStartY = doc.lastAutoTable.finalY + 10;
 
-  // ---------- 2) Product Details (single row) ----------
+  // ---- Product Details ----
   autoTable(doc, {
     startY: tableStartY,
     margin: { left: margin, right: margin },
@@ -127,22 +136,16 @@ export const generateCOPdf = async (co, letterpadUrl) => {
     body: [
       [
         "1",
-        // co.product.skuCode || "",
-        co.productName || "",
-        co.product?.description || "",
-        co.hsnOrSac || "",
-        co.orderQty || 0,
-        co.unitRate || 0,
-        co.totalRate || 0,
+        co?.productName || "",
+        co?.product?.description || "",
+        co?.hsnOrSac || "",
+        co?.orderQty || 0,
+        co?.unitRate?.toFixed?.(2) || "0.00",
+        co?.totalRate?.toFixed?.(2) || "0.00",
       ],
     ],
     theme: "grid",
-    styles: {
-      fontSize: 8,
-      textColor: colors.text,
-      halign: "left",
-      fillColor: false,
-    },
+    styles: { fontSize: 8, textColor: colors.text, fillColor: false },
     headStyles: {
       fillColor: colors.gold,
       textColor: colors.text,
@@ -152,8 +155,15 @@ export const generateCOPdf = async (co, letterpadUrl) => {
 
   let finalY = doc.lastAutoTable.finalY + 5;
 
-  // ---------- 3) GST + Grand Total ----------
-  const gstSummary = getGstSummary(co, co.party.state, "GJ");
+  // ---- GST Summary ----
+  const gstSummary = getGstSummary(co, co?.party?.state, "GJ");
+  const gstRate = co?.product?.gst || 0;
+  const summary = gstSummary[gstRate] || {
+    igst: 0,
+    cgst: 0,
+    sgst: 0,
+    gstAmount: 0,
+  };
   const halfWidth = (pageWidth - margin * 2) / 2;
 
   autoTable(doc, {
@@ -163,10 +173,10 @@ export const generateCOPdf = async (co, letterpadUrl) => {
     head: [["GST Slab", "IGST", "CGST", "SGST"]],
     body: [
       [
-        `${co.product.gst || 0}%`,
-        gstSummary[co.product.gst]?.igst.toFixed(2) || "0",
-        gstSummary[co.product.gst]?.cgst.toFixed(2) || "0",
-        gstSummary[co.product.gst]?.sgst.toFixed(2) || "0",
+        `${gstRate}%`,
+        summary?.igst?.toFixed?.(2) || "0.00",
+        summary?.cgst?.toFixed?.(2) || "0.00",
+        summary?.sgst?.toFixed?.(2) || "0.00",
       ],
     ],
     theme: "grid",
@@ -180,9 +190,8 @@ export const generateCOPdf = async (co, letterpadUrl) => {
 
   let leftTableY = doc.lastAutoTable.finalY;
 
-  // Amount in words
-  let grandTotal =
-    (co.totalRate || 0) + (gstSummary[co.product.gst]?.gstAmount || 0);
+  // ---- Amount in Words ----
+  const grandTotal = (co?.totalRate || 0) + (summary?.gstAmount || 0);
   autoTable(doc, {
     startY: leftTableY + 3,
     margin: { left: margin },
@@ -191,24 +200,24 @@ export const generateCOPdf = async (co, letterpadUrl) => {
       [
         {
           content: `[ Amount in Words: ${toIndianWords(grandTotal)} ]`,
-          styles: { fontSize: 10, fontStyle: "bold" },
+          styles: { fontSize: 10, fontStyle: "bold", fillColor: false },
         },
       ],
     ],
     theme: "plain",
   });
 
-  // Right column: totals
+  // ---- Totals ----
   autoTable(doc, {
     startY: finalY,
     margin: { left: margin + halfWidth + 5 },
     tableWidth: halfWidth - 5,
     head: [["Description", "Amount"]],
     body: [
-      ["Taxable Amount", co.totalRate.toFixed(2)],
-      ["IGST", gstSummary[co.product.gst]?.igst.toFixed(2)],
-      ["CGST", gstSummary[co.product.gst]?.cgst.toFixed(2)],
-      ["SGST", gstSummary[co.product.gst]?.sgst.toFixed(2)],
+      ["Taxable Amount", (co?.totalRate || 0).toFixed(2)],
+      ["IGST", summary?.igst?.toFixed?.(2) || "0.00"],
+      ["CGST", summary?.cgst?.toFixed?.(2) || "0.00"],
+      ["SGST", summary?.sgst?.toFixed?.(2) || "0.00"],
       [
         { content: "Grand Total", styles: { fontStyle: "bold" } },
         { content: grandTotal.toFixed(2), styles: { fontStyle: "bold" } },
@@ -223,11 +232,11 @@ export const generateCOPdf = async (co, letterpadUrl) => {
     },
   });
 
-  // ---------- 4) Signature block ----------
+  // ---- Signature ----
   let signatureY = Math.max(doc.lastAutoTable.finalY, leftTableY) + 15;
   addSignatureBlock(doc, pageWidth, pageHeight, signatureY, margin);
 
-  // ---------- 5) Terms & Conditions ----------
+  // ---- Terms ----
   doc.addPage();
   addLetterPad(true);
   doc.setFont("helvetica", "bold");
@@ -244,18 +253,18 @@ export const generateCOPdf = async (co, letterpadUrl) => {
 
   addSignatureBlock(doc, pageWidth, pageHeight, 200, margin);
 
-  // ---------- 6) Title on first page ----------
+  // ---- Title ----
   doc.setPage(1);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.setTextColor(...colors.white);
-  doc.text(`Invoice - ${co.prodNo || ""}`, pageWidth / 2, CONTENT_TOP - 7, {
+  doc.text(`Invoice - ${co?.prodNo || ""}`, pageWidth / 2, CONTENT_TOP - 7, {
     align: "center",
   });
 
   const pdfBlob = doc.output("blob");
   const pdfUrl = URL.createObjectURL(pdfBlob);
-  // window.open(pdfUrl, "_blank");
+
   return { blob: pdfBlob, url: pdfUrl };
 };
 
