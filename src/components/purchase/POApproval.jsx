@@ -145,7 +145,6 @@ const POApprovel = ({ isOpen }) => {
     try {
       const res = await axios.get("/settings/letterpad");
       const letterpadUrl = res.data.path; // e.g., http://localhost:5000/letterpad/
-      console.log("pdfurl", letterpadUrl);
 
       let p = await generateLPPO(po, letterpadUrl);
       const blob = p.blob;
