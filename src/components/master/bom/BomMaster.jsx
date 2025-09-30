@@ -153,62 +153,7 @@ const BomMaster = ({ isOpen }) => {
       const letterpadUrl = res.data.path;
       const blobUrl = await generateBomLP(bomData, letterpadUrl);
 
-      // Open a new tab with preview and print/download buttons
-      const printWindow = window.open("", "_blank");
-
-      const html = `
-        <html>
-          <head>
-            <title>BOM Preview</title>
-            <style>
-              body { margin: 0; font-family: sans-serif; }
-              .controls {
-                padding: 10px;
-                background-color: #292926;
-                color: #d8b76a;
-                display: flex;
-                gap: 10px;
-                justify-content: center;
-              }
-              .controls button {
-                padding: 6px 12px;
-                font-size: 14px;
-                border: none;
-                cursor: pointer;
-                background-color: #d8b76a;
-                color: #292926;
-                border-radius: 4px;
-              }
-              iframe {
-                width: 100%;
-                height: calc(100vh - 50px);
-                border: none;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="controls">
-              <button onclick="document.getElementById('pdfFrame').contentWindow.print()">🖨️ Print</button>
-              <button onclick="downloadPdf()">⬇️ Download</button>
-            </div>
-            <iframe id="pdfFrame" src="${blobUrl}"></iframe>
-            <script>
-              function downloadPdf() {
-                const link = document.createElement('a');
-                link.href = '${blobUrl}';
-                link.download = '${
-                  bomData.bomNo + "_" + bomData.partyName || "Details"
-                }.pdf';
-                link.click();
-              }
-            </script>
-          </body>
-        </html>
-      `;
-
-      printWindow.document.open();
-      printWindow.document.write(html);
-      printWindow.document.close();
+      window.open(blobUrl, "_blank");
     } catch (err) {
       console.error("Error generating BOM PDF preview:", err);
       toast.error("Failed to generate PDF preview.");
