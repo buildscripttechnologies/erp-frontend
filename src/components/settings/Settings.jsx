@@ -1,5 +1,6 @@
 import React from "react";
 import LetterpadSetting from "./LetterpadSetting";
+import Vendors from "./Vendors";
 
 const Settings = () => {
   return (
@@ -8,6 +9,7 @@ const Settings = () => {
 
       {/* Letterpad Component */}
       <LetterpadSetting />
+      <Vendors />
 
       {/* Future settings can go here */}
       {/* <CompanyInfoSetting /> */}
