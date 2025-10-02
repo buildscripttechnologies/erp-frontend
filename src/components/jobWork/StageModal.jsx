@@ -39,8 +39,12 @@ const StageModal = ({
 
     switch (current.stage) {
       case "Cutting":
-        return itm.isPrint ? "Printing" : "Stitching";
+        if (itm.isPrint) return "Printing";
+        return itm.isPasting ? "Pasting" : "Stitching";
+
       case "Printing":
+        return itm.isPasting ? "Pasting" : "Stitching";
+      case "Pasting":
         return "Stitching";
       case "Stitching":
         return "Checking";
@@ -302,7 +306,7 @@ const StageModal = ({
             placeholder="Enter note (optional)"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="w-full border rounded px-3 py-2 text-sm focus:ring focus:ring-yellow-400 focus:outline-none"
+            className="w-full border rounded px-3 py-2 text-sm border-primary focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none transition duration-200"
           />
         </div>
 
@@ -314,13 +318,13 @@ const StageModal = ({
             Cancel
           </button>
           <button
-            className="px-4 py-2 text-sm bg-primary text-secondary rounded hover:bg-primary/80 font-semibold cursor-pointer"
+            className="flex items-center px-4 py-2 text-sm bg-primary text-secondary rounded hover:bg-primary/80 font-semibold cursor-pointer"
             onClick={handleSave}
           >
             {loading ? (
               <>
                 <span className="mr-2">Updating</span>
-                <BeatLoader size={5} color="white" />
+                <BeatLoader size={5} color="#292926" />
               </>
             ) : (
               "Confirm"

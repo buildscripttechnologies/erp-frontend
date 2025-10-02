@@ -847,6 +847,21 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                         />
                         Print
                       </label>
+                      <label className="flex items-center gap-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={comp.isPasting || false}
+                          onChange={(e) =>
+                            updateComponent(
+                              index,
+                              "isPasting",
+                              e.target.checked
+                            )
+                          }
+                          className="rounded border-gray-300 accent-primary"
+                        />
+                        Pasting
+                      </label>
                     </div>
 
                     {/* Remove Button */}

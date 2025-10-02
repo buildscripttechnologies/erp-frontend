@@ -220,6 +220,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
       itemRate: 0,
       baseQty: 0,
       isPrint: false,
+      isPasting: false,
       cuttingType: "",
     });
 
@@ -323,6 +324,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
               itemRate: Number(mat.itemRate),
               baseQty: Number(mat.baseQty),
               isPrint: mat.isPrint,
+              isPasting: mat.isPasting,
               cuttingType: mat.cuttingType,
             });
           } else if (matched.type === "SFG") {
@@ -340,6 +342,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
               itemRate: Number(mat.itemRate),
               baseQty: Number(mat.baseQty),
               isPrint: mat.isPrint,
+              isPasting: mat.isPasting,
               cuttingType: mat.cuttingType,
             });
           }
@@ -867,6 +870,22 @@ const AddFgModal = ({ onClose, onAdded }) => {
                               className="rounded border-gray-300 accent-primary"
                             />
                             Print
+                          </label>
+                          <label className="flex items-center gap-1 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={mat.isPasting || false}
+                              onChange={(e) =>
+                                handleMaterialChange(
+                                  index,
+                                  matIndex,
+                                  "isPasting",
+                                  e.target.checked
+                                )
+                              }
+                              className="rounded border-gray-300 accent-primary"
+                            />
+                            Pasting
                           </label>
                         </div>
 

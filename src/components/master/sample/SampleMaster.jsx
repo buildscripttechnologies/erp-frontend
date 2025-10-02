@@ -158,7 +158,11 @@ const SampleMaster = ({ isOpen }) => {
       const letterpadUrl = res.data.path;
       const blobUrl = await generateSample(SampleData, letterpadUrl);
 
-      window.open(blobUrl, "_blank");
+      // window.open(blobUrl, "_blank");
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `${SampleData.sampleNo || "Sample"}.pdf`; // <-- custom filename here
+      a.click();
     } catch (err) {
       console.error("Error generating Sample PDF preview:", err);
       toast.error("Failed to generate PDF preview.");

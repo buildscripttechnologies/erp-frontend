@@ -5,7 +5,7 @@ import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import { BeatLoader } from "react-spinners";
 import Select from "react-select";
 import { calculateRate } from "../../../utils/calc";
-import { plastic, slider } from "../../../data/dropdownData";
+import { zipper, plastic, slider } from "../../../data/dropdownData";
 
 const AddSfgModal = ({ onClose, onAdded }) => {
   const [uoms, setUoms] = useState([]);
@@ -216,6 +216,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
       itemRate: 0,
       baseQty: 0,
       isPrint: false,
+      isPasting: false,
       cuttingType: "",
     });
 
@@ -321,6 +322,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
               itemRate: Number(mat.itemRate),
               baseQty: Number(mat.baseQty),
               isPrint: mat.isPrint,
+              isPasting: mat.isPasting,
               cuttingType: mat.cuttingType,
             });
           } else if (matched.type === "SFG") {
@@ -861,6 +863,22 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                                 className="rounded border-gray-300 accent-primary"
                               />
                               Print
+                            </label>
+                            <label className="flex items-center gap-1 text-sm">
+                              <input
+                                type="checkbox"
+                                checked={mat.isPasting || false}
+                                onChange={(e) =>
+                                  handleMaterialChange(
+                                    index,
+                                    matIndex,
+                                    "isPasting",
+                                    e.target.checked
+                                  )
+                                }
+                                className="rounded border-gray-300 accent-primary"
+                              />
+                              Pasting
                             </label>
                           </div>
 

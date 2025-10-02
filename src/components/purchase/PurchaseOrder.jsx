@@ -139,8 +139,11 @@ const PurchaseOrder = ({ isOpen }) => {
       const url = window.URL.createObjectURL(blob);
 
       // Open in new tab for preview
-      window.open(url, "_blank");
-
+      // window.open(url, "_blank");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${po.poNo || "PO"}.pdf`; // <-- custom filename here
+      a.click();
       // Optionally, if you also want to allow download later:
       // const a = document.createElement("a");
       // a.href = url;

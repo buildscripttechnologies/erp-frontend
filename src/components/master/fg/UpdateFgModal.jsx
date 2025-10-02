@@ -89,6 +89,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
           itemRate: r.itemRate,
           baseQty: r.baseQty,
           isPrint: r.isPrint,
+          isPasting: r.isPasting,
           cuttingType: r.cuttingType,
         });
       });
@@ -107,6 +108,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
           itemRate: s.itemRate,
           baseQty: s.baseQty,
           isPrint: s.isPrint,
+          isPasting: s.isPasting,
           cuttingType: s.cuttingType,
         });
       });
@@ -288,6 +290,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
           itemRate: 0,
           baseQty: 0,
           isPrint: false,
+          isPasting: false,
           cuttingType: "",
         },
       ],
@@ -327,6 +330,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
             itemRate: Number(mat.itemRate),
             baseQty: Number(mat.baseQty),
             isPrint: mat.isPrint,
+            isPasting: mat.isPasting,
             cuttingType: mat.cuttingType,
           });
         } else {
@@ -344,6 +348,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
             itemRate: Number(mat.itemRate),
             baseQty: Number(mat.baseQty),
             isPrint: mat.isPrint,
+            isPasting: mat.isPasting,
             cuttingType: mat.cuttingType,
           });
         }
@@ -959,6 +964,21 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                           className="rounded border-gray-300 accent-primary"
                         />
                         Print
+                      </label>
+                      <label className="flex items-center gap-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={mat.isPasting || false}
+                          onChange={(e) =>
+                            handleMaterialChange(
+                              index,
+                              "isPasting",
+                              e.target.checked
+                            )
+                          }
+                          className="rounded border-gray-300 accent-primary"
+                        />
+                        Pasting
                       </label>
                     </div>
 

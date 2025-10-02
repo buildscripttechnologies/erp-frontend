@@ -317,6 +317,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
         itemName: "",
         skuCode: "",
         isPrint: false,
+        isPasting: false,
         cuttingType: "",
       },
     ]);
@@ -459,6 +460,8 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
           itemRate: item.itemRate || 0,
           itemName: item.itemName || "",
           skuCode: item.skuCode || "",
+          isPasting: item.isPasting,
+          isPrint: item.isPrint,
           label: `${item.skuCode}: ${item.itemName}${
             item.description ? ` - ${item.description}` : ""
           }`,
@@ -650,6 +653,8 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                     itemRate: item.itemRate || 0,
                     itemName: item.itemName || "",
                     skuCode: item.skuCode || "",
+                    isPasting: item.isPasting,
+                    isPrint: item.isPrint,
                     label: `${item.skuCode}: ${item.itemName}${
                       item.description ? ` - ${item.description}` : ""
                     }`,
@@ -980,6 +985,21 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                           className="rounded border-gray-300 accent-primary"
                         />
                         Print
+                      </label>
+                      <label className="flex items-center gap-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={comp.isPasting || false}
+                          onChange={(e) =>
+                            updateComponent(
+                              index,
+                              "isPasting",
+                              e.target.checked
+                            )
+                          }
+                          className="rounded border-gray-300 accent-primary"
+                        />
+                        Pasting
                       </label>
                     </div>
 

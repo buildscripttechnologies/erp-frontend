@@ -87,12 +87,19 @@ export default function UserPermissionForm({
                   required
                 >
                   <option value="">Select Module</option>
-                  {availableModules.map((mod) => (
-                    <option key={mod} value={mod}>
-                      {mod}
-                    </option>
-                  ))}
+                  {availableModules
+                    .filter(
+                      (mod) =>
+                        mod === perm.module || // keep current selection
+                        !permissions.some((p) => p.module === mod) // exclude already used
+                    )
+                    .map((mod) => (
+                      <option key={mod} value={mod}>
+                        {mod}
+                      </option>
+                    ))}
                 </select>
+
                 <div className="flex flex-wrap gap-4">
                   {availableActions.map((action) => (
                     <label
