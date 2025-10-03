@@ -11,7 +11,7 @@ const Settings = () => {
       {/* Letterpad Component */}
       <LetterpadSetting />
       <Vendors />
-      {/* <CompanyDetails /> */}
+      <CompanyDetails />
     </div>
   );
 };

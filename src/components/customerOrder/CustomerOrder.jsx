@@ -41,6 +41,20 @@ const CustomerOrder = ({ isOpen }) => {
   });
 
   const [downloading, setDownloading] = useState();
+  const [companyDetails, setCompanyDetails] = useState();
+
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const res = await axios.get("/settings/company-details");
+
+        setCompanyDetails(res.data || []);
+      } catch {
+        toast.error("Failed to fetch company details");
+      }
+    };
+    fetchCompanyDetails();
+  }, []);
 
   const hasMountedRef = useRef(false);
 
@@ -107,7 +121,7 @@ const CustomerOrder = ({ isOpen }) => {
     try {
       const res = await axios.get("/settings/letterpad");
       const letterpadUrl = res.data.path;
-      let p = await generateCOPdf(b, letterpadUrl);
+      let p = await generateCOPdf(b, letterpadUrl, companyDetails);
       const blob = p.blob;
       const url = window.URL.createObjectURL(blob);
 

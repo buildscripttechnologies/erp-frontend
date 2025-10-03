@@ -143,13 +143,38 @@ export async function makeLabelPdf(stock) {
     doc.addImage(
       qrImg,
       "PNG",
-      startX + 30 + 2 + (qrMaxW - qrW) / 2,
-      currentY + 2 + (qrMaxH - qrH) / 2,
+      startX + 33 + 2 + (qrMaxW - qrW) / 2,
+      currentY + 1 + (qrMaxH - qrH) / 2,
       qrW,
       qrH
     );
     doc.setFontSize(8);
-    doc.text(barcodeObj.barcode, 45, 60);
+    // Example long text
+    // const text = barcodeObj.barcode;
+    // Example long text
+    const text = barcodeObj.barcode;
+
+    // Max width allowed for wrapping
+    const maxWidth = 60;
+
+    // Split into multiple lines
+    const splitText = doc.splitTextToSize(text, maxWidth);
+
+    // Page width (for centering)
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Starting Y position (just below your QR code)
+    let startY = 58.5;
+
+    // Print each line centered
+    splitText.forEach((line, i) => {
+      const textWidth = doc.getTextWidth(line);
+      const x = 35 + (maxWidth - textWidth) / 2; // center within 60 width box
+      doc.text(line, x, startY + i * 3); // 8 = line height
+    });
+
+    // Now print it — jsPDF will place each line automatically
+    // doc.text(splitText, 35, 58.5);
   }
 
   // Instead of saving, open print dialog

@@ -39,6 +39,20 @@ const POApprovel = ({ isOpen }) => {
     limit: 10,
   });
   const [downloading, setDownloading] = useState();
+  const [companyDetails, setCompanyDetails] = useState();
+
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const res = await axios.get("/settings/company-details");
+
+        setCompanyDetails(res.data || []);
+      } catch {
+        toast.error("Failed to fetch company details");
+      }
+    };
+    fetchCompanyDetails();
+  }, []);
 
   const { hasPermission } = useAuth();
 
@@ -146,7 +160,7 @@ const POApprovel = ({ isOpen }) => {
       const res = await axios.get("/settings/letterpad");
       const letterpadUrl = res.data.path; // e.g., http://localhost:5000/letterpad/
 
-      let p = await generateLPPO(po, letterpadUrl);
+      let p = await generateLPPO(po, letterpadUrl, companyDetails);
       const blob = p.blob;
       const url = window.URL.createObjectURL(blob);
 

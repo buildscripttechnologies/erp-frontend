@@ -39,6 +39,21 @@ const PurchaseOrder = ({ isOpen }) => {
 
   const { hasPermission } = useAuth();
 
+  const [companyDetails, setCompanyDetails] = useState();
+
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const res = await axios.get("/settings/company-details");
+
+        setCompanyDetails(res.data || []);
+      } catch {
+        toast.error("Failed to fetch company details");
+      }
+    };
+    fetchCompanyDetails();
+  }, []);
+
   const hasMountedRef = useRef(false);
   ScrollLock(showAddPO == true || editingPO != null);
 
@@ -134,7 +149,7 @@ const PurchaseOrder = ({ isOpen }) => {
     try {
       const res = await axios.get("/settings/letterpad");
       const letterpadUrl = res.data.path;
-      let p = await generateLPPO(po, letterpadUrl);
+      let p = await generateLPPO(po, letterpadUrl, companyDetails);
       const blob = p.blob;
       const url = window.URL.createObjectURL(blob);
 

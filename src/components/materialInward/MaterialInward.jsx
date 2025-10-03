@@ -354,8 +354,8 @@ const MaterialInward = () => {
           <thead className="bg-[#d8b76a]  text-[#292926] text-left whitespace-nowrap">
             <tr>
               <th className="px-2 py-1.5 ">#</th>
-              <th className="px-2 py-1.5  hidden md:table-cell">Created At</th>
-              <th className="px-2 py-1.5  hidden md:table-cell">Updated At</th>
+              <th className="px-2 py-1.5  ">Created At</th>
+              <th className="px-2 py-1.5 ">Updated At</th>
               <th className="px-2 py-1.5 ">Type</th>
               <th className="px-2 py-1.5 ">Sku Code</th>
               <th className="px-2 py-1.5 ">Item Name</th>
@@ -389,7 +389,7 @@ const MaterialInward = () => {
                         index +
                         1}
                     </td>
-                    <td className="px-2 hidden md:table-cell  border-r border-[#d8b76a]">
+                    <td className="px-2   border-r border-[#d8b76a]">
                       {new Date(stock.createdAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
@@ -399,7 +399,7 @@ const MaterialInward = () => {
                         hour12: true,
                       })}
                     </td>
-                    <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
+                    <td className="px-2   border-r border-[#d8b76a]">
                       {new Date(stock.updatedAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",

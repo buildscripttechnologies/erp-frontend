@@ -276,13 +276,14 @@ const StockRegister = () => {
               <th className="px-2 py-1.5 ">Available Qty</th>
               <th className="px-2 py-1.5 ">Damaged Qty</th>
               <th className="px-2 py-1.5 ">MOQ</th>
+              <th className="px-2 py-1.5 ">Amount</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(9).fill({})}
+                columns={Array(11).fill({})}
               />
             ) : (
               <>
@@ -323,7 +324,10 @@ const StockRegister = () => {
                       {stock.damagedQty.toFixed(2) || 0}
                     </td>
 
-                    <td className="px-2 ">{stock.moq || 0}</td>
+                    <td className="px-2  border-r border-primary ">
+                      {stock.moq || 0}
+                    </td>
+                    <td className="px-2 ">{stock.amount || 0}</td>
                   </tr>
                 ))}
                 {stocks.length === 0 && (
