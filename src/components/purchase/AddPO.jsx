@@ -298,7 +298,7 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
                     "&:hover": { borderColor: "var(--color-primary)" },
                   }),
                 }}
-                className="truncate"
+                className=""
               />
             </div>
           </div>
