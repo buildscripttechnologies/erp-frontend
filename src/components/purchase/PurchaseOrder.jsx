@@ -40,7 +40,7 @@ const PurchaseOrder = ({ isOpen }) => {
   const { hasPermission } = useAuth();
 
   const [companyDetails, setCompanyDetails] = useState();
-
+  const [letterpadUrl, setLetterpadUrl] = useState();
   useEffect(() => {
     const fetchCompanyDetails = async () => {
       try {
@@ -99,6 +99,21 @@ const PurchaseOrder = ({ isOpen }) => {
     fetchPOs();
   }, []);
 
+  useEffect(() => {
+    const fetchLetterpad = async () => {
+      try {
+        const res = await axios.get("/settings/letterpad");
+        const letterpadUrl = res.data.path; // e.g., http://localhost:5000/letterpad/
+        if (letterpadUrl) {
+          setLetterpadUrl(letterpadUrl);
+        }
+      } catch {
+        toast.error("Failed to fetch letterpad");
+      }
+    };
+    fetchLetterpad();
+  }, []);
+
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
     fetchPOs(page);
@@ -147,8 +162,6 @@ const PurchaseOrder = ({ isOpen }) => {
   const handleDownload = async (po) => {
     setDownloading(true);
     try {
-      const res = await axios.get("/settings/letterpad");
-      const letterpadUrl = res.data.path;
       let p = await generateLPPO(po, letterpadUrl, companyDetails);
       const blob = p.blob;
       const url = window.URL.createObjectURL(blob);

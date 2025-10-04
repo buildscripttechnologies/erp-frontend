@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
-import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
+import { FiEdit, FiTrash2, FiPlus, FiSearch, FiDownload } from "react-icons/fi";
 
 // import EditstockModal from "./EditstockModal";
 import TableSkeleton from "../TableSkeleton";
@@ -14,6 +14,8 @@ import { debounce } from "lodash";
 import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
+import { ClipLoader } from "react-spinners";
+import { exportStockToPDF, exportToExcel } from "../../utils/exportData";
 
 const StockRegister = () => {
   const { hasPermission } = useAuth();
@@ -53,9 +55,11 @@ const StockRegister = () => {
   const [selectedStock, setSelectedStock] = useState(null);
   const [barcodeModalOpen, setBarcodeModalOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
-
+  const [downloading, setDownloading] = useState(false);
   const [uoms, setUoms] = useState([]);
-
+  const [showExportOptions, setShowExportOptions] = useState(false);
+  const [exportScope, setExportScope] = useState("current");
+  const [exportFormat, setExportFormat] = useState("excel");
   const hasMountedRef = useRef(false);
 
   const handleViewBarcodes = (stock) => {
@@ -162,6 +166,58 @@ const StockRegister = () => {
     }
   };
 
+  const data = (data) => {
+    return data.map((e) => ({
+      skuCode: e.skuCode || "",
+      itemName: e.itemName || "",
+      description: e.description || "",
+      stockUOM: e.stockUOM?.unitName || "",
+      stockQty: e.stockQty || 0,
+      availableQty: e.availableQty || 0,
+      damagedQty: e.damagedQty || 0,
+      moq: e.moq || 0,
+      amount: e.amount || 0,
+    }));
+  };
+
+  const handleExport = async () => {
+    try {
+      setDownloading(true);
+
+      let exportData = [];
+
+      if (exportScope === "current" || exportScope === "filtered") {
+        exportData = data(stocks);
+        generateExportFile(exportData); // Synchronous export
+        setDownloading(false);
+      } else {
+        // Export all: fetch full data from backend first
+        const res = await axios.get("/stocks/get-all-merged", {
+          params: { limit: pagination.totalResults },
+        });
+
+        exportData = data(res.data.data);
+        generateExportFile(exportData);
+        setDownloading(false);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to export data");
+      setDownloading(false);
+    }
+  };
+
+  const generateExportFile = (data) => {
+    if (exportFormat === "excel") {
+      exportToExcel(data, "Stock");
+    } else {
+      exportStockToPDF(data);
+    }
+  };
+  const toggleExportOptions = () => {
+    setShowExportOptions((prev) => !prev);
+  };
+
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
@@ -190,7 +246,6 @@ const StockRegister = () => {
             <option value="SFG">SFG</option>
             <option value="FG">FG</option>
           </select>
-
           <select
             value={filters.uom}
             onChange={(e) => setFilters({ ...filters, uom: e.target.value })}
@@ -203,7 +258,6 @@ const StockRegister = () => {
               </option>
             ))}
           </select>
-
           <div>
             <label htmlFor="From Date">From : </label>
             <input
@@ -215,7 +269,6 @@ const StockRegister = () => {
               className="border border-primary rounded px-2 py-1.5 text-sm"
             />
           </div>
-
           <div>
             <label htmlFor="To Date">To : </label>
             <input
@@ -227,7 +280,6 @@ const StockRegister = () => {
               className="border border-primary rounded px-2 py-1.5 text-sm"
             />
           </div>
-
           {/* <button
             disabled={
               filters.type == "" &&
@@ -251,6 +303,49 @@ const StockRegister = () => {
             className="bg-primary hover:bg-[#b38a37] disabled:hover:bg-primary/50 disabled:bg-primary/50 disabled:cursor-not-allowed text-[#292926] font-semibold px-4 py-1.5 rounded transition duration-200 cursor-pointer"
           >
             Reset Filters
+          </button>{" "}
+          {showExportOptions && (
+            <div className="flex gap-2 items-center">
+              <select
+                value={exportScope}
+                onChange={(e) => setExportScope(e.target.value)}
+                className="border border-primary px-3 py-1.5 rounded text-sm text-black cursor-pointer"
+              >
+                <option value="current">This Page</option>
+                <option value="filtered">Filtered Data</option>
+                <option value="all">All Data</option>
+              </select>
+
+              <select
+                value={exportFormat}
+                onChange={(e) => setExportFormat(e.target.value)}
+                className="border border-primary px-3 py-1.5 rounded text-sm text-black cursor-pointer"
+              >
+                <option value="excel">Excel</option>
+                <option value="pdf">PDF</option>
+              </select>
+
+              <button
+                disabled={downloading}
+                onClick={handleExport}
+                className="bg-primary hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded transition cursor-pointer"
+              >
+                {downloading ? (
+                  <span className="flex justify-center items-center gap-1">
+                    {/* Downloading */}
+                    <BeatLoader size={4} color="#292926" />
+                  </span>
+                ) : (
+                  "Download"
+                )}
+              </button>
+            </div>
+          )}
+          <button
+            onClick={toggleExportOptions}
+            className="bg-primary cursor-pointer hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded flex justify-center items-center whitespace-nowrap transition"
+          >
+            <FiDownload className="mr-2" /> Export
           </button>
         </div>
       </div>

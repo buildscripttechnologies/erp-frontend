@@ -1,38 +1,45 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 import { generateLPPO } from "./generateLPPO";
-import { FaArrowCircleRight, FaRegArrowAltCircleRight } from "react-icons/fa";
+import { FaRegArrowAltCircleRight } from "react-icons/fa";
 import axios from "../../utils/axios";
+import toast from "react-hot-toast";
+import { BeatLoader } from "react-spinners";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
-export default function PurchaseOrderBill({ po, onClose }) {
+export default function PurchaseOrderBill({
+  po,
+  onClose,
+  onUpdated,
+  companyDetails,
+  letterpadUrl,
+  fetchPurchaseOrders, // optional: to refresh PO list after update
+}) {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [confirmed, setConfirmed] = useState(false);
   const [finalConfirmed, setFinalConfirmed] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
-  // PDF rendering
   const containerRef = useRef(null);
   const pageRefs = useRef({});
   const [zoom, setZoom] = useState(1);
-
-  // Pan & pinch state
   const startRef = useRef(null);
   const pinchStart = useRef(null);
-
-  // Slider state
   const sliderRef = useRef(null);
   const [sliderPos, setSliderPos] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [pdfData, setPdfData] = useState();
 
+  console.log("po", po);
+
+  // 🧩 Generate and render PO PDF
   useEffect(() => {
     async function setUrl() {
-      const res = await axios.get("/settings/letterpad");
-      const letterpadUrl = res.data.path;
       if (po) {
-        let p = await generateLPPO(po, letterpadUrl);
+        let p = await generateLPPO(po, letterpadUrl, companyDetails);
         setPdfUrl(p.url);
+        setPdfData(p);
       }
     }
     setUrl();
@@ -49,13 +56,11 @@ export default function PurchaseOrderBill({ po, onClose }) {
       }
 
       const page = await pdf.getPage(pageNum);
-
       const unscaled = page.getViewport({ scale: 1 });
       const containerWidth = containerRef.current.clientWidth || unscaled.width;
       const scale = (containerWidth / unscaled.width) * zoomLevel;
 
       const viewport = page.getViewport({ scale });
-
       const ctx = canvas.getContext("2d");
       const outputScale = window.devicePixelRatio || 1;
 
@@ -65,7 +70,6 @@ export default function PurchaseOrderBill({ po, onClose }) {
       canvas.style.height = `${viewport.height}px`;
 
       ctx.setTransform(outputScale, 0, 0, outputScale, 0, 0);
-
       await page.render({ canvasContext: ctx, viewport }).promise;
     },
     [zoom]
@@ -79,7 +83,6 @@ export default function PurchaseOrderBill({ po, onClose }) {
       try {
         const loadingTask = pdfjsLib.getDocument(pdfUrl);
         pdfDoc = await loadingTask.promise;
-
         for (let i = 1; i <= pdfDoc.numPages; i++) {
           await renderPage(pdfDoc, i);
         }
@@ -91,107 +94,102 @@ export default function PurchaseOrderBill({ po, onClose }) {
     loadPDF();
   }, [pdfUrl, renderPage]);
 
-  /** Zoom */
-  const handleDoubleClick = () => {
-    setZoom((z) => (z === 1 ? 2 : 1));
-    if (containerRef.current) containerRef.current.scrollTo(0, 0);
-  };
+  const calculateStatus = (poItems) => {
+    const total = poItems.length;
+    const rejected = poItems.filter((i) => i.itemStatus == "rejected").length;
+    const approved = total - rejected;
 
-  const handleTouchStart = (e) => {
-    if (e.touches.length === 2) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      pinchStart.current = Math.sqrt(dx * dx + dy * dy);
-    } else if (e.touches.length === 1 && zoom > 1) {
-      startRef.current = {
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY,
-        scrollLeft: containerRef.current.scrollLeft,
-        scrollTop: containerRef.current.scrollTop,
-      };
+    // single item case
+    if (total === 1) return rejected === 1 ? "rejected" : "approved";
+
+    // two items case
+    if (total === 2) {
+      if (rejected === 2) return "rejected";
+      if (rejected === 1) return "partially-approved";
+      return "approved";
     }
+
+    // more than two items
+    if (rejected === 0) return "approved"; // all approved
+    if (approved === 0) return "rejected"; // all rejected
+    return "partially-approved"; // mix of both
   };
 
-  const handleTouchMove = (e) => {
-    if (e.touches.length === 2 && pinchStart.current) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      const newDistance = Math.sqrt(dx * dx + dy * dy);
+  // 📤 Update PO when finally confirmed
+  useEffect(() => {
+    const updatePOStatus = async () => {
+      if (!finalConfirmed || !po?._id) return;
 
-      if (newDistance > pinchStart.current + 10) {
-        setZoom((z) => Math.min(z + 0.05, 3));
-        pinchStart.current = newDistance;
-      } else if (newDistance < pinchStart.current - 10) {
-        setZoom((z) => Math.max(z - 0.05, 1));
-        pinchStart.current = newDistance;
+      try {
+        setUpdating(true);
+
+        const status = calculateStatus(po.items);
+        console.log("status", status);
+
+        // Convert blob to base64 and then send in PATCH
+        const blob = pdfData.blob;
+        const reader = new FileReader();
+
+        reader.onloadend = async () => {
+          try {
+            const base64data = reader.result.split(",")[1]; // remove data:application/pdf;base64
+            console.log("basedata", base64data);
+
+            const res = await axios.patch(`/pos/update/${po._id}`, {
+              status,
+              pdfBase64: base64data,
+            });
+
+            if (res.data.status === 403) {
+              toast.error(res.data.message);
+              return;
+            }
+
+            toast.success("Purchase Order successfully confirmed ✅");
+            onUpdated();
+
+            if (fetchPurchaseOrders) fetchPurchaseOrders();
+          } catch (err) {
+            console.error("Error updating PO:", err);
+            toast.error("Failed to update PO status!");
+            setFinalConfirmed(false);
+          } finally {
+            setUpdating(false);
+          }
+        };
+
+        reader.readAsDataURL(blob); // start the conversion
+      } catch (err) {
+        console.error("Unexpected error:", err);
+        toast.error("Something went wrong while updating PO!");
+        setFinalConfirmed(false);
+        setUpdating(false);
       }
-    } else if (e.touches.length === 1 && startRef.current && zoom > 1) {
-      const dx = e.touches[0].clientX - startRef.current.x;
-      const dy = e.touches[0].clientY - startRef.current.y;
-
-      containerRef.current.scrollLeft = startRef.current.scrollLeft - dx;
-      containerRef.current.scrollTop = startRef.current.scrollTop - dy;
-    }
-  };
-
-  const handleTouchEnd = () => {
-    pinchStart.current = null;
-    startRef.current = null;
-  };
-
-  /** Mouse drag for desktop */
-  const handleMouseDown = (e) => {
-    if (zoom <= 1) return;
-    startRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      scrollLeft: containerRef.current.scrollLeft,
-      scrollTop: containerRef.current.scrollTop,
     };
-  };
 
-  const handleMouseMove = (e) => {
-    if (!startRef.current || zoom <= 1) return;
-    const dx = e.clientX - startRef.current.x;
-    const dy = e.clientY - startRef.current.y;
-
-    containerRef.current.scrollLeft = startRef.current.scrollLeft - dx;
-    containerRef.current.scrollTop = startRef.current.scrollTop - dy;
-  };
-
-  const handleMouseUp = () => {
-    startRef.current = null;
-  };
+    updatePOStatus();
+  }, [finalConfirmed, po, fetchPurchaseOrders]);
 
   /** Slider Handlers */
   const handleDrag = (e) => {
     if (!dragging || !sliderRef.current || !confirmed) return;
-
     const rect = sliderRef.current.getBoundingClientRect();
-    const knobWidth = 44; // actual knob width (h-11 w-11 ≈ 44px)
-
+    const knobWidth = 44;
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const relativeX = clientX - rect.left;
-
-    // Position = finger position - half knob, clamped between [0, max]
     const newPos = Math.min(
       Math.max(0, relativeX - knobWidth / 2),
       rect.width - knobWidth
     );
-
     setSliderPos(newPos);
 
-    // Confirm only when knob reaches the very end
     if (newPos >= rect.width - knobWidth - 2) {
-      // -2 for tiny margin tolerance
       setFinalConfirmed(true);
       setDragging(false);
     }
   };
 
   const stopDrag = () => setDragging(false);
-
-  /** Reset */
   const resetConfirmation = () => {
     setConfirmed(false);
     setFinalConfirmed(false);
@@ -200,7 +198,7 @@ export default function PurchaseOrderBill({ po, onClose }) {
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="p-4 sm:p-6 fixed inset-0 backdrop-blur-sm w-[95%]  sm:max-w-4xl mx-auto rounded shadow-2xl bg-white z-50 max-h-[70vh] sm:max-h-[95vh] overflow-auto my-auto border border-gray-200">
+      <div className="p-4 sm:p-6 fixed inset-0 backdrop-blur-sm w-[95%] sm:max-w-4xl mx-auto rounded shadow-2xl bg-white z-50 max-h-[70vh] sm:max-h-[95vh] overflow-auto my-auto border border-gray-200">
         <button
           onClick={onClose}
           className="absolute top-5 right-6 text-gray-500 hover:text-red-600 text-2xl font-bold"
@@ -212,25 +210,17 @@ export default function PurchaseOrderBill({ po, onClose }) {
           Purchase Order Details
         </h2>
 
-        {/* PDF container */}
+        {/* PDF Viewer */}
         <div
           ref={containerRef}
           className="w-full sm:h-[55vh] h-[30vh] overflow-auto border border-gray-300 rounded shadow-inner bg-gray-50 relative touch-pan-y"
-          onDoubleClick={handleDoubleClick}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
         >
           {!pdfUrl && (
             <p className="text-gray-400 text-center mt-20">Loading PDF...</p>
           )}
         </div>
 
-        {/* Confirmation Section */}
+        {/* Confirmation Checkbox */}
         <div className="mt-6 border-t border-gray-200 pt-6 space-y-4">
           <label className="flex items-center gap-3 cursor-pointer">
             <input
@@ -246,14 +236,20 @@ export default function PurchaseOrderBill({ po, onClose }) {
           </label>
         </div>
 
-        {/* Slide confirmation (always visible) */}
+        {/* Slide to confirm */}
         <div className="mt-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-700">
               Slide to Confirm PO
             </span>
             <span className="text-xs text-gray-500">
-              {finalConfirmed ? "Confirmed" : confirmed ? "Pending" : "Locked"}
+              {updating
+                ? "Updating..."
+                : finalConfirmed
+                ? "Confirmed"
+                : confirmed
+                ? "Pending"
+                : "Locked"}
             </span>
           </div>
 
@@ -283,25 +279,26 @@ export default function PurchaseOrderBill({ po, onClose }) {
               }`}
               style={{ left: `${sliderPos}px` }}
             >
-              <FaRegArrowAltCircleRight className="text-2xl " />
+              <FaRegArrowAltCircleRight className="text-2xl text-secondary" />
             </div>
           </div>
         </div>
 
         {/* Success Banner */}
-        {finalConfirmed && (
-          <div className="mt-6">
-            <div className="p-2 bg-gradient-to-r from-primary/20 to-[#10B981]/20 text-[#10B981] sm:text-lg text-sm text-center rounded shadow-md font-semibold flex items-center justify-center">
-              ✅ Purchase Order has been successfully confirmed!
-            </div>
-            {/* <button
-              onClick={resetConfirmation}
-              className="mt-4 px-5 py-2 bg-primary text-white rounded-lg hover:bg-[#1B40C4] transition"
-            >
-              Reset Confirmation
-            </button> */}
-          </div>
-        )}
+        {finalConfirmed &&
+          (updating ? (
+            <span className=" mt-6 w-full flex items-center justify-center">
+              <BeatLoader size={15} color="#d8b76a" />
+            </span>
+          ) : (
+            <>
+              <div className="mt-6">
+                <div className="p-2 bg-gradient-to-r from-primary/20 to-green-200 text-green-600 text-center rounded shadow-md font-semibold">
+                  ✅ Purchase Order has been successfully confirmed!
+                </div>
+              </div>
+            </>
+          ))}
       </div>
     </div>
   );

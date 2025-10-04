@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
-import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
+import { FiEdit, FiTrash2, FiPlus, FiSearch, FiDownload } from "react-icons/fi";
 import Dashboard from "../../../pages/Dashboard";
 import TableSkeleton from "../../TableSkeleton";
 import Toggle from "react-toggle";
@@ -19,6 +19,8 @@ import { debounce } from "lodash";
 
 import { useRef } from "react";
 import FgDetailSection from "./FgDetailSection";
+import { exportFGToExcel, exportFGToPDF } from "../../../utils/exportData";
+import { BeatLoader } from "react-spinners";
 
 const renderNestedMaterials = (
   materials,
@@ -248,6 +250,11 @@ const FgMaster = ({ isOpen }) => {
   const [editingFg, setEditingFg] = useState(null);
   const [expandedFgId, setExpandedFgId] = useState(null);
 
+  const [exportScope, setExportScope] = useState("current");
+  const [exportFormat, setExportFormat] = useState("excel");
+  const [showExportOptions, setShowExportOptions] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -427,7 +434,63 @@ const FgMaster = ({ isOpen }) => {
       toast.error("Failed to delete FG");
     }
   };
+  const data = (data) => {
+    return data.map((e) => ({
+      skuCode: e.skuCode,
+      itemName: e.itemName,
+      description: e.description,
 
+      hsnOrSac: e.hsnOrSac,
+
+      location: e.location,
+
+      gst: e.gst,
+      height: e.height,
+      width: e.width,
+      depth: e.depth,
+      rate: e.unitRate,
+
+      files: e.files,
+    }));
+  };
+  const toggleExportOptions = () => {
+    setShowExportOptions((prev) => !prev);
+  };
+
+  const handleExport = async () => {
+    try {
+      setDownloading(true);
+
+      let exportData = [];
+
+      if (exportScope === "current" || exportScope === "filtered") {
+        exportData = data(fgs);
+        generateExportFile(exportData); // Synchronous export
+        setDownloading(false);
+      } else {
+        // Export all: fetch full data from backend first
+        const res = await axios.get("/fgs/get-all", {
+          params: { limit: pagination.totalResults },
+        });
+
+        exportData = data(res.data.data);
+        generateExportFile(exportData);
+        setDownloading(false);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to export data");
+      setDownloading(false);
+    }
+  };
+
+  const generateExportFile = (data) => {
+    if (exportFormat === "excel") {
+      exportFGToExcel(data);
+    } else {
+      exportFGToPDF(data);
+    }
+  };
   return (
     <div className="relative p-3 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
@@ -446,14 +509,59 @@ const FgMaster = ({ isOpen }) => {
             className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
           />
         </div>
-        {hasPermission("FG", "write") && (
+        <div className="flex gap-2 flex-wrap">
+          {showExportOptions && (
+            <div className="flex gap-2 items-center">
+              <select
+                value={exportScope}
+                onChange={(e) => setExportScope(e.target.value)}
+                className="border border-primary px-3 py-1.5 rounded text-sm text-black cursor-pointer"
+              >
+                <option value="current">This Page</option>
+                <option value="filtered">Filtered Data</option>
+                <option value="all">All Data</option>
+              </select>
+
+              <select
+                value={exportFormat}
+                onChange={(e) => setExportFormat(e.target.value)}
+                className="border border-primary px-3 py-1.5 rounded text-sm text-black cursor-pointer"
+              >
+                <option value="excel">Excel</option>
+                <option value="pdf">PDF</option>
+              </select>
+
+              <button
+                disabled={downloading}
+                onClick={handleExport}
+                className="bg-primary hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded transition cursor-pointer"
+              >
+                {downloading ? (
+                  <span className="flex justify-center items-center gap-1">
+                    {/* Downloading */}
+                    <BeatLoader size={4} color="#292926" />
+                  </span>
+                ) : (
+                  "Download"
+                )}
+              </button>
+            </div>
+          )}
           <button
-            onClick={() => toogleAddFG(showAddFG)}
-            className="w-full sm:w-auto justify-center bg-primary hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
+            onClick={toggleExportOptions}
+            className="bg-primary cursor-pointer hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded flex justify-center items-center whitespace-nowrap transition"
           >
-            <FiPlus /> Add FG
+            <FiDownload className="mr-2" /> Export
           </button>
-        )}
+          {hasPermission("FG", "write") && (
+            <button
+              onClick={() => toogleAddFG(showAddFG)}
+              className=" sm:w-auto justify-center bg-primary hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200 cursor-pointer"
+            >
+              <FiPlus /> Add FG
+            </button>
+          )}
+        </div>
       </div>
       {showAddFG && (
         <AddFgModal

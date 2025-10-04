@@ -387,7 +387,7 @@ export const generateLPPO = async (po, letterpadUrl, companyDetails) => {
           styles: { fontStyle: "bold" },
         },
         {
-          content: companyDetails.companyName || "I Khodal Bag Pvt. Ltd.",
+          content: companyDetails?.companyName || "I Khodal Bag Pvt. Ltd.",
           colSpan: 2,
           styles: { fontStyle: "bold" },
         },
@@ -397,6 +397,7 @@ export const generateLPPO = async (po, letterpadUrl, companyDetails) => {
         { content: formatAddressWithLines(po.vendor), colSpan: 2 },
         {
           content: formatAddressWithLines({ address: po.address }),
+
           colSpan: 2,
         },
       ],
@@ -592,11 +593,11 @@ function formatAddressWithLines(obj = {}) {
   let lines = parts;
 
   // Pad to exactly 3 lines
-  while (lines.length < 1) {
-    lines.push(" ");
-  }
+  // while (lines.length < 2) {
+  //   lines.push(" ");
+  // }
 
-  return lines.slice(0, 3).join("\n");
+  return lines.slice(0, 3).join(",");
 }
 
 function getGstSummary(items, vendorState, companyState = "GJ") {
