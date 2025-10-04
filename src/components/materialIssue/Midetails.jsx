@@ -23,7 +23,10 @@ const MIdetails = ({ MI, filter = "" }) => {
   // }
 
   const getStageByFilter = (item) => {
-    return item.stages[item.stages.length - 1];
+    let stage = item.stages[item.stages.length - 1];
+    // console.log("s", stage);
+
+    return stage;
   };
 
   return (
@@ -56,8 +59,10 @@ const MIdetails = ({ MI, filter = "" }) => {
           {filteredDetails?.length > 0 ? (
             filteredDetails.map((item, idx) => {
               const stage = getStageByFilter(item);
+              // console.log("stage", stage);
+
               let statusLabel;
-              if (!stage) {
+              if (stage.stage == "Material Issue") {
                 statusLabel = "Pending";
               } else {
                 statusLabel = "Completed";

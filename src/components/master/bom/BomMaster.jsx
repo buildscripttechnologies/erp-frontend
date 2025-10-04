@@ -153,7 +153,11 @@ const BomMaster = ({ isOpen }) => {
       const letterpadUrl = res.data.path;
       const blobUrl = await generateBomLP(bomData, letterpadUrl);
 
-      window.open(blobUrl, "_blank");
+      // window.open(blobUrl, "_blank");
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `${bomData.bomNo || "Sample"}.pdf`; // <-- custom filename here
+      a.click();
     } catch (err) {
       console.error("Error generating BOM PDF preview:", err);
       toast.error("Failed to generate PDF preview.");

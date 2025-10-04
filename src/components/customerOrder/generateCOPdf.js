@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getBase64ImageFromPDF } from "../../utils/convertPDFPageToImage";
+import QRCode from "qrcode";
 
 // Terms & Conditions (multi-line string)
 const TERMS = `1. I Khodal Bag Pvt. Ltd. submission of the purchase Order is conditioned on Supplier’s agreement that any terms different from or in addition to the terms of the Purchase Order, whether communicated orally or contained in any purchase order confirmation, invoice, acknowledgement, acceptance or other written correspondence, irrespective of the timing, shall not form a part of the Purchase Order, even if Supplier purports to condition its acceptance of the Purchase Order on I Khodal Bag Pvt. Ltd. agreement to such different or additional terms. 
@@ -12,7 +13,7 @@ const TERMS = `1. I Khodal Bag Pvt. Ltd. submission of the purchase Order is con
 7. Payment credit period is stipulated as within 30 days from the receipt of goods `;
 
 // ✅ SAFE PDF Generator
-export const generateCOPdf = async (co = {}, letterpadUrl) => {
+export const generateCOPdf = async (co = {}, letterpadUrl, companyDetails) => {
   const doc = new jsPDF("portrait", "mm", "a4");
   const margin = 6;
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -64,7 +65,7 @@ export const generateCOPdf = async (co = {}, letterpadUrl) => {
     body: [
       [
         {
-          content: "I KHODAL BAG PVT. LTD",
+          content: companyDetails.companyName,
           colSpan: 2,
           styles: { fontStyle: "bold" },
         },
@@ -79,6 +80,7 @@ export const generateCOPdf = async (co = {}, letterpadUrl) => {
       [
         {
           content:
+            companyDetails.warehouses?.[0].address ||
             "132,133,134, ALPINE INDUSTRIAL PARK, NR. CHORYASI TOLL PLAZA, SURAT-394150, GUJARAT, INDIA",
           colSpan: 2,
         },
@@ -86,13 +88,13 @@ export const generateCOPdf = async (co = {}, letterpadUrl) => {
       ],
       [
         { content: "PAN:", styles: { fontStyle: "bold" } },
-        "ABCDE1234F",
+        companyDetails.pan,
         { content: "PAN:", styles: { fontStyle: "bold" } },
         co?.party?.pan || "",
       ],
       [
         { content: "GST:", styles: { fontStyle: "bold" } },
-        "24AAGCI1188Q1Z2",
+        companyDetails.gst,
         { content: "Customer GST:", styles: { fontStyle: "bold" } },
         co?.party?.gst || "",
       ],
@@ -206,6 +208,45 @@ export const generateCOPdf = async (co = {}, letterpadUrl) => {
     ],
     theme: "plain",
   });
+  // ---- Bank Details Box ----
+  const bankDetails = companyDetails.bankDetails[0] || {};
+  const qrX = margin;
+  const qrY = doc.lastAutoTable.finalY;
+  const qrSize = 23;
+  const boxWidth = (pageWidth - margin * 2) / 2;
+  const boxHeight = 28;
+
+  // Draw rectangle box
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.25);
+  doc.rect(qrX, qrY, boxWidth, boxHeight);
+
+  // Left: QR code
+  const upiId = bankDetails.upiId || "";
+  const amount = grandTotal.toFixed(2);
+
+  // Generate UPI QR content
+  const upiQRText = `upi://pay?pa=${upiId}&pn=${companyDetails.companyName}&mc=&tid=&tr=&tn=Payment&am=${amount}&cu=INR`;
+
+  // Generate QR code as Data URL
+  const qrDataUrl = await QRCode.toDataURL(upiQRText, {
+    margin: 0,
+    width: qrSize,
+  });
+
+  // Add QR to left side
+  doc.addImage(qrDataUrl, "PNG", qrX + 2, qrY + 2, qrSize, qrSize);
+
+  // Right: Bank details text
+  const textX = qrX + qrSize + 5;
+  const textY = qrY + 4;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`Bank Name: ${bankDetails.bankName || ""}`, textX, textY);
+  doc.text(`Branch: ${bankDetails.branch || ""}`, textX, textY + 5);
+  doc.text(`IFSC Code: ${bankDetails.ifsc || ""}`, textX, textY + 10);
+  doc.text(`Account No: ${bankDetails.accountNo || ""}`, textX, textY + 15);
+  doc.text(`UPI ID: ${bankDetails.upiId || ""}`, textX, textY + 20);
 
   // ---- Totals ----
   autoTable(doc, {
@@ -232,9 +273,9 @@ export const generateCOPdf = async (co = {}, letterpadUrl) => {
     },
   });
 
-  // ---- Signature ----
-  let signatureY = Math.max(doc.lastAutoTable.finalY, leftTableY) + 15;
-  addSignatureBlock(doc, pageWidth, pageHeight, signatureY, margin);
+  // // ---- Signature ----
+  // let signatureY = Math.max(doc.lastAutoTable.finalY, leftTableY) + 15;
+  // addSignatureBlock(doc, pageWidth, pageHeight, signatureY, margin);
 
   // ---- Terms ----
   doc.addPage();
@@ -251,7 +292,7 @@ export const generateCOPdf = async (co = {}, letterpadUrl) => {
     align: "left",
   });
 
-  addSignatureBlock(doc, pageWidth, pageHeight, 200, margin);
+  // addSignatureBlock(doc, pageWidth, pageHeight, 200, margin);
 
   // ---- Title ----
   doc.setPage(1);

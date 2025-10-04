@@ -26,6 +26,21 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
   // multiple items state
   const [poItems, setPoItems] = useState([]);
 
+  const [warehouses, setWarehouses] = useState();
+
+  useEffect(() => {
+    const fetchWarehouses = async () => {
+      try {
+        const res = await axios.get("/settings/company-details");
+
+        setWarehouses(res.data.warehouses || []);
+      } catch {
+        toast.error("Failed to fetch vendors or items");
+      }
+    };
+    fetchWarehouses();
+  }, []);
+
   // ---- Your existing total amount
   const totalAmount = poItems.reduce(
     (sum, item) => sum + Number(item.amount),
@@ -423,18 +438,17 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
                 Select Address
               </label>
               <select
-                type="date"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
               >
                 <option value="">Select Address</option>
-                <option value="132,133,134, ALPINE INDUSTRIAL PARK,NR. CHORYASI TOLL PLAZA, AT. CHORYASI,KAMREJ, SURAT- 394150. GUJARAT,INDIA.">
-                  Warehouse 1
-                </option>
-                <option value="Plot no. 62, Gate no. 3, Siddhivinayak Industrial Estate Taluka, Kholvad, Laskana-Kholvad Rd, opp. Opera palace, Kamrej, Gujarat 394190">
-                  Warehouse 2
-                </option>
+                {warehouses?.map((wh, index) => (
+                  <option key={index} value={wh.address}>
+                    {wh.name} - {wh.address}
+                    {/* or you can show wh.name + " - " + wh.address */}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

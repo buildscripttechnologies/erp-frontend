@@ -1,6 +1,7 @@
 import React from "react";
 import LetterpadSetting from "./LetterpadSetting";
 import Vendors from "./Vendors";
+import CompanyDetails from "./CompanyDetails";
 
 const Settings = () => {
   return (
@@ -10,10 +11,7 @@ const Settings = () => {
       {/* Letterpad Component */}
       <LetterpadSetting />
       <Vendors />
-
-      {/* Future settings can go here */}
-      {/* <CompanyInfoSetting /> */}
-      {/* <SignatureSetting /> */}
+      <CompanyDetails />
     </div>
   );
 };

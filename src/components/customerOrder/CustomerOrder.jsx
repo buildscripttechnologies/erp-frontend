@@ -41,6 +41,20 @@ const CustomerOrder = ({ isOpen }) => {
   });
 
   const [downloading, setDownloading] = useState();
+  const [companyDetails, setCompanyDetails] = useState();
+
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const res = await axios.get("/settings/company-details");
+
+        setCompanyDetails(res.data || []);
+      } catch {
+        toast.error("Failed to fetch company details");
+      }
+    };
+    fetchCompanyDetails();
+  }, []);
 
   const hasMountedRef = useRef(false);
 
@@ -102,72 +116,21 @@ const CustomerOrder = ({ isOpen }) => {
   //     c.createdBy?.fullName.toLowerCase().includes(search.toLowerCase())
   // );
 
-  const handleToggleStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === true ? false : true;
-    try {
-      const res = await axios.patch(`/boms/edit/${id}`, {
-        isActive: newStatus,
-      });
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
-
-      if (res.data.status == 200) {
-        toast.success(`BOM status updated`);
-
-        // ✅ Update local state without refetch
-        setBOMs((prev) =>
-          prev.map((c) => (c._id === id ? { ...c, isActive: newStatus } : c))
-        );
-      } else {
-        toast.error("Failed to update status");
-      }
-    } catch (err) {
-      toast.error("Failed to update status");
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this BOM?")) return;
-    try {
-      const res = await axios.delete(`/boms/delete/${id}`);
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
-
-      if (res.data.status == 200) {
-        toast.success(`BOM Deleted Successfully`);
-        fetchBOMs(pagination.currentPage);
-      } else {
-        toast.error("Failed to Delete BOM");
-      }
-    } catch (err) {
-      toast.error("Failed to Delete BOM");
-    }
-  };
-
   const handleDownload = async (b) => {
     setDownloading(true);
     try {
       const res = await axios.get("/settings/letterpad");
       const letterpadUrl = res.data.path;
-      let p = await generateCOPdf(b, letterpadUrl);
+      let p = await generateCOPdf(b, letterpadUrl, companyDetails);
       const blob = p.blob;
       const url = window.URL.createObjectURL(blob);
 
       // Open in new tab for preview
-      window.open(url, "_blank");
-
-      // Optionally, if you also want to allow download later:
-      // const a = document.createElement("a");
-      // a.href = url;
-      // a.download = `${po.poNo} Details.pdf`;
-      // document.body.appendChild(a);
-      // a.click();
-      // a.remove();
-
+      // window.open(url, "_blank");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Invoice-${b.prodNo || ""}.pdf`; // <-- custom filename here
+      a.click();
       // Don’t revoke immediately, or the preview tab will break
       // Instead, revoke after some delay
       setTimeout(() => window.URL.revokeObjectURL(url), 60 * 1000);

@@ -284,6 +284,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
         baseQty: 0,
         itemRate: 0,
         isPrint: false,
+        isPasting: false,
         cuttingType: "",
       },
     ]);
@@ -456,6 +457,8 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                     partName: item.partName || "",
                     baseQty: item.baseQty || 0,
                     itemRate: item.itemRate || 0,
+                    isPasting: item.isPasting,
+                    isPrint: item.isPrint,
                     // depth: item.depth || "",
                     label: `${item.skuCode}: ${item.itemName}${
                       item.description ? ` - ${item.description}` : ""
@@ -868,6 +871,21 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
                         />
                         Print
                       </label>
+                      <label className="flex items-center gap-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={comp.isPasting || false}
+                          onChange={(e) =>
+                            updateComponent(
+                              index,
+                              "isPasting",
+                              e.target.checked
+                            )
+                          }
+                          className="rounded border-gray-300 accent-primary"
+                        />
+                        Pasting
+                      </label>
                     </div>
 
                     {/* Remove Button */}
@@ -1133,7 +1151,7 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
               {loading ? (
                 <>
                   <span className="mr-2">Updating</span>
-                  <BeatLoader size={20} color="#292926" />
+                  <BeatLoader size={5} color="#292926" />
                 </>
               ) : (
                 "Update"

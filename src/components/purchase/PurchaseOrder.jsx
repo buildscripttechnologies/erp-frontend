@@ -39,6 +39,21 @@ const PurchaseOrder = ({ isOpen }) => {
 
   const { hasPermission } = useAuth();
 
+  const [companyDetails, setCompanyDetails] = useState();
+  const [letterpadUrl, setLetterpadUrl] = useState();
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const res = await axios.get("/settings/company-details");
+
+        setCompanyDetails(res.data || []);
+      } catch {
+        toast.error("Failed to fetch company details");
+      }
+    };
+    fetchCompanyDetails();
+  }, []);
+
   const hasMountedRef = useRef(false);
   ScrollLock(showAddPO == true || editingPO != null);
 
@@ -82,6 +97,21 @@ const PurchaseOrder = ({ isOpen }) => {
 
   useEffect(() => {
     fetchPOs();
+  }, []);
+
+  useEffect(() => {
+    const fetchLetterpad = async () => {
+      try {
+        const res = await axios.get("/settings/letterpad");
+        const letterpadUrl = res.data.path; // e.g., http://localhost:5000/letterpad/
+        if (letterpadUrl) {
+          setLetterpadUrl(letterpadUrl);
+        }
+      } catch {
+        toast.error("Failed to fetch letterpad");
+      }
+    };
+    fetchLetterpad();
   }, []);
 
   const goToPage = (page) => {
@@ -132,15 +162,16 @@ const PurchaseOrder = ({ isOpen }) => {
   const handleDownload = async (po) => {
     setDownloading(true);
     try {
-      const res = await axios.get("/settings/letterpad");
-      const letterpadUrl = res.data.path;
-      let p = await generateLPPO(po, letterpadUrl);
+      let p = await generateLPPO(po, letterpadUrl, companyDetails);
       const blob = p.blob;
       const url = window.URL.createObjectURL(blob);
 
       // Open in new tab for preview
-      window.open(url, "_blank");
-
+      // window.open(url, "_blank");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${po.poNo || "PO"}.pdf`; // <-- custom filename here
+      a.click();
       // Optionally, if you also want to allow download later:
       // const a = document.createElement("a");
       // a.href = url;

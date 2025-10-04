@@ -40,6 +40,7 @@ import CustomerOrder from "./components/customerOrder/CustomerOrder";
 import COP from "./components/coPendency/COP";
 import IndiaMartLeads from "./components/leads/indiamart/IndiaMartLeads";
 import Settings from "./components/settings/Settings";
+import Pasting from "./components/jobWork/insideFactory/Pasting";
 
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
@@ -252,6 +253,18 @@ const App = () => {
               isAuthenticated ? (
                 <Dashboard>
                   <Printing />
+                </Dashboard>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+          <Route
+            path="/inside-company/pasting"
+            element={
+              isAuthenticated ? (
+                <Dashboard>
+                  <Pasting />
                 </Dashboard>
               ) : (
                 <Navigate to="/login" />

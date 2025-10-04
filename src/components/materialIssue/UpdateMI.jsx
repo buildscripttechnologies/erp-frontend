@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import axios from "../../utils/axios";
 import Select from "react-select";
 import { BeatLoader } from "react-spinners";
-import { cuttingType, jobWorkType, vendors } from "../../data/dropdownData";
+import { cuttingType, jobWorkType } from "../../data/dropdownData";
 
 const UpdateMI = ({ MIData, onClose, onUpdated }) => {
   const [selectedItem, setSelectedItem] = useState({
@@ -34,6 +34,12 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
   const [editIndex, setEditIndex] = useState(null);
   // multiple items state
   const [poItems, setPoItems] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  useEffect(() => {
+    axios
+      .get("/settings/vendor")
+      .then((res) => setVendors(res.data?.vendors || []));
+  }, []);
 
   // ---- Your existing total amount
 
@@ -112,37 +118,71 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
         bom: selectedItem.b._id,
         bomNo: selectedItem.b.bomNo,
         productName: selectedItem.b.productName,
-        itemDetails: itemDetails.map((item) => ({
-          ...item,
-          currentStatus:
-            item.currentStatus == "Pending"
-              ? item.cuttingType &&
-                checkedSkus.includes(item.skuCode) &&
-                item.jobWorkType == "Inside Company"
+        itemDetails: itemDetails.map((item) => {
+          const isSelected = checkedSkus.includes(item.skuCode);
+          const isPending = item.currentStatus === "Pending";
+
+          // Determine new currentStatus
+          let newStatus = item.currentStatus;
+          if (isPending && item.cuttingType && isSelected) {
+            newStatus =
+              item.jobWorkType === "Inside Company"
                 ? "Yet to Start"
-                : item.cuttingType &&
-                  checkedSkus.includes(item.skuCode) &&
-                  item.jobWorkType == "Outside Company"
-                ? "In Progress"
-                : "Pending"
-              : item.currentStatus,
-          stages:
-            item.currentStatus == "Pending" &&
-            item.cuttingType &&
-            checkedSkus.includes(item.skuCode)
-              ? [
-                  {
-                    stage: "Cutting",
-                    status:
-                      item.jobWorkType === "Inside Company"
-                        ? "Yet to Start"
-                        : "In Progress",
-                  },
-                ]
-              : item.stages,
-        })),
-        consumptionTable: updatedConsumption,
-        status: mainStatus,
+                : "In Progress";
+          }
+
+          // Determine new stages
+          let newStages = item.stages ? [...item.stages] : [];
+
+          if (isPending && item.cuttingType && isSelected) {
+            // 🔹 Ensure Material Issue stage is Completed
+            const materialStageIndex = newStages.findIndex(
+              (s) => s.stage === "Material Issue"
+            );
+            if (materialStageIndex >= 0) {
+              newStages[materialStageIndex].status = "Completed";
+            } else {
+              newStages.unshift({
+                stage: "Material Issue",
+                status: "Completed",
+              });
+            }
+
+            // Add Cutting stage based on jobWorkType
+            const cuttingStatus =
+              item.jobWorkType === "Inside Company"
+                ? "Yet to Start"
+                : "In Progress";
+            const cuttingStageIndex = newStages.findIndex(
+              (s) => s.stage === "Cutting"
+            );
+            if (cuttingStageIndex >= 0) {
+              newStages[cuttingStageIndex].status = cuttingStatus;
+            } else {
+              newStages.push({ stage: "Cutting", status: cuttingStatus });
+            }
+          } else {
+            // If item not selected, ensure Material Issue exists with Pending
+            const materialStageIndex = newStages.findIndex(
+              (s) => s.stage === "Material Issue"
+            );
+            if (materialStageIndex >= 0) {
+              newStages[materialStageIndex].status = "Pending";
+            } else {
+              newStages.unshift({ stage: "Material Issue", status: "Pending" });
+            }
+          }
+
+          return {
+            ...item,
+            currentStatus: newStatus,
+            stages: newStages,
+          };
+        }),
+        consumptionTable: updatedConsumption, // assuming you have it prepared
+        status: itemDetails.every((it) => it.currentStatus !== "Pending")
+          ? "Issued"
+          : "Pending",
       };
 
       console.log("payload", payload);
@@ -639,8 +679,8 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                           >
                             <option value="">Select</option>
                             {vendors.map((type, idx) => (
-                              <option key={idx} value={type}>
-                                {type}
+                              <option key={idx} value={type._id}>
+                                {type.name}
                               </option>
                             ))}
                           </select>

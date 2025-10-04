@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import axios from "../../utils/axios";
 import Select from "react-select";
 import { BeatLoader } from "react-spinners";
-import { cuttingType, jobWorkType, vendors } from "../../data/dropdownData";
+import { cuttingType, jobWorkType } from "../../data/dropdownData";
 import AddPO from "../purchase/AddPO";
 
 const Add = ({ onClose, onAdded }) => {
@@ -22,8 +22,15 @@ const Add = ({ onClose, onAdded }) => {
   const [poItems, setPoItems] = useState([]);
 
   const [poModalItem, setPoModalItem] = useState(null);
+  const [vendors, setVendors] = useState([]);
 
   // ---- Your existing total amount
+
+  useEffect(() => {
+    axios
+      .get("/settings/vendor")
+      .then((res) => setVendors(res.data?.vendors || []));
+  }, []);
 
   const fetchDropdowns = async () => {
     try {
@@ -83,29 +90,30 @@ const Add = ({ onClose, onAdded }) => {
       )
         ? "Issued"
         : "Pending";
+
       const payload = {
         bom: selectedItem.b._id,
         bomNo: selectedItem.b.bomNo,
         productName: selectedItem.b.productName,
-        itemDetails: itemDetails.map((item) => ({
-          ...item,
-          currentStatus:
-            item.currentStatus == "Pending"
-              ? item.cuttingType &&
-                checkedSkus.includes(item.skuCode) &&
-                item.jobWorkType == "Inside Company"
-                ? "Yet to Start"
-                : item.cuttingType &&
-                  checkedSkus.includes(item.skuCode) &&
-                  item.jobWorkType == "Outside Company"
-                ? "In Progress"
-                : "Pending"
-              : item.currentStatus,
-          stages:
-            item.currentStatus == "Pending" &&
-            item.cuttingType &&
-            checkedSkus.includes(item.skuCode)
-              ? [
+
+        itemDetails: itemDetails.map((item) => {
+          const isChecked = checkedSkus.includes(item.skuCode);
+
+          // Case 1: Item is still Pending
+          if (item.currentStatus === "Pending") {
+            if (item.cuttingType && isChecked) {
+              // Material issued ✅
+              return {
+                ...item,
+                currentStatus:
+                  item.jobWorkType === "Inside Company"
+                    ? "Yet to Start"
+                    : "In Progress",
+                stages: [
+                  {
+                    stage: "Material Issue",
+                    status: "Completed",
+                  },
                   {
                     stage: "Cutting",
                     status:
@@ -113,12 +121,42 @@ const Add = ({ onClose, onAdded }) => {
                         ? "Yet to Start"
                         : "In Progress",
                   },
-                ]
-              : item.stages,
-        })),
+                ],
+              };
+            } else {
+              // Material not issued ❌
+              return {
+                ...item,
+                currentStatus: "Pending",
+                stages: [
+                  {
+                    stage: "Material Issue",
+                    status: "Pending",
+                  },
+                ],
+              };
+            }
+          }
+
+          // Case 2: Item already has a status (not Pending)
+          return {
+            ...item,
+            // keep its current status
+            stages: item.stages?.length
+              ? item.stages
+              : [
+                  {
+                    stage: "Material Issue",
+                    status: "Pending",
+                  },
+                ],
+          };
+        }),
+
         consumptionTable, // already has isChecked, stockQty, type
         status: mainStatus,
       };
+
       console.log("payload", payload);
 
       const res = await axios.post("/mi/add", payload);
@@ -418,7 +456,7 @@ const Add = ({ onClose, onAdded }) => {
                                 </span>
                                 {isLowStock ? (
                                   <button
-                                    className="px-2 py-1 text-xs rounded bg-yellow-500 text-white hover:bg-yellow-600"
+                                    className="px-2 py-1 text-xs rounded bg-primary text-white hover:bg-primary/80"
                                     onClick={() => setPoModalItem(item)}
                                   >
                                     Add PO
@@ -615,8 +653,8 @@ const Add = ({ onClose, onAdded }) => {
                           >
                             <option value="">Select</option>
                             {vendors.map((type, idx) => (
-                              <option key={idx} value={type}>
-                                {type}
+                              <option key={idx} value={type._id}>
+                                {type.name}
                               </option>
                             ))}
                           </select>

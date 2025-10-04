@@ -265,7 +265,7 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
       rejectionReason: p.itemStatus === "rejected" ? p.rejectionReason : "", // clear rejection reason for approved
     }));
 
-    status = status || calculateStatus(normalizedItems);
+    status = "pending";
 
     return {
       items: normalizedItems.map((p) => ({
@@ -320,8 +320,13 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
       return;
     }
 
-    const status = calculateStatus(poItems);
-    doSubmit(payload, status);
+    let status = calculateStatus(poItems);
+
+    if (status == "rejected") {
+      doSubmit(payload, status);
+    } else {
+      doSubmit(payload, (status = "pending"));
+    }
   };
 
   const handleRejectAll = () => {
