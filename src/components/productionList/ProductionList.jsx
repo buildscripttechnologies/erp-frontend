@@ -219,13 +219,13 @@ const ProductionList = () => {
                         {mi.prodNo || "-"}
                       </td>
                       <td className="px-2  border-r border-primary">
-                        {mi.bomNo}
+                        {mi.bomNo || "-"}
                       </td>
                       <td className="px-2  border-r border-primary">
-                        {mi.bom.productName}
+                        {mi?.bom?.productName || "-"}
                       </td>
                       <td className="px-2  border-r border-primary">
-                        {mi.bom.partyName?.customerName}
+                        {mi.bom.partyName?.customerName || "-"}
                       </td>
                       <td className="px-2 py-1  border-r border-primary">
                         <span

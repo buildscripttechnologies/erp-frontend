@@ -679,7 +679,7 @@ const Add = ({ onClose, onAdded }) => {
               type="button"
               disabled={loading}
               onClick={handleSubmit}
-              className="flex items-center px-6 py-2 bg-primary hover:bg-primary/80 text-black font-semibold rounded cursor-pointer"
+              className="flex items-center px-6 py-2 bg-primary hover:bg-primary/80 text-secondary font-semibold rounded cursor-pointer"
             >
               {loading ? (
                 <>

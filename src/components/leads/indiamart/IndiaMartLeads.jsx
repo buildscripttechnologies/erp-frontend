@@ -15,7 +15,7 @@ import { debounce } from "lodash";
 import { useRef } from "react";
 import { QUERY_TYPE_MAP } from "../../../data/dropdownData";
 
-const UomMaster = () => {
+const IndiaMartLeads = () => {
   const { hasPermission } = useAuth();
   const [leads, setLeads] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -336,4 +336,4 @@ const UomMaster = () => {
   );
 };
 
-export default UomMaster;
+export default IndiaMartLeads;

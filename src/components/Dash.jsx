@@ -1,6 +1,5 @@
 // components/DashboardLayout.jsx
 import React, { useState } from "react";
-import Dashboard from "../pages/Dashboard";
 import { DashboardCard } from "./DashboardCard";
 import { OrderCard } from "./OrderCard";
 import { OrderPieChart } from "./PieChartComponent";

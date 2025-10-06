@@ -31,6 +31,9 @@ const JobDetails = ({ MI, filter, fetchMis }) => {
     if (!item.stages || item.stages.length === 0) {
       return { stage: "Material Issue", status: "Pending" };
     }
+    if (filter === "production") {
+      return item.stages[item.stages.length - 1];
+    }
 
     const filterStage = filter === "outside" ? "Cutting" : filter;
     const filterIndex = STAGE_ORDER.findIndex(

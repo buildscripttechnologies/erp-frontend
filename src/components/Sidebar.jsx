@@ -52,9 +52,17 @@ import { GrDomain } from "react-icons/gr";
 import { TbNeedleThread } from "react-icons/tb";
 import { PiEyedropperSampleFill } from "react-icons/pi";
 import { CiInboxOut } from "react-icons/ci";
+import { useTabs } from "../context/TabsContext";
 export function Sidebar({ isOpen }) {
   const navigate = useNavigate();
   const { logout, hasPermission } = useAuth();
+  let tabs;
+  try {
+    // Sidebar is inside Dashboard which provides TabsProvider
+    tabs = useTabs();
+  } catch (e) {
+    tabs = null;
+  }
 
   // console.log("haspermission", hasPermission("User", "read"));
 
@@ -347,7 +355,11 @@ export function Sidebar({ isOpen }) {
             if (subMenu) {
               toggleMenu(label);
             } else if (path) {
-              navigate(path);
+              if (tabs) {
+                tabs.openTab(path, label);
+              } else {
+                navigate(path);
+              }
             }
           }}
         >

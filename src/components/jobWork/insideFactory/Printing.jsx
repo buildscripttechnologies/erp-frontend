@@ -240,10 +240,10 @@ const Printing = () => {
                         {mi.prodNo || "-"}
                       </td>
                       <td className="px-2  border-r border-primary">
-                        {mi.bomNo}
+                        {mi.bomNo || "-"}
                       </td>
                       <td className="px-2  border-r border-primary">
-                        {mi.bom.productName}
+                        {mi?.bom?.productName || "-"}
                       </td>
                       <td className="px-2  border-r border-primary">
                         {Array.isArray(mi.bom.printingFile) &&
