@@ -2,6 +2,7 @@ import React from "react";
 import LetterpadSetting from "./LetterpadSetting";
 import Vendors from "./Vendors";
 import CompanyDetails from "./CompanyDetails";
+import Categories from "./Categories";
 
 const Settings = () => {
   return (
@@ -12,6 +13,7 @@ const Settings = () => {
       <LetterpadSetting />
       <Vendors />
       <CompanyDetails />
+      <Categories />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getBase64ImageFromPDF } from "../../utils/convertPDFPageToImage";
 import QRCode from "qrcode";
+import { getCompressedImageFromPDF } from "../../utils/imageCompress";
 
 // Terms & Conditions (multi-line string)
 const TERMS = `1. I Khodal Bag Pvt. Ltd. submission of the purchase Order is conditioned on Supplier’s agreement that any terms different from or in addition to the terms of the Purchase Order, whether communicated orally or contained in any purchase order confirmation, invoice, acknowledgement, acceptance or other written correspondence, irrespective of the timing, shall not form a part of the Purchase Order, even if Supplier purports to condition its acceptance of the Purchase Order on I Khodal Bag Pvt. Ltd. agreement to such different or additional terms. 
@@ -31,8 +32,8 @@ export const generateCOPdf = async (co = {}, letterpadUrl, companyDetails) => {
   let lpLastPage = null;
 
   try {
-    lpFirstPage = await getBase64ImageFromPDF(letterpadUrl, 0);
-    lpLastPage = await getBase64ImageFromPDF(letterpadUrl, 1);
+    lpFirstPage = await getCompressedImageFromPDF(letterpadUrl, 0);
+    lpLastPage = await getCompressedImageFromPDF(letterpadUrl, 1);
   } catch (err) {
     console.error("Letterpad load failed:", err);
   }

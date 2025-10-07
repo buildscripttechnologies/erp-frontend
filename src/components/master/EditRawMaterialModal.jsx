@@ -16,7 +16,24 @@ const EditRawMaterialModal = ({
   const [locations, setLocations] = useState([]);
   const [deletedAttachments, setDeletedAttachments] = useState([]);
   const [newAttachments, setNewAttachments] = useState([]);
+  const [categories, setCategories] = useState();
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        // setLoading(true);
+        const res = await axios.get("/settings/categories");
+        setCategories(res.data.categories || []);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to fetch categories");
+      } finally {
+        // setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
   // useEffect(() => {
   //   const fetchUOMs = async () => {
   //     try {
@@ -148,7 +165,7 @@ const EditRawMaterialModal = ({
 
   return (
     <div className="fixed inset-0  bg-gray-100/10 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-[92vw] sm:max-w-3xl rounded-lg p-6  border overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
+      <div className="bg-white w-full max-w-[92vw] sm:max-w-3xl rounded-lg p-6  border overflow-y-auto max-h-[80vh] mt-20 scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
         <div className="flex flex-col sm:flex-row sm:justify-between  mb-4">
           <h2 className="w-full text-xl font-bold  text-[#d8b76a] flex justify-center sm:justify-start">
             Edit Raw Material
@@ -191,6 +208,23 @@ const EditRawMaterialModal = ({
               onChange={(e) => handleChange("description", e.target.value)}
               className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
             />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-[#292926] mb-1 block">
+              Item Category
+            </label>
+            <select
+              value={formData.itemCategory}
+              onChange={(e) => handleChange("itemCategory", e.target.value)}
+              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] focus:border-[#b38a37]"
+            >
+              <option value="">Select Category</option>
+              {categories?.map((cat, i) => (
+                <option key={i} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block mb-1 font-medium">Item Category</label>
