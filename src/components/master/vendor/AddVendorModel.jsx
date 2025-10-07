@@ -21,11 +21,11 @@ const AddVendorModal = ({ onClose, onAdded }) => {
         postalCode: "",
         gst: "",
         pan: "",
-        factoryAddress: "",
-        factoryCountry: "",
-        factoryState: "",
-        factoryCity: "",
-        factoryPostalCode: "",
+        // factoryAddress: "",
+        // factoryCountry: "",
+        // factoryState: "",
+        // factoryCity: "",
+        // factoryPostalCode: "",
         bankName: "",
         branch: "",
         accountNo: "",
@@ -166,11 +166,11 @@ const AddVendorModal = ({ onClose, onAdded }) => {
           gst: "",
           pan: "",
 
-          factoryAddress: "",
-          factoryCountry: "",
-          factoryState: "",
-          factoryCity: "",
-          factoryPostalCode: "",
+          // factoryAddress: "",
+          // factoryCountry: "",
+          // factoryState: "",
+          // factoryCity: "",
+          // factoryPostalCode: "",
           bankName: "",
           branch: "",
           accountNo: "",
@@ -218,11 +218,11 @@ const AddVendorModal = ({ onClose, onAdded }) => {
         postalCode: form.postalCode,
         gst: form.gst,
         pan: form.pan,
-        factoryAddress: form.factoryAddress,
-        factoryCountry: form.factoryCountry,
-        factoryState: form.factoryState,
-        factoryCity: form.factoryCity,
-        factoryPostalCode: form.factoryPostalCode,
+        // factoryAddress: form.factoryAddress,
+        // factoryCountry: form.factoryCountry,
+        // factoryState: form.factoryState,
+        // factoryCity: form.factoryCity,
+        // factoryPostalCode: form.factoryPostalCode,
         bankName: form.bankName,
         branch: form.branch,
         accountNo: form.accountNo,
@@ -376,37 +376,37 @@ const AddVendorModal = ({ onClose, onAdded }) => {
                     ["Postal Code", "postalCode"],
                     ["GSTIN", "gst"],
                     ["PAN", "pan"],
-                    ["Factory Address", "factoryAddress"],
-                    [
-                      "Factory Country",
-                      "factoryCountry",
-                      Country.getAllCountries().map((c) => ({
-                        value: c.isoCode, // ✅ use ISO code here
-                        label: c.name,
-                      })),
-                    ],
-                    [
-                      "Factory State",
-                      "factoryState",
-                      State.getStatesOfCountry(form.factoryCountry).map(
-                        (s) => ({
-                          value: s.isoCode,
-                          label: s.name,
-                        })
-                      ),
-                    ],
-                    [
-                      "Factory City",
-                      "factoryCity",
-                      City.getCitiesOfState(
-                        form.factoryCountry,
-                        form.factoryState
-                      ).map((c) => ({
-                        value: c.name,
-                        label: c.name,
-                      })),
-                    ],
-                    ["Factory Postal Code", "factoryPostalCode"],
+                    // ["Factory Address", "factoryAddress"],
+                    // [
+                    //   "Factory Country",
+                    //   "factoryCountry",
+                    //   Country.getAllCountries().map((c) => ({
+                    //     value: c.isoCode, // ✅ use ISO code here
+                    //     label: c.name,
+                    //   })),
+                    // ],
+                    // [
+                    //   "Factory State",
+                    //   "factoryState",
+                    //   State.getStatesOfCountry(form.factoryCountry).map(
+                    //     (s) => ({
+                    //       value: s.isoCode,
+                    //       label: s.name,
+                    //     })
+                    //   ),
+                    // ],
+                    // [
+                    //   "Factory City",
+                    //   "factoryCity",
+                    //   City.getCitiesOfState(
+                    //     form.factoryCountry,
+                    //     form.factoryState
+                    //   ).map((c) => ({
+                    //     value: c.name,
+                    //     label: c.name,
+                    //   })),
+                    // ],
+                    // ["Factory Postal Code", "factoryPostalCode"],
                     ["Bank Name", "bankName"],
                     ["Branch", "branch"],
                     ["Account No.", "accountNo"],

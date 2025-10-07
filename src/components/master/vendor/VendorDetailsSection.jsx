@@ -12,7 +12,7 @@ const VendorDetailsSection = ({ vendorData }) => {
       </h2>
       <table className="w-full text-[11px] border border-[#d8b76a] mb-4 rounded ">
         <tbody className="rounded">
-          <tr className="border-b border-[#d8b76a]">
+          {/* <tr className="border-b border-[#d8b76a]">
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
               Factory/Store Address
             </td>
@@ -37,7 +37,7 @@ const VendorDetailsSection = ({ vendorData }) => {
             <td className="px-2 py-1 border-r border-[#d8b76a]">
               {vendorData.factoryPostalCode || "-"}
             </td>
-          </tr>
+          </tr> */}
           <tr className="border-b  border-[#d8b76a]">
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1  border-r border-[#d8b76a]">
               Bank Name
@@ -74,7 +74,7 @@ const VendorDetailsSection = ({ vendorData }) => {
             </td>
             <td className="px-2 py-1">{vendorData.paymentTerms || "-"}</td>
           </tr>
-          <tr>
+          {/* <tr>
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
               Created At
             </td>
@@ -102,7 +102,7 @@ const VendorDetailsSection = ({ vendorData }) => {
                 hour12: true,
               })}
             </td>
-          </tr>
+          </tr> */}
         </tbody>
       </table>
 

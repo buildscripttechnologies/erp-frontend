@@ -119,14 +119,6 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
   // console.log("Material Options", materialOptions);
 
   const productOptions = [
-    ...samples.map((s) => ({
-      label: `${s.sampleNo}: ${s.product.name}${
-        s.description ? " - " + s.description : ""
-      }`,
-      value: s._id,
-      type: "SAMPLE",
-      sample: s,
-    })),
     ...fgs.map((fg) => ({
       label: `${fg.skuCode}: ${fg.itemName}${
         fg.description ? " - " + fg.description : ""

@@ -26,14 +26,6 @@ export function Navbar({ isOpen, setIsOpen, title = "SmartFlow360" }) {
         {isOpen ? <FiX /> : <FiMenu />}
       </button>
 
-      {/* Title */}
-      {/* <h1
-        className={`text-xl sm:text-2xl ${
-          isOpen ? `ml-5 hidden` : ``
-        } font-bold text-[#292927]`}
-      >
-        {title}
-      </h1> */}
       <img
         src="/images/logo4.png"
         alt="smartflow360 logo"
@@ -56,8 +48,6 @@ export function Navbar({ isOpen, setIsOpen, title = "SmartFlow360" }) {
         {/* Mobile View */}
         <div className="sm:hidden flex items-center justify-center">
           <FaUserCircle
-            // data-tooltip-id="statusTip"
-            // data-tooltip-content={`${user.userType + " : " + user.fullName}`}
             className="text-2xl cursor-pointer"
             onClick={toggleShowUser}
           />

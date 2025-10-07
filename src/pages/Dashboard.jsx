@@ -1,5 +1,8 @@
 import { cloneElement, useEffect, useState } from "react";
 import { Navbar } from "../components/Navbar";
+import TabsBar from "../components/TabsBar";
+import { TabsProvider } from "../context/TabsContext";
+import TabContentHost from "../components/TabContentHost";
 import { Sidebar } from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
 import { useLocation } from "react-router-dom";
@@ -32,19 +35,22 @@ export default function Dashboard({ children }) {
         user={user}
       />
 
-      <div className="flex min-h-screen pt-15  w-full bg-gradient-to-r from-white to-[#d8b76a]/10  ">
-        {/* Sidebar */}
-        <Sidebar isOpen={isOpen} setIsOpen={toggleSidebar} />
+      <TabsProvider>
+        <TabsBar isOpen={isOpen} />
+        <div className="flex min-h-screen pt-15  w-full bg-gradient-to-r from-white to-[#d8b76a]/10  ">
+          {/* Sidebar */}
+          <Sidebar isOpen={isOpen} setIsOpen={toggleSidebar} />
 
-        {/* Main Content */}
-        <main
-          className={`flex-1 transition-all overflow-auto duration-300 ease-in-out ${
-            isOpen ? "ml-50 " : "ml-0"
-          }`}
-        >
-          {cloneElement(children, { isOpen })}
-        </main>
-      </div>
+          {/* Main Content */}
+          <main
+            className={`flex-1 transition-all overflow-auto duration-300 ease-in-out ${
+              isOpen ? "ml-50 " : "ml-0"
+            }`}
+          >
+            <TabContentHost />
+          </main>
+        </div>
+      </TabsProvider>
     </>
   );
 }
