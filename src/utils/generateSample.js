@@ -3,6 +3,7 @@ import autoTable from "jspdf-autotable";
 import { getBase64ImageFromPDF } from "./convertPDFPageToImage"; // You need this util
 import { calculateRate } from "./calc";
 import { capitalize } from "lodash";
+import { getCompressedImageFromPDF } from "./imageCompress";
 
 export const generateSample = async (SampleData, letterpadUrl) => {
   const doc = new jsPDF("portrait", "mm", "a4");
@@ -11,8 +12,8 @@ export const generateSample = async (SampleData, letterpadUrl) => {
   const pageHeight = doc.internal.pageSize.getHeight();
 
   // Load both pages of lp2.pdf
-  const lp2Page1 = await getBase64ImageFromPDF(letterpadUrl, 0);
-  const lp2Page2 = await getBase64ImageFromPDF(letterpadUrl, 1);
+  const lp2Page1 = await getCompressedImageFromPDF(letterpadUrl, 0);
+  const lp2Page2 = await getCompressedImageFromPDF(letterpadUrl, 1);
 
   // Helper to draw lp2 background
   const addBackground = (pageNo) => {

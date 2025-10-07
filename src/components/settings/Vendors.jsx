@@ -57,7 +57,7 @@ export default function Vendors() {
   return (
     <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-md">
       {/* Heading */}
-      <h2 className="text-xl font-semibold text-primary mb-4">Vendors</h2>
+      <h2 className="text-xl font-semibold text-primary mb-4">Outside Company Jobs Vendors</h2>
 
       {/* Add Vendor Form */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-6">

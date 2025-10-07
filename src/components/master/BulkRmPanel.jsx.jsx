@@ -13,6 +13,20 @@ const BulkRmPanel = ({ onClose }) => {
   const [uoms, setUoms] = useState([]);
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState();
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get("/settings/categories");
+      setCategories(res.data.categories || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch categories");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchUoms = async () => {
     try {
@@ -35,6 +49,7 @@ const BulkRmPanel = ({ onClose }) => {
   useEffect(() => {
     fetchUoms();
     fetchLocations();
+    fetchCategories();
     addRow();
   }, []);
 
@@ -168,7 +183,7 @@ const BulkRmPanel = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0  backdrop-blur-xs  flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-[92vw] sm:max-w-5xl rounded-lg  border border-[#d8b76a] overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
+      <div className="bg-white w-full  max-w-[92vw] sm:max-w-5xl rounded-lg  border border-[#d8b76a] overflow-y-auto max-h-[80vh] mt-20 scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
         <div className="flex justify-between items-center sticky top-0 bg-white z-10 px-4 py-4">
           <h2 className="text-xl font-semibold">Add Raw Materials</h2>
           <button
@@ -249,17 +264,23 @@ const BulkRmPanel = ({ onClose }) => {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-xs font-semibold text-[#292926] mb-1 block">
                     Item Category
                   </label>
-                  <input
-                    placeholder="Item Category"
+                  <select
                     value={rm.itemCategory}
                     onChange={(e) =>
                       handleChange(index, "itemCategory", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
-                  />
+                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] focus:border-[#b38a37]"
+                  >
+                    <option value="">Select Category</option>
+                    {categories?.map((cat, i) => (
+                      <option key={i} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
