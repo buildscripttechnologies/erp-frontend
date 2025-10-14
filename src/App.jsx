@@ -24,6 +24,7 @@ import PwaInstallPrompt from "./components/PWAInstallPrompt";
 import { useEffect, useState } from "react";
 import BOMMaster from "./components/master/bom/BomMaster";
 import SampleMaster from "./components/master/sample/SampleMaster";
+
 // Authenticated page components are now mounted via TabContentHost; keep router lean
 
 const App = () => {

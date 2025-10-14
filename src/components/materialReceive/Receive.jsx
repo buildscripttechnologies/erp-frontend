@@ -93,6 +93,7 @@ const Receive = ({ onClose, onAdded }) => {
                 Select BOM
               </label>
               <Select
+                menuPortalTarget={document.body}
                 options={miOptions}
                 value={selectedItem}
                 onChange={(item) => {
@@ -117,6 +118,12 @@ const Receive = ({ onClose, onAdded }) => {
                 placeholder="Item Name or SKU"
                 isSearchable
                 styles={{
+                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                  menu: (base) => ({
+                    ...base,
+                    width: "max-content",
+                    minWidth: "100%",
+                  }),
                   control: (base, state) => ({
                     ...base,
                     borderColor: "var(--color-primary)",

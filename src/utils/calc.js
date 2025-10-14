@@ -1,7 +1,11 @@
-import { fabric, plastic, slider, zipper } from "../data/dropdownData";
+// import { fabric, plastic, slider, zipper } from "../data/dropdownData";
+
+
 
 // utils/calc.js
-export const calculateRate = (comp, qtyOverride = null) => {
+export const calculateRate = (comp, qtyOverride = null, categoryData) => {
+  const { fabric, slider, plastic, zipper } = categoryData;
+
   const category = (comp.category || "").toLowerCase();
   const qty = qtyOverride ?? (Number(comp.qty) || 0);
   console.log("qty", qty);

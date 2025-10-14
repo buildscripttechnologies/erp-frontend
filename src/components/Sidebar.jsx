@@ -36,7 +36,7 @@ import {
 } from "react-icons/lu";
 import { BiExport, BiImport, BiSolidPurchaseTag } from "react-icons/bi";
 
-import { GiCutDiamond } from "react-icons/gi";
+import { GiCutDiamond, GiMaterialsScience } from "react-icons/gi";
 import { TbTruckDelivery } from "react-icons/tb";
 import {
   MdAssignmentInd,
@@ -158,6 +158,13 @@ export function Sidebar({ isOpen }) {
           label: "Material Receive",
           module: "Material Receive",
           path: "/material-receive",
+          action: "read",
+        },
+        {
+          icon: GiMaterialsScience,
+          label: "Material Consumption",
+          module: "Material Consumption",
+          path: "/material-consumption",
           action: "read",
         },
       ],
@@ -396,7 +403,7 @@ export function Sidebar({ isOpen }) {
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-50 h-full w-50 bg-white shadow-xl drop-shadow-xl transform ${
+      className={`fixed top-0 left-0 z-50 h-full w-60 bg-white shadow-xl drop-shadow-xl transform ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       } transition-transform duration-300 ease-in-out overflow-y-auto `}
     >

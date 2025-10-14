@@ -3,6 +3,7 @@ import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import Select from "react-select";
 import { BeatLoader } from "react-spinners";
+import { useCategoryArrays } from "../../data/dropdownData";
 
 const EditRawMaterialModal = ({
   rawMaterial = [],
@@ -17,7 +18,9 @@ const EditRawMaterialModal = ({
   const [deletedAttachments, setDeletedAttachments] = useState([]);
   const [newAttachments, setNewAttachments] = useState([]);
   const [categories, setCategories] = useState();
-
+  const { fabric, slider, plastic, zipper } = useCategoryArrays();
+  console.log("fab",fabric);
+  
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -85,17 +88,11 @@ const EditRawMaterialModal = ({
     const fabricRate =
       category.includes("cotton") || category.includes("canvas") ? 38 : 39;
 
-    console.log("fabric rate", fabricRate);
+    console.log("cat", category);
+    
 
     // Recalculate sqInchRate if category contains fabric/cotton/canvas
-    if (
-      rate &&
-      panno &&
-      (category.includes("fabric") ||
-        category.includes("cotton") ||
-        category.includes("canvas") ||
-        category.includes("foam"))
-    ) {
+    if (rate && panno && fabric.includes(category)) {
       updatedForm.sqInchRate = Number((rate / panno / fabricRate) * 1.05);
     } else {
       updatedForm.sqInchRate = 0;
@@ -120,7 +117,7 @@ const EditRawMaterialModal = ({
         form.append("attachments", file);
       });
 
-      console.log("attachments: ", form.attachments);
+      // console.log("attachments: ", form.attachments);
 
       for (let pair of form.entries()) {
         console.log(pair[0], pair[1]);
@@ -165,7 +162,7 @@ const EditRawMaterialModal = ({
 
   return (
     <div className="fixed inset-0  bg-gray-100/10 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-[92vw] sm:max-w-3xl rounded-lg p-6  border overflow-y-auto max-h-[80vh] mt-20 scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
+      <div className="bg-white w-full max-w-[92vw] sm:max-w-3xl rounded-lg p-6  border overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
         <div className="flex flex-col sm:flex-row sm:justify-between  mb-4">
           <h2 className="w-full text-xl font-bold  text-[#d8b76a] flex justify-center sm:justify-start">
             Edit Raw Material
@@ -220,22 +217,13 @@ const EditRawMaterialModal = ({
             >
               <option value="">Select Category</option>
               {categories?.map((cat, i) => (
-                <option key={i} value={cat}>
-                  {cat}
+                <option key={i} value={cat.name}>
+                  {cat.name} ({cat.type})
                 </option>
               ))}
             </select>
           </div>
-          <div>
-            <label className="block mb-1 font-medium">Item Category</label>
-            <input
-              type="text"
-              placeholder="Item Category"
-              value={formData.itemCategory}
-              onChange={(e) => handleChange("itemCategory", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
-            />
-          </div>
+
           <div>
             <label className="block mb-1 font-medium">Item Color</label>
             <input
@@ -543,7 +531,7 @@ const EditRawMaterialModal = ({
                   <BeatLoader size={5} color="#292926" />
                 </div>
               ) : (
-                "Updating"
+                "Update"
               )}
             </button>
           </div>

@@ -5,9 +5,12 @@ import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
 import { BeatLoader } from "react-spinners";
 import Select from "react-select";
 import { calculateRate } from "../../../utils/calc";
-import { zipper, plastic, slider } from "../../../data/dropdownData";
+import { useCategoryArrays } from "../../../data/dropdownData";
+// import { zipper, plastic, slider } from "../../../data/dropdownData";
 
 const AddFgModal = ({ onClose, onAdded }) => {
+  const { fabric, slider, plastic, zipper } = useCategoryArrays();
+  let categoryData = useCategoryArrays();
   const [uoms, setUoms] = useState([]);
   const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -189,7 +192,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
     } else {
       comp[field] = value;
     }
-    // if (["plastic", "non woven", "ld cord"].includes(category)) {
+    // if (plastic.includes(category)) {
     //   // scale grams with orderQty
     //   comp.grams = (comp.tempQty || 0) * orderQty;
     //   comp.qty = (comp.tempQty || 0) * orderQty; // qty here is just "number of orders"
@@ -198,7 +201,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
     //   comp.qty = (comp.tempQty || 0) * orderQty;
     // }
 
-    comp.rate = calculateRate(comp, comp.qty);
+    comp.rate = calculateRate(comp, comp.qty, categoryData);
 
     updated[index].materials[matIndex] = comp;
 
@@ -758,7 +761,7 @@ const AddFgModal = ({ onClose, onAdded }) => {
                             return null;
 
                           // if (
-                          //   ["plastic", "non woven", "ld cord"].includes(
+                          //   plastic.includes(
                           //     mat.category?.toLowerCase()
                           //   ) &&
                           //   field === "qty"

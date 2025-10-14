@@ -454,15 +454,22 @@ const RmMaster = ({ isOpen }) => {
 
       {/* Search */}
       <div className="flex flex-col w-auto sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div className="relative w-full sm:w-1/3">
+        <div className="relative w-full sm:w-80">
           <input
             type="text"
             placeholder="Search raw materials..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-80 pl-10 pr-4 py-1 text-[#292926] border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+            className="w-full  pl-10 pr-4 py-1 text-[#292926] border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
           />
-          <FiSearch className="absolute left-2 top-2 text-primary" />
+          <FiSearch className="absolute left-2 top-2 text-primary" />{" "}
+          {search && (
+            <FiX
+              className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
+              onClick={() => setSearch("")}
+              title="Clear"
+            />
+          )}
         </div>
         {hasPermission("RawMaterial", "write") && (
           <button

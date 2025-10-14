@@ -28,6 +28,7 @@ import COP from "../components/coPendency/COP";
 import IndiaMartLeads from "../components/leads/indiamart/IndiaMartLeads";
 import Settings from "../components/settings/Settings";
 import ProductionList from "../components/productionList/ProductionList";
+import MaterialConsumption from "../components/materialConsumption/MaterialConsumption";
 
 const registry = new Map([
   ["/dashboard", Dash],
@@ -40,6 +41,7 @@ const registry = new Map([
   ["/material-inward", MaterialInward],
   ["/material-issue", MaterialIssue],
   ["/material-receive", MaterialReceive],
+  ["/material-consumption", MaterialConsumption],
   ["/production-list", ProductionList],
   ["/inside-company/cutting", Cutting],
   ["/inside-company/printing", Printing],

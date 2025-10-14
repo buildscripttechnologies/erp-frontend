@@ -8,9 +8,12 @@ import { BeatLoader } from "react-spinners";
 import { capitalize } from "lodash";
 import { calculateRate } from "../../../utils/calc";
 import { generateConsumptionTable } from "../../../utils/consumptionTable";
-import { plastic, slider, zipper } from "../../../data/dropdownData";
+import { useCategoryArrays } from "../../../data/dropdownData";
+// import { plastic, slider, zipper } from "../../../data/dropdownData";
 
 const AddSampleModal = ({ onClose, onSuccess }) => {
+  const { fabric, slider, plastic, zipper } = useCategoryArrays();
+  let categoryData = useCategoryArrays();
   const [form, setForm] = useState({
     partyName: "",
     productName: "",
@@ -226,21 +229,21 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
       updatedDetails = productDetails.map((comp) => {
         const category = (comp.category || "").toLowerCase();
 
-        if (["plastic", "non woven", "ld cord"].includes(category)) {
+        if (plastic.includes(category)) {
           const grams = (Number(comp.tempGrams) || 0) * newValue;
           const qty = (Number(comp.tempQty) || 1) * newValue;
           return {
             ...comp,
             grams,
             qty: qty,
-            rate: calculateRate({ ...comp, grams }, newValue),
+            rate: calculateRate({ ...comp, grams }, newValue, categoryData),
           };
         } else {
           const finalQty = (Number(comp.tempQty) || 0) * newValue;
           return {
             ...comp,
             qty: finalQty,
-            rate: calculateRate(comp, finalQty),
+            rate: calculateRate(comp, finalQty, categoryData),
           };
         }
       });
@@ -268,7 +271,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
 
     const category = (comp.category || "").toLowerCase();
 
-    if (["plastic", "non woven", "ld cord"].includes(category)) {
+    if (plastic.includes(category)) {
       // scale grams with orderQty
       comp.grams = (comp.tempGrams || 0) * orderQty;
       // console.log("comp gram", comp.grams, comp.qty);
@@ -279,7 +282,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
       comp.qty = (comp.tempQty || 0) * orderQty;
     }
 
-    comp.rate = calculateRate(comp, comp.qty);
+    comp.rate = calculateRate(comp, comp.qty, categoryData);
 
     updated[index] = comp;
     setProductDetails(updated);
@@ -338,7 +341,10 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
     //   return toast.error("Please fill or remove all incomplete RM/SFG rows");
     // }
     try {
-      const consumptionTable = generateConsumptionTable(productDetails);
+      const consumptionTable = generateConsumptionTable(
+        productDetails,
+        categoryData
+      );
       const formData = new FormData();
       formData.append(
         "data",
@@ -483,6 +489,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                     skuCode: item.skuCode || "",
                     isPasting: item.isPasting,
                     isPrint: item.isPrint,
+                    panno: item.panno || 0,
                     // depth: item.depth || "",
                     label: `${item.skuCode}: ${item.itemName}${
                       item.description ? ` - ${item.description}` : ""
@@ -710,7 +717,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                             return null;
 
                           // if (
-                          //   ["plastic", "non woven", "ld cord"].includes(
+                          //   plastic.includes(
                           //     comp.category?.toLowerCase()
                           //   ) &&
                           //   field === "qty"

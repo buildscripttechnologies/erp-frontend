@@ -8,9 +8,12 @@ import { BeatLoader, PuffLoader } from "react-spinners";
 import { capitalize } from "lodash";
 import { calculateRate } from "../../../utils/calc";
 import { generateConsumptionTable } from "../../../utils/consumptionTable";
-import { plastic, slider, zipper } from "../../../data/dropdownData";
+import { useCategoryArrays } from "../../../data/dropdownData";
+// import { plastic, slider, zipper } from "../../../data/dropdownData";
 
 const AddBomModal = ({ onClose, onSuccess, coData }) => {
+  const { fabric, slider, plastic, zipper } = useCategoryArrays();
+  let categoryData = useCategoryArrays();
   // console.log("coData", coData);
 
   const [form, setForm] = useState({
@@ -225,7 +228,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
       updatedDetails = productDetails.map((comp) => {
         const category = (comp.category || "").toLowerCase();
 
-        if (["plastic", "non woven", "ld cord"].includes(category)) {
+        if (plastic.includes(category)) {
           const grams = (Number(comp.tempGrams) || 0) * newValue;
           const qty = (Number(comp.tempQty) || 1) * newValue;
           console.log("grams", grams);
@@ -234,14 +237,14 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
             ...comp,
             grams,
             qty: qty,
-            rate: calculateRate({ ...comp, grams }, newValue),
+            rate: calculateRate({ ...comp, grams }, newValue, categoryData),
           };
         } else {
           const finalQty = (Number(comp.tempQty) || 0) * newValue;
           return {
             ...comp,
             qty: finalQty,
-            rate: calculateRate(comp, finalQty),
+            rate: calculateRate(comp, finalQty, categoryData),
           };
         }
       });
@@ -269,7 +272,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
 
     const category = (comp.category || "").toLowerCase();
 
-    if (["plastic", "non woven", "ld cord"].includes(category)) {
+    if (plastic.includes(category)) {
       // scale grams with orderQty
       comp.grams = (comp.tempGrams || 0) * orderQty;
       // console.log("comp gram", comp.grams, comp.qty);
@@ -280,7 +283,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
       comp.qty = (comp.tempQty || 0) * orderQty;
     }
 
-    comp.rate = calculateRate(comp, comp.qty);
+    comp.rate = calculateRate(comp, comp.qty, categoryData);
 
     updated[index] = comp;
     setProductDetails(updated);
@@ -314,7 +317,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
       },
     ]);
   };
-  console.log("productDetails", productDetails);
+  // console.log("productDetails", productDetails);
 
   const removeComponent = (index) => {
     const updated = [...productDetails];
@@ -340,7 +343,10 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
     //   return toast.error("Please fill or remove all incomplete RM/SFG rows");
     // }
     try {
-      const consumptionTable = generateConsumptionTable(productDetails);
+      const consumptionTable = generateConsumptionTable(
+        productDetails,
+        categoryData
+      );
       console.log("table", consumptionTable);
 
       const formData = new FormData();
@@ -614,7 +620,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                     unitD2CRate: selectedProduct.unitD2CRate || 0,
                   });
 
-                  console.log("selectedProduct", selectedProduct);
+                  // console.log("selectedProduct", selectedProduct);
 
                   if (!selectedProduct) return;
 
@@ -625,7 +631,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                   ];
                   // setSelectedFg(selectedProduct);
 
-                  console.log("all details", allDetails);
+                  // console.log("all details", allDetails);
 
                   const enrichedDetails = allDetails.map((item) => ({
                     itemId: item.itemId || item.id || "",
@@ -652,7 +658,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                     }`,
                   }));
 
-                  console.log("enriched", enrichedDetails);
+                  // console.log("enriched", enrichedDetails);
 
                   setProductDetails(enrichedDetails);
                 }}
@@ -876,7 +882,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                     ].map((field) => {
                       // Hide based on category
                       if (
-                        slider.includes(comp.category?.toLowerCase()) &&
+                        slider?.includes(comp.category?.toLowerCase()) &&
                         (field === "height" || field === "width")
                       )
                         return null;
@@ -890,14 +896,14 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                       //   return null; // hide qty
                       // }
                       if (
-                        !plastic.includes(comp.category?.toLowerCase()) &&
+                        !plastic?.includes(comp.category?.toLowerCase()) &&
                         field === "grams"
                       ) {
                         return null; // hide grams for others
                       }
                       // ✅ Add this new rule for zipper
                       if (
-                        zipper.includes(comp.category?.toLowerCase()) &&
+                        zipper?.includes(comp.category?.toLowerCase()) &&
                         field === "height"
                       ) {
                         return null; // hide height only for zipper

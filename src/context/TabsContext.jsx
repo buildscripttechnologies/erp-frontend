@@ -4,7 +4,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -25,6 +24,7 @@ export function TabsProvider({ children }) {
     } catch {}
     return [];
   });
+
   const [activePath, setActivePath] = useState(() => {
     try {
       const saved = localStorage.getItem("tabsState");
@@ -36,39 +36,74 @@ export function TabsProvider({ children }) {
     return null;
   });
 
+  // --- Title + Icon helpers ---
+  const titleMap = {
+    "/dashboard": "Dashboard",
+    "/leads": "Leads",
+    "/stock-register": "Stock Register",
+    "/customer-order": "Customer Order",
+    "/co-pendency": "CO Pendency",
+    "/purchase-order": "Purchase Order",
+    "/purchase-order-approval": "PO Approval",
+    "/material-inward": "Material Inward",
+    "/material-issue": "Material Issue",
+    "/material-receive": "Material Receive",
+    "/material-consumption": "Material Consumption",
+    "/production-list": "Production List",
+    "/inside-company/cutting": "Cutting",
+    "/inside-company/printing": "Printing",
+    "/inside-company/pasting": "Pasting",
+    "/inside-company/stitching": "Stitching",
+    "/inside-company/quality-check": "Quality Check",
+    "/outside-company": "Outside Company",
+    "/master-users": "User Master",
+    "/uom-master": "UOM Master",
+    "/role-master": "Role Master",
+    "/rm-master": "R. M. Master",
+    "/location-master": "Location Master",
+    "/sfg-master": "SFG Master",
+    "/fg-master": "FG Master",
+    "/sample-master": "Sample Master",
+    "/bom-master": "BOM Master",
+    "/vendor-master": "Vendor Master",
+    "/customer-master": "Customer Master",
+    "/settings": "Settings",
+  };
+
+  const iconMap = {
+    "/dashboard": "FiHome",
+    "/leads": "LuMagnet",
+    "/stock-register": "FiClipboard",
+    "/customer-order": "FiShoppingCart",
+    "/co-pendency": "FiLayers",
+    "/purchase-order": "BiSolidPurchaseTag",
+    "/purchase-order-approval": "FaCheckCircle",
+    "/material-inward": "TbTruckDelivery",
+    "/material-issue": "BiExport",
+    "/material-receive": "BiImport",
+    "/material-consumption": "GiMaterialsScience",
+    "/production-list": "FaListAlt",
+    "/inside-company/cutting": "RiScissorsCutLine",
+    "/inside-company/printing": "MdPrint",
+    "/inside-company/pasting": "MdPattern",
+    "/inside-company/stitching": "TbNeedleThread",
+    "/inside-company/quality-check": "FaCheckCircle",
+    "/outside-company": "LuMapPinXInside",
+    "/master-users": "FaUserCog",
+    "/uom-master": "FaBalanceScale",
+    "/role-master": "MdAssignmentInd",
+    "/rm-master": "FaCubes",
+    "/location-master": "FaMapMarkerAlt",
+    "/sfg-master": "FaLayerGroup",
+    "/fg-master": "FaCube",
+    "/sample-master": "PiEyedropperSampleFill",
+    "/bom-master": "RiBillFill",
+    "/vendor-master": "FaIndustry",
+    "/customer-master": "FaUserFriends",
+    "/settings": "MdOutlineSettings",
+  };
+
   const getTitleFromPath = useCallback((path) => {
-    // Map common paths to human titles. Fallback to last segment.
-    const titleMap = {
-      "/dashboard": "Dashboard",
-      "/leads": "Leads",
-      "/stock-register": "Stock Register",
-      "/customer-order": "Customer Order",
-      "/co-pendency": "CO Pendency",
-      "/purchase-order": "Purchase Order",
-      "/purchase-order-approval": "PO Approval",
-      "/material-inward": "Material Inward",
-      "/material-issue": "Material Issue",
-      "/material-receive": "Material Receive",
-      "/production-list": "Production List",
-      "/inside-company/cutting": "Cutting",
-      "/inside-company/printing": "Printing",
-      "/inside-company/pasting": "Pasting",
-      "/inside-company/stitching": "Stitching",
-      "/inside-company/quality-check": "Quality Check",
-      "/outside-company": "Outside Company",
-      "/master-users": "User Master",
-      "/uom-master": "UOM Master",
-      "/role-master": "Role Master",
-      "/rm-master": "R. M. Master",
-      "/location-master": "Location Master",
-      "/sfg-master": "SFG Master",
-      "/fg-master": "FG Master",
-      "/sample-master": "Sample Master",
-      "/bom-master": "BOM Master",
-      "/vendor-master": "Vendor Master",
-      "/customer-master": "Customer Master",
-      "/settings": "Settings",
-    };
     if (titleMap[path]) return titleMap[path];
     const seg = path
       .split("?")[0]
@@ -81,38 +116,50 @@ export function TabsProvider({ children }) {
       : "Tab";
   }, []);
 
-  // Ensure current route is opened as a tab
+  const getTabInfo = useCallback(
+    (path) => {
+      const title = getTitleFromPath(path);
+      const icon = iconMap[path] || "FileText";
+      return { title, icon };
+    },
+    [getTitleFromPath]
+  );
+
+  // --- Auto-open current route as tab ---
   useEffect(() => {
     const path = location.pathname + (location.search || "");
     setTabs((prev) => {
       const exists = prev.some((t) => t.path === path);
       if (exists) return prev;
-      return [...prev, { path, title: getTitleFromPath(path), pinned: false }];
+      const { title, icon } = getTabInfo(path);
+      return [...prev, { path, title, icon, pinned: false }];
     });
     setActivePath(path);
-  }, [location.pathname, location.search, getTitleFromPath]);
+  }, [location.pathname, location.search, getTabInfo]);
 
-  // Persist tabs state
+  // --- Persist state ---
   useEffect(() => {
     try {
       localStorage.setItem("tabsState", JSON.stringify({ tabs, activePath }));
     } catch {}
   }, [tabs, activePath]);
 
+  // --- Actions ---
   const openTab = useCallback(
     (path, title) => {
       setTabs((prev) => {
         const exists = prev.some((t) => t.path === path);
         if (exists) return prev;
+        const { title: defaultTitle, icon } = getTabInfo(path);
         return [
           ...prev,
-          { path, title: title || getTitleFromPath(path), pinned: false },
+          { path, title: title || defaultTitle, icon, pinned: false },
         ];
       });
       setActivePath(path);
       navigate(path);
     },
-    [getTitleFromPath, navigate]
+    [getTabInfo, navigate]
   );
 
   const activateTab = useCallback(
@@ -129,7 +176,6 @@ export function TabsProvider({ children }) {
         const idx = prev.findIndex((t) => t.path === path);
         if (idx === -1) return prev;
         const newTabs = [...prev.slice(0, idx), ...prev.slice(idx + 1)];
-        // If closing active, pick neighbor
         if (path === activePath) {
           const next = newTabs[idx] || newTabs[idx - 1] || null;
           if (next) {

@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { BeatLoader } from "react-spinners";
 
 import Select from "react-select";
+import { useCategoryArrays } from "../../data/dropdownData";
 
 const BulkRmPanel = ({ onClose }) => {
   const [rows, setRows] = useState([]);
@@ -14,6 +15,7 @@ const BulkRmPanel = ({ onClose }) => {
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState();
+  const { fabric, slider, plastic, zipper } = useCategoryArrays();
 
   const fetchCategories = async () => {
     try {
@@ -101,14 +103,7 @@ const BulkRmPanel = ({ onClose }) => {
       console.log("fabric rate", fabricRate);
 
       // Recalculate sqInchRate if category contains fabric/cotton/canvas
-      if (
-        rate &&
-        panno &&
-        (category.includes("fabric") ||
-          category.includes("cotton") ||
-          category.includes("canvas") ||
-          category.includes("foam"))
-      ) {
+      if (rate && panno && fabric.includes(category)) {
         updated[index].sqInchRate = Number((rate / panno / fabricRate) * 1.05);
       } else {
         updated[index].sqInchRate = 0;
@@ -183,7 +178,7 @@ const BulkRmPanel = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0  backdrop-blur-xs  flex items-center justify-center z-50">
-      <div className="bg-white w-full  max-w-[92vw] sm:max-w-5xl rounded-lg  border border-[#d8b76a] overflow-y-auto max-h-[80vh] mt-20 scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
+      <div className="bg-white w-full  max-w-[92vw] sm:max-w-5xl rounded-lg  border border-[#d8b76a] overflow-y-auto max-h-[90vh]  scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
         <div className="flex justify-between items-center sticky top-0 bg-white z-10 px-4 py-4">
           <h2 className="text-xl font-semibold">Add Raw Materials</h2>
           <button
@@ -276,8 +271,8 @@ const BulkRmPanel = ({ onClose }) => {
                   >
                     <option value="">Select Category</option>
                     {categories?.map((cat, i) => (
-                      <option key={i} value={cat}>
-                        {cat}
+                      <option key={i} value={cat.name}>
+                        {cat.name} ({cat.type})
                       </option>
                     ))}
                   </select>

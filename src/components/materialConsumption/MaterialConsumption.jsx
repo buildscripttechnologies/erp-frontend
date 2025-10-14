@@ -1,33 +1,29 @@
 import React, { useEffect, useState } from "react";
-import axios from "../../../utils/axios";
+import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 
 // import EditstockModal from "./EditstockModal";
-import TableSkeleton from "../../TableSkeleton";
-import ScrollLock from "../../ScrollLock";
+import TableSkeleton from "../TableSkeleton";
+import ScrollLock from "../ScrollLock";
 import Toggle from "react-toggle";
-import PaginationControls from "../../PaginationControls";
+import PaginationControls from "../PaginationControls";
 import { Tooltip } from "react-tooltip";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
 // import LabelPrint from "./LabelPrint";
 import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
-import MIdetails from "../../materialIssue/Midetails";
-import JobDetails from "../JobDetails";
+import McDetails from "./McDetails";
 
-// import UpdateMI from "./UpdateMI";
-// import Add from "./Add";
+// import MIdetails from "./Midetails";
 
-const Cutting = () => {
+const MaterialConsumption = () => {
   const { hasPermission } = useAuth();
   const [mi, setMis] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
-  const [editstock, setEditstock] = useState(null);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editMIData, setEditMIData] = useState(null);
+
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [expandedMIId, setExpandedMIId] = useState(null);
@@ -73,14 +69,7 @@ const Cutting = () => {
     setBarcodeModalOpen(true);
   };
 
-  ScrollLock(
-    formOpen ||
-      editMIData != null ||
-      barcodeModalOpen ||
-      selectedStock != null ||
-      showModal ||
-      editModalOpen
-  );
+  ScrollLock(formOpen || barcodeModalOpen || selectedStock != null);
 
   useEffect(() => {
     if (!hasMountedRef.current) {
@@ -110,7 +99,7 @@ const Cutting = () => {
         // toDate: filters.toDate,
       });
 
-      const res = await axios.get(`/mi/cutting?${queryParams?.toString()}`);
+      const res = await axios.get(`/mi/get-all?${queryParams.toString()}`);
       // console.log("mis res", res);
 
       if (res.data.status == 403) {
@@ -137,30 +126,15 @@ const Cutting = () => {
     fetchMis();
   }, []);
 
-  function getJobTableStatus(items, table) {
-    if (!Array.isArray(items) || items.length === 0) return "Pending";
-
-    // Normalize stage name (case insensitive)
-    const stageName = table;
-
-    // Check every item's stage
-    const allCompleted = items.every((item) => {
-      if (!Array.isArray(item.stages)) return false;
-
-      // Find the stage for this item
-      const stage = item.stages.find((s) => s.stage && s.stage === stageName);
-
-      // Consider completed only if stage exists AND its status = "Completed"
-      return stage && stage.status === "Completed";
-    });
-
-    return allCompleted ? "Completed" : "Pending";
-  }
+  useEffect(() => {
+    fetchMis(1);
+    // fetchUoms();
+  }, []);
 
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Cutting Jobs{" "}
+        Material Consumption{" "}
         <span className="text-gray-500">({pagination.totalResults})</span>
       </h2>
 
@@ -169,11 +143,12 @@ const Cutting = () => {
           <FiSearch className="absolute left-2 top-2 text-primary" />
           <input
             type="text"
-            placeholder="Search Cutting Jobs"
+            placeholder="Search Material"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-          /> {search && (
+          />{" "}
+          {search && (
             <FiX
               className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
               onClick={() => setSearch("")}
@@ -193,7 +168,6 @@ const Cutting = () => {
               <th className="px-2 py-1.5 ">Prod No</th>
               <th className="px-2 py-1.5 ">BOM No</th>
               <th className="px-2 py-1.5 ">Product Name</th>
-              <th className="px-2 py-1.5 ">Status</th>
               <th className="px-2 py-1.5 ">Created By</th>
             </tr>
           </thead>
@@ -201,7 +175,7 @@ const Cutting = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(8).fill({})}
+                columns={Array(7).fill({})}
               />
             ) : (
               <>
@@ -214,7 +188,7 @@ const Cutting = () => {
                         setExpandedMIId(expandedMIId === mi._id ? null : mi._id)
                       }
                     >
-                      <td className="px-2 border-r border-primary">
+                      <td className="px-2 py-0.75 border-r border-primary">
                         {Number(pagination.currentPage - 1) *
                           Number(pagination.limit) +
                           index +
@@ -244,46 +218,18 @@ const Cutting = () => {
                         {mi.prodNo || "-"}
                       </td>
                       <td className="px-2  border-r border-primary">
-                        {mi.bomNo || "-"}
+                        {mi?.bomNo || "-"}
                       </td>
                       <td className="px-2  border-r border-primary">
                         {mi?.bom?.productName || "-"}
                       </td>
-                      <td className="px-2 border-r border-primary py-1">
-                        {(() => {
-                          const tableStatus = getJobTableStatus(
-                            mi.itemDetails || [],
-                            "Cutting"
-                          );
 
-                          return (
-                            <span
-                              className={`${
-                                tableStatus === "Pending"
-                                  ? "bg-yellow-200"
-                                  : tableStatus === "In Progress"
-                                  ? "bg-orange-200"
-                                  : "bg-green-200"
-                              } py-0.5 px-1 rounded font-bold capitalize`}
-                            >
-                              {tableStatus}
-                            </span>
-                          );
-                        })()}
-                      </td>
-
-                      <td className="px-2  border-r border-primary">
-                        {mi.createdBy?.fullName || "-"}
-                      </td>
+                      <td className="px-2 ">{mi.createdBy?.fullName || "-"}</td>
                     </tr>
                     {expandedMIId === mi._id && (
                       <tr className="">
                         <td colSpan="100%">
-                          <JobDetails
-                            MI={mi}
-                            filter="cutting"
-                            fetchMis={fetchMis}
-                          />
+                          <McDetails MI={mi} />
                         </td>
                       </tr>
                     )}
@@ -292,7 +238,7 @@ const Cutting = () => {
                 {mi.length === 0 && (
                   <tr>
                     <td colSpan="14" className="text-center py-4 text-gray-500">
-                      No Products Found.
+                      No Material Issue found.
                     </td>
                   </tr>
                 )}
@@ -301,21 +247,6 @@ const Cutting = () => {
           </tbody>
         </table>
       </div>
-
-      {/* {barcodeModalOpen && selectedStock && (
-        <LabelPrint
-          stock={selectedStock}
-          onClose={() => setBarcodeModalOpen(false)}
-        />
-      )} */}
-      {editModalOpen && (
-        <UpdateMI
-          isOpen={editModalOpen}
-          onClose={() => setEditModalOpen(false)}
-          MIData={editMIData}
-          onUpdated={fetchMis}
-        />
-      )}
 
       <PaginationControls
         currentPage={pagination.currentPage}
@@ -335,4 +266,4 @@ const Cutting = () => {
   );
 };
 
-export default Cutting;
+export default MaterialConsumption;

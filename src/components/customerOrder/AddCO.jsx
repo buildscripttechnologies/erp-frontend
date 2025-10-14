@@ -7,11 +7,13 @@ import { FiTrash2 } from "react-icons/fi";
 import { capitalize } from "lodash";
 import { calculateRate } from "../../utils/calc";
 import { generateConsumptionTable } from "../../utils/consumptionTable";
-import { plastic, slider, zipper } from "../../data/dropdownData";
+// import { plastic, slider, zipper } from "../../data/dropdownData";
 import { useNavigate } from "react-router-dom";
 import { BeatLoader } from "react-spinners";
+import { useCategoryArrays } from "../../data/dropdownData";
 
 const AddCO = ({ onClose, onSuccess }) => {
+   const { fabric, slider, plastic, zipper } = useCategoryArrays();
   const [form, setForm] = useState({
     partyName: "",
     productName: "",
