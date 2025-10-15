@@ -166,7 +166,8 @@ const COP = ({ isOpen }) => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:outline-none"
-            /> {search && (
+            />{" "}
+            {search && (
               <FiX
                 className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
                 onClick={() => setSearch("")}

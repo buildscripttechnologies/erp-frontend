@@ -129,7 +129,9 @@ const CustomerOrder = ({ isOpen }) => {
       // window.open(url, "_blank");
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Invoice-${b.prodNo || ""}.pdf`; // <-- custom filename here
+      a.download = `Invoice-${
+        b.partyName + "-" + b.invoiceNo || "Invoice"
+      }.pdf`; // <-- custom filename here
       a.click();
       // Don’t revoke immediately, or the preview tab will break
       // Instead, revoke after some delay
@@ -192,6 +194,7 @@ const CustomerOrder = ({ isOpen }) => {
                   <th className="px-[8px] ">SMP / FG No</th>
                   <th className="px-[8px] ">BOM No.</th>
                   <th className="px-[8px] ">Prod No.</th>
+                  <th className="px-[8px] ">Invoice No.</th>
                   <th className="px-[8px] ">Party Name</th>
                   <th className="px-[8px] ">Product Name</th>
                   <th className="px-[8px] ">Order Qty</th>
@@ -209,7 +212,7 @@ const CustomerOrder = ({ isOpen }) => {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={Array(17).fill({})}
+                    columns={Array(18).fill({})}
                   />
                 ) : (
                   <>
@@ -256,6 +259,9 @@ const CustomerOrder = ({ isOpen }) => {
                           </td>
                           <td className="px-[8px] border-r border-primary  ">
                             {b.prodNo || "-"}
+                          </td>
+                          <td className="px-[8px] border-r border-primary  ">
+                            {b.invoiceNo || "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary  ">
                             {b.partyName || "-"}
