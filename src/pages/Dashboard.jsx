@@ -37,14 +37,14 @@ export default function Dashboard({ children }) {
 
       <TabsProvider>
         <TabsBar isOpen={isOpen} />
-        <div className="flex min-h-screen pt-15  w-full bg-gradient-to-r from-white to-[#d8b76a]/10  ">
+        <div className="flex min-h-screen pt-20  w-full bg-[#fdfcf8]  ">
           {/* Sidebar */}
           <Sidebar isOpen={isOpen} setIsOpen={toggleSidebar} />
 
           {/* Main Content */}
           <main
             className={`flex-1 transition-all overflow-auto duration-300 ease-in-out ${
-              isOpen ? "ml-50 " : "ml-0"
+              isOpen ? "ml-60 " : "ml-0"
             }`}
           >
             <TabContentHost />

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
-import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
+import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 import TableSkeleton from "../../TableSkeleton";
 import ScrollLock from "../../ScrollLock";
 import Toggle from "react-toggle";
@@ -183,7 +183,13 @@ const BomMaster = ({ isOpen }) => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:outline-none"
-            />
+            /> {search && (
+              <FiX
+                className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
+                onClick={() => setSearch("")}
+                title="Clear"
+              />
+            )}
           </div>
           {hasPermission("BOM", "write") && (
             <button

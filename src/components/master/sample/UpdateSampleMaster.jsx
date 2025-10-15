@@ -8,9 +8,12 @@ import { BeatLoader } from "react-spinners";
 import { capitalize } from "lodash";
 import { calculateRate } from "../../../utils/calc";
 import { generateConsumptionTable } from "../../../utils/consumptionTable";
-import { zipper, plastic, slider } from "../../../data/dropdownData";
+import { useCategoryArrays } from "../../../data/dropdownData";
+// import { zipper, plastic, slider } from "../../../data/dropdownData";
 
 const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
+  const { fabric, slider, plastic, zipper } = useCategoryArrays();
+  let categoryData = useCategoryArrays();
   const [form, setForm] = useState({
     ...sampleData,
     productName: sampleData.product?.name || "",
@@ -207,21 +210,21 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
       updatedDetails = productDetails.map((comp) => {
         const category = (comp.category || "").toLowerCase();
 
-        if (["plastic", "non woven", "ld cord"].includes(category)) {
+        if (plastic.includes(category)) {
           const grams = (Number(comp.tempGrams) || 0) * newValue;
           const qty = (Number(comp.tempQty) || 1) * newValue;
           return {
             ...comp,
             grams,
             qty: qty,
-            rate: calculateRate({ ...comp, grams }, newValue),
+            rate: calculateRate({ ...comp, grams }, newValue, categoryData),
           };
         } else {
           const finalQty = (Number(comp.tempQty) || 0) * newValue;
           return {
             ...comp,
             qty: finalQty,
-            rate: calculateRate(comp, finalQty),
+            rate: calculateRate(comp, finalQty, categoryData),
           };
         }
       });
@@ -248,7 +251,7 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
     }
     const category = (comp.category || "").toLowerCase();
 
-    if (["plastic", "non woven", "ld cord"].includes(category)) {
+    if (plastic.includes(category)) {
       // scale grams with orderQty
       comp.grams = (comp.tempGrams || 0) * orderQty;
       comp.qty = (comp.tempQty || 0) * orderQty;
@@ -259,7 +262,7 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
       comp.qty = (comp.tempQty || 0) * orderQty;
     }
 
-    comp.rate = calculateRate(comp, comp.qty);
+    comp.rate = calculateRate(comp, comp.qty, categoryData);
 
     updated[index] = comp;
     setProductDetails(updated);
@@ -312,7 +315,10 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
     //   return toast.error("Please fill or remove all incomplete RM/SFG rows");
     // }
     try {
-      const consumptionTable = generateConsumptionTable(productDetails);
+      const consumptionTable = generateConsumptionTable(
+        productDetails,
+        categoryData
+      );
 
       const formData = new FormData();
       const payload = {
@@ -447,6 +453,7 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                     qty: item.qty || 0,
                     category: item.category || "",
                     grams: item.grams || 0,
+                    tempGrams: item.grams || 0,
                     height: item.height || "",
                     width: item.width || "",
                     rate: item.rate || "",
@@ -454,6 +461,11 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                     partName: item.partName || "",
                     baseQty: item.baseQty || 0,
                     itemRate: item.itemRate || 0,
+                    itemName: item.itemName || "",
+                    skuCode: item.skuCode || "",
+                    isPasting: item.isPasting,
+                    isPrint: item.isPrint,
+                    panno: item.panno || 0,
                     // depth: item.depth || "",
                     label: `${item.skuCode}: ${item.itemName}${
                       item.description ? ` - ${item.description}` : ""
@@ -751,7 +763,7 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                         return null;
 
                       // if (
-                      //   ["plastic", "non woven", "ld cord"].includes(
+                      //   plastic.includes(
                       //     comp.category?.toLowerCase()
                       //   ) &&
                       //   field === "qty"

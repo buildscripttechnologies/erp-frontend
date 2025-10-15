@@ -1,3 +1,5 @@
+import { useCategories } from "../context/CategoryContext";
+
 export const cuttingType = [
   "Slitting Cutting",
   "Cutting",
@@ -42,9 +44,8 @@ export const availableModules = [
 
 export const availableActions = ["read", "write", "update", "delete"];
 
-export const fabric = ["fabric", "canvas", "cotton", "foam"];
-
-export const slider = [
+export const DEFAULT_FABRIC = ["fabric", "canvas", "cotton", "foam"];
+export const DEFAULT_SLIDER = [
   "runner",
   "slider",
   "bidding",
@@ -53,10 +54,8 @@ export const slider = [
   "dkadi",
   "accessories",
 ];
-
-export const plastic = ["plastic", "non woven", "ld cord"];
-
-export const zipper = ["zipper", "webbing", "inner dori"];
+export const DEFAULT_PLASTIC = ["plastic", "non woven", "ld cord"];
+export const DEFAULT_ZIPPER = ["zipper", "webbing", "inner dori", "handle"];
 
 export const QUERY_TYPE_MAP = {
   W: "Direct Enquiries",
@@ -64,4 +63,20 @@ export const QUERY_TYPE_MAP = {
   P: "PNS Calls",
   BIZ: "Catalog Views",
   WA: "WhatsApp Enquiries",
+};
+
+export const useCategoryArrays = () => {
+  const { categories } = useCategories() || {}; // prevent crash if null
+  console.log("cate", categories);
+
+  const fabric =
+    categories?.["H x W x Q"]?.map((el) => el.toLowerCase()) || DEFAULT_FABRIC;
+  const slider =
+    categories?.["Q"]?.map((el) => el.toLowerCase()) || DEFAULT_SLIDER;
+  const plastic =
+    categories?.["G x Q"]?.map((el) => el.toLowerCase()) || DEFAULT_PLASTIC;
+  const zipper =
+    categories?.["W x Q"]?.map((el) => el.toLowerCase()) || DEFAULT_ZIPPER;
+
+  return { fabric, slider, plastic, zipper };
 };

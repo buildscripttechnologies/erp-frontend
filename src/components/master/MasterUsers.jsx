@@ -9,6 +9,7 @@ import {
   FiUserX,
   FiEyeOff,
   FiEye,
+  FiX,
 } from "react-icons/fi";
 import { LuUserCog } from "react-icons/lu";
 
@@ -506,7 +507,14 @@ export default function MasterUsers() {
                 onChange={(e) => setSearchText(e.target.value)}
                 className="w-full pl-10 pr-4 py-1 text-[#292926]  border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
               />
-              <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
+              <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />{" "}
+              {searchText && (
+                <FiX
+                  className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
+                  onClick={() => setSearchText("")}
+                  title="Clear"
+                />
+              )}
             </div>
             {!userTypesLoaded ? (
               <RoleSkeleton />

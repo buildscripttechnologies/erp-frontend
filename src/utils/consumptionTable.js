@@ -1,12 +1,13 @@
-import { fabric, plastic, slider, zipper } from "../data/dropdownData";
+// import { fabric, plastic, slider, zipper } from "../data/dropdownData";
 
-export const generateConsumptionTable = (productDetails = []) => {
+export const generateConsumptionTable = (productDetails = [], categoryData) => {
+  const { fabric, slider, plastic, zipper } = categoryData;
   const mergedRawMaterials = {};
-  console.log("product details", productDetails);
+  // console.log("product details", productDetails);
 
   (productDetails || []).forEach((item) => {
     const sku = item.skuCode || "";
-    const category = item.category || "";
+    const category = (item.category || "").toLowerCase();
     const qty = Number(item.qty) || 0;
     const width = Number(item.width) || 0;
     const height = Number(item.height) || 0;
@@ -23,10 +24,10 @@ export const generateConsumptionTable = (productDetails = []) => {
       };
     }
 
-    if (zipper.includes(category.toLowerCase())) {
+    if (zipper.includes(category)) {
       const totalInches = width * qty;
       mergedRawMaterials[sku].qty += totalInches / 39.37; // meters
-    } else if (fabric.includes(category.toLowerCase())) {
+    } else if (fabric.includes(category)) {
       if (width && height && qty && panno) {
         const perRowA = Math.floor(panno / width);
         const rowsA = perRowA > 0 ? Math.ceil(qty / perRowA) : Infinity;
@@ -37,78 +38,57 @@ export const generateConsumptionTable = (productDetails = []) => {
         const totalInchesB = rowsB * width;
 
         const bestInches = Math.min(totalInchesA, totalInchesB);
-
         mergedRawMaterials[sku].qty += bestInches / 39.37;
       }
-    } else if (plastic.includes(category.toLowerCase())) {
+    } else if (plastic.includes(category)) {
       mergedRawMaterials[sku].weight += grams / 1000;
       mergedRawMaterials[sku].qty += qty;
-    } else if (slider.includes(category.toLowerCase())) {
+    } else if (slider.includes(category)) {
       mergedRawMaterials[sku].qty += qty;
     } else {
       mergedRawMaterials[sku].qty += qty;
     }
   });
 
-  const consumptionTable = Object.values(mergedRawMaterials).map(
-    (item, index) => {
-      let weightDisplay = "N/A";
-      let qtyDisplay = "N/A";
+  // categories that should NOT get 3% extra
+  const excludedCategories = [...slider];
 
-      if (
-        ["plastic", "non woven", "ld cord"].includes(
-          item.category.toLowerCase()
-        )
-      )
-        weightDisplay = `${item.weight.toFixed(4)} kg`;
+  // Apply +3% for all other categories
+  Object.values(mergedRawMaterials).forEach((item) => {
+    if (!excludedCategories.includes(item.category.toLowerCase())) {
+      // console.log("before", item.qty, item.weight);
 
-      if (
-        [
-          "zipper",
-          "fabric",
-          "canvas",
-          "cotton",
-          "webbing",
-          "inner dori",
-        ].includes(item.category.toLowerCase())
-      ) {
-        qtyDisplay = `${Number(item.qty).toFixed(4)} m`;
-      } else if (
-        ["plastic", "non woven", "ld cord"].includes(
-          item.category.toLowerCase()
-        )
-      ) {
-        qtyDisplay = "N/A";
-      } else if (
-        [
-          "runner",
-          "slider",
-          "bidding",
-          "adjuster",
-          "buckel",
-          "dkadi",
-          "accessories",
-        ].includes(item.category.toLowerCase())
-      ) {
-        qtyDisplay = item.qty;
-      }
-      return {
-        skuCode: item.skuCode,
-        itemName: item.itemName,
-        category: item.category,
-        weight: weightDisplay,
-        qty: qtyDisplay,
-      };
+      item.weight = item.weight * 1.03; // add 3%
+      item.qty = item.qty * 1.03; // add 3%
+      // console.log("after", item.qty, item.weight);
     }
-  );
+  });
 
-  // return Object.values(mergedRawMaterials).map((item) => ({
-  //   skuCode: item.skuCode,
-  //   itemName: item.itemName,
-  //   category: item.category,
-  //   qty: item.qty.toFixed(4),
-  //   weight: item.weight.toFixed(4),
-  // }));
+  const consumptionTable = Object.values(mergedRawMaterials).map((item) => {
+    let weightDisplay = "N/A";
+    let qtyDisplay = "N/A";
+
+    if (plastic.includes(item.category))
+      weightDisplay = `${item.weight.toFixed(4)} kg`;
+
+    if ([...fabric, ...zipper].includes(item.category)) {
+      qtyDisplay = `${Number(item.qty).toFixed(4)} m`;
+    } else if (plastic.includes(item.category)) {
+      qtyDisplay = "N/A";
+    } else if (slider.includes(item.category)) {
+      qtyDisplay = item.qty;
+    } else {
+      qtyDisplay = item.qty.toFixed(4);
+    }
+
+    return {
+      skuCode: item.skuCode,
+      itemName: item.itemName,
+      category: item.category,
+      weight: weightDisplay,
+      qty: qtyDisplay,
+    };
+  });
 
   return consumptionTable;
 };

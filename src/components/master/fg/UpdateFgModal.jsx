@@ -5,9 +5,12 @@ import { FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
 import { BeatLoader } from "react-spinners";
 import Select from "react-select";
 import { calculateRate } from "../../../utils/calc";
-import { zipper, plastic, slider } from "../../../data/dropdownData";
+import { useCategoryArrays } from "../../../data/dropdownData";
+// import { zipper, plastic, slider } from "../../../data/dropdownData";
 
 const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
+  const { fabric, slider, plastic, zipper } = useCategoryArrays();
+  let categoryData = useCategoryArrays();
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(false);
   const [components, setComponents] = useState([]);
@@ -262,7 +265,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
     //   comp.qty = (comp.tempQty || 0) * orderQty;
     // }
 
-    comp.rate = calculateRate(comp, comp.qty);
+    comp.rate = calculateRate(comp, comp.qty, categoryData);
 
     setForm((prev) =>
       recalculateTotals({
@@ -863,7 +866,7 @@ const UpdateFgModal = ({ fg, onClose, onUpdated }) => {
                         return null;
 
                       // if (
-                      //   ["plastic", "non woven", "ld cord"].includes(
+                      //   plastic.includes(
                       //     mat.category?.toLowerCase()
                       //   ) &&
                       //   field === "qty"

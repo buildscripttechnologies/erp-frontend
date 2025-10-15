@@ -3,10 +3,15 @@ import toast from "react-hot-toast";
 import axios from "../../utils/axios";
 import Select from "react-select";
 import { BeatLoader } from "react-spinners";
-import { cuttingType, jobWorkType } from "../../data/dropdownData";
+import {
+  cuttingType,
+  jobWorkType,
+  useCategoryArrays,
+} from "../../data/dropdownData";
 import AddPO from "../purchase/AddPO";
 
 const Add = ({ onClose, onAdded }) => {
+  const { fabric, slider, plastic, zipper } = useCategoryArrays();
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [loading, setLoading] = useState(false);
@@ -85,6 +90,8 @@ const Add = ({ onClose, onAdded }) => {
     setLoading(true);
 
     try {
+      console.log("consumption", consumptionTable);
+
       const mainStatus = itemDetails.every(
         (it) => it.currentStatus !== "Pending"
       )
@@ -207,6 +214,7 @@ const Add = ({ onClose, onAdded }) => {
                 Select BOM
               </label>
               <Select
+                menuPortalTarget={document.body}
                 options={bomOptions}
                 value={selectedItem}
                 onChange={(item) => {
@@ -242,6 +250,12 @@ const Add = ({ onClose, onAdded }) => {
                 placeholder="Item Name or SKU"
                 isSearchable
                 styles={{
+                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                  menu: (base) => ({
+                    ...base,
+                    width: "max-content",
+                    minWidth: "100%",
+                  }),
                   control: (base, state) => ({
                     ...base,
                     borderColor: "var(--color-primary)",
@@ -421,10 +435,68 @@ const Add = ({ onClose, onAdded }) => {
                           {item.category || "N/A"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.weight || "N/A"}
+                          {item.weight !== "N/A" ? (
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="number"
+                                value={parseFloat(item.weight) || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  // Allow only digits + one dot
+
+                                  if (/^\d*\.?\d*$/.test(val)) {
+                                    const rounded = Number(val);
+                                    const updated = [...consumptionTable];
+                                    updated[idx].weight = `${rounded} kg`;
+                                    setConsumptionTable(updated);
+                                  }
+                                }}
+                                className="w-16 border border-gray-400 rounded px-1 py-0.5 text-right"
+                              />
+                              <span className="text-xs text-gray-600">kg</span>
+                            </div>
+                          ) : (
+                            "N/A"
+                          )}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.qty || "N/A"}
+                          {item.qty !== "N/A" ? (
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="number"
+                                value={parseFloat(item.qty) || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  const unit =
+                                    item.category &&
+                                    [...fabric, ...zipper].includes(
+                                      item.category.toLowerCase()
+                                    )
+                                      ? "m"
+                                      : "";
+                                  if (/^\d*\.?\d*$/.test(val)) {
+                                    const rounded = Number(val?.toFixed(4));
+                                    const updated = [...consumptionTable];
+                                    updated[idx].qty = `${rounded}${
+                                      unit ? " " + unit : ""
+                                    }`;
+                                    setConsumptionTable(updated);
+                                  }
+                                }}
+                                className="w-16 border border-gray-400 rounded px-1 py-0.5 text-right"
+                              />
+                              <span className="text-xs text-gray-600">
+                                {item.category &&
+                                [...fabric, ...zipper].includes(
+                                  item.category.toLowerCase()
+                                )
+                                  ? "m"
+                                  : ""}
+                              </span>
+                            </div>
+                          ) : (
+                            "N/A"
+                          )}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
                           {(() => {

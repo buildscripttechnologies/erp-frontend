@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
-import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
+import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 import { FaCircleArrowDown, FaCircleArrowUp } from "react-icons/fa6";
 import TableSkeleton from "../TableSkeleton";
 import Toggle from "react-toggle";
@@ -223,7 +223,14 @@ const PurchaseOrder = ({ isOpen }) => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-          />
+          />{" "}
+          {search && (
+            <FiX
+              className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
+              onClick={() => setSearch("")}
+              title="Clear"
+            />
+          )}
         </div>
         {hasPermission("Purchase Order", "write") && (
           <button
@@ -276,7 +283,7 @@ const PurchaseOrder = ({ isOpen }) => {
               ) : (
                 <>
                   {pos.map((po, index) => (
-                    <React.Fragment key={po.id}>
+                    <React.Fragment key={po._id}>
                       <tr
                         onClick={() =>
                           setExpandedPOId(

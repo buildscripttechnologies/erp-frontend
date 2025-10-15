@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
-import { FiEdit, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
+import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 import Dashboard from "../../../pages/Dashboard";
 import AddLocationModal from "./AddLocation";
 import TableSkeleton from "../../TableSkeleton";
@@ -142,7 +142,14 @@ const LocationMaster = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-          />
+          />{" "}
+          {search && (
+            <FiX
+              className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
+              onClick={() => setSearch("")}
+              title="Clear"
+            />
+          )}
         </div>
 
         {hasPermission("Location", "write") && (

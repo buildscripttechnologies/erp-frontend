@@ -5,8 +5,12 @@ import { FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
 import { BeatLoader } from "react-spinners";
 import Select from "react-select";
 import { calculateRate } from "../../../utils/calc";
-import { zipper, plastic, slider } from "../../../data/dropdownData";
+import { useCategoryArrays } from "../../../data/dropdownData";
+// import { zipper, plastic, slider } from "../../../data/dropdownData";
+
 const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
+  const { fabric, slider, plastic, zipper } = useCategoryArrays();
+  let categoryData = useCategoryArrays();
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(false);
   const [components, setComponents] = useState([]);
@@ -237,7 +241,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
       comp[field] = value;
     }
 
-    // if (["plastic", "non woven", "ld cord"].includes(category)) {
+    // if (plastic.includes(category)) {
     //   // scale grams with orderQty
     //   comp.grams = (comp.tempQty || 0) * orderQty;
     //   comp.qty = orderQty; // qty here is just "number of orders"
@@ -245,7 +249,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
     //   // all other categories → qty = tempQty × orderQty
     //   comp.qty = (comp.tempQty || 0) * orderQty;
     // }
-    comp.rate = calculateRate(comp, comp.qty);
+    comp.rate = calculateRate(comp, comp.qty, categoryData);
 
     setForm((prev) =>
       recalculateTotals({
