@@ -436,7 +436,7 @@ const StockRegister = () => {
                     <td className="px-2  border-r border-primary ">
                       {stock.moq || 0}
                     </td>
-                    <td className="px-2 ">{stock.amount || 0}</td>
+                    <td className="px-2 ">{stock.amount?.toFixed(2) || 0}</td>
                   </tr>
                 ))}
                 {stocks.length === 0 && (

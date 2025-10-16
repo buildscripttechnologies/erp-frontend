@@ -6,7 +6,7 @@ import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 import TableSkeleton from "../../TableSkeleton";
 import ScrollLock from "../../ScrollLock";
 import PaginationControls from "../../PaginationControls";
-import { FaFileDownload } from "react-icons/fa";
+import { FaFileDownload, FaFilePdf } from "react-icons/fa";
 import AddSampleModal from "./AddSampleModel";
 import SampleDetailsSection from "./SampleDetailsSection";
 import UpdateSampleModal from "./UpdateSampleMaster";
@@ -19,6 +19,9 @@ import { useRef } from "react";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { PulseLoader } from "react-spinners";
+import { generateSampleEstimate } from "../../../utils/generateSampleEstimate";
+import { Tooltip } from "react-tooltip";
+import PdfOptionsModal from "./PdfOptionsModal";
 
 const SampleMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -37,7 +40,8 @@ const SampleMaster = ({ isOpen }) => {
     limit: 10,
   });
   const [downloading, setDownloading] = useState();
-
+  const [downloading2, setDownloading2] = useState();
+  const [optionModalOpen, setOptionModalOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -161,13 +165,65 @@ const SampleMaster = ({ isOpen }) => {
       // window.open(blobUrl, "_blank");
       const a = document.createElement("a");
       a.href = blobUrl;
-      a.download = `${SampleData.sampleNo || "Sample"}.pdf`; // <-- custom filename here
+      a.download = `${
+        SampleData.sampleNo + "-" + SampleData.product?.name || "Sample"
+      }.pdf`; // <-- custom filename here
       a.click();
     } catch (err) {
       console.error("Error generating Sample PDF preview:", err);
       toast.error("Failed to generate PDF preview.");
     } finally {
       setDownloading(false);
+    }
+  };
+  const handlePreviewSampleEstimate = async (SampleData, options) => {
+    try {
+      setDownloading2(true);
+
+      const res = await axios.get("/settings/letterpad");
+      const letterpadUrl = res.data.path;
+      const blobUrl = await generateSampleEstimate(SampleData, letterpadUrl);
+
+      const fileName = `${SampleData.sampleNo}-${
+        SampleData.product?.name || "Sample Estimate"
+      }.pdf`;
+      const blob = await (await fetch(blobUrl)).blob();
+      const file = new File([blob], fileName, { type: "application/pdf" });
+
+      // 1️⃣ Download
+      if (options.download) {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(file);
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
+
+      // 2️⃣ Send WhatsApp
+      if (options.sendWhatsapp) {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64Data = reader.result.split(",")[1]; // base64 part
+          try {
+            await axios.post("/wati/pdf/send-pdf-whatsapp", {
+              phone: "+917359286348",
+              fileName,
+              base64Data,
+              caption: `Here’s your Sample Estimate: ${fileName}`,
+            });
+            toast.success("PDF sent via WhatsApp!");
+          } catch (err) {
+            console.error("WhatsApp sending error:", err);
+            toast.error("Failed to send PDF via WhatsApp.");
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (err) {
+      console.error("Error generating Sample PDF preview:", err);
+      toast.error("Failed to generate PDF preview.");
+    } finally {
+      setDownloading2(false);
     }
   };
 
@@ -178,7 +234,6 @@ const SampleMaster = ({ isOpen }) => {
           Product Samples
           <span className="text-gray-500">({pagination.totalResults})</span>
         </h2>
-
         <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
           <div className="relative w-full sm:w-80">
             <FiSearch className="absolute left-3 top-2.5 text-primary" />
@@ -206,7 +261,6 @@ const SampleMaster = ({ isOpen }) => {
             </button>
           )}
         </div>
-
         <div className="relative overflow-x-auto  overflow-y-auto rounded border border-primary shadow-sm">
           <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[98vw]`}`}>
             <table
@@ -326,16 +380,41 @@ const SampleMaster = ({ isOpen }) => {
                             )}
                           </td>
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-primary">
+                            {expandedSampleId === b._id && downloading2 ? (
+                              <PulseLoader size={4} color="#d8b76a" />
+                            ) : (
+                              <>
+                                <FaFilePdf
+                                  data-tooltip-id="statusTip"
+                                  data-tooltip-content="Download Estimate"
+                                  onClick={() => setOptionModalOpen(true)}
+                                  className="cursor-pointer text-primary hover:text-green-600"
+                                />{" "}
+                                {optionModalOpen && (
+                                  <PdfOptionsModal
+                                    sampleData={b}
+                                    onClose={() => setOptionModalOpen(false)}
+                                    onConfirm={(options) =>
+                                      handlePreviewSampleEstimate(b, options)
+                                    }
+                                  />
+                                )}
+                              </>
+                            )}{" "}
                             {expandedSampleId === b._id && downloading ? (
                               <PulseLoader size={4} color="#d8b76a" />
                             ) : (
                               <FaFileDownload
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Download"
                                 onClick={() => handlePreviewSample(b)}
                                 className="cursor-pointer text-primary hover:text-green-600"
                               />
                             )}
                             {hasPermission("Sample", "update") ? (
                               <FiEdit
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Edit"
                                 onClick={() => setEditingSample(b)}
                                 className="cursor-pointer text-primary hover:text-blue-600"
                               />
@@ -344,12 +423,24 @@ const SampleMaster = ({ isOpen }) => {
                             )}
                             {hasPermission("Sample", "delete") ? (
                               <FiTrash2
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Delete"
                                 onClick={() => handleDelete(b._id)}
                                 className="cursor-pointer text-primary hover:text-red-600"
                               />
                             ) : (
                               "-"
                             )}
+                            <Tooltip
+                              id="statusTip"
+                              place="top"
+                              style={{
+                                backgroundColor: "#292926",
+                                color: "white",
+                                fontSize: "12px",
+                                fontWeight: "bold",
+                              }}
+                            />
                           </td>
                         </tr>
                         {expandedSampleId === b._id && (
@@ -387,14 +478,12 @@ const SampleMaster = ({ isOpen }) => {
             }}
           />
         )}
-
         {showModal && (
           <AddSampleModal
             onClose={() => setShowModal(false)}
             onSuccess={fetchSamples}
           />
-        )}
-
+        )}{" "}
         <PaginationControls
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}

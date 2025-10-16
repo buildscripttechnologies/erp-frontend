@@ -67,7 +67,6 @@ export const QUERY_TYPE_MAP = {
 
 export const useCategoryArrays = () => {
   const { categories } = useCategories() || {}; // prevent crash if null
-  console.log("cate", categories);
 
   const fabric =
     categories?.["H x W x Q"]?.map((el) => el.toLowerCase()) || DEFAULT_FABRIC;

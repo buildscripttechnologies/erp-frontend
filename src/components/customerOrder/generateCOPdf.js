@@ -300,7 +300,7 @@ export const generateCOPdf = async (co = {}, letterpadUrl, companyDetails) => {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.setTextColor(...colors.white);
-  doc.text(`Invoice - ${co?.prodNo || ""}`, pageWidth / 2, CONTENT_TOP - 7, {
+  doc.text(`Invoice - ${co?.invoiceNo || ""}`, pageWidth / 2, CONTENT_TOP - 7, {
     align: "center",
   });
 

@@ -171,22 +171,20 @@ export async function makeLabelPdf(stock) {
   }
 
   // --- Print/Output Logic (unchanged) ---
-  const fileName = `${stock.skuCode || "labels"}_${new Date()
-    .toISOString()
-    .slice(0, 10)}.pdf`;
+  const fileName = `${stock.itemName || "labels"}-QR.pdf`;
 
   const blob = doc.output("blob");
   console.log(`✅ Final PDF size: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
 
   const blobUrl = URL.createObjectURL(blob);
   // ... (rest of print logic)
-  const win = window.open(blobUrl);
-  if (win) {
-    win.onload = () => {
-      win.document.title = fileName;
-      win.print();
-    };
-  } else {
-    alert("Enable pop-ups to print labels.");
-  }
+  const link = document.createElement("a");
+  link.href = blobUrl;
+  link.download = `${fileName || "QR.pdf"}`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  // Optional: revoke the URL after a short delay to free memory
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
 }
