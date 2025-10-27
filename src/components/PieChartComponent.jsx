@@ -1,17 +1,17 @@
 // PieChartComponent.jsx
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
-export function OrderPieChart() {
-  const data = [
-    { name: "Single PO", value: 10000 },
-    { name: "Scattered PO", value: 5000 },
-    { name: "RC PO", value: 2000 },
-  ];
+export function OrderPieChart({ data }) {
+  // const data = [
+  //   { name: "Single PO", value: 10000 },
+  //   { name: "Scattered PO", value: 5000 },
+  //   { name: "RC PO", value: 2000 },
+  // ];
   const colors = ["#d8b76a", "#86efac", "#93c5fd"]; // gold, green, blue
   return (
     <div className="relative bg-white shadow-md drop-shadow-sm rounded-lg p-5 mt-4">
       <div>
-        <h3 className="font-semibold text-[#d8b76a] text-lg mb-2">
+        <h3 className="font-semibold text-primary text-lg mb-2">
           Order Values
         </h3>
         <ResponsiveContainer width="100%" height={180}>

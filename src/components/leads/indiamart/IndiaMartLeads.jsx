@@ -247,7 +247,7 @@ const IndiaMartLeads = () => {
                     </td>
 
                     <td className="px-2 mt-1.5 flex gap-3 text-sm text-primary">
-                      {hasPermission("lead", "update") ? (
+                      {/* {hasPermission("lead", "update") ? (
                         <FiEdit
                           data-tooltip-id="statusTip"
                           data-tooltip-content="Edit"
@@ -256,8 +256,8 @@ const IndiaMartLeads = () => {
                         />
                       ) : (
                         "-"
-                      )}
-                      {hasPermission("lead", "delete") ? (
+                      )} */}
+                      {/* {hasPermission("lead", "delete") ? (
                         <FiTrash2
                           data-tooltip-id="statusTip"
                           data-tooltip-content="Delete"
@@ -266,7 +266,7 @@ const IndiaMartLeads = () => {
                         />
                       ) : (
                         "-"
-                      )}
+                      )} */}
                       <Tooltip
                         id="statusTip"
                         place="top"
