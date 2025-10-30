@@ -20,7 +20,7 @@ const AddQuotation = ({ onClose, onSuccess, coData }) => {
     partyName: "",
     productName: "",
     sampleNo: "",
-    orderQty: 1,
+    orderQty: 0,
     date: new Date().toISOString().split("T")[0],
     deliveryDate: "",
     height: 0,
@@ -462,7 +462,7 @@ const AddQuotation = ({ onClose, onSuccess, coData }) => {
                     sampleNo:
                       selectedProduct.sampleNo || selectedProduct.skuCode,
                     partyName: selectedProduct.partyName || "",
-                    orderQty: selectedProduct.orderQty || 1,
+                    // orderQty: selectedProduct.orderQty || 0,
                     height: selectedProduct.height || 0,
                     width: selectedProduct.width || 0,
                     depth: selectedProduct.depth || 0,

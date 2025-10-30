@@ -135,7 +135,7 @@ export default function PurchaseOrderBill({
             const base64data = reader.result.split(",")[1]; // remove data:application/pdf;base64
             console.log("basedata", base64data);
 
-            const res = await axios.patch(`/pos/update/${po._id}`, {
+            const res = await axios.patch(`/pos/update-status/${po._id}`, {
               status,
               pdfBase64: base64data,
             });

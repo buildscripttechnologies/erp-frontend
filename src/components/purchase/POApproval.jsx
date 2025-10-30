@@ -273,6 +273,7 @@ const POApprovel = ({ isOpen }) => {
                 <th className="px-[8px] py-1">Amount (₹)</th>
                 <th className="px-[8px] py-1">Amount + GST (₹)</th>
                 <th className="px-[8px] py-1">Status</th>
+                <th className="px-[8px] py-1">Email Status</th>
                 <th className="px-[8px] py-1">Created By</th>
                 <th className="px-[8px] py-1">Action</th>
               </tr>
@@ -281,7 +282,7 @@ const POApprovel = ({ isOpen }) => {
               {loading ? (
                 <TableSkeleton
                   rows={pagination.limit}
-                  columns={Array(10).fill({})}
+                  columns={Array(11).fill({})}
                 />
               ) : (
                 <>
@@ -346,6 +347,17 @@ const POApprovel = ({ isOpen }) => {
                             }  py-0.5 px-1 rounded`}
                           >
                             {po.status}
+                          </span>
+                        </td>
+                        <td className="px-[8px]  border-r border-r-primary">
+                          <span
+                            className={`${
+                              po.emailSent == true
+                                ? "bg-green-200 font-bold"
+                                : ""
+                            }  py-0.5 px-1 rounded`}
+                          >
+                            {po.emailSent ? "Email Sent" : "-"}
                           </span>
                         </td>
                         <td className="px-[8px]  border-r border-r-primary">

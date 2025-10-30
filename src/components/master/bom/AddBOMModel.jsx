@@ -116,7 +116,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
       sqInchRate: sfg.sqInchRate || 1,
       category: sfg.itemCategory,
       baseQty: sfg.baseQty || 1,
-      itemRate: sfg.unitRate || null,
+      itemRate: sfg.unitD2CRate || null,
       skuCode: sfg.skuCode,
     })),
   ];

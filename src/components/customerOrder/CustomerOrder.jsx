@@ -274,7 +274,9 @@ const CustomerOrder = ({ isOpen }) => {
                             {b.gst || "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary  ">
-                            {b.totalAmountWithGst || "-"}
+                            {b.totalAmountWithGst != null
+                              ? b.totalAmountWithGst.toFixed(2)
+                              : "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary ">
                             {new Date(b.date).toLocaleString("en-IN", {

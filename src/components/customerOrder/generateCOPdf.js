@@ -143,8 +143,8 @@ export const generateCOPdf = async (co = {}, letterpadUrl, companyDetails) => {
         co?.product?.description || "",
         co?.hsnOrSac || "",
         co?.orderQty || 0,
-        co?.unitRate?.toFixed?.(2) || "0.00",
-        co?.totalRate?.toFixed?.(2) || "0.00",
+        co?.unitD2CRate?.toFixed?.(2) || "0.00",
+        co?.totalD2CRate?.toFixed?.(2) || "0.00",
       ],
     ],
     theme: "grid",
@@ -194,7 +194,7 @@ export const generateCOPdf = async (co = {}, letterpadUrl, companyDetails) => {
   let leftTableY = doc.lastAutoTable.finalY;
 
   // ---- Amount in Words ----
-  const grandTotal = (co?.totalRate || 0) + (summary?.gstAmount || 0);
+  const grandTotal = (co?.totalD2CRate || 0) + (summary?.gstAmount || 0);
   autoTable(doc, {
     startY: leftTableY + 3,
     margin: { left: margin },
@@ -256,7 +256,7 @@ export const generateCOPdf = async (co = {}, letterpadUrl, companyDetails) => {
     tableWidth: halfWidth - 5,
     head: [["Description", "Amount"]],
     body: [
-      ["Taxable Amount", (co?.totalRate || 0).toFixed(2)],
+      ["Taxable Amount", (co?.totalD2CRate || 0).toFixed(2)],
       ["IGST", summary?.igst?.toFixed?.(2) || "0.00"],
       ["CGST", summary?.cgst?.toFixed?.(2) || "0.00"],
       ["SGST", summary?.sgst?.toFixed?.(2) || "0.00"],
@@ -435,12 +435,12 @@ function getGstSummary(co, customerState, companyState = "GJ") {
   const gstRate = co?.product?.gst || 0;
 
   // Calculate GST amount from total rate
-  const gstAmount = (co.totalRate * gstRate) / 100;
+  const gstAmount = (co.totalD2CRate * gstRate) / 100;
 
   // Initialize summary object for this GST slab
   summary[gstRate] = {
     gstRate: gstRate,
-    taxable: co.totalRate || 0,
+    taxable: co.totalD2CRate || 0,
     gstAmount: gstAmount,
     igst: 0,
     cgst: 0,

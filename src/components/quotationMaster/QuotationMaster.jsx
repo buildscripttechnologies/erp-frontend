@@ -166,10 +166,12 @@ const QuotationMaster = ({ isOpen }) => {
       // window.open(blobUrl, "_blank");
       const a = document.createElement("a");
       a.href = blobUrl;
-      a.download = `${bomData.qNo + "-" + bomData.productName || "BOM"}.pdf`; // <-- custom filename here
+      a.download = `${
+        bomData.qNo + "-" + bomData.productName || "Quotation"
+      }.pdf`; // <-- custom filename here
       a.click();
     } catch (err) {
-      console.error("Error generating BOM PDF preview:", err);
+      console.error("Error generating Quotation PDF preview:", err);
       toast.error("Failed to generate PDF preview.");
     } finally {
       setDownloading(false);
@@ -381,7 +383,7 @@ const QuotationMaster = ({ isOpen }) => {
                           colSpan="16"
                           className="text-center py-4 text-gray-500"
                         >
-                          No BOMs found.
+                          No Quotations found.
                         </td>
                       </tr>
                     )}
