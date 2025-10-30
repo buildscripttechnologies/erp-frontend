@@ -92,7 +92,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
 
       setAddress(po.address || "");
       setPoItems(
-        po.items.map((i) => ({
+        po?.items?.map((i) => ({
           item: {
             value: i.item._id,
             label: `${i.item.skuCode} - ${i.item.itemName} - ${i.item.description}`,
