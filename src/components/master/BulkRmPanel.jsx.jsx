@@ -1,3 +1,4 @@
+
 // File: BulkRmPanel.jsx
 import React, { useState, useEffect } from "react";
 import { FiTrash2, FiArrowLeft, FiPlus } from "react-icons/fi";
@@ -178,7 +179,7 @@ const BulkRmPanel = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0  backdrop-blur-xs  flex items-center justify-center z-50">
-      <div className="bg-white w-full  max-w-[92vw] sm:max-w-5xl rounded-lg  border border-[#d8b76a] overflow-y-auto max-h-[90vh]  scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
+      <div className="bg-white w-full  max-w-[92vw] sm:max-w-5xl rounded-lg  border border-primary overflow-y-auto max-h-[90vh]  scrollbar-thin scrollbar-thumb-primary scrollbar-track-[#fdf6e9]">
         <div className="flex justify-between items-center sticky top-0 bg-white z-10 px-4 py-4">
           <h2 className="text-xl font-semibold">Add Raw Materials</h2>
           <button
@@ -193,13 +194,13 @@ const BulkRmPanel = ({ onClose }) => {
         {/* <div className="flex justify-between mb-6">
           <button
             onClick={onClose}
-            className="bg-[#d8b76a] text-[#292926] px-4 py-2 rounded flex items-center gap-2 hover:bg-[#d8b76a]/80"
+            className="bg-primary text-[#292926] px-4 py-2 rounded flex items-center gap-2 hover:bg-primary/80"
           >
             <FiArrowLeft /> Back
           </button>
           <button
             onClick={handleReset}
-            className="bg-[#d8b76a] text-[#292926] px-4 py-2 rounded flex items-center gap-2 hover:bg-[#d8b76a]/80"
+            className="bg-primary text-[#292926] px-4 py-2 rounded flex items-center gap-2 hover:bg-primary/80"
           >
             <RiResetRightLine /> Reset
           </button>
@@ -210,7 +211,7 @@ const BulkRmPanel = ({ onClose }) => {
           {rows.map((rm, index) => (
             <div
               key={index}
-              className="bg-white border border-[#d8b76a] rounded-lg p-4 space-y-4 shadow-md"
+              className="bg-white border border-primary rounded-lg p-4 space-y-4 shadow-md"
             >
               <h2 className="text-[15px] font-semibold text-[#292926] mb-1">
                 Item {index + 1}
@@ -227,7 +228,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "skuCode", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
                 <div>
@@ -240,7 +241,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "itemName", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -254,7 +255,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "description", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -267,7 +268,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "itemCategory", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] focus:border-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                   >
                     <option value="">Select Category</option>
                     {categories?.map((cat, i) => (
@@ -288,7 +289,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "itemColor", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -302,7 +303,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "hsnOrSac", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -319,7 +320,7 @@ const BulkRmPanel = ({ onClose }) => {
                         e.target.value
                       )
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option>Required</option>
                     <option>Not Required</option>
@@ -378,7 +379,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "baseQty", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -393,7 +394,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "pkgQty", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -406,7 +407,7 @@ const BulkRmPanel = ({ onClose }) => {
                     placeholder="MOQ"
                     value={rm.moq}
                     onChange={(e) => handleChange(index, "moq", e.target.value)}
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -421,7 +422,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "rate", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -434,7 +435,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "purchaseUOM", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Select UOM</option>
                     {uoms.map((u) => (
@@ -454,7 +455,7 @@ const BulkRmPanel = ({ onClose }) => {
                     placeholder="GST %"
                     value={rm.gst}
                     onChange={(e) => handleChange(index, "gst", e.target.value)}
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -475,7 +476,7 @@ const BulkRmPanel = ({ onClose }) => {
                         val === "" ? 0 : Number(val)
                       );
                     }}
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] disabled:cursor-not-allowed"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed"
                   />
                 </div>
 
@@ -488,7 +489,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "stockUOM", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Select UOM</option>
                     {uoms.map((u) => (
@@ -498,34 +499,38 @@ const BulkRmPanel = ({ onClose }) => {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="text-xs font-semibold text-[#292926]">
-                    Panno
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="Panno"
-                    value={rm.panno}
-                    onChange={(e) =>
-                      handleChange(index, "panno", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-[#292926]">
-                    SqInch Rate
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="SqInch Rate"
-                    value={rm.sqInchRate}
-                    onChange={(e) =>
-                      handleChange(index, "sqInchRate", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
-                  />
-                </div>
+                {fabric.includes(rm.itemCategory.toLowerCase()) && (
+                  <>
+                    <div>
+                      <label className="text-xs font-semibold text-[#292926]">
+                        Panno
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Panno"
+                        value={rm.panno}
+                        onChange={(e) =>
+                          handleChange(index, "panno", e.target.value)
+                        }
+                        className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-[#292926]">
+                        SqInch Rate
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="SqInch Rate"
+                        value={rm.sqInchRate}
+                        onChange={(e) =>
+                          handleChange(index, "sqInchRate", e.target.value)
+                        }
+                        className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                  </>
+                )}
 
                 <div>
                   <label className="text-xs font-semibold text-red-600">
@@ -544,7 +549,7 @@ const BulkRmPanel = ({ onClose }) => {
                   type="file"
                   multiple
                   onChange={(e) => handleFileChange(index, e.target.files)}
-                  className=" block w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-2.5 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
+                  className=" block w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary file:mr-4 file:py-2.5 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-primary/10 file:cursor-pointer"
                 />
               </div>
 
@@ -565,13 +570,13 @@ const BulkRmPanel = ({ onClose }) => {
         <div className="mt-6 flex justify-end gap-4 p-6">
           <button
             onClick={addRow}
-            className="bg-[#d8b76a] text-[#292926] px-4 py-2 rounded flex items-center gap-2 hover:bg-[#d8b76a]/80 cursor-pointer"
+            className="bg-primary text-[#292926] px-4 py-2 rounded flex items-center gap-2 hover:bg-primary/80 cursor-pointer"
           >
             <FiPlus /> Add Row
           </button>
           <button
             onClick={handleSubmit}
-            className=" bg-[#d8b76a] text-[#292926] px-4 py-2 rounded hover:bg-[#d8b76a]/80 cursor-pointer"
+            className=" bg-primary text-[#292926] px-4 py-2 rounded hover:bg-primary/80 cursor-pointer"
           >
             {loading ? (
               <div className="flex items-center gap-2">

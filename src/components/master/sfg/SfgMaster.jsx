@@ -478,6 +478,7 @@ const SfgMaster = ({ isOpen }) => {
                 <th className="px-[8px] py-1">Updated At</th>
                 <th className="px-[8px] py-1">SKU Code</th>
                 <th className="px-[8px] py-1">Item Name</th>
+                <th className="px-[8px] py-1">Item Category</th>
                 <th className="px-[8px] py-1">Description</th>
                 <th className="px-[8px] py-1">HSN/SAC</th>
                 <th className="px-[8px] py-1">Quality Insp.</th>
@@ -496,7 +497,7 @@ const SfgMaster = ({ isOpen }) => {
               {loading ? (
                 <TableSkeleton
                   rows={pagination.limit}
-                  columns={Array(17).fill({})}
+                  columns={Array(18).fill({})}
                 />
               ) : (
                 <>
@@ -538,10 +539,13 @@ const SfgMaster = ({ isOpen }) => {
                           })}
                         </td>
                         <td className="px-[8px]  border-r border-r-primary">
-                          {sfg.skuCode}
+                          {sfg.skuCode || "-"}
                         </td>
                         <td className="px-[8px]  border-r border-r-primary ">
-                          {sfg.itemName}
+                          {sfg.itemName || "-"}
+                        </td>
+                        <td className="px-[8px]  border-r border-r-primary ">
+                          {sfg.itemCategory || "-"}
                         </td>
                         <td className="px-[8px]  border-r border-r-primary  ">
                           {sfg.description || "-"}
@@ -561,19 +565,19 @@ const SfgMaster = ({ isOpen }) => {
                           />
                         </td>
                         <td className="px-[8px]  border-r border-r-primary">
-                          {sfg.location}
+                          {sfg.location || "-"}
                         </td>
                         <td className="px-[8px]  border-r border-r-primary">
-                          {sfg.basePrice}
+                          {sfg.basePrice || "-"}
                         </td>
                         <td className="px-[8px]  border-r border-r-primary">
                           {sfg.moq || "-"}
                         </td>
                         <td className="px-[8px]  border-r border-r-primary">
-                          {sfg.type}
+                          {sfg.type || "-"}
                         </td>
                         <td className="px-[8px]  border-r border-r-primary">
-                          {sfg.uom}
+                          {sfg.uom || "-"}
                         </td>
                         <td className="px-[8px]   border-r border-r-primary">
                           <Toggle
@@ -649,7 +653,7 @@ const SfgMaster = ({ isOpen }) => {
                       {expandedL1 === sfg.id &&
                         (sfg.rm.length !== 0 || sfg.sfg.length !== 0) && (
                           <tr>
-                            <td colSpan="17" className="px-2 pb-2">
+                            <td colSpan="18" className="px-2 pb-2">
                               <div className="border border-green-600 rounded overflow-x-auto">
                                 <table className="min-w-full text-[11px] text-left">
                                   <thead className=" bg-green-100">

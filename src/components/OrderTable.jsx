@@ -3,8 +3,6 @@ import { FiFileText, FiEdit2 } from "react-icons/fi";
 
 // OrderTable.jsx
 export function OrderTable({ title, columns, data }) {
-  console.log("data", data);
-
   return (
     <div className="bg-white shadow-md drop-shadow-sm  whitespace-nowrap rounded-lg overflow-x-auto mt-6 pb-3">
       <h3 className="px-4 py-2 text-[#d8b76a] text-xl font-semibold ">

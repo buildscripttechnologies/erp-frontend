@@ -19,6 +19,9 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
     productName: "",
     sampleNo: "",
     orderQty: 1,
+    gst: 0,
+    hsnOrSac: "",
+    description: "",
     date: new Date().toISOString().split("T")[0],
     height: 0,
     width: 0,
@@ -109,8 +112,10 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
       type: "SFG",
       sqInchRate: sfg.sqInchRate || 1,
       category: sfg.itemCategory,
-      baseQty: sfg.baseQty,
-      itemRate: sfg.rate || null,
+      baseQty: sfg.baseQty || 1,
+      itemName: sfg.itemName,
+      itemRate: sfg.unitRate || null,
+      skuCode: sfg.skuCode,
     })),
   ];
   console.log("Material Options", materialOptions);
@@ -323,7 +328,6 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
     setProductDetails(updated);
     recalculateTotals(form, updated);
   };
-
   const handleSubmit = async () => {
     console.log("form", form.partyName, form.productName, form.orderQty);
 
@@ -435,6 +439,9 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                     sampleNo: selectedProduct.sampleNo,
                     partyName: selectedProduct.partyName || "",
                     orderQty: selectedProduct.orderQty || 1,
+                    description: selectedProduct.description || "",
+                    gst: selectedProduct.gst || 0,
+                    hsnOrSac: selectedProduct.hsnOrSac || "",
                     height: selectedProduct.height || 0,
                     width: selectedProduct.width || 0,
                     depth: selectedProduct.depth || 0,

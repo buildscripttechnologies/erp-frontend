@@ -25,7 +25,22 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
     sfg.printingFile || []
   );
   const [deletedPrintingFiles, setDeletedPrintingFiles] = useState([]);
-
+  const [categories, setCategories] = useState();
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get("/settings/categories");
+      setCategories(res.data.categories || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch categories");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchCategories();
+  }, []);
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
@@ -102,6 +117,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
       setForm({
         skuCode: sfg.skuCode || "",
         itemName: sfg.itemName || "",
+        itemCategory: sfg.itemCategory || "",
         description: sfg.description || "",
         hsnOrSac: sfg.hsnOrSac || "",
         qualityInspectionNeeded: sfg.qualityInspectionNeeded,
@@ -121,9 +137,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         unitRate: sfg.unitRate,
         unitB2BRate: sfg.unitB2BRate,
         unitD2CRate: sfg.unitD2CRate,
-        // totalRate: fg.totalRate,
-        // totalB2BRate: fg.totalB2BRate,
-        // totalD2CRate: fg.totalD2CRate,
+
         B2B: sfg.B2B,
         D2C: sfg.D2C,
         rejection: sfg.rejection,
@@ -186,9 +200,6 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
       unitRate: Number(unitRate).toFixed(2),
       unitB2BRate: Number(unitB2BRate).toFixed(2),
       unitD2CRate: Number(unitD2CRate).toFixed(2),
-      // totalRate: Number(unitRate * qty).toFixed(2),
-      // totalB2BRate: Number(unitB2BRate * qty).toFixed(2),
-      // totalD2CRate: Number(unitD2CRate * qty).toFixed(2),
     };
   };
 
@@ -344,6 +355,7 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
       const data = {
         skuCode: form.skuCode,
         itemName: form.itemName,
+        itemCategory: form.itemCategory,
         description: form.description,
         hsnOrSac: form.hsnOrSac,
         qualityInspectionNeeded: form.qualityInspectionNeeded,
@@ -471,6 +483,23 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
                 className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                 required
               />
+            </div>
+            <div className="flex flex-col">
+              <label className="font-semibold">Item Category</label>
+              <select
+                required
+                name="itemCategory"
+                value={form.itemCategory}
+                onChange={handleChange}
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+              >
+                <option value="">Select Category</option>
+                {categories?.map((cat, i) => (
+                  <option key={i} value={cat.name}>
+                    {cat.name} ({cat.type})
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="flex flex-col">

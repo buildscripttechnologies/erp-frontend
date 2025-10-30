@@ -15,11 +15,27 @@ const AddSfgModal = ({ onClose, onAdded }) => {
   const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState([]);
-
+  const [categories, setCategories] = useState();
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get("/settings/categories");
+      setCategories(res.data.categories || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch categories");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchCategories();
+  }, []);
   const [formList, setFormList] = useState([
     {
       skuCode: "",
       itemName: "",
+      itemCategory: "",
       description: "",
       hsnOrSac: "",
       qualityInspectionNeeded: false,
@@ -238,6 +254,7 @@ const AddSfgModal = ({ onClose, onAdded }) => {
       {
         skuCode: "",
         itemName: "",
+        itemCategory: "",
         description: "",
         hsnOrSac: "",
         qualityInspectionNeeded: "",
@@ -429,6 +446,22 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                   />
                 </div>
                 <div className="flex flex-col">
+                  <label className="font-medium">Item Category</label>
+                  <select
+                    name="itemCategory"
+                    value={item.itemCategory}
+                    onChange={(e) => handleChange(index, e)}
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+                  >
+                    <option value="">Select Category</option>
+                    {categories?.map((cat, i) => (
+                      <option key={i} value={cat.name}>
+                        {cat.name} ({cat.type})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex flex-col">
                   <label className="font-medium">HSN/SAC</label>
                   <input
                     type="text"
@@ -538,7 +571,6 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     multiple
                     onChange={(e) => handleChange(index, e)}
                     className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
-                    // className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   />
                 </div>
                 <div className="flex flex-col">
@@ -549,7 +581,6 @@ const AddSfgModal = ({ onClose, onAdded }) => {
                     multiple
                     onChange={(e) => handleChange(index, e)}
                     className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
-                    // className="p-2 border border-primary rounded cursor-pointer focus:border-2 focus:border-primary focus:outline-none transition duration-200"
                   />
                 </div>
               </div>

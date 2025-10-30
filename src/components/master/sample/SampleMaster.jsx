@@ -206,7 +206,7 @@ const SampleMaster = ({ isOpen }) => {
           const base64Data = reader.result.split(",")[1]; // base64 part
           try {
             await axios.post("/wati/pdf/send-pdf-whatsapp", {
-              phone: "+917359286348",
+              phone: "+919157425585",
               fileName,
               base64Data,
               caption: `Here’s your Sample Estimate: ${fileName}`,
@@ -380,7 +380,7 @@ const SampleMaster = ({ isOpen }) => {
                             )}
                           </td>
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-primary">
-                            {expandedSampleId === b._id && downloading2 ? (
+                            {/* {expandedSampleId === b._id && downloading2 ? (
                               <PulseLoader size={4} color="#d8b76a" />
                             ) : (
                               <>
@@ -400,7 +400,7 @@ const SampleMaster = ({ isOpen }) => {
                                   />
                                 )}
                               </>
-                            )}{" "}
+                            )} */}
                             {expandedSampleId === b._id && downloading ? (
                               <PulseLoader size={4} color="#d8b76a" />
                             ) : (

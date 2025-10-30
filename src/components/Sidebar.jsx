@@ -46,7 +46,7 @@ import {
   MdPattern,
   MdPrint,
 } from "react-icons/md";
-import { RiBillFill, RiScissorsCutLine } from "react-icons/ri";
+import { RiBillFill, RiBillLine, RiScissorsCutLine } from "react-icons/ri";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { GrDomain } from "react-icons/gr";
 import { TbNeedleThread } from "react-icons/tb";
@@ -98,6 +98,13 @@ export function Sidebar({ isOpen }) {
       label: "Stock Register",
       path: "/stock-register",
       module: "Stock",
+      action: "read",
+    },
+    {
+      icon: RiBillLine,
+      label: "Quotation Master",
+      path: "/quotation-master",
+      module: "Quotation Master",
       action: "read",
     },
     {
