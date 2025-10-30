@@ -677,15 +677,8 @@ const RmMaster = ({ isOpen }) => {
                           ) : (
                             "-"
                           )}
-                          {editData && (
-                            <EditRawMaterialModal
-                              rawMaterial={editData}
-                              onClose={() => setEditData(null)}
-                              onUpdated={fetchRawMaterials}
-                              uoms={uoms}
-                            />
-                          )}
-                          {hasPermission("RawMaterial", "update") ? (
+
+                          {hasPermission("RawMaterial", "delete") ? (
                             <FiTrash2
                               data-tooltip-id="statusTip"
                               data-tooltip-content="Delete"
@@ -740,6 +733,14 @@ const RmMaster = ({ isOpen }) => {
         }}
       />
       {showBulkPanel && <BulkRmPanel onClose={() => setShowBulkPanel(false)} />}
+      {editData && (
+        <EditRawMaterialModal
+          rawMaterial={editData}
+          onClose={() => setEditData(null)}
+          onUpdated={fetchRawMaterials}
+          uoms={uoms}
+        />
+      )}
     </div>
   );
 };

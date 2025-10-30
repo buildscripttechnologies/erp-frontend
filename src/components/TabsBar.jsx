@@ -40,7 +40,7 @@ import {
   FaUserFriends,
 } from "react-icons/fa";
 import { TbNeedleThread, TbTruckDelivery } from "react-icons/tb";
-import { RiBillFill, RiScissorsCutLine } from "react-icons/ri";
+import { RiBillFill, RiBillLine, RiScissorsCutLine } from "react-icons/ri";
 import {
   MdPrint,
   MdPattern,
@@ -54,6 +54,7 @@ const ICONS = {
   FiHome: FiHome,
   FiLayers: FiLayers,
   FiShoppingCart: FiShoppingCart,
+  RiBillLine: RiBillLine,
   LuMagnet: LuMagnet,
   LuMapPinXInside: LuMapPinXInside,
   BiSolidPurchaseTag: BiSolidPurchaseTag,

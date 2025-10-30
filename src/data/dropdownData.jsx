@@ -14,6 +14,7 @@ export const availableModules = [
   "Dashboard",
   "Leads",
   "Stock",
+  "Quotation Master",
   "Customer Order",
   "CO Pendency",
   "Purchase Order",

@@ -19,8 +19,7 @@ const EditRawMaterialModal = ({
   const [newAttachments, setNewAttachments] = useState([]);
   const [categories, setCategories] = useState();
   const { fabric, slider, plastic, zipper } = useCategoryArrays();
-  console.log("fab",fabric);
-  
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -37,18 +36,6 @@ const EditRawMaterialModal = ({
 
     fetchCategories();
   }, []);
-  // useEffect(() => {
-  //   const fetchUOMs = async () => {
-  //     try {
-  //       const res = await axios.get("/uoms/all-uoms"); // your UOM endpoint
-  //       setUoms(res.data.data || []);
-  //     } catch (err) {
-  //       toast.error("Failed to load UOMs");
-  //     }
-  //   };
-
-  //   fetchUOMs();
-  // }, []);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -89,7 +76,6 @@ const EditRawMaterialModal = ({
       category.includes("cotton") || category.includes("canvas") ? 38 : 39;
 
     console.log("cat", category);
-    
 
     // Recalculate sqInchRate if category contains fabric/cotton/canvas
     if (rate && panno && fabric.includes(category)) {
@@ -122,12 +108,6 @@ const EditRawMaterialModal = ({
       for (let pair of form.entries()) {
         console.log(pair[0], pair[1]);
       }
-      // console.log("Payload: ", payload);
-      // console.log("form: ", form);
-      // console.log("formData: ", formData);
-
-      // console.log("deletedAttachments: ", deletedAttachments);
-      // console.log("newAttachments: ", newAttachments);
 
       const res = await axios.patch(`/rms/edit-rm/${formData.id}`, form, {
         headers: {
@@ -161,59 +141,63 @@ const EditRawMaterialModal = ({
   }));
 
   return (
-    <div className="fixed inset-0  bg-gray-100/10 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-[92vw] sm:max-w-3xl rounded-lg p-6  border overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-[#d8b76a] scrollbar-track-[#fdf6e9]">
+    <div className="fixed inset-0  backdrop-blur-xs flex items-center justify-center z-50">
+      <div className="bg-white w-full max-w-[92vw] sm:max-w-2xl md:max-w-5xl rounded-lg p-6  border border-primary overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-primary scrollbar-track-[#fdf6e9]">
         <div className="flex flex-col sm:flex-row sm:justify-between  mb-4">
-          <h2 className="w-full text-xl font-bold  text-[#d8b76a] flex justify-center sm:justify-start">
+          <h2 className="w-full text-xl font-bold  text-primary flex justify-center sm:justify-start">
             Edit Raw Material
           </h2>
         </div>
         <form
           onSubmit={handleUpdate}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-[#292926]"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm text-[#292926]"
         >
           {/* Item Name */}
-          <div>
-            <label className="block mb-1 font-medium">Sku Code</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">Sku Code</label>
             <input
               disabled
               type="text"
               value={formData.skuCode}
               onChange={(e) => handleChange("skuCode", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed"
               required
             />
           </div>
-          <div>
-            <label className="block mb-1 font-medium">Item Name</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">
+              Item Name
+            </label>
             <input
               type="text"
               value={formData.itemName}
               onChange={(e) => handleChange("itemName", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
               required
             />
           </div>
 
           {/* Description */}
-          <div>
-            <label className="block mb-1 font-medium">Description</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">
+              Description
+            </label>
             <input
               type="text"
               placeholder="Description"
               value={formData.description}
               onChange={(e) => handleChange("description", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-          <div>
-            <label className="text-xs font-semibold text-[#292926] mb-1 block">
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black mb-1 block">
               Item Category
             </label>
             <select
               value={formData.itemCategory}
               onChange={(e) => handleChange("itemCategory", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] focus:border-[#b38a37]"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="">Select Category</option>
               {categories?.map((cat, i) => (
@@ -224,43 +208,49 @@ const EditRawMaterialModal = ({
             </select>
           </div>
 
-          <div>
-            <label className="block mb-1 font-medium">Item Color</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">
+              Item Color
+            </label>
             <input
               type="text"
               placeholder="Item Color"
               value={formData.itemColor}
               onChange={(e) => handleChange("itemColor", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* HSN/SAC */}
-          <div>
-            <label className="block mb-1 font-medium">HSN / SAC</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">
+              HSN / SAC
+            </label>
             <input
               type="text"
               placeholder="HSN / SAC"
               value={formData.hsnOrSac}
               onChange={(e) => handleChange("hsnOrSac", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* Type */}
-          <div>
-            <label className="block mb-1 font-medium">Type</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">Type</label>
             <input
               type="text"
               value={formData.type}
               onChange={(e) => handleChange("type", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* Quality Inspection */}
-          <div>
-            <label className="block mb-1 font-medium">Quality Inspection</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">
+              Quality Inspection
+            </label>
             <select
               value={
                 formData.qualityInspectionNeeded ? "Required" : "Not Required"
@@ -271,7 +261,7 @@ const EditRawMaterialModal = ({
                   e.target.value === "Required"
                 )
               }
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option>Required</option>
               <option>Not Required</option>
@@ -279,10 +269,8 @@ const EditRawMaterialModal = ({
           </div>
 
           {/* Location */}
-          <div>
-            <label className="block mb-1 font-medium text-[#292926]">
-              Location
-            </label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">Location</label>
             <Select
               options={locationOptions}
               value={
@@ -318,32 +306,36 @@ const EditRawMaterialModal = ({
           </div>
 
           {/* Base Qty */}
-          <div>
-            <label className="block mb-1 font-medium">Base Quantity</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">
+              Base Quantity
+            </label>
             <input
               type="number"
               placeholder="Base Quantity"
               value={formData.baseQty}
               onChange={(e) => handleChange("baseQty", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* Pkg Qty */}
-          <div>
-            <label className="block mb-1 font-medium">Package Quantity</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">
+              Package Quantity
+            </label>
             <input
               type="number"
               placeholder="Package Quantity"
               value={formData.pkgQty}
               onChange={(e) => handleChange("pkgQty", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* MOQ */}
-          <div>
-            <label className="block mb-1 font-medium">
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">
               Minimum Order Quantity
             </label>
             <input
@@ -351,29 +343,31 @@ const EditRawMaterialModal = ({
               placeholder="Minimum Order Quantity"
               value={formData.moq}
               onChange={(e) => handleChange("moq", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* Rate */}
-          <div>
-            <label className="block mb-1 font-medium">Rate</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">Rate</label>
             <input
               type="number"
               placeholder="Rate"
               value={formData.rate}
               onChange={(e) => handleChange("rate", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* Purchase UOM */}
-          <div>
-            <label className="block mb-1 font-medium">Purchase UOM</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">
+              Purchase UOM
+            </label>
             <select
               value={formData.purchaseUOM}
               onChange={(e) => handleChange("purchaseUOM", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] cursor-pointer"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
             >
               <option value="">Select</option>
               {uoms.map((u) => (
@@ -385,20 +379,22 @@ const EditRawMaterialModal = ({
           </div>
 
           {/* GST */}
-          <div>
-            <label className="block mb-1 font-medium">GST (%)</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">GST (%)</label>
             <input
               type="number"
               placeholder="GST(%)"
               value={formData.gst}
               onChange={(e) => handleChange("gst", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37]"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* Stock Qty */}
-          <div>
-            <label className="block mb-1 font-medium">Stock Quantity</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">
+              Stock Quantity
+            </label>
             <input
               // disabled
               type="number"
@@ -408,17 +404,19 @@ const EditRawMaterialModal = ({
                 const val = e.target.value;
                 handleChange("stockQty", val === "" ? 0 : Number(val));
               }}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed"
             />
           </div>
 
           {/* Stock UOM */}
-          <div>
-            <label className="block mb-1 font-medium">Stock UOM</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">
+              Stock UOM
+            </label>
             <select
               value={formData.stockUOM}
               onChange={(e) => handleChange("stockUOM", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] cursor-pointer "
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer "
             >
               <option value="">Select</option>
               {uoms.map((u) => (
@@ -429,29 +427,37 @@ const EditRawMaterialModal = ({
             </select>
           </div>
 
-          {/* Panno */}
-          <div>
-            <label className="block mb-1 font-medium">Panno</label>
-            <input
-              type="number"
-              placeholder="Panno"
-              value={formData.panno}
-              onChange={(e) => handleChange("panno", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] disabled:cursor-not-allowed"
-            />
-          </div>
-          {/* per SqInch Rate */}
-          <div>
-            <label className="block mb-1 font-medium">SqInch Rate</label>
-            <input
-              type="number"
-              placeholder="SqInch Rate"
-              value={formData.sqInchRate}
-              onChange={(e) => handleChange("sqInchRate", e.target.value)}
-              className="w-full px-4 py-2 border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] disabled:cursor-not-allowed"
-            />
-          </div>
-          <div className="mt-1">
+          {fabric.includes(formData.itemCategory.toLowerCase()) && (
+            <>
+              {/* Panno */}
+              <div className="flex flex-col">
+                <label className="text-xs font-semibold text-black">
+                  Panno
+                </label>
+                <input
+                  type="number"
+                  placeholder="Panno"
+                  value={formData.panno}
+                  onChange={(e) => handleChange("panno", e.target.value)}
+                  className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed"
+                />
+              </div>
+              {/* per SqInch Rate */}
+              <div className="flex flex-col">
+                <label className="text-xs font-semibold text-black">
+                  SqInch Rate
+                </label>
+                <input
+                  type="number"
+                  placeholder="SqInch Rate"
+                  value={formData.sqInchRate}
+                  onChange={(e) => handleChange("sqInchRate", e.target.value)}
+                  className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed"
+                />
+              </div>
+            </>
+          )}
+          <div className="mt-1 flex items-center">
             <label className="text-base font-semibold text-red-600 mr-2">
               Total Rate :
             </label>
@@ -474,7 +480,7 @@ const EditRawMaterialModal = ({
                 !deletedAttachments.includes(att._id) ? (
                   <li
                     key={index}
-                    className="flex items-center justify-between bg-[#fdf6e9] px-3 py-2 rounded border border-[#d8b76a]"
+                    className="flex items-center justify-between bg-[#fdf6e9] px-3 py-2 rounded border border-primary"
                   >
                     <a
                       href={att.fileUrl}
@@ -507,7 +513,7 @@ const EditRawMaterialModal = ({
               type="file"
               multiple
               onChange={(e) => setNewAttachments(Array.from(e.target.files))}
-              className="block w-full text-sm text-gray-600 cursor-pointer bg-white border border-[#d8b76a] rounded focus:outline-none focus:ring-2 focus:ring-[#b38a37] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-[#d8b76a]/10 file:cursor-pointer"
+              className="block w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-primary/10 file:cursor-pointer"
             />
           </div>
 
@@ -523,7 +529,7 @@ const EditRawMaterialModal = ({
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#d8b76a] hover:bg-[#d8b76a]/80 text-[#292926] font-semibold rounded cursor-pointer"
+              className="px-6 py-2 bg-primary hover:bg-primary/80 text-[#292926] font-semibold rounded cursor-pointer"
             >
               {loading ? (
                 <div className="flex items-center gap-2">

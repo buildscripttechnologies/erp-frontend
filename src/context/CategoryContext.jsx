@@ -24,7 +24,7 @@ export const CategoryProvider = ({ children }) => {
       }
     } catch (err) {
       console.error("Failed to fetch categories:", err);
-      toast.error("Failed to load categories ❌");
+      // toast.error("Failed to load categories ❌");
     } finally {
       setLoading(false);
     }

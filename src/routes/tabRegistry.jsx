@@ -29,11 +29,13 @@ import IndiaMartLeads from "../components/leads/indiamart/IndiaMartLeads";
 import Settings from "../components/settings/Settings";
 import ProductionList from "../components/productionList/ProductionList";
 import MaterialConsumption from "../components/materialConsumption/MaterialConsumption";
+import QuotationMaster from "../components/quotationMaster/QuotationMaster";
 
 const registry = new Map([
   ["/dashboard", Dash],
   ["/leads", IndiaMartLeads],
   ["/stock-register", StockRegister],
+  ["/quotation-master", QuotationMaster],
   ["/customer-order", CustomerOrder],
   ["/co-pendency", COP],
   ["/purchase-order", PurchaseOrder],

@@ -209,6 +209,53 @@ export const generateBomLP = async (bomData, letterpadUrl) => {
     margin: { left: margin, right: margin },
   });
 
+  // --- Signatures Section ---
+  let signatureHeight = 35; // estimated block height
+  let signatureStartY = doc.lastAutoTable.finalY + 25; // space after last table
+
+  // check if it fits before page bottom
+  if (signatureStartY + signatureHeight > pageHeight - 20) {
+    // not enough space → add a new page
+    doc.addPage();
+    addBackground("first"); // or "last" depending on your layout
+    signatureStartY = 30; // reset Y position
+  }
+
+  // Signature box setup
+  const sigMargin = margin + 5;
+  const sigWidth = (pageWidth - sigMargin * 2) / 4; // 4 equal parts
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor("#d8b76a");
+  doc.text("", sigMargin, signatureStartY - 8);
+
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.1);
+
+  // Labels
+  const labels = [
+    "Store Manager",
+    "Production Manager",
+    "Supervisor",
+    "Plant Head",
+  ];
+
+  labels.forEach((label, i) => {
+    const x = sigMargin + i * sigWidth;
+    const boxWidth = sigWidth - 5;
+    const lineY = signatureStartY + signatureHeight - 10;
+
+    // Line for signature
+    doc.line(x, lineY, x + boxWidth, lineY);
+
+    // Label below line
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor("#000000");
+    doc.text(label, x + boxWidth / 2, lineY + 5, { align: "center" });
+  });
+
   // --- Always Last Page for Images + BOM No ---
   // --- Always Last Page for Images + BOM No ---
   doc.addPage();

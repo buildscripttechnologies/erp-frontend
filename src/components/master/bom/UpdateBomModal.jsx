@@ -94,8 +94,9 @@ const UpdateBomModal = ({ bom, onClose, onSuccess }) => {
       type: "SFG",
       sqInchRate: sfg.sqInchRate || 1,
       category: sfg.itemCategory,
-      baseQty: sfg.baseQty,
-      itemRate: sfg.rate || null,
+      baseQty: sfg.baseQty || 1,
+      itemRate: sfg.unitRate || null,
+      skuCode: sfg.skuCode,
     })),
   ];
 

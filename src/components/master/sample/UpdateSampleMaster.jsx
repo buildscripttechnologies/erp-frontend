@@ -86,6 +86,7 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
       category: rm.itemCategory,
       baseQty: rm.baseQty,
       itemRate: rm.rate,
+      itemName: rm.itemName,
     })),
     ...sfgs.map((sfg) => ({
       label: `${sfg.skuCode}: ${sfg.itemName}${
@@ -95,8 +96,10 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
       type: "SFG",
       sqInchRate: sfg.sqInchRate || 1,
       category: sfg.itemCategory,
-      baseQty: sfg.baseQty,
-      itemRate: sfg.rate || null,
+      baseQty: sfg.baseQty || 1,
+      itemRate: sfg.unitRate || null,
+      itemName: sfg.itemName,
+      skuCode: sfg.skuCode,
     })),
   ];
 
@@ -416,6 +419,9 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                     sampleNo: selectedProduct.sampleNo,
                     partyName: selectedProduct.partyName || "",
                     orderQty: selectedProduct.orderQty || 1,
+                    description: selectedProduct.description || "",
+                    gst: selectedProduct.gst || 0,
+                    hsnOrSac: selectedProduct.hsnOrSac || "",
                     height: selectedProduct.height || 0,
                     width: selectedProduct.width || 0,
                     depth: selectedProduct.depth || 0,

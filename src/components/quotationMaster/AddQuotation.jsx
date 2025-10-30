@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
-import axios from "../../../utils/axios";
+import axios from "./../../utils/axios";
 import Select from "react-select";
 import toast from "react-hot-toast";
 import CreatableSelect from "react-select/creatable";
 import { FiTrash2 } from "react-icons/fi";
 import { BeatLoader, PuffLoader } from "react-spinners";
 import { capitalize } from "lodash";
-import { calculateRate } from "../../../utils/calc";
-import { generateConsumptionTable } from "../../../utils/consumptionTable";
-import { useCategoryArrays } from "../../../data/dropdownData";
+import { calculateRate } from "./../../utils/calc";
+import { generateConsumptionTable } from "./../../utils/consumptionTable";
+import { useCategoryArrays } from "./../../data/dropdownData";
 // import { plastic, slider, zipper } from "../../../data/dropdownData";
 
-const AddBomModal = ({ onClose, onSuccess, coData }) => {
+const AddQuotation = ({ onClose, onSuccess, coData }) => {
   const { fabric, slider, plastic, zipper } = useCategoryArrays();
   let categoryData = useCategoryArrays();
   // console.log("coData", coData);
@@ -121,15 +121,16 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
     })),
   ];
   // console.log("Material Options", materialOptions);
+  console.log("samples", samples);
 
   const productOptions = [
-    ...fgs.map((fg) => ({
-      label: `${fg.skuCode}: ${fg.itemName}${
-        fg.description ? " - " + fg.description : ""
+    ...samples.map((s) => ({
+      label: `${s.sampleNo}: ${s.product?.name}${
+        s.description ? " - " + s.description : ""
       }`,
-      value: fg.id,
-      type: "FG",
-      fg: fg,
+      value: s._id,
+      type: "SAMPLE",
+      sample: s,
     })),
   ];
 
@@ -260,6 +261,8 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
   const updateComponent = (index, field, value) => {
     const updated = [...productDetails];
     const comp = updated[index];
+    console.log("comp", comp);
+
     const orderQty = Number(form.orderQty) || 1;
 
     if (field === "qty") {
@@ -358,7 +361,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
       files.forEach((f) => formData.append("files", f));
       printingFiles.forEach((f) => formData.append("printingFiles", f));
 
-      const res = await axios.post("/boms/add", formData, {
+      const res = await axios.post("/quotation/add", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (res.data.status === 403) return toast.error(res.data.message);
@@ -385,140 +388,6 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
 
   // inside your modal component, above useEffect
 
-  const prefillFromCoData = (coData, productOptions, customers) => {
-    if (!coData) return null;
-
-    // match FG/SAMPLE
-    let matchedProduct = productOptions.find(
-      (opt) =>
-        opt.value === coData.productId ||
-        opt.label.includes(coData.productName || "")
-    );
-
-    // match customer
-    let matchedCustomer = customers.find(
-      (c) =>
-        c.customerName?.trim().toLowerCase() ===
-        (coData.partyName || "").trim().toLowerCase()
-    );
-
-    return {
-      product: matchedProduct || null,
-      customer: matchedCustomer
-        ? {
-            label: matchedCustomer.customerName,
-            value: matchedCustomer.customerName,
-          }
-        : coData.partyName
-        ? { label: coData.partyName, value: coData.partyName }
-        : null,
-      defaults: {
-        orderQty: coData.orderQty || 1,
-        date: coData.date || new Date().toISOString().split("T")[0],
-        deliveryDate: coData.deliveryDate || "",
-      },
-    };
-  };
-
-  const applyPrefill = (prefill) => {
-    if (!prefill) return;
-
-    // handle product selection
-    if (prefill.product) {
-      const e = prefill.product;
-      let selectedProduct = null;
-
-      if (e.type === "FG") {
-        selectedProduct = e.fg;
-      } else if (e.type === "SAMPLE") {
-        selectedProduct = e.sample;
-      }
-
-      if (selectedProduct) {
-        const allDetails = [
-          ...(selectedProduct.rm || []),
-          ...(selectedProduct.sfg || []),
-          ...(selectedProduct.productDetails || []),
-        ];
-
-        const enrichedDetails = allDetails.map((item) => ({
-          itemId: item.itemId || item.id || "",
-          type: item.type,
-          tempQty: item.qty || 0,
-          tempGrams: item.grams || 0,
-          qty: item.qty || 0,
-          category: item.category || "",
-          grams: item.grams || 0,
-          height: item.height || "",
-          width: item.width || "",
-          panno: item.panno || 0,
-          rate: item.rate || "",
-          sqInchRate: item.sqInchRate || "",
-          partName: item.partName || "",
-          baseQty: item.baseQty || 0,
-          itemRate: item.itemRate || 0,
-          itemName: item.itemName || "",
-          skuCode: item.skuCode || "",
-          isPasting: item.isPasting,
-          isPrint: item.isPrint,
-          label: `${item.skuCode}: ${item.itemName}${
-            item.description ? ` - ${item.description}` : ""
-          }`,
-        }));
-
-        setProductDetails(enrichedDetails);
-
-        setForm((prev) => ({
-          ...prev,
-          productName:
-            selectedProduct.itemName || selectedProduct.product?.name || "",
-          sampleNo: selectedProduct.sampleNo || selectedProduct.skuCode || "",
-          partyName: selectedProduct.partyName || prev.partyName || "",
-          orderQty: selectedProduct.orderQty || prefill.defaults.orderQty,
-          date: prefill.defaults.date
-            ? new Date(prefill.defaults.date).toISOString().split("T")[0]
-            : "",
-          deliveryDate: prefill.defaults.deliveryDate
-            ? new Date(prefill.defaults.deliveryDate)
-                .toISOString()
-                .split("T")[0]
-            : "",
-          height: selectedProduct.height || 0,
-          width: selectedProduct.width || 0,
-          depth: selectedProduct.depth || 0,
-        }));
-      }
-    }
-
-    // handle customer
-    if (prefill.customer) {
-      setForm((prev) => ({
-        ...prev,
-        partyName: prefill.customer.value,
-      }));
-    }
-  };
-
-  useEffect(() => {
-    const doPrefill = async () => {
-      if (!isPrefilled && coData && productOptions.length && customers.length) {
-        setPrefillLoading(true); // show loader
-
-        // Yield to allow loader to render
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const prefill = prefillFromCoData(coData, productOptions, customers);
-        if (prefill) {
-          applyPrefill(prefill);
-          setIsPrefilled(true); // prevent re-run
-        }
-
-        setPrefillLoading(false); // hide loader
-      }
-    };
-
-    doPrefill();
-  }, [coData, productOptions, customers, isPrefilled]);
   // Trigger loader immediately when modal opens
   useEffect(() => {
     if (coData) {
@@ -539,11 +408,6 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
             ×
           </button>
         </div>
-        {prefillLoading && (
-          <div className="absolute inset-0 bg-gray-50/60 flex items-center justify-center z-50 ">
-            <PuffLoader size={60} color="#d8b76a" />
-          </div>
-        )}
 
         <div className="px-4 pb-5">
           {/* Form */}
@@ -566,7 +430,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                   }),
                 }}
                 options={productOptions}
-                placeholder="Select or Type FG Product"
+                placeholder="Select Sample"
                 onCreateOption={(val) => setForm({ ...form, productName: val })}
                 value={
                   form.productName
@@ -659,8 +523,6 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                     }`,
                   }));
 
-                  // console.log("enriched", enrichedDetails);
-
                   setProductDetails(enrichedDetails);
                 }}
               />
@@ -708,12 +570,11 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                 name="orderQty"
                 className="p-2 border border-primary  rounded focus:border-2 focus:border-primary focus:outline-none transition"
                 value={form.orderQty}
-                // onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
                 onChange={(e) => handleFormChange(e)}
               />
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between gap-2">
+            {/* <div className="flex flex-col sm:flex-row justify-between gap-2">
               <div className="flex flex-col w-full">
                 <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                   Date
@@ -760,10 +621,10 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                 onChange={(e) => setPrintingFiles([...e.target.files])}
                 className="block text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
               />
-            </div>
+            </div> */}
           </div>
 
-          <div className="flex-col my-2">
+          {/* <div className="flex-col my-2">
             <div>
               <h2 className="font-semibold mb-1">Product Size</h2>
             </div>
@@ -803,10 +664,9 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                 />
               </div>
             </div>
-          </div>
+          </div> */}
 
-          {/* Components Section */}
-          <div>
+          {/* <div>
             <h3 className="font-bold text-[14px] my-2 text-primary underline">
               RM/SFG Components
             </h3>
@@ -824,7 +684,6 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                         : "md:grid-cols-7"
                     } md:grid-cols-8 gap-3`}
                   >
-                    {/* Component Field - span 2 columns on medium+ screens */}
                     <div className="flex flex-col md:col-span-2">
                       <label className="text-[12px] font-semibold mb-[2px] text-black">
                         Component{" "}
@@ -837,11 +696,6 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                         required
                         value={materialOptions.find(
                           (opt) => opt.value === comp.itemId
-                          // console.log(
-                          //   "opt.value === comp.itemId",
-                          //   opt.value,
-                          //   comp.itemId
-                          // )
                         )}
                         options={materialOptions}
                         onChange={(e) => {
@@ -872,7 +726,6 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                       />
                     </div>
 
-                    {/* Height, Width, Depth, Qty Fields */}
                     {[
                       "partName",
                       "height",
@@ -881,39 +734,30 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                       "grams",
                       "rate",
                     ].map((field) => {
-                      // Hide based on category
                       if (
                         slider?.includes(comp.category?.toLowerCase()) &&
                         (field === "height" || field === "width")
                       )
                         return null;
 
-                      // if (
-                      //   ["plastic", "non woven", "ld cord"].includes(
-                      //     comp.category?.toLowerCase()
-                      //   ) &&
-                      //   field === "qty"
-                      // ) {
-                      //   return null; // hide qty
-                      // }
                       if (
                         !plastic?.includes(comp.category?.toLowerCase()) &&
                         field === "grams"
                       ) {
-                        return null; // hide grams for others
+                        return null;
                       }
-                      // ✅ Add this new rule for zipper
+
                       if (
                         zipper?.includes(comp.category?.toLowerCase()) &&
                         field === "height"
                       ) {
-                        return null; // hide height only for zipper
+                        return null;
                       }
                       if (
                         comp.category?.toLowerCase() === "ld cord" &&
                         field === "height"
                       ) {
-                        return null; // hide height only for ld cord
+                        return null;
                       }
 
                       return (
@@ -955,7 +799,6 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
 
                   <div className="mt-2 flex w-full justify-between">
                     <div className="flex gap-4 items-center">
-                      {/* Cutting Type Dropdown */}
                       <select
                         className="border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition px-2 py-1 text-sm"
                         value={comp.cuttingType || ""}
@@ -973,7 +816,6 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                         <option value="Table Cutting">Table Cutting</option>
                       </select>
 
-                      {/* Print Checkbox */}
                       <label className="flex items-center gap-1 text-sm">
                         <input
                           type="checkbox"
@@ -1002,7 +844,6 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                       </label>
                     </div>
 
-                    {/* Remove Button */}
                     <button
                       type="button"
                       className="text-red-600 text-xs hover:underline flex gap-1 cursor-pointer items-center"
@@ -1026,7 +867,6 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
 
           <div className="bg-primary w-full h-[1px] my-5"></div>
 
-          {/* bottom fields */}
           <div className="sm:text-[12px] mb-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
             <div className="flex flex-col">
               <label className="font-semibold mb-1">B2B (%)</label>
@@ -1253,9 +1093,8 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                 className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
               />
             </div>
-          </div>
+          </div> */}
 
-          {/* Footer */}
           <div className="flex justify-end">
             <button
               disabled={loading}
@@ -1278,4 +1117,4 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
   );
 };
 
-export default AddBomModal;
+export default AddQuotation;
