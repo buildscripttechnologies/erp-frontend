@@ -391,7 +391,7 @@ const CustomerOrder = ({ isOpen }) => {
                           colSpan="16"
                           className="text-center py-4 text-gray-500"
                         >
-                          No BOMs found.
+                          No Customer Orders found.
                         </td>
                       </tr>
                     )}
