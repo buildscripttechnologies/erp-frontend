@@ -264,6 +264,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
         vendor: selectedVendor.value,
         date,
         status: calculateStatus(items),
+        emailSent: false,
         totalAmount: totalAmount.toFixed(2),
         totalGstAmount: totalGstAmount.toFixed(2),
         totalAmountWithGst: totalAmountWithGst.toFixed(2),
@@ -546,44 +547,42 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
                         Item #{i + 1}
                       </span>
                       <div className="flex gap-2">
-                        {p.itemStatus !== "approved" && (
-                          <>
-                            <button
-                              data-tooltip-id="statusTip"
-                              data-tooltip-content="Edit"
-                              type="button"
-                              onClick={() => handleEdit(i)}
-                              className="p-1.5 rounded-full bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-xs cursor-pointer"
-                            >
-                              <FiEdit2 size={16} />
-                            </button>
-                            <button
-                              data-tooltip-id="statusTip"
-                              data-tooltip-content="Delete"
-                              type="button"
-                              onClick={() => handleRemove(i)}
-                              // disabled={p.itemStatus === "approved"} // ❌ prevent removing approved
-                              className={`p-1.5 rounded-full transition cursor-pointer
+                        <>
+                          <button
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Edit"
+                            type="button"
+                            onClick={() => handleEdit(i)}
+                            className="p-1.5 rounded-full bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-xs cursor-pointer"
+                          >
+                            <FiEdit2 size={16} />
+                          </button>
+                          <button
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Delete"
+                            type="button"
+                            onClick={() => handleRemove(i)}
+                            // disabled={p.itemStatus === "approved"} // ❌ prevent removing approved
+                            className={`p-1.5 rounded-full transition cursor-pointer
       ${
         p.itemStatus === "approved"
           ? "bg-gray-200 text-gray-400 cursor-not-allowed"
           : "bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800"
       }`}
-                            >
-                              <FiTrash2 size={16} />
-                            </button>
-                            <Tooltip
-                              id="statusTip"
-                              place="top"
-                              style={{
-                                backgroundColor: "#292926",
-                                color: "white",
-                                fontSize: "12px",
-                                fontWeight: "bold",
-                              }}
-                            />
-                          </>
-                        )}
+                          >
+                            <FiTrash2 size={16} />
+                          </button>
+                          <Tooltip
+                            id="statusTip"
+                            place="top"
+                            style={{
+                              backgroundColor: "#292926",
+                              color: "white",
+                              fontSize: "12px",
+                              fontWeight: "bold",
+                            }}
+                          />
+                        </>
                       </div>
                     </div>
 

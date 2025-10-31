@@ -377,16 +377,14 @@ const PurchaseOrder = ({ isOpen }) => {
                               </>
                             )}
 
-                          {po.status == "approved"
-                            ? ""
-                            : hasPermission("Purchase Order", "update") && (
-                                <FiEdit
-                                  data-tooltip-id="statusTip"
-                                  data-tooltip-content="Edit"
-                                  className="cursor-pointer text-primary hover:text-blue-600"
-                                  onClick={() => setEditingPO(po)}
-                                />
-                              )}
+                          {hasPermission("Purchase Order", "update") && (
+                            <FiEdit
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Edit"
+                              className="cursor-pointer text-primary hover:text-blue-600"
+                              onClick={() => setEditingPO(po)}
+                            />
+                          )}
                           {hasPermission("Purchase Order", "delete") && (
                             <FiTrash2
                               data-tooltip-id="statusTip"
