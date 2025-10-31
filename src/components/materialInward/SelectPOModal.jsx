@@ -1,4 +1,10 @@
-const SelectPOModal = ({ onClose, onSelect }) => {
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import Select from "react-select";
+import axios from "../../utils/axios";
+import { BeatLoader } from "react-spinners";
+
+export const SelectPOModal = ({ onClose, onSelect }) => {
   const [pos, setPos] = useState([]);
   const [selectedPO, setSelectedPO] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -8,7 +14,12 @@ const SelectPOModal = ({ onClose, onSelect }) => {
       setLoading(true);
       try {
         const res = await axios.get("/pos/get-all?search=approved");
-        setPos(res.data.data || res.data.purchaseOrders || []);
+        const filteredPOs = (
+          res.data.data ||
+          res.data.purchaseOrders ||
+          []
+        ).filter((po) => po.items?.some((item) => item.inwardStatus != true));
+        setPos(filteredPOs);
       } catch (err) {
         toast.error("Failed to fetch POs");
       } finally {
@@ -18,10 +29,12 @@ const SelectPOModal = ({ onClose, onSelect }) => {
     fetchPOs();
   }, []);
 
+  let filteredItems = selectedPO?.items.filter((i) => i.inwardStatus != true);
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
       <div className="bg-white rounded-lg p-6 w-[90vw] max-w-lg border border-primary">
-        <h2 className="text-lg font-bold mb-4 text-primary">Select PO</h2>
+        <h2 className="text-lg font-bold mb-4 text-primary">Inward by PO</h2>
 
         {loading ? (
           <div className="text-center">
@@ -41,6 +54,14 @@ const SelectPOModal = ({ onClose, onSelect }) => {
                 const po = pos.find((p) => p._id === poOption.value);
                 setSelectedPO(po);
               }}
+              styles={{
+                control: (base, state) => ({
+                  ...base,
+                  borderColor: "#d8b76a",
+                  boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
+                  "&:hover": { borderColor: "#d8b76a" },
+                }),
+              }}
               placeholder="Select PO"
               className="mb-4"
             />
@@ -51,7 +72,7 @@ const SelectPOModal = ({ onClose, onSelect }) => {
                   Select Item
                 </label>
                 <Select
-                  options={selectedPO.items.map((it) => ({
+                  options={filteredItems.map((it) => ({
                     value: it._id,
                     label: `${it.item.skuCode} - ${it.item.itemName} (Qty: ${it.orderQty})`,
                   }))}
@@ -59,7 +80,17 @@ const SelectPOModal = ({ onClose, onSelect }) => {
                     const item = selectedPO.items.find(
                       (i) => i._id === itemOption.value
                     );
+                    console.log("item", item);
+
                     onSelect(selectedPO, item);
+                  }}
+                  styles={{
+                    control: (base, state) => ({
+                      ...base,
+                      borderColor: "#d8b76a",
+                      boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
+                      "&:hover": { borderColor: "#d8b76a" },
+                    }),
                   }}
                   placeholder="Select Item from PO"
                 />

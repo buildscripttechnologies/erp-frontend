@@ -445,10 +445,10 @@ const UpdateSfgModal = ({ sfg, onClose, onUpdated }) => {
         .map((c) => ({
           value: c.id,
           label: `${c.skuCode} - ${c.itemName} - ${c.description}`,
-          sqInchRate: c.sqInchRate || null,
+          sqInchRate: c.sqInchRate || 1,
           category: c.itemCategory || null,
-          baseQty: c.baseQty || null,
-          itemRate: c.rate || null,
+          baseQty: c.baseQty || 1,
+          itemRate: c.unitRate || null,
         })),
     },
   ];
