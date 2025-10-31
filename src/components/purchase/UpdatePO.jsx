@@ -345,7 +345,7 @@ const UpdatePO = ({ onClose, onUpdated, po }) => {
                 Select Vendor
               </label>
               <Select
-                isDisabled={poItems.length > 0}
+                // isDisabled={poItems.length > 0}
                 options={vendorsOptions}
                 value={selectedVendor}
                 onChange={(v) => setSelectedVendor(v)}
