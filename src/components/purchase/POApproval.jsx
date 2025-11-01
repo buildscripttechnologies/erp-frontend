@@ -426,7 +426,7 @@ const POApprovel = ({ isOpen }) => {
                               {hasPermission("PO Approval", "update") && (
                                 <button
                                   onClick={() => setPreviewPO(po)}
-                                  className="px-4 py-1 mr-2  bg-primary hover:bg-primary/80 text-[#292926]  rounded cursor-pointer"
+                                  className="px-4 py-1 mr-2  bg-primary hover:bg-primary/80 text-secondary  rounded cursor-pointer"
                                 >
                                   Review PO
                                 </button>

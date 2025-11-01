@@ -6,6 +6,7 @@ import { BeatLoader } from "react-spinners";
 import { useMemo } from "react";
 import { FiTrash2 } from "react-icons/fi";
 import { FcApproval } from "react-icons/fc";
+import { SelectPOModal } from "./SelectPOModal";
 
 const AddStockModal = ({ onClose, onAdded }) => {
   const [selectedItem, setSelectedItem] = useState(null);
@@ -24,6 +25,8 @@ const AddStockModal = ({ onClose, onAdded }) => {
   const [itemDetails, setItemDetails] = useState(null);
   const [qualityApproved, setQualityApproved] = useState(false);
   const [qualityNote, setQualityNote] = useState("");
+  const [showPOModal, setShowPOModal] = useState(false);
+  const [selectedPO, setSelectedPO] = useState(null);
 
   const totalStockQty = useMemo(() => {
     return manualEntries.reduce(
@@ -100,14 +103,6 @@ const AddStockModal = ({ onClose, onAdded }) => {
     setLoading(true);
 
     try {
-      // const payload = {
-      //   itemId: selectedItem.value,
-      //   itemType: selectedItem.type,
-      //   stockQty: parseFloat(stockQty),
-      //   baseQty: baseQty,
-      //   damagedQty: damagedQty,
-      //   manualEntries: manualEntries.length > 0 ? manualEntries : undefined,
-      // };
       const payload = {
         itemId: selectedItem.value,
         itemType: selectedItem.type,
@@ -117,6 +112,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
         manualEntries: manualEntries.length > 0 ? manualEntries : undefined,
         qualityApproved,
         qualityNote: qualityNote,
+        poId: selectedPO._id || null,
       };
 
       const res = await axios.post("/stocks/add", payload);
@@ -160,7 +156,10 @@ const AddStockModal = ({ onClose, onAdded }) => {
       <div className="bg-white w-[92vw] max-w-xl rounded-lg p-6 border border-primary overflow-y-auto max-h-[90vh]">
         <div className="flex  items-center justify-between">
           <h2 className="text-xl font-bold mb-4 text-primary">Inward</h2>
-          <button className="px-4 py-2 bg-primary cursor-pointer text-[#292926] rounded hover:bg-primary/80 font-semibold">
+          <button
+            className="px-4 py-2 bg-primary cursor-pointer text-[#292926] rounded hover:bg-primary/80 font-semibold"
+            onClick={() => setShowPOModal(true)}
+          >
             Inward by PO
           </button>
         </div>
@@ -198,79 +197,77 @@ const AddStockModal = ({ onClose, onAdded }) => {
               }}
             />
           </div>
-          {itemDetails &&
-            (console.log("item", itemDetails),
-            (
-              <div className="bg-gray-100 border border-primary rounded p-4 mt-3 text-sm space-y-1">
-                <div className="grid sm:grid-cols-2  ">
-                  <div>
-                    <strong className="mr-1">Purchase UOM:</strong>{" "}
-                    {itemDetails.purchaseUOM}
-                  </div>
-
-                  <div className="flex sm:justify-end">
-                    <strong className="mr-1">Stock UOM:</strong>
-                    {itemDetails.stockUOM || itemDetails.uom || "—"}
-                  </div>
-                  <div>
-                    <strong>Location:</strong> {itemDetails.location || "—"}
-                  </div>
-                  <div className="flex sm:justify-end">
-                    <strong className="mr-1">Rate: </strong>₹
-                    {itemDetails.rate || "—"}
-                  </div>
-                  <div>
-                    <strong className="mr-1">Category:</strong>{" "}
-                    {itemDetails.itemCategory || "—"}
-                  </div>
-                  <div className="flex sm:justify-end">
-                    <strong className="mr-1">Color:</strong>{" "}
-                    {itemDetails.itemColor || "—"}
-                  </div>
+          {itemDetails && (
+            <div className="bg-gray-100 border border-primary rounded p-4 mt-3 text-sm space-y-1">
+              <div className="grid sm:grid-cols-2  ">
+                <div>
+                  <strong className="mr-1">Purchase UOM:</strong>
+                  {itemDetails.purchaseUOM || "—"}
                 </div>
 
-                <div className="mt-3">
-                  <div className="flex justify-between">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        disabled={!itemDetails.qualityInspectionNeeded}
-                        checked={qualityApproved}
-                        onChange={(e) => setQualityApproved(e.target.checked)}
-                      />
-                      Approve Quality
-                    </label>
-                    <div className="font-semibold mb-1">
-                      {itemDetails.qualityInspectionNeeded ? (
-                        <span className="text-red-600">
-                          {qualityApproved ? (
-                            <span className="text-green-600 flex items-center gap-1">
-                              <FcApproval /> Quality Approved
-                            </span>
-                          ) : (
-                            <span className="text-red-600 flex items-center gap-1">
-                              ⚠️ Requires Quality Inspection
-                            </span>
-                          )}
-                        </span>
-                      ) : (
-                        <span className="text-green-600">
-                          Don't Require Quality Inspection
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <textarea
-                    placeholder="Add quality notes (optional)"
-                    value={qualityNote}
-                    onChange={(e) => setQualityNote(e.target.value)}
-                    className="mt-2 w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
-                    rows={3}
-                  />
+                <div className="flex sm:justify-end">
+                  <strong className="mr-1">Stock UOM:</strong>
+                  {itemDetails.stockUOM || itemDetails.uom || "—"}
+                </div>
+                <div>
+                  <strong>Location:</strong> {itemDetails.location || "—"}
+                </div>
+                <div className="flex sm:justify-end">
+                  <strong className="mr-1">Rate: </strong>₹
+                  {itemDetails.rate || "—"}
+                </div>
+                <div>
+                  <strong className="mr-1">Category:</strong>{" "}
+                  {itemDetails.itemCategory || "—"}
+                </div>
+                <div className="flex sm:justify-end">
+                  <strong className="mr-1">Color:</strong>{" "}
+                  {itemDetails.itemColor || "—"}
                 </div>
               </div>
-            ))}
+
+              <div className="mt-3">
+                <div className="flex justify-between">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      disabled={!itemDetails.qualityInspectionNeeded}
+                      checked={qualityApproved}
+                      onChange={(e) => setQualityApproved(e.target.checked)}
+                    />
+                    Approve Quality
+                  </label>
+                  <div className="font-semibold mb-1">
+                    {itemDetails.qualityInspectionNeeded ? (
+                      <span className="text-red-600">
+                        {qualityApproved ? (
+                          <span className="text-green-600 flex items-center gap-1">
+                            <FcApproval /> Quality Approved
+                          </span>
+                        ) : (
+                          <span className="text-red-600 flex items-center gap-1">
+                            ⚠️ Requires Quality Inspection
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="text-green-600">
+                        Don't Require Quality Inspection
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <textarea
+                  placeholder="Add quality notes (optional)"
+                  value={qualityNote}
+                  onChange={(e) => setQualityNote(e.target.value)}
+                  className="mt-2 w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
+                  rows={3}
+                />
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-2 sm:gap-6 w-full">
             <div className="w-[30%]">
@@ -411,6 +408,33 @@ const AddStockModal = ({ onClose, onAdded }) => {
             </button>
           </div>
         </form>
+        {showPOModal && (
+          <SelectPOModal
+            onClose={() => setShowPOModal(false)}
+            onSelect={(po, item) => {
+              console.log("item selected", item);
+              let rmItem = {
+                ...item.item,
+                id: item.item._id,
+                stockUOM: item.item.stockUOM?.unitName,
+                purchaseUOM: item.item?.purchaseUOM?.unitName,
+              };
+
+              setShowPOModal(false);
+              setSelectedPO(po);
+              setSelectedItem({
+                value: item.item._id,
+                label: `${item.item?.skuCode} - ${item.item?.itemName}`,
+                type: "RM", // or based on type if available
+                r: item.item,
+              });
+              setItemDetails(rmItem);
+              // setBaseQty(item.orderQty); // autofill from PO
+              setStockQty(item.orderQty);
+              setQualityApproved(item.item?.qualityInspectionNeeded);
+            }}
+          />
+        )}
       </div>
     </div>
   );
