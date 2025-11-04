@@ -3,47 +3,28 @@ import axios from "./../../utils/axios";
 import Select from "react-select";
 import toast from "react-hot-toast";
 import CreatableSelect from "react-select/creatable";
-import { FiTrash2 } from "react-icons/fi";
 import { BeatLoader } from "react-spinners";
-import { capitalize } from "lodash";
 import { calculateRate } from "./../../utils/calc";
 import { generateConsumptionTable } from "./../../utils/consumptionTable";
 import { useCategoryArrays } from "./../../data/dropdownData";
-// import { plastic, slider, zipper } from "../../../data/dropdownData";
 
-const UpdateQuotation = ({ bom, onClose, onSuccess }) => {
+const UpdateQuotation = ({ onClose, onSuccess, quotationData }) => {
   const { fabric, slider, plastic, zipper } = useCategoryArrays();
-  let categoryData = useCategoryArrays();
-  const [form, setForm] = useState({
-    ...bom,
-  });
+  const categoryData = useCategoryArrays();
 
-  const [productDetails, setProductDetails] = useState(
-    bom?.productDetails?.map((detail) => ({
-      ...detail,
-      // baseQty: detail.baseQty || detail.qty / (bom.orderQty || 1),
-      tempQty: detail.tempQty || detail.qty / (bom.orderQty || 1),
-      tempGrams: detail.tempGrams || detail.grams / bom.orderQty, // ✅ ensure tempQty
-    })) || []
+  const [partyName, setPartyName] = useState(
+    quotationData?.party?.customerName || ""
   );
-
+  const [date, setDate] = useState(
+    quotationData?.date || new Date().toISOString().split("T")[0]
+  );
+  const [form, setForm] = useState(quotationData?.quotations || []);
   const [rms, setRms] = useState([]);
   const [sfgs, setSfgs] = useState([]);
   const [fgs, setFgs] = useState([]);
   const [samples, setSamples] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [components, setComponents] = useState([]);
-
-  const [newFiles, setNewFiles] = useState([]);
-  const [existingFiles, setExistingFiles] = useState(bom.file || []);
-  const [deletedFiles, setDeletedFiles] = useState([]);
-
-  const [newPrintingFiles, setNewPrintingFiles] = useState([]);
-  const [existingPrintingFiles, setExistingPrintingFiles] = useState(
-    bom.printingFile || []
-  );
-  const [deletedPrintingFiles, setDeletedPrintingFiles] = useState([]);
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -66,7 +47,6 @@ const UpdateQuotation = ({ bom, onClose, onSuccess }) => {
         setFgs(fgRes.data.data || []);
         setCustomers(customerRes.data.data || []);
         setSamples(sampleRes.data.data || []);
-        setComponents([...rms, ...sfgs, ...fgs]);
       } catch {
         toast.error("Failed to load dropdown data");
       }
@@ -74,103 +54,90 @@ const UpdateQuotation = ({ bom, onClose, onSuccess }) => {
     fetchDropdownData();
   }, []);
 
-  const materialOptions = [
-    ...rms.map((rm) => ({
-      label: `${rm.skuCode}: ${rm.itemName}${
-        rm.description ? " - " + rm.description : ""
-      }`,
-      value: rm.id,
-      type: "RawMaterial",
-      sqInchRate: rm.sqInchRate || null,
-      category: rm.itemCategory,
-      baseQty: rm.baseQty,
-      itemRate: rm.rate,
-    })),
-    ...sfgs.map((sfg) => ({
-      label: `${sfg.skuCode}: ${sfg.itemName}${
-        sfg.description ? " - " + sfg.description : ""
-      }`,
-      value: sfg.id,
-      type: "SFG",
-      sqInchRate: sfg.sqInchRate || 1,
-      category: sfg.itemCategory,
-      baseQty: sfg.baseQty || 1,
-      itemRate: sfg.unitRate || null,
-      skuCode: sfg.skuCode,
-    })),
-  ];
-
   const productOptions = [
-    ...samples.map((s) => ({
-        label: `${s.sampleNo}: ${s.product?.name}${
-          s.description ? " - " + s.description : ""
-        }`,
-        value: s._id,
-        type: "SAMPLE",
-        sample: s,
-      })),
+    ...fgs.map((fg) => ({
+      label: `${fg.skuCode}: ${fg.itemName}${
+        fg.description ? " - " + fg.description : ""
+      }`,
+      value: fg.id,
+      type: "FG",
+      fg: fg,
+    })),
   ];
 
-  const recalculateTotals = (
-    updatedForm = form,
-    updatedDetails = productDetails
-  ) => {
-    const {
-      orderQty,
-      rejection,
-      QC,
-      machineMaintainance,
-      materialHandling,
-      packaging,
-      shipping,
-      companyOverHead,
-      indirectExpense,
-      stitching,
-      printing,
-      others,
-      B2B,
-      D2C,
-    } = updatedForm;
+  const recalculateTotals = (index, updatedForm, updatedDetails) => {
+    setForm((prev) => {
+      const formsCopy = [...prev];
+      const currentForm = updatedForm || formsCopy[index];
+      const details = updatedDetails || currentForm.productDetails || [];
 
-    const overheadPercent =
-      rejection +
-      QC +
-      machineMaintainance +
-      materialHandling +
-      packaging +
-      shipping +
-      companyOverHead +
-      indirectExpense;
+      const {
+        orderQty,
+        rejection,
+        QC,
+        machineMaintainance,
+        materialHandling,
+        packaging,
+        shipping,
+        companyOverHead,
+        indirectExpense,
+        stitching,
+        printing,
+        others,
+        B2B,
+        D2C,
+      } = currentForm;
 
-    const baseComponentRate = updatedDetails.reduce(
-      (sum, comp) => sum + (Number(comp.rate) || 0),
-      0
-    );
-    const unitR = baseComponentRate / orderQty + stitching + printing + others;
+      const oq = Number(orderQty) || 1;
+      const overheadPercent =
+        Number(rejection || 0) +
+        Number(QC || 0) +
+        Number(machineMaintainance || 0) +
+        Number(materialHandling || 0) +
+        Number(packaging || 0) +
+        Number(shipping || 0) +
+        Number(companyOverHead || 0) +
+        Number(indirectExpense || 0);
 
-    const totalR =
-      (baseComponentRate / orderQty + stitching + printing + others) * orderQty;
+      const baseComponentRate = details.reduce(
+        (sum, comp) => sum + (Number(comp.rate) || 0),
+        0
+      );
 
-    const unitRate = unitR + (unitR * overheadPercent) / 100;
-    const unitB2BRate = unitR + (unitR * (overheadPercent + B2B)) / 100;
-    const unitD2CRate = unitR + (unitR * (overheadPercent + D2C)) / 100;
-    const totalRate = totalR + (totalR * overheadPercent) / 100;
-    const totalB2BRate = totalR + (totalR * (overheadPercent + B2B)) / 100;
-    const totalD2CRate = totalR + (totalR * (overheadPercent + D2C)) / 100;
+      const unitR =
+        baseComponentRate / oq +
+        (Number(stitching) || 0) +
+        (Number(printing) || 0) +
+        (Number(others) || 0);
+      const totalR = unitR * oq;
 
-    setForm((prev) => ({
-      ...prev,
-      ...updatedForm,
-      unitRate: unitRate.toFixed(2),
-      unitB2BRate: unitB2BRate.toFixed(2),
-      unitD2CRate: unitD2CRate.toFixed(2),
-      totalRate: totalRate.toFixed(2),
-      totalB2BRate: totalB2BRate.toFixed(2),
-      totalD2CRate: totalD2CRate.toFixed(2),
-    }));
+      const unitRate = unitR + (unitR * overheadPercent) / 100;
+      const unitB2BRate =
+        unitR + (unitR * (overheadPercent + Number(B2B || 0))) / 100;
+      const unitD2CRate =
+        unitR + (unitR * (overheadPercent + Number(D2C || 0))) / 100;
+      const totalRate = totalR + (totalR * overheadPercent) / 100;
+      const totalB2BRate =
+        totalR + (totalR * (overheadPercent + Number(B2B || 0))) / 100;
+      const totalD2CRate =
+        totalR + (totalR * (overheadPercent + Number(D2C || 0))) / 100;
+
+      formsCopy[index] = {
+        ...formsCopy[index],
+        ...currentForm,
+        productDetails: details,
+        unitRate: unitRate.toFixed(2),
+        unitB2BRate: unitB2BRate.toFixed(2),
+        unitD2CRate: unitD2CRate.toFixed(2),
+        totalRate: totalRate.toFixed(2),
+        totalB2BRate: totalB2BRate.toFixed(2),
+        totalD2CRate: totalD2CRate.toFixed(2),
+      };
+      return formsCopy;
+    });
   };
 
-  const handleFormChange = (e) => {
+  const handleFormChange = (index, e) => {
     const { name, value } = e.target;
     const numericFields = [
       "height",
@@ -193,155 +160,149 @@ const UpdateQuotation = ({ bom, onClose, onSuccess }) => {
       "B2B",
       "D2C",
     ];
-    const newValue = numericFields.includes(name)
-      ? Number(value) || null
-      : value;
+    const newValue = numericFields.includes(name) ? Number(value) || 0 : value;
 
-    let updatedDetails = [...productDetails];
+    setForm((prev) => {
+      const formsCopy = [...prev];
+      let currentForm = { ...formsCopy[index] };
+      let updatedDetails = [...(currentForm.productDetails || [])];
 
-    if (name === "orderQty") {
-      updatedDetails = productDetails.map((comp) => {
-        const category = (comp.category || "").toLowerCase();
+      if (name === "orderQty") {
+        const newOrderQty = Number(newValue) || 1;
+        const oldOrderQty = Number(currentForm.orderQty) || 1;
 
-        if (plastic.includes(category)) {
-          const grams = (Number(comp.tempGrams) || 0) * newValue;
-          const qty = (Number(comp.tempQty) || 1) * newValue;
+        updatedDetails = updatedDetails.map((comp) => {
+          const category = (comp.category || "").toLowerCase();
+
+          // Derive tempQty/tempGrams if missing by reversing from old order qty
+          const tempQty =
+            comp.tempQty ??
+            (oldOrderQty ? comp.qty / oldOrderQty : comp.qty) ??
+            0;
+          const tempGrams =
+            comp.tempGrams ??
+            (oldOrderQty ? comp.grams / oldOrderQty : comp.grams) ??
+            0;
+
+          const qty = tempQty * newOrderQty;
+          const grams = tempGrams * newOrderQty;
+
+          const rate = calculateRate(
+            {
+              ...comp,
+              qty,
+              grams,
+              width: comp.width || 0,
+              height: comp.height || 0,
+              category: comp.category || "",
+            },
+            newOrderQty,
+            categoryData
+          );
+
           return {
             ...comp,
+            tempQty,
+            tempGrams,
+            qty,
             grams,
-            qty: qty,
-            rate: calculateRate({ ...comp, grams }, newValue, categoryData),
+            rate,
           };
-        } else {
-          const finalQty = (Number(comp.tempQty) || 0) * newValue;
-          return {
-            ...comp,
-            qty: finalQty,
-            rate: calculateRate(comp, finalQty, categoryData),
-          };
-        }
-      });
+        });
+      }
 
-      setProductDetails(updatedDetails);
-    }
+      currentForm = {
+        ...currentForm,
+        [name]: newValue,
+        productDetails: updatedDetails,
+      };
 
-    recalculateTotals({ ...form, [name]: newValue }, updatedDetails);
-    setForm((prev) => ({ ...prev, [name]: newValue }));
+      formsCopy[index] = currentForm;
+
+      setTimeout(
+        () => recalculateTotals(index, currentForm, updatedDetails),
+        0
+      );
+      return formsCopy;
+    });
   };
 
-  const updateComponent = (index, field, value) => {
-    const updated = [...productDetails];
-    const comp = updated[index];
-    const orderQty = Number(form.orderQty) || 1;
-
-    if (field === "qty") {
-      // user is entering per-unit qty or per-unit grams
-      comp.tempQty = Number(value) || 0;
-    } else if (field === "grams") {
-      comp.tempGrams = Number(value) || 0;
-    } else {
-      comp[field] = value;
-    }
-    const category = (comp.category || "").toLowerCase();
-
-    if (plastic.includes(category)) {
-      // scale grams with orderQty
-      comp.grams = (comp.tempGrams || 0) * orderQty;
-      comp.qty = (comp.tempQty || 0) * orderQty; // qty here is just "number of orders"
-    } else {
-      // all other categories → qty = tempQty × orderQty
-      comp.qty = (comp.tempQty || 0) * orderQty;
-    }
-
-    comp.rate = calculateRate(comp, comp.qty, categoryData);
-
-    updated[index] = comp;
-    setProductDetails(updated);
-    recalculateTotals(form, updated);
-  };
-
-  const handleAddComponent = () => {
-    setProductDetails((prev) => [
+  const addNewQuotation = () => {
+    setForm((prev) => [
       ...prev,
       {
-        itemId: "",
-        type: "",
-        category: "",
-        tempQty: 0,
-        tempGrams: 0,
-        qty: 0,
-        grams: 0,
-        partName: "",
+        productName: "",
+        description: "",
+        sampleNo: "",
+        orderQty: 0,
+        date: new Date().toISOString().split("T")[0],
+        deliveryDate: "",
         height: 0,
         width: 0,
-        // depth: 0,
-        rate: 0,
-        label: "",
-        baseQty: 0,
-        itemRate: 0,
-        isPrint: false,
-        isPasting: false,
-        cuttingType: "",
+        depth: 0,
+        B2B: 0,
+        D2C: 0,
+        rejection: 2,
+        QC: 0.75,
+        machineMaintainance: 1.75,
+        materialHandling: 1.75,
+        packaging: 2,
+        shipping: 1,
+        companyOverHead: 4,
+        indirectExpense: 1.75,
+        stitching: 0,
+        printing: 0,
+        others: 0,
+        unitRate: 0,
+        unitB2BRate: 0,
+        unitD2CRate: 0,
+        totalRate: 0,
+        totalB2BRate: 0,
+        totalD2CRate: 0,
+        productDetails: [],
       },
     ]);
   };
 
-  const removeComponent = (index) => {
-    const updated = [...productDetails];
-    updated.splice(index, 1);
-    setProductDetails(updated);
-    recalculateTotals(form, updated);
-  };
-
   const handleSubmit = async () => {
-    setLoading(true);
-    if (!form.partyName || !form.productName || !form.orderQty) {
-      setLoading(false);
-      return toast.error("Please fill all required fields");
-    }
-    const hasEmpty = productDetails.some(
-      (c) =>
-        !c.itemId || c.qty <= 0 || c.height <= 0 || c.width <= 0 || !c.partName
-    );
-    // if (hasEmpty) {
-    //   setLoading(false);
-    //   return toast.error("Please fill or remove all incomplete RM/SFG rows");
-    // }
     try {
-      const consumptionTable = generateConsumptionTable(
-        productDetails,
-        categoryData
-      );
-      console.log("c tab", consumptionTable);
+      setLoading(true);
+      if (!partyName) {
+        toast.error("Please select a Party Name");
+        setLoading(false);
+        return;
+      }
 
-      const formData = new FormData();
-      const payload = {
-        ...form,
-        productDetails: productDetails.map(({ label, ...rest }) => rest),
-        consumptionTable,
-        deletedFiles,
-        deletedPrintingFiles,
-      };
-      formData.append("data", JSON.stringify(payload));
+      for (const q of form) {
+        if (!q.productName || !q.orderQty) {
+          toast.error("Please fill all required fields");
+          setLoading(false);
+          return;
+        }
+      }
 
-      newFiles.forEach((file) => {
-        formData.append("files", file);
-      });
-      newPrintingFiles.forEach((file) => {
-        formData.append("printingFiles", file);
+      const quotations = form.map((q) => ({
+        ...q,
+        consumptionTable: generateConsumptionTable(
+          q.productDetails,
+          categoryData
+        ),
+      }));
+
+      const res = await axios.patch(`/quotation/update/${quotationData._id}`, {
+        partyName,
+        date,
+        quotations,
       });
 
-      const res = await axios.patch(`/quotation/update/${bom._id}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
       if (res.data.status === 403) return toast.error(res.data.message);
 
-      toast.success("Bill of Materials updated successfully");
+      toast.success("Quotation updated successfully");
       onSuccess();
       onClose();
     } catch (err) {
       console.error(err);
-      toast.error("Failed to update Bill of Materials");
+      toast.error("Failed to update quotation");
     } finally {
       setLoading(false);
     }
@@ -349,10 +310,9 @@ const UpdateQuotation = ({ bom, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-lg border border-primary text-black">
-        {/* Header */}
+      <div className="bg-white rounded-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto shadow-lg border border-primary text-black">
         <div className="flex justify-between items-center sticky top-0 p-4 bg-white z-10">
-          <h2 className="text-xl font-semibold">Update Bill of Material</h2>
+          <h2 className="text-xl font-semibold">Update Quotation</h2>
           <button
             onClick={onClose}
             className="text-black hover:text-red-500 font-bold text-xl cursor-pointer"
@@ -361,781 +321,179 @@ const UpdateQuotation = ({ bom, onClose, onSuccess }) => {
           </button>
         </div>
 
-        <div className="px-4 pb-5">
-          {/* Form */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm ">
-            <div>
-              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                Product Name
-              </label>
-              <Select
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    borderColor: "var(--color-primary)",
-                    boxShadow: state.isFocused
-                      ? "0 0 0 1px var(--color-primary)"
-                      : "none",
-                    "&:hover": {
-                      borderColor: "var(--color-primary)",
-                    },
-                  }),
-                }}
-                options={productOptions}
-                placeholder="Select Sample"
-                onCreateOption={(val) => setForm({ ...form, productName: val })}
-                value={
-                  form.productName
-                    ? { label: form.productName, value: form.productName }
-                    : null
-                }
-                onChange={(e) => {
-                  let selectedProduct = null;
-
-                  if (e.type === "FG") {
-                    selectedProduct = e.fg;
-                    // setForm({ ...form, productName: selectedProduct.itemName });
-                  } else if (e.type === "SAMPLE") {
-                    selectedProduct = e.sample;
-                    // setForm({
-                    //   ...form,
-                    //   productName: selectedProduct.product.name,
-                    // });
-                  }
-
-                  setForm({
-                    productName:
-                      selectedProduct.itemName ||
-                      selectedProduct.product.name ||
-                      "",
-                    sampleNo: selectedProduct.sampleNo,
-                    partyName: selectedProduct.partyName || "",
-                    orderQty: selectedProduct.orderQty || 1,
-                    height: selectedProduct.height || 0,
-                    width: selectedProduct.width || 0,
-                    depth: selectedProduct.depth || 0,
-                    B2B: selectedProduct.B2B || 0,
-                    D2C: selectedProduct.D2C || 0,
-                    rejection: selectedProduct.rejection || 2,
-                    QC: selectedProduct.QC || 0.75,
-                    machineMaintainance:
-                      selectedProduct.machineMaintainance || 1.75,
-                    materialHandling: selectedProduct.materialHandling || 1.75,
-                    packaging: selectedProduct.packaging || 2,
-                    shipping: selectedProduct.shipping || 1,
-                    companyOverHead: selectedProduct.companyOverHead || 4,
-                    indirectExpense: selectedProduct.indirectExpense || 1.75,
-                    stitching: selectedProduct.stitching || 0,
-                    printing: selectedProduct.printing || 0,
-                    others: selectedProduct.others || 0,
-                    unitRate: selectedProduct.unitRate || 0,
-                    unitB2BRate: selectedProduct.unitB2BRate || 0,
-                    unitD2CRate: selectedProduct.unitD2CRate || 0,
-                  });
-
-                  if (!selectedProduct) return;
-
-                  const allDetails = [
-                    ...(selectedProduct.rm || []),
-                    ...(selectedProduct.sfg || []),
-                    ...(selectedProduct.productDetails || []),
-                  ];
-
-                  const enrichedDetails = allDetails.map((item) => ({
-                    itemId: item.itemId || item.id || "",
-                    type: item.type,
-                    tempQty: item.qty || 0,
-                    tempGrams: item.grams || 0,
-                    qty: item.qty || 0,
-                    category: item.category || "",
-                    grams: item.grams || 0,
-                    height: item.height || "",
-                    width: item.width || "",
-                    panno: item.panno || 0,
-                    rate: item.rate || "",
-                    sqInchRate: item.sqInchRate || "",
-                    partName: item.partName || "",
-                    baseQty: item.baseQty || 0,
-                    itemRate: item.itemRate || 0,
-                    itemName: item.itemName || "",
-                    skuCode: item.skuCode || "",
-                    isPasting: item.isPasting,
-                    isPrint: item.isPrint,
-                    // depth: item.depth || "",
-                    label: `${item.skuCode}: ${item.itemName}${
-                      item.description ? ` - ${item.description}` : ""
-                    }`,
-                  }));
-
-                  setProductDetails(enrichedDetails);
-                }}
-              />
-            </div>
-
-            <div>
-              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                Party Name
-              </label>
-              <CreatableSelect
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    borderColor: "var(--color-primary)",
-                    boxShadow: state.isFocused
-                      ? "0 0 0 1px var(--color-primary)"
-                      : "none",
-                    "&:hover": {
-                      borderColor: "var(--color-primary)",
-                    },
-                  }),
-                }}
-                options={customers.map((c) => ({
-                  label: c.customerName,
-                  value: c.customerName?.trim(),
-                }))}
-                placeholder="Select or Type Customer"
-                onChange={(e) => setForm({ ...form, partyName: e?.value })}
-                onCreateOption={(val) => setForm({ ...form, partyName: val })}
-                value={
-                  form.partyName
-                    ? { label: form.partyName, value: form.partyName }
-                    : null
-                }
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                Order Qty
-              </label>
-              <input
-                type="number"
-                placeholder="Order Qty"
-                name="orderQty"
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
-                value={form.orderQty}
-                onChange={(e) => handleFormChange(e)}
-              />
-            </div>
-
-            {/* <div className="flex flex-col sm:flex-row justify-between gap-2">
-              <div className="flex flex-col w-full">
-                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                  Date
-                </label>
-                <input
-                  type="date"
-                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
-                  value={
-                    form.date
-                      ? new Date(form.date).toISOString().split("T")[0]
-                      : ""
-                  }
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
-                />
-              </div>
-              <div className="flex flex-col w-full">
-                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                  Delivery Date
-                </label>
-                <input
-                  type="date"
-                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
-                  value={
-                    form.deliveryDate
-                      ? new Date(form.deliveryDate).toISOString().split("T")[0]
-                      : ""
-                  }
-                  onChange={(e) =>
-                    setForm({ ...form, deliveryDate: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-            <div className="flex flex-col ">
-              <div className="">
-                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                  Product Files
-                </label>
-                <input
-                  type="file"
-                  multiple
-                  onChange={(e) => setNewFiles([...e.target.files])}
-                  className="block w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
-                />
-              </div>
-              <div className="flex flex-col  mt-2">
-                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                  Existing Product Files
-                </label>
-                {existingFiles.length === 0 && (
-                  <p className="text-sm text-gray-500">
-                    No product files uploaded.
-                  </p>
-                )}
-
-                {existingFiles.map((file, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-center bg-primary/20 border border-primary rounded p-1"
-                  >
-                    <a
-                      href={file.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-black underline break-all"
-                    >
-                      {file.fileName}
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDeletedFiles([...deletedFiles, file]);
-                        setExistingFiles(
-                          existingFiles.filter((_, i) => i !== idx)
-                        );
-                      }}
-                      className="text-red-500 flex items-center gap-0.5 text-xs hover:underline cursor-pointer"
-                    >
-                      <FiTrash2 /> Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-col ">
-              <div>
-                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                  Printing Files
-                </label>
-                <input
-                  type="file"
-                  multiple
-                  onChange={(e) => setNewPrintingFiles([...e.target.files])}
-                  className="block w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
-                />
-              </div>
-              <div className="flex flex-col mt-2">
-                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                  Existing Printing Files
-                </label>
-                {existingPrintingFiles.length === 0 && (
-                  <p className="text-sm text-gray-500">
-                    No printing files uploaded.
-                  </p>
-                )}
-
-                {existingPrintingFiles.map((file, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-center bg-primary/20 border border-primary rounded p-1"
-                  >
-                    <a
-                      href={file.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-black underline break-all"
-                    >
-                      {file.fileName}
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDeletedPrintingFiles([
-                          ...deletedPrintingFiles,
-                          file,
-                        ]);
-                        setExistingPrintingFiles(
-                          existingPrintingFiles.filter((_, i) => i !== idx)
-                        );
-                      }}
-                      className="text-red-500 flex items-center gap-0.5 text-xs hover:underline cursor-pointer"
-                    >
-                      <FiTrash2 /> Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div> */}
+        <div className="px-4 pb-6">
+          <div className="mb-4">
+            <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+              Party Name
+            </label>
+            <CreatableSelect
+              styles={{
+                control: (base, state) => ({
+                  ...base,
+                  borderColor: "var(--color-primary)",
+                  boxShadow: state.isFocused
+                    ? "0 0 0 1px var(--color-primary)"
+                    : "none",
+                  "&:hover": { borderColor: "var(--color-primary)" },
+                }),
+              }}
+              options={customers.map((c) => ({
+                label: c.customerName,
+                value: c.customerName?.trim(),
+              }))}
+              placeholder="Select or Type Customer"
+              onChange={(e) => setPartyName(e?.value)}
+              onCreateOption={(val) => setPartyName(val)}
+              value={partyName ? { label: partyName, value: partyName } : null}
+            />
           </div>
 
-          {/* <div className="flex-col my-2">
-            <div>
-              <h2 className="font-semibold mb-1">Product Size</h2>
-            </div>
-            <div className="p-2 border text-[12px] border-primary rounded grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 ">
-              <div className="flex flex-col">
-                <label className="font-semibold mb-1">Height (Inch)</label>
-                <input
-                  type="number"
-                  name="height"
-                  placeholder="Height (Inch)"
-                  value={form.height}
-                  onChange={(e) => handleFormChange(e)}
-                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-                />
-              </div>
-              <div className="flex flex-col">
-                <label className="font-semibold mb-1">Width (Inch)</label>
-                <input
-                  type="number"
-                  name="width"
-                  placeholder="Width (Inch)"
-                  value={form.width}
-                  onChange={(e) => handleFormChange(e)}
-                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <label className="font-semibold mb-1">Depth (Inch)</label>
-                <input
-                  type="number"
-                  name="depth"
-                  placeholder="Depth (Inch)"
-                  value={form.depth}
-                  onChange={(e) => handleFormChange(e)}
-                  className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-                />
-              </div>
-            </div>
-          </div> */}
-
-          {/* <div>
-            <h3 className="font-bold text-[14px] my-2 text-primary underline">
-              RM/SFG Components
-            </h3>
-
-            <div className="flex flex-col gap-4">
-              {productDetails.map((comp, index) => (
-                <div
-                  key={index}
-                  className="border border-primary rounded p-3 flex flex-col gap-2"
-                >
-                  <div
-                    className={`grid grid-cols-1 sm:grid-cols-2 ${
-                      comp.category == "plastic" || comp.category == "non woven"
-                        ? "md:grid-cols-8"
-                        : "md:grid-cols-7"
-                    } md:grid-cols-8 gap-3`}
+          {form.map((q, index) => (
+            <div
+              key={index}
+              className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-semibold text-sm text-black">
+                  Quotation {index + 1}
+                </h3>
+                {form.length > 1 && (
+                  <button
+                    onClick={() =>
+                      setForm((prev) => prev.filter((_, i) => i !== index))
+                    }
+                    className="text-red-500 text-xs font-semibold hover:underline"
                   >
-                    <div className="flex flex-col md:col-span-2">
-                      <label className="text-[12px] font-semibold mb-[2px] text-black">
-                        Component{" "}
-                        <span className="text-primary capitalize">
-                          {comp.category ? `● ${comp.category}` : ""}
-                        </span>
-                      </label>
-                      <Select
-                        className="w-full"
-                        required
-                        value={materialOptions.find(
-                          (opt) => opt.value === comp.itemId
-                        )}
-                        options={materialOptions}
-                        onChange={(e) => {
-                          updateComponent(index, "itemId", e.value);
-                          updateComponent(index, "type", e.type);
-                          updateComponent(index, "label", e.label);
-                          updateComponent(index, "sqInchRate", e.sqInchRate);
-                          updateComponent(index, "category", e.category);
-                          updateComponent(index, "baseQty", e.baseQty);
-                          updateComponent(index, "qty", e.qty);
-                          updateComponent(index, "itemRate", e.itemRate);
-                        }}
-                        styles={{
-                          control: (base, state) => ({
-                            ...base,
-                            borderColor: "var(--color-primary)",
-                            boxShadow: state.isFocused
-                              ? "0 0 0 1px var(--color-primary)"
-                              : "none",
-                            "&:hover": {
-                              borderColor: "var(--color-primary)",
-                            },
-                          }),
-                        }}
-                      />
-                    </div>
+                    Remove
+                  </button>
+                )}
+              </div>
 
-                   
-                    {[
-                      "partName",
-                      "height",
-                      "width",
-                      "qty",
-                      "grams",
-                      "rate",
-                    ].map((field) => {
-                      
-                      if (
-                        slider.includes(comp.category?.toLowerCase()) &&
-                        (field === "height" || field === "width")
-                      )
-                        return null;
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                    Product Name
+                  </label>
+                  <Select
+                    options={productOptions}
+                    placeholder="Select Product"
+                    value={
+                      q.productName
+                        ? { label: q.productName, value: q.productName }
+                        : null
+                    }
+                    onChange={(e) => {
+                      const selectedProduct = e.fg || e.sample || null;
+                      if (!selectedProduct) return;
 
-                     
-                      if (
-                        !plastic.includes(comp.category?.toLowerCase()) &&
-                        field === "grams"
-                      ) {
-                        return null; 
-                      }
-                     
-                      if (
-                        zipper.includes(comp.category?.toLowerCase()) &&
-                        field === "height"
-                      ) {
-                        return null; 
-                      }
-                      if (
-                        comp.category?.toLowerCase() === "ld cord" &&
-                        field === "height"
-                      ) {
-                        return null; 
-                      }
+                      setForm((prev) => {
+                        const updated = [...prev];
+                        const orderQty = Number(updated[index]?.orderQty) || 1;
 
-                      return (
-                        <div className="flex flex-col" key={field}>
-                          <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                            {field === "partName"
-                              ? "Part Name"
-                              : field === "qty"
-                              ? "Qty"
-                              : field === "grams"
-                              ? "Weight (gm)"
-                              : field === "rate"
-                              ? "Rate"
-                              : `${field} (Inch)`}
-                          </label>
-                          <input
-                            type={
-                              ["partName"].includes(field) ? "text" : "number"
-                            }
-                            placeholder={
-                              field === "partName"
-                                ? "Item Part Name"
-                                : field === "grams"
-                                ? "Weight in grams"
-                                : field === "qty"
-                                ? "qty"
-                                : `${field}`
-                            }
-                            className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
-                            value={comp[field] || ""}
-                            onChange={(e) =>
-                              updateComponent(index, field, e.target.value)
-                            }
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
+                        console.log("orderQty", orderQty);
 
-                  <div className="mt-2 flex w-full justify-between">
-                    <div className="flex gap-4 items-center">
-                      
-                      <select
-                        className="border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition px-2 py-1 text-sm"
-                        value={comp.cuttingType || ""}
-                        onChange={(e) =>
-                          updateComponent(index, "cuttingType", e.target.value)
-                        }
-                      >
-                        <option value="">Cutting Type</option>
-                        <option value="Slitting Cutting">
-                          Slitting Cutting
-                        </option>
-                        <option value="Cutting">Cutting</option>
-                        <option value="Press Cutting">Press Cutting</option>
-                        <option value="Laser Cutting">Laser Cutting</option>
-                        <option value="Table Cutting">Table Cutting</option>
-                      </select>
+                        // Merge all product details from FG/Sample/SFG
+                        const allDetails = [
+                          ...(selectedProduct.rm || []),
+                          ...(selectedProduct.sfg || []),
+                          ...(selectedProduct.productDetails || []),
+                        ];
 
-                     
-                      <label className="flex items-center gap-1 text-sm">
-                        <input
-                          type="checkbox"
-                          checked={comp.isPrint || false}
-                          onChange={(e) =>
-                            updateComponent(index, "isPrint", e.target.checked)
-                          }
-                          className="rounded border-gray-300 accent-primary"
-                        />
-                        Print
-                      </label>
-                      <label className="flex items-center gap-1 text-sm">
-                        <input
-                          type="checkbox"
-                          checked={comp.isPasting || false}
-                          onChange={(e) =>
-                            updateComponent(
+                        console.log("all details", allDetails);
+
+                        const enrichedDetails = allDetails.map((item) => {
+                          const enrichedItem = {
+                            itemId: item.itemId || item.id || "",
+                            type: item.type,
+                            tempQty: item.qty || 0,
+                            tempGrams: item.grams || 0,
+                            qty: item.qty * orderQty || 0,
+                            category: item.category || "",
+                            grams: item.grams || 0,
+                            height: item.height || "",
+                            width: item.width || "",
+                            panno: item.panno || 0,
+                            rate: item.rate || "",
+                            sqInchRate: item.sqInchRate || "",
+                            partName: item.partName || "",
+                            baseQty: item.baseQty || 0,
+                            itemRate: item.itemRate || 0,
+                            itemName: item.itemName || "",
+                            skuCode: item.skuCode || "",
+                            isPasting: item.isPasting,
+                            isPrint: item.isPrint,
+                            label: `${item.skuCode}: ${item.itemName}${
+                              item.description ? ` - ${item.description}` : ""
+                            }`,
+                          };
+
+                          return {
+                            ...enrichedItem,
+                            rate: calculateRate(
+                              enrichedItem,
+                              orderQty,
+                              categoryData
+                            ),
+                          };
+                        });
+
+                        updated[index] = {
+                          ...updated[index],
+                          productName:
+                            selectedProduct.itemName ||
+                            selectedProduct.product?.name ||
+                            "",
+                          description: selectedProduct.description,
+                          sampleNo:
+                            selectedProduct.sampleNo ||
+                            selectedProduct.skuCode ||
+                            "",
+                          height: Number(selectedProduct.height) || 0,
+                          width: Number(selectedProduct.width) || 0,
+                          depth: Number(selectedProduct.depth) || 0,
+                          productDetails: enrichedDetails,
+                        };
+
+                        // trigger recalculation
+                        setTimeout(
+                          () =>
+                            recalculateTotals(
                               index,
-                              "isPasting",
-                              e.target.checked
-                            )
-                          }
-                          className="rounded border-gray-300 accent-primary"
-                        />
-                        Pasting
-                      </label>
-                    </div>
-
-                   
-                    <button
-                      type="button"
-                      className="text-red-600 text-xs hover:underline flex gap-1 cursor-pointer items-center"
-                      onClick={() => removeComponent(index)}
-                    >
-                      <FiTrash2 /> Remove
-                    </button>
-                  </div>
+                              updated[index],
+                              enrichedDetails
+                            ),
+                          0
+                        );
+                        return updated;
+                      });
+                    }}
+                  />
                 </div>
-              ))}
 
-              <button
-                type="button"
-                onClick={() => handleAddComponent({ label: "", value: "" })}
-                className="bg-primary hover:bg-primary/80 text-secondary px-3 py-1 rounded flex items-center gap-1 mt-2 cursor-pointer w-fit text-sm"
-              >
-                + Add RM/SFG
-              </button>
+                <div>
+                  <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                    Order Qty
+                  </label>
+                  <input
+                    type="number"
+                    name="orderQty"
+                    placeholder="Order Qty"
+                    className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition w-full"
+                    value={q.orderQty}
+                    onChange={(e) => handleFormChange(index, e)}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          ))}
 
-          <div className="bg-primary w-full h-[1px] my-5"></div>
-
-         
-          <div className="sm:text-[12px] mb-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">B2B (%)</label>
-              <input
-                type="number"
-                name="B2B"
-                placeholder="B2B"
-                value={form.B2B}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">D2C (%)</label>
-              <input
-                type="number"
-                name="D2C"
-                placeholder="D2C"
-                value={form.D2C}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Rejection (%)</label>
-              <input
-                type="number"
-                name="rejection"
-                placeholder="Rejection"
-                value={form.rejection}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">QC (%)</label>
-              <input
-                type="number"
-                name="QC"
-                placeholder="QC"
-                value={form.QC}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">
-                Machine Maintainance (%)
-              </label>
-              <input
-                type="number"
-                name="machineMaintainance"
-                placeholder="Machine Maintainance"
-                value={form.machineMaintainance}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">
-                Material Handling (%)
-              </label>
-              <input
-                type="number"
-                name="materialHandling"
-                placeholder="Material Handling"
-                value={form.materialHandling}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Packaging (%)</label>
-              <input
-                type="number"
-                name="packaging"
-                placeholder="Packaging"
-                value={form.packaging}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Shipping (%)</label>
-              <input
-                type="number"
-                name="shipping"
-                placeholder="Shipping"
-                value={form.shipping}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Company OverHead (%)</label>
-              <input
-                type="number"
-                name="companyOverHead"
-                placeholder="Company OverHead"
-                value={form.companyOverHead}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Indirect Expense (%)</label>
-              <input
-                type="number"
-                name="indirectExpense"
-                placeholder="Indirect Expense"
-                value={form.indirectExpense}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Stitching (₹)</label>
-              <input
-                type="number"
-                name="stitching"
-                placeholder="Stitching"
-                value={form.stitching}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-                required
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Print/Emb (₹)</label>
-              <input
-                type="number"
-                name="printing"
-                placeholder="Print/Emb"
-                value={form.printing}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-                required
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Others (₹)</label>
-              <input
-                type="number"
-                name="others"
-                placeholder="Others"
-                value={form.others}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Unit Rate (₹)</label>
-              <input
-                disabled
-                type="number"
-                name="unitRate"
-                placeholder="Unit Rate"
-                value={form.unitRate}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
-                required
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Unit B2B (₹)</label>
-              <input
-                disabled
-                type="number"
-                name="unitB2BRate"
-                placeholder="Unit B2B"
-                value={form.unitB2BRate}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
-                required
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Unit D2C (₹)</label>
-              <input
-                disabled
-                type="number"
-                name="unitD2CRate"
-                placeholder="Unit D2C"
-                value={form.unitD2CRate}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Total Rate (₹)</label>
-              <input
-                disabled
-                type="number"
-                name="totalRate"
-                placeholder="Total Rate"
-                value={form.totalRate}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Total B2B (₹)</label>
-              <input
-                disabled
-                type="number"
-                name="totalB2BRate"
-                placeholder="Total B2B"
-                value={form.totalB2BRate}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="font-semibold mb-1">Total D2C (₹)</label>
-              <input
-                disabled
-                type="number"
-                name="totalD2CRate"
-                placeholder="total D2C"
-                value={form.totalD2CRate}
-                onChange={(e) => handleFormChange(e)}
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
-              />
-            </div>
-          </div> */}
-
-          <div className="flex justify-end">
+          <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={addNewQuotation}
+              className="border border-primary text-primary px-4 py-2 rounded hover:bg-primary/10 transition"
+            >
+              + Add Another Quotation
+            </button>
             <button
               disabled={loading}
               onClick={handleSubmit}
@@ -1147,7 +505,7 @@ const UpdateQuotation = ({ bom, onClose, onSuccess }) => {
                   <BeatLoader size={5} color="#292926" />
                 </>
               ) : (
-                "Update"
+                "Update Quotation"
               )}
             </button>
           </div>
