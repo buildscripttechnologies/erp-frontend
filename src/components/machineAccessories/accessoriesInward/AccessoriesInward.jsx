@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
-import Dashboard from "../../../pages/Dashboard";
-import AddUomModal from "./AddUomModal";
-import EditUomModal from "./EditUomModal";
+
 import TableSkeleton from "../../TableSkeleton";
 import ScrollLock from "../../ScrollLock";
 import Toggle from "react-toggle";
@@ -14,12 +12,15 @@ import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
 
 import { useRef } from "react";
+import Inward from "./Inward";
+// import AddAccessories from "./AddAccessories";
+// import UpdateAccessories from "./UpdateAccessories";
 
-const UomMaster = () => {
+const AccessoriesInward = () => {
   const { hasPermission } = useAuth();
-  const [uoms, setUoms] = useState([]);
+  const [accessories, setAccessories] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
-  const [editUom, setEditUom] = useState(null);
+  const [editAccessory, setEditAccessory] = useState(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -29,7 +30,7 @@ const UomMaster = () => {
     limit: 10,
   });
   const hasMountedRef = useRef(false);
-  ScrollLock(formOpen || editUom != null);
+  ScrollLock(formOpen || editAccessory != null);
 
   useEffect(() => {
     if (!hasMountedRef.current) {
@@ -37,7 +38,7 @@ const UomMaster = () => {
       return; // skip first debounce on mount
     }
     const debouncedSearch = debounce(() => {
-      fetchUOMs(1); // Always fetch from page 1 for new search
+      fetchAccessories(1); // Always fetch from page 1 for new search
     }, 400); // 400ms delay
 
     debouncedSearch();
@@ -45,18 +46,18 @@ const UomMaster = () => {
     return () => debouncedSearch.cancel(); // Cleanup on unmount/change
   }, [search]); // Re-run on search change
 
-  const fetchUOMs = async (page = 1, limit = pagination.limit) => {
+  const fetchAccessories = async (page = 1, limit = pagination.limit) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `/uoms/all-uoms?page=${page}&limit=${limit}&search=${search}&status="all"`
+        `/accessory-inward/get-all?page=${page}&limit=${limit}&search=${search}&status="all"`
       );
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
       }
       if (res.data.status == 200) {
-        setUoms(res.data.data || []);
+        setAccessories(res.data.data || []);
         setPagination({
           currentPage: res.data.currentPage,
           totalPages: res.data.totalPages,
@@ -65,27 +66,28 @@ const UomMaster = () => {
         });
       }
     } catch {
-      toast.error("Failed to fetch UOMs");
+      toast.error("Failed to fetch Accessories");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUOMs();
+    fetchAccessories();
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this UOM?")) return;
+    if (!window.confirm("Are you sure you want to delete this Accessory?"))
+      return;
     try {
-      let res = await axios.delete(`/uoms/delete-uom/${id}`);
+      let res = await axios.delete(`/accessories/delete-accessory/${id}`);
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
       }
       if (res.data.status == 200) {
-        toast.success("UOM deleted");
-        fetchUOMs();
+        toast.success("Accessory deleted");
+        fetchAccessories();
       }
     } catch {
       toast.error("Delete failed");
@@ -95,7 +97,7 @@ const UomMaster = () => {
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === true ? false : true;
     try {
-      const res = await axios.patch(`/uoms/update-uom/${id}`, {
+      const res = await axios.patch(`/accessories/update-accessory/${id}`, {
         status: newStatus,
       });
       if (res.data.status == 403) {
@@ -104,12 +106,14 @@ const UomMaster = () => {
       }
 
       if (res.data.status == 200) {
-        toast.success(`UOM status updated`);
+        toast.success(`Accessory status updated`);
 
         // ✅ Update local state without refetch
-        setUoms((prev) =>
-          prev.map((uom) =>
-            uom._id === id ? { ...uom, status: newStatus } : uom
+        setAccessories((prev) =>
+          prev.map((accessory) =>
+            accessory._id === id
+              ? { ...accessory, status: newStatus }
+              : accessory
           )
         );
       } else {
@@ -120,50 +124,32 @@ const UomMaster = () => {
     }
   };
 
-  // const filteredUoms = uoms.filter(
-  //   (u) =>
-  //     u.unitName?.toLowerCase().includes(search.toLowerCase()) ||
-  //     u.unitDescription?.toLowerCase().includes(search.toLowerCase()) ||
-  //     u.createdBy?.fullName.toLowerCase().includes(search.toLocaleLowerCase())
-  // );
-
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
-    fetchUOMs(page);
+    fetchAccessories(page);
   };
 
   useEffect(() => {
-    fetchUOMs(1);
+    fetchAccessories(1);
   }, []);
-
-  const uomTableHeaders = [
-    { label: "#", className: "" },
-    { label: "Created At	", className: "hidden md:table-cell" },
-    { label: "Updated At	", className: "hidden md:table-cell" },
-    { label: "UOM", className: "" },
-    { label: "Description", className: "" },
-    { label: "Satus", className: "" },
-    { label: "Created By	", className: "hidden md:table-cell" },
-    { label: "Actions", className: "" },
-  ];
 
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Units of Measure{" "}
+        Accessories Inward{" "}
         <span className="text-gray-500">({pagination.totalResults})</span>
       </h2>
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
         <div className="relative w-full sm:w-80">
-          <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
+          <FiSearch className="absolute left-2 top-2 text-primary" />
           <input
             type="text"
-            placeholder="Search Unit of Measure"
+            placeholder="Search Accessories"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-          />{" "}
+            className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
+          />
           {search && (
             <FiX
               className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
@@ -173,56 +159,61 @@ const UomMaster = () => {
           )}
         </div>
 
-        {hasPermission("UOM", "write") && (
+        {hasPermission("Accessories Inward", "write") && (
           <button
             onClick={() => setFormOpen(!formOpen)}
-            className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
+            className="w-full sm:w-auto justify-center cursor-pointer bg-primary hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
           >
             <FiPlus />
-            {formOpen ? "Close Form" : "Add UOM"}
+            {formOpen ? "Close Form" : "Inward"}
           </button>
         )}
       </div>
 
       {formOpen && (
-        <AddUomModal onClose={() => setFormOpen(false)} onAdded={fetchUOMs} />
+        <Inward onClose={() => setFormOpen(false)} onAdded={fetchAccessories} />
       )}
 
-      <div className="overflow-x-auto rounded border border-[#d8b76a] shadow-sm">
+      <div className="overflow-x-auto rounded border border-primary shadow-sm">
         <table className="min-w-full text-[11px]  whitespace-nowrap">
-          <thead className="bg-[#d8b76a]  text-[#292926] text-left whitespace-nowrap">
+          <thead className="bg-primary  text-secondary text-left whitespace-nowrap">
             <tr>
               <th className="px-2 py-1.5 ">#</th>
-              <th className="px-2 py-1.5  hidden md:table-cell">Created At</th>
-              <th className="px-2 py-1.5  hidden md:table-cell">Updated At</th>
-              <th className="px-2 py-1.5 ">UOM</th>
+              <th className="px-2 py-1.5 ">Created At</th>
+              <th className="px-2 py-1.5 ">Updated At</th>
+              <th className="px-2 py-1.5 ">Accessory Name</th>
+              <th className="px-2 py-1.5 ">Category</th>
               <th className="px-2 py-1.5 ">Description</th>
-              <th className="px-2 py-1.5 ">Status</th>
-              <th className="px-2 py-1.5  hidden md:table-cell">Created By</th>
-              <th className="px-2 py-1.5">Actions</th>
+              {/* <th className="px-2 py-1.5 ">Qty</th> */}
+              <th className="px-2 py-1.5 ">Price</th>
+              <th className="px-2 py-1.5 ">Inward Qty</th>
+              <th className="px-2 py-1.5 ">Stock Qty</th>
+              {/* <th className="px-2 py-1.5 "></th> */}
+              <th className="px-2 py-1.5 ">Created By</th>
+              <th className="px-2 py-1.5 ">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={uomTableHeaders}
+                columns={Array(11).fill({})}
               />
             ) : (
               <>
-                {uoms.map((uom, index) => (
+                {accessories.map((accessory, index) => (
                   <tr
-                    key={uom._id}
-                    className="border-t text-[11px] border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
+                    key={accessory._id}
+                    className="border-t text-[11px] border-primary hover:bg-gray-50 whitespace-nowrap"
                   >
-                    <td className="px-2 border-r border-[#d8b76a]">
+                    <td className="px-2 border-r border-primary">
                       {Number(pagination.currentPage - 1) *
                         Number(pagination.limit) +
                         index +
                         1}
                     </td>
-                    <td className="px-2 hidden md:table-cell  border-r border-[#d8b76a]">
-                      {new Date(uom.createdAt).toLocaleString("en-IN", {
+                    <td className="px-2 hidden md:table-cell  border-r border-primary">
+                      {new Date(accessory.createdAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
@@ -231,8 +222,8 @@ const UomMaster = () => {
                         hour12: true,
                       })}
                     </td>
-                    <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
-                      {new Date(uom.updatedAt).toLocaleString("en-IN", {
+                    <td className="px-2  hidden md:table-cell border-r border-primary">
+                      {new Date(accessory.updatedAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
@@ -241,38 +232,47 @@ const UomMaster = () => {
                         hour12: true,
                       })}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {uom.unitName}
+                    <td className="px-2 border-r border-primary">
+                      {accessory.accessory.accessoryName || "-"}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {uom.unitDescription || "-"}
+                    <td className="px-2 border-r border-primary">
+                      {accessory.accessory.category || "-"}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      <Toggle
-                        checked={uom.status}
-                        onChange={() => handleToggleStatus(uom._id, uom.status)}
-                      />
+                    <td className="px-2 border-r border-primary">
+                      {accessory.accessory.description || "-"}
                     </td>
-                    <td className="px-2  hidden md:table-cell border-r border-[#d8b76a]">
-                      {uom.createdBy?.fullName || "-"}
+                    {/* <td className="px-2 border-r border-primary">
+                      {accessory.qty ?? "-"}
+                    </td> */}
+                    <td className="px-2 border-r border-primary">
+                      ₹{accessory.accessory.price ?? "-"}
                     </td>
-                    <td className="px-2 mt-1.5 flex gap-3 text-sm text-[#d8b76a]">
-                      {hasPermission("UOM", "update") ? (
+                    <td className="px-2 border-r border-primary">
+                      {accessory.inwardQty || "-"}
+                    </td>
+                    <td className="px-2 border-r border-primary">
+                      {accessory.accessory.stockQty || "-"}
+                    </td>
+                    <td className="px-2  hidden md:table-cell border-r border-primary">
+                      {accessory.createdBy?.fullName || "-"}
+                    </td>
+                    <td className="px-2 mt-1.5 flex gap-3 text-sm text-primary">
+                      {hasPermission("Accessories List", "update") ? (
                         <FiEdit
                           data-tooltip-id="statusTip"
                           data-tooltip-content="Edit"
-                          className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
-                          onClick={() => setEditUom(uom)}
+                          className="cursor-pointer text-primary hover:text-blue-600"
+                          onClick={() => setEditAccessory(accessory)}
                         />
                       ) : (
                         "-"
                       )}
-                      {hasPermission("UOM", "delete") ? (
+                      {hasPermission("Accessories List", "delete") ? (
                         <FiTrash2
                           data-tooltip-id="statusTip"
                           data-tooltip-content="Delete"
-                          className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                          onClick={() => handleDelete(uom._id)}
+                          className="cursor-pointer text-primary hover:text-red-600"
+                          onClick={() => handleDelete(accessory._id)}
                         />
                       ) : (
                         "-"
@@ -290,10 +290,10 @@ const UomMaster = () => {
                     </td>
                   </tr>
                 ))}
-                {uoms.length === 0 && (
+                {accessories.length === 0 && (
                   <tr>
-                    <td colSpan="8" className="text-center py-4 text-gray-500">
-                      No UOMs found.
+                    <td colSpan="10" className="text-center py-4 text-gray-500">
+                      No Accessories found.
                     </td>
                   </tr>
                 )}
@@ -303,11 +303,11 @@ const UomMaster = () => {
         </table>
       </div>
 
-      {editUom && (
-        <EditUomModal
-          uom={editUom}
-          onClose={() => setEditUom(null)}
-          onUpdated={fetchUOMs}
+      {editAccessory && (
+        <UpdateAccessories
+          accessory={editAccessory}
+          onClose={() => setEditAccessory(null)}
+          onUpdated={fetchAccessories}
         />
       )}
 
@@ -318,15 +318,15 @@ const UomMaster = () => {
         totalResults={pagination.totalResults}
         onEntriesChange={(limit) => {
           setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-          fetchUOMs(1, limit);
+          fetchAccessories(1, limit);
         }}
         onPageChange={(page) => {
           setPagination((prev) => ({ ...prev, currentPage: page }));
-          fetchUOMs(page, pagination.limit);
+          fetchAccessories(page, pagination.limit);
         }}
       />
     </div>
   );
 };
 
-export default UomMaster;
+export default AccessoriesInward;

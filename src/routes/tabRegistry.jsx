@@ -30,6 +30,10 @@ import Settings from "../components/settings/Settings";
 import ProductionList from "../components/productionList/ProductionList";
 import MaterialConsumption from "../components/materialConsumption/MaterialConsumption";
 import QuotationMaster from "../components/quotationMaster/QuotationMaster";
+import AccessoriesInward from "../components/machineAccessories/accessoriesInward/AccessoriesInward";
+import AccessoriesIssue from "../components/machineAccessories/accessoriesIssue/AccessoriesIssue";
+import AccessoriesReceive from "../components/machineAccessories/accessoriesReceive/AccessoriesReceive";
+import AccessoriesList from "../components/machineAccessories/accessoriesList/AccessoriesList";
 
 const registry = new Map([
   ["/dashboard", Dash],
@@ -51,6 +55,10 @@ const registry = new Map([
   ["/inside-company/stitching", Stitching],
   ["/inside-company/quality-check", QualityCheck],
   ["/outside-company", OutsideFactory],
+  ["/accessories-inward", AccessoriesInward],
+  ["/accessories-issue", AccessoriesIssue],
+  ["/accessories-receive", AccessoriesReceive],
+  ["/accessories-list", AccessoriesList],
   ["/master-users", MasterUsers],
   ["/uom-master", UomMaster],
   ["/role-master", RoleMaster],
