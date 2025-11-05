@@ -16,6 +16,12 @@ import { useRef } from "react";
 
 import { debounce } from "lodash";
 
+import {
+  generateEnvelopePdf,
+  generateEnvelopePdfWithoutBG,
+} from "./generateEnvelopePdf"; // adjust path if needed
+import { FiPrinter } from "react-icons/fi";
+
 const CustomerMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
 
@@ -26,6 +32,30 @@ const CustomerMaster = ({ isOpen }) => {
   const [expandedRow, setExpandedRow] = useState(null);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [expandedCustomerId, setExpandedCustomerId] = useState(null);
+
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [previewCustomer, setPreviewCustomer] = useState(null);
+  const [loadingPdf, setLoadingPdf] = useState(false);
+  const handlePreviewEnvelope = async (customer) => {
+    setLoadingPdf(true);
+    try {
+      const { url } = await generateEnvelopePdf(customer, "/env.pdf");
+      setPdfUrl(url);
+      setPreviewCustomer(customer);
+    } catch (err) {
+      toast.error("Failed to generate envelope");
+    } finally {
+      setLoadingPdf(false);
+    }
+  };
+
+  const handlePrintEnvelope = async () => {
+    const { url } = await generateEnvelopePdfWithoutBG(previewCustomer, "");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${previewCustomer.customerName || "Receipt"}.pdf`; // <-- custom filename here
+    a.click();
+  };
 
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -84,18 +114,6 @@ const CustomerMaster = ({ isOpen }) => {
     if (page < 1 || page > pagination.totalPages) return;
     fetchCustomers(page);
   };
-
-  // const filtered = customers.filter(
-  //   (c) =>
-  //     c.customerName?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.customerCode?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.aliasName?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.natureOfBusiness?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.city?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.state?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.country?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.postalCode?.includes(search)
-  // );
 
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === true ? false : true;
@@ -312,7 +330,12 @@ const CustomerMaster = ({ isOpen }) => {
                               />
                             ) : (
                               "-"
-                            )}
+                            )}{" "}
+                            <FiPrinter
+                              onClick={() => handlePreviewEnvelope(c)}
+                              className="cursor-pointer text-[#d8b76a] hover:text-green-600"
+                              title="Print Envelope"
+                            />
                           </td>
                         </tr>
                         {expandedCustomerId === c._id && (
@@ -365,6 +388,54 @@ const CustomerMaster = ({ isOpen }) => {
             fetchCustomers(page, pagination.limit);
           }}
         />
+        {pdfUrl && previewCustomer && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl h-[90vh] sm:h-[85vh] flex flex-col relative">
+              {/* Close Button */}
+              <button
+                className="absolute top-2 right-2 text-gray-600 hover:text-red-500 text-2xl sm:text-xl"
+                onClick={() => {
+                  setPdfUrl(null);
+                  setPreviewCustomer(null);
+                }}
+              >
+                ✕
+              </button>
+
+              {/* Header */}
+              <div className="px-4 sm:px-6 py-3 border-b">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-800 text-center sm:text-left">
+                  Envelope Preview — {previewCustomer.customerName}
+                </h2>
+              </div>
+
+              {/* PDF Preview Area */}
+              <div className="flex-1 overflow-hidden p-2 sm:p-4">
+                {loadingPdf ? (
+                  <div className="flex items-center justify-center h-full text-gray-500 text-sm sm:text-base">
+                    Generating PDF...
+                  </div>
+                ) : (
+                  <iframe
+                    src={pdfUrl}
+                    title="Envelope Preview"
+                    className="w-full h-full border rounded-md"
+                  />
+                )}
+              </div>
+
+              {/* Footer with Print Button */}
+              <div className="px-4 sm:px-6 py-3 border-t flex justify-center sm:justify-end">
+                <button
+                  onClick={handlePrintEnvelope}
+                  className="bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-5 py-2 rounded-md text-sm sm:text-base transition-all duration-150"
+                >
+                  Print
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
