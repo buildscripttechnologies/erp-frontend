@@ -542,6 +542,20 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
 
             <div className="flex flex-col">
               <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                Sample No
+              </label>
+              <input
+                type="text"
+                placeholder="Sample No"
+                name="sampleNo"
+                className="p-2 border border-primary  rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                value={form.sampleNo}
+                // onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
+                onChange={(e) => handleFormChange(e)}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                 Order Qty
               </label>
               <input

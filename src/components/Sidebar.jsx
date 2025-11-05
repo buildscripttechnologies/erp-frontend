@@ -6,6 +6,7 @@ import {
   FiLayers,
   FiUsers,
   FiLogOut,
+  FiTool,
 } from "react-icons/fi";
 import {
   FaAngleDown,
@@ -233,6 +234,40 @@ export function Sidebar({ isOpen }) {
           icon: LuMapPinXInside,
           path: "/outside-company",
           module: "Outside Company",
+          action: "read",
+        },
+      ],
+    },
+    {
+      icon: FiTool,
+      label: "Machine Accessories",
+      subMenu: [
+        {
+          label: "Accessories Inward",
+          icon: TbTruckDelivery,
+          module: "Accessories Inward",
+          path: "/accessories-inward",
+          action: "read",
+        },
+        {
+          icon: BiExport,
+          label: "Accessories Issue",
+          module: "Accessories Issue",
+          path: "/accessories-issue",
+          action: "read",
+        },
+        {
+          icon: BiImport,
+          label: "Accessories Receive",
+          module: "Accessories Receive",
+          path: "/accessories-receive",
+          action: "read",
+        },
+        {
+          icon: FaListAlt,
+          label: "Accessories List",
+          module: "Accessories List",
+          path: "/accessories-list",
           action: "read",
         },
       ],

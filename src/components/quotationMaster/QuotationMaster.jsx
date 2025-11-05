@@ -167,7 +167,7 @@ const QuotationMaster = ({ isOpen }) => {
       const a = document.createElement("a");
       a.href = blobUrl;
       a.download = `${
-        bomData.qNo + "-" + bomData.productName || "Quotation"
+        bomData.qNo + "-" + bomData.party?.customerName || "Quotation"
       }.pdf`; // <-- custom filename here
       a.click();
     } catch (err) {
@@ -226,16 +226,14 @@ const QuotationMaster = ({ isOpen }) => {
                   <th className="px-[8px] py-1.5 ">#</th>
                   <th className="px-[8px] ">Created At</th>
                   <th className="px-[8px] ">Updated At</th>
-                  <th className="px-[8px] ">Sample No</th>
+
                   <th className="px-[8px] ">Quotation No.</th>
                   <th className="px-[8px] ">Party Name</th>
-                  <th className="px-[8px] ">Product Name</th>
-                  <th className="px-[8px] ">Order Qty</th>
-                  <th className="px-[8px] ">Product Size</th>
+
                   <th className="px-[8px] ">Date</th>
-                  {/* <th className="px-[8px] ">Status</th> */}
+
                   <th className="px-[8px] ">Created By</th>
-                  <th className="px-[8px] ">Attachments</th>
+
                   <th className="px-[8px] ">Actions</th>
                 </tr>
               </thead>
@@ -243,7 +241,7 @@ const QuotationMaster = ({ isOpen }) => {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={Array(13).fill({})}
+                    columns={Array(8).fill({})}
                   />
                 ) : (
                   <>
@@ -282,26 +280,12 @@ const QuotationMaster = ({ isOpen }) => {
                               hour12: true,
                             })}
                           </td>
-                          <td className="px-[8px] border-r border-primary  ">
-                            {b.sampleNo || "-"}
-                          </td>
+
                           <td className="px-[8px] border-r border-primary  ">
                             {b.qNo || "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary  ">
-                            {b.partyName || "-"}
-                          </td>
-
-                          <td className="px-[8px] border-r border-primary  ">
-                            {b.productName || "-"}
-                          </td>
-                          <td className="px-[8px] border-r border-primary  ">
-                            {b.orderQty || "-"}
-                          </td>
-                          <td className="px-[8px] border-r border-primary ">
-                            {`${b.height ?? 0} x ${b.width ?? 0} x ${
-                              b.depth ?? 0
-                            }`}
+                            {b.party?.customerName || "-"}
                           </td>
 
                           <td className="px-[8px] border-r border-primary ">
@@ -311,36 +295,11 @@ const QuotationMaster = ({ isOpen }) => {
                               year: "numeric",
                             })}
                           </td>
-                          {/* <td className="px-[8px] border-r border-primary ">
-                            <Toggle
-                              checked={b.isActive}
-                              onChange={() =>
-                                handleToggleStatus(b._id, b.isActive)
-                              }
-                            />
-                          </td> */}
+
                           <td className="px-[8px] border-r border-primary ">
                             {b.createdBy?.fullName || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-primary ">
-                            {Array.isArray(b.file) && b.file.length > 0 ? (
-                              <button
-                                onClick={() => setOpenAttachments(b.file)}
-                                className="cursor-pointer hover:text-primary hover:underline text-center items-center justify-center"
-                              >
-                                View
-                              </button>
-                            ) : (
-                              "-"
-                            )}
 
-                            {openAttachments && (
-                              <AttachmentsModal2
-                                attachments={openAttachments}
-                                onClose={() => setOpenAttachments(null)}
-                              />
-                            )}
-                          </td>
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-primary">
                             {expandedBOMId === b._id && downloading ? (
                               <PulseLoader size={4} color="#d8b76a" />
@@ -395,7 +354,7 @@ const QuotationMaster = ({ isOpen }) => {
         </div>
         {editingBOM && (
           <UpdateQuotation
-            bom={editingBOM}
+            quotationData={editingBOM}
             onClose={() => setEditingBOM(null)}
             onSuccess={() => {
               fetchQuotations(pagination.currentPage); // re-fetch or refresh list

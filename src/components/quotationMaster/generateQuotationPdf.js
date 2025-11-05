@@ -98,17 +98,17 @@ export const generateQuotationPdf = async (
         { content: "PAN:", styles: { fontStyle: "bold" } },
         companyDetails.pan,
         { content: "PAN:", styles: { fontStyle: "bold" } },
-        co?.party?.pan || "",
+        co?.party?.pan || "-",
       ],
       [
         { content: "GST:", styles: { fontStyle: "bold" } },
         companyDetails.gst,
         { content: "Customer GST:", styles: { fontStyle: "bold" } },
-        co?.party?.gst || "",
+        co?.party?.gst || "-",
       ],
       [
         { content: "Payment Terms:", styles: { fontStyle: "bold" } },
-        co?.party?.paymentTerms || "",
+        co?.party?.paymentTerms || "-",
         { content: "Date:", styles: { fontStyle: "bold" } },
         new Date(co?.deliveryDate || Date.now()).toLocaleDateString("en-GB", {
           day: "2-digit",
@@ -139,21 +139,51 @@ export const generateQuotationPdf = async (
   let tableStartY = doc.lastAutoTable.finalY + 10;
 
   // ---- Product Details ----
+  // ---- All Quotations Table ----
+  const allRows = [];
+  let totalTaxable = 0;
+  let totalGst = 0;
+  let totalGrand = 0;
+
+  // Loop through each quotation
+  (co?.quotations || []).forEach((q, idx) => {
+    const taxable = q?.totalD2CRate || 0;
+    const gstRate = q?.gst || 0;
+    const gstAmt = (taxable * gstRate) / 100;
+    const grand = taxable + gstAmt;
+
+    totalTaxable += taxable;
+    totalGst += gstAmt;
+    totalGrand += grand;
+
+    allRows.push([
+      idx + 1,
+      q.productName || "-",
+      q.description || "-",
+      q.hsnOrSac || "-",
+      q.orderQty || 0,
+      q.gst || "-",
+      q.unitD2CRate?.toFixed?.(2) || "0.00",
+      taxable.toFixed(2),
+    ]);
+  });
+
   autoTable(doc, {
     startY: tableStartY,
     margin: { left: margin, right: margin },
-    head: [["No", "ITEM NAME", "DESCRIPTION", "HSN", "QTY", "RATE", "AMOUNT"]],
-    body: [
+    head: [
       [
-        "1",
-        co?.productName || "",
-        co?.product?.description || "",
-        co?.hsnOrSac || "",
-        co?.orderQty || 0,
-        co?.unitD2CRate?.toFixed?.(2) || "0.00",
-        co?.totalD2CRate?.toFixed?.(2) || "0.00",
+        "No",
+        "ITEM NAME",
+        "DESCRIPTION",
+        "HSN",
+        "QTY",
+        "GST (%)",
+        "RATE",
+        "AMOUNT",
       ],
     ],
+    body: allRows,
     theme: "grid",
     styles: { fontSize: 8, textColor: colors.text, fillColor: false },
     headStyles: {
@@ -165,28 +195,76 @@ export const generateQuotationPdf = async (
 
   let finalY = doc.lastAutoTable.finalY + 5;
 
-  // ---- GST Summary ----
-  const gstSummary = getGstSummary(co, co?.party?.state, "GJ");
-  const gstRate = co?.product?.gst || 0;
-  const summary = gstSummary[gstRate] || {
-    igst: 0,
-    cgst: 0,
-    sgst: 0,
-    gstAmount: 0,
-  };
+  // ---- GST Summary (Bulk Quotations) ----
   const halfWidth = (pageWidth - margin * 2) / 2;
 
+  // Calculate full GST summary
+  const gstSummary = getGstSummary(
+    co?.quotations || [],
+    co?.party?.state,
+    "GJ"
+  );
+
+  // Sum all slab amounts for totals
+  let totalIGST = 0;
+  let totalCGST = 0;
+  let totalSGST = 0;
+  Object.values(gstSummary).forEach((slab) => {
+    totalIGST += slab.igst;
+    totalCGST += slab.cgst;
+    totalSGST += slab.sgst;
+  });
+
+  // Render GST Table (all slabs + total row)
   autoTable(doc, {
     startY: finalY,
     margin: { left: margin },
     tableWidth: halfWidth,
     head: [["GST Slab", "IGST", "CGST", "SGST"]],
     body: [
+      ...Object.values(gstSummary).map((slab) => [
+        `${slab.gstRate}%`,
+        slab.igst.toFixed(2),
+        slab.cgst.toFixed(2),
+        slab.sgst.toFixed(2),
+      ]),
       [
-        `${gstRate}%`,
-        summary?.igst?.toFixed?.(2) || "0.00",
-        summary?.cgst?.toFixed?.(2) || "0.00",
-        summary?.sgst?.toFixed?.(2) || "0.00",
+        { content: "Total", styles: { fontStyle: "bold" } },
+        { content: totalIGST.toFixed(2), styles: { fontStyle: "bold" } },
+        { content: totalCGST.toFixed(2), styles: { fontStyle: "bold" } },
+        { content: totalSGST.toFixed(2), styles: { fontStyle: "bold" } },
+      ],
+    ],
+    theme: "grid",
+    styles: { fontSize: 8, textColor: colors.text, fillColor: false },
+    headStyles: {
+      fillColor: colors.gold,
+      textColor: colors.text,
+      fontStyle: "bold",
+    },
+  });
+
+  let leftTableY = doc.lastAutoTable.finalY;
+
+  // ---- Totals (Right Side) ----
+  autoTable(doc, {
+    startY: finalY,
+    margin: { left: margin + halfWidth + 5 },
+    tableWidth: halfWidth - 5,
+    head: [["Description", "Amount"]],
+    body: [
+      ["Taxable Amount", totalTaxable.toFixed(2)],
+      ["IGST", totalIGST.toFixed(2)],
+      ["CGST", totalCGST.toFixed(2)],
+      ["SGST", totalSGST.toFixed(2)],
+      [
+        { content: "Grand Total", styles: { fontStyle: "bold" } },
+        {
+          content: (totalTaxable + totalIGST + totalCGST + totalSGST).toFixed(
+            2
+          ),
+          styles: { fontStyle: "bold" },
+        },
       ],
     ],
     theme: "grid",
@@ -198,10 +276,7 @@ export const generateQuotationPdf = async (
     },
   });
 
-  let leftTableY = doc.lastAutoTable.finalY;
-
   // ---- Amount in Words ----
-  const grandTotal = (co?.totalD2CRate || 0) + (summary?.gstAmount || 0);
   autoTable(doc, {
     startY: leftTableY + 3,
     margin: { left: margin },
@@ -209,13 +284,14 @@ export const generateQuotationPdf = async (
     body: [
       [
         {
-          content: `[ Amount in Words: ${toIndianWords(grandTotal)} ]`,
+          content: `[ Amount in Words: ${toIndianWords(totalGrand)} ]`,
           styles: { fontSize: 10, fontStyle: "bold", fillColor: false },
         },
       ],
     ],
     theme: "plain",
   });
+
   // ---- Bank Details Box ----
   const bankDetails = companyDetails.bankDetails[0] || {};
   const qrX = margin;
@@ -231,7 +307,7 @@ export const generateQuotationPdf = async (
 
   // Left: QR code
   const upiId = bankDetails.upiId || "";
-  const amount = grandTotal.toFixed(2);
+  const amount = totalGrand.toFixed(2);
 
   // Generate UPI QR content
   const upiQRText = `upi://pay?pa=${upiId}&pn=${companyDetails.companyName}&mc=&tid=&tr=&tn=Payment&am=${amount}&cu=INR`;
@@ -263,13 +339,13 @@ export const generateQuotationPdf = async (
     tableWidth: halfWidth - 5,
     head: [["Description", "Amount"]],
     body: [
-      ["Taxable Amount", (co?.totalD2CRate || 0).toFixed(2)],
-      ["IGST", summary?.igst?.toFixed?.(2) || "0.00"],
-      ["CGST", summary?.cgst?.toFixed?.(2) || "0.00"],
-      ["SGST", summary?.sgst?.toFixed?.(2) || "0.00"],
+      ["Taxable Amount", totalTaxable.toFixed(2)],
+      ["IGST", totalIGST.toFixed(2)],
+      ["CGST", totalCGST.toFixed(2)],
+      ["SGST", totalSGST.toFixed(2)],
       [
         { content: "Grand Total", styles: { fontStyle: "bold" } },
-        { content: grandTotal.toFixed(2), styles: { fontStyle: "bold" } },
+        { content: totalGrand.toFixed(2), styles: { fontStyle: "bold" } },
       ],
     ],
     theme: "grid",
@@ -435,37 +511,42 @@ function formatAddressWithLines(obj = {}) {
   return lines.slice(0, 3).join("\n");
 }
 
-function getGstSummary(co, customerState, companyState = "GJ") {
+function getGstSummary(quotations = [], customerState, companyState = "GJ") {
   const summary = {};
 
-  // GST rate for this order
-  const gstRate = co?.product?.gst || 0;
+  quotations.forEach((q) => {
+    // Extract rate safely
+    const gstRate = Number(q?.productDetails?.[0]?.gst || q?.gst || 0);
+    const taxable = Number(q?.totalD2CRate || q?.taxable || 0);
+    const gstAmount = (taxable * gstRate) / 100;
 
-  // Calculate GST amount from total rate
-  const gstAmount = (co.totalD2CRate * gstRate) / 100;
+    if (!summary[gstRate]) {
+      summary[gstRate] = {
+        gstRate,
+        taxable: 0,
+        gstAmount: 0,
+        igst: 0,
+        cgst: 0,
+        sgst: 0,
+      };
+    }
 
-  // Initialize summary object for this GST slab
-  summary[gstRate] = {
-    gstRate: gstRate,
-    taxable: co.totalD2CRate || 0,
-    gstAmount: gstAmount,
-    igst: 0,
-    cgst: 0,
-    sgst: 0,
-  };
+    summary[gstRate].taxable += taxable;
+    summary[gstRate].gstAmount += gstAmount;
+  });
 
-  // Split GST according to state (intra-state or inter-state)
-  if (customerState === companyState) {
-    // Intra-state → CGST + SGST
-    summary[gstRate].cgst = gstAmount / 2;
-    summary[gstRate].sgst = gstAmount / 2;
-    summary[gstRate].igst = 0;
-  } else {
-    // Inter-state → IGST only
-    summary[gstRate].igst = gstAmount;
-    summary[gstRate].cgst = 0;
-    summary[gstRate].sgst = 0;
-  }
+  // Split tax based on intra/inter state
+  Object.values(summary).forEach((slab) => {
+    if (customerState === companyState) {
+      slab.cgst = slab.gstAmount / 2;
+      slab.sgst = slab.gstAmount / 2;
+      slab.igst = 0;
+    } else {
+      slab.igst = slab.gstAmount;
+      slab.cgst = 0;
+      slab.sgst = 0;
+    }
+  });
 
   return summary;
 }
