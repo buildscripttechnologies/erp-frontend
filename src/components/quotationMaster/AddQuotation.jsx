@@ -468,6 +468,16 @@ const AddQuotation = ({ onClose, onSuccess, coData }) => {
                         return updated;
                       });
                     }}
+                    styles={{
+                      control: (base, state) => ({
+                        ...base,
+                        borderColor: "var(--color-primary)",
+                        boxShadow: state.isFocused
+                          ? "0 0 0 1px var(--color-primary)"
+                          : "none",
+                        "&:hover": { borderColor: "var(--color-primary)" },
+                      }),
+                    }}
                   />
                 </div>
 
