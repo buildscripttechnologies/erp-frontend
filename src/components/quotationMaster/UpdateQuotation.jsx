@@ -234,6 +234,8 @@ const UpdateQuotation = ({ onClose, onSuccess, quotationData }) => {
         productName: "",
         description: "",
         sampleNo: "",
+        hsnOrSac: "",
+        gst: 0,
         orderQty: 0,
         date: new Date().toISOString().split("T")[0],
         deliveryDate: "",
@@ -448,6 +450,8 @@ const UpdateQuotation = ({ onClose, onSuccess, quotationData }) => {
                             selectedProduct.sampleNo ||
                             selectedProduct.skuCode ||
                             "",
+                          hsnOrSac: selectedProduct.hsnOrSac,
+                          gst: selectedProduct.gst,
                           height: Number(selectedProduct.height) || 0,
                           width: Number(selectedProduct.width) || 0,
                           depth: Number(selectedProduct.depth) || 0,
