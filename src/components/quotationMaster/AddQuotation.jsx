@@ -363,7 +363,7 @@ const AddQuotation = ({ onClose, onSuccess, coData }) => {
             >
               <div className="flex justify-between items-center mb-2">
                 <h3 className="font-semibold text-sm text-black">
-                  Quotation {index + 1}
+                  Item {index + 1}
                 </h3>
                 {form.length > 1 && (
                   <button

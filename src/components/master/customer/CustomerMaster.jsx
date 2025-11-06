@@ -231,7 +231,7 @@ const CustomerMaster = ({ isOpen }) => {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={Array(16).fill({})}
+                    columns={Array(17).fill({})}
                   />
                 ) : (
                   <>
