@@ -198,7 +198,8 @@ const AccessoriesIssue = () => {
               <th className="px-2 py-1.5 ">Department</th>
               <th className="px-2 py-1.5 ">Issue Reason</th>
               <th className="px-2 py-1.5 ">Received By</th>
-              <th className="px-2 py-1.5 ">Created By</th>
+              <th className="px-2 py-1.5 ">Supervisor</th>
+              <th className="px-2 py-1.5 ">Issued By</th>
               <th className="px-2 py-1.5 ">Actions</th>
             </tr>
           </thead>
@@ -206,7 +207,7 @@ const AccessoriesIssue = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(10).fill({})}
+                columns={Array(11).fill({})}
               />
             ) : (
               <>
@@ -263,6 +264,9 @@ const AccessoriesIssue = () => {
                       </td>
                       <td className="px-2 border-r border-primary">
                         {accessory.receivedBy || "-"}
+                      </td>
+                      <td className="px-2 border-r border-primary">
+                        {accessory.supervisor || "-"}
                       </td>
                       <td className="px-2  hidden md:table-cell border-r border-primary">
                         {accessory.createdBy?.fullName || "-"}

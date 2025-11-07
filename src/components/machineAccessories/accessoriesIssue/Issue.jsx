@@ -22,6 +22,7 @@ const Issue = ({ onClose, onAdded }) => {
   const [department, setDepartment] = useState([]);
   const [issueReason, setIssueReason] = useState([]);
   const [receivedBy, setReceivedBy] = useState([]);
+  const [supervisor, setSupervisor] = useState([]);
   const [accessories, setAccessories] = useState([]);
 
   useEffect(() => {
@@ -93,6 +94,7 @@ const Issue = ({ onClose, onAdded }) => {
         department,
         issueReason,
         receivedBy,
+        supervisor,
       };
 
       const res = await axios.post("/accessory-issue/issue", payload);
@@ -170,6 +172,19 @@ const Issue = ({ onClose, onAdded }) => {
                 className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
               />
             </div>
+            <div>
+              <label className="block text-sm font-semibold text-black mb-1">
+                Supervisor
+              </label>
+              <input
+                type="text"
+                name="supervisor"
+                placeholder="Supervisor"
+                value={supervisor}
+                onChange={(e) => setSupervisor(e.target.value)}
+                className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+              />
+            </div>
           </div>
           {formList.map((item, index) => (
             <div
@@ -188,12 +203,19 @@ const Issue = ({ onClose, onAdded }) => {
                   }
                   placeholder="Select Accessory"
                   isSearchable
+                  menuPortalTarget={document.body}
                   styles={{
                     control: (base, state) => ({
                       ...base,
                       borderColor: "#d8b76a",
                       boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
                       "&:hover": { borderColor: "#d8b76a" },
+                    }),
+                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    menu: (base) => ({
+                      ...base,
+                      width: "max-content",
+                      minWidth: "100%",
                     }),
                   }}
                 />

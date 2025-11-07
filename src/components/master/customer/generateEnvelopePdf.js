@@ -229,7 +229,7 @@ export const generateEnvelopePdf = async (data = {}, designPdfPath = "") => {
     country = "",
     // ✅ Added mobile
   } = data;
-  let mobile = data.contactPersons[0].phone;
+  let mobile = data.contactPersons[0].phone || "-";
   const doc = new jsPDF("portrait", "mm", "a4");
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();

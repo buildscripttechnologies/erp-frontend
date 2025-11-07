@@ -264,7 +264,7 @@ const AccessoriesReceive = () => {
                           data-tooltip-id="statusTip"
                           data-tooltip-content="Edit"
                           className="cursor-pointer text-primary hover:text-blue-600"
-                          onClick={() => setEditAccessory(accessory)}
+                          // onClick={() => setEditAccessory(accessory)}
                         />
                       ) : (
                         "-"
@@ -274,7 +274,7 @@ const AccessoriesReceive = () => {
                           data-tooltip-id="statusTip"
                           data-tooltip-content="Delete"
                           className="cursor-pointer text-primary hover:text-red-600"
-                          onClick={() => handleDelete(accessory._id)}
+                          // onClick={() => handleDelete(accessory._id)}
                         />
                       ) : (
                         "-"

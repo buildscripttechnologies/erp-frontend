@@ -48,7 +48,7 @@ export const generateIssueSlip = async (
       [
         { content: "Company Name", styles: { fontStyle: "bold" } },
         companyDetails.companyName || "",
-        { content: "Issue No:", styles: { fontStyle: "bold" } },
+        { content: "Slip No:", styles: { fontStyle: "bold" } },
         accessory.issueNo || "",
       ],
       // Row 2
@@ -153,17 +153,29 @@ export const generateIssueSlip = async (
     body: [
       // Row 1
       [
-        { content: "Reason For Issue:", styles: { fontStyle: "bold" } },
-        accessory.issueReason || "-",
-        { content: "Issued By:", styles: { fontStyle: "bold" } },
-        accessory.createdBy?.fullName || "-",
+        {
+          content: `Reason For Issue: ${accessory.issueReason}`,
+          styles: { fontStyle: "bold" },
+          colSpan: 3,
+        },
       ],
       // Row 2
       [
+        { content: "Issued By:", styles: { fontStyle: "bold" } },
+
         { content: "Received By:", styles: { fontStyle: "bold" } },
-        accessory.receivedBy || "",
+
         { content: " Supervisor:", styles: { fontStyle: "bold" } },
-        "" || "",
+      ],
+      [
+        {
+          content: accessory.createdBy?.fullName,
+          styles: { fontStyle: "bold" },
+        },
+
+        { content: accessory.receivedBy, styles: { fontStyle: "bold" } },
+
+        { content: accessory.supervisor, styles: { fontStyle: "bold" } },
       ],
     ],
     styles: {
@@ -182,10 +194,9 @@ export const generateIssueSlip = async (
       lineWidth: 0.1,
     },
     columnStyles: {
-      0: { cellWidth: 28 }, // Label
-      1: { cellWidth: 71 }, // Value
-      2: { cellWidth: 28 }, // Label
-      3: { cellWidth: 71 }, // Value
+      //   0: { cellWidth: 28 }, // Label
+      //   2: { cellWidth: 28 }, // Label
+      //   3: { cellWidth: 71 }, // Value
     },
   });
 

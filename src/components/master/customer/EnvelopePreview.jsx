@@ -1,26 +1,28 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
+import { FaRegArrowAltCircleRight } from "react-icons/fa";
+
+import { BeatLoader } from "react-spinners";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
-export default function EnvelopePreview({
+export default function PreviewEnvelope({
   pdfUrl,
+  previewCustomer,
   onClose,
-  customer,
-  handlePrint,
+  onPrint,
 }) {
+  // const [pdfUrl, setPdfUrl] = useState(null);
+
   const containerRef = useRef(null);
   const pageRefs = useRef({});
   const [zoom, setZoom] = useState(1);
-  const [loading, setLoading] = useState(false);
-
-  // ✅ Render each PDF page onto a canvas (no iframe, no borders)
   const renderPage = useCallback(
     async (pdf, pageNum, zoomLevel = zoom) => {
       let canvas = pageRefs.current[pageNum];
       if (!canvas) {
         canvas = document.createElement("canvas");
-        canvas.className = "rounded w-full mb-2";
+        canvas.className = "rounded w-full shadow-sm mb-2";
         containerRef.current.appendChild(canvas);
         pageRefs.current[pageNum] = canvas;
       }
@@ -45,65 +47,52 @@ export default function EnvelopePreview({
     [zoom]
   );
 
-  // 🧩 Load and render the PDF file
   useEffect(() => {
     if (!pdfUrl || !containerRef.current) return;
+    let pdfDoc = null;
 
     const loadPDF = async () => {
-      setLoading(true);
       try {
         const loadingTask = pdfjsLib.getDocument(pdfUrl);
-        const pdfDoc = await loadingTask.promise;
-
-        containerRef.current.innerHTML = ""; // clear old canvases
+        pdfDoc = await loadingTask.promise;
         for (let i = 1; i <= pdfDoc.numPages; i++) {
           await renderPage(pdfDoc, i);
         }
       } catch (err) {
-        console.error("Failed to load envelope PDF:", err);
-      } finally {
-        setLoading(false);
+        console.error("Failed to load PDF:", err);
       }
     };
 
     loadPDF();
   }, [pdfUrl, renderPage]);
 
-  if (!pdfUrl) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[90vh] flex flex-col relative overflow-hidden">
-        {/* Close Button */}
+    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="p-4 sm:p-6 fixed inset-0 backdrop-blur-sm w-[95%] sm:max-w-4xl mx-auto rounded shadow-2xl bg-white z-50 max-h-[35vh] sm:max-h-[80vh] overflow-auto my-auto border border-gray-200">
         <button
           onClick={onClose}
-          className="absolute top-2 right-3 text-gray-600 hover:text-red-500 text-2xl sm:text-xl"
+          className="absolute top-5 right-6 text-gray-500 hover:text-red-600 text-2xl font-bold"
         >
-          ✕
+          ×
         </button>
 
-        {/* Header */}
-        <div className="px-4 sm:px-6 py-3 border-b">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-800 text-center sm:text-left">
-            Envelope Preview — {customer?.customerName}
-          </h2>
-        </div>
+        <h2 className="text-sm sm:text-xl font-bold text-primary mb-6">
+          Envelope Preview — {previewCustomer.customerName}
+        </h2>
 
-        {/* PDF Render Area */}
+        {/* PDF Viewer */}
         <div
           ref={containerRef}
-          className="flex-1 overflow-auto p-2 sm:p-4 bg-gray-50 rounded-b-lg"
+          className="w-full sm:h-[55vh] h-[20vh] overflow-hidden border border-gray-300 rounded shadow-inner bg-gray-50 relative touch-pan-y"
         >
-          {loading && (
-            <p className="text-center text-gray-500 mt-20">Rendering PDF...</p>
+          {!pdfUrl && (
+            <p className="text-gray-400 text-center mt-20">Loading PDF...</p>
           )}
         </div>
-
-        {/* Footer */}
-        <div className="px-4 sm:px-6 py-3 border-t flex justify-center sm:justify-end">
+        <div className="px-4 sm:px-6 pt-3 border-t flex justify-center sm:justify-end">
           <button
-            onClick={handlePrint}
-            className="bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-5 py-2 rounded-md text-sm sm:text-base transition-all"
+            onClick={onPrint}
+            className="bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-5 py-2 rounded-md text-sm sm:text-base transition-all duration-150"
           >
             Print
           </button>
