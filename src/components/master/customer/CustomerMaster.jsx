@@ -21,6 +21,7 @@ import {
   generateEnvelopePdfWithoutBG,
 } from "./generateEnvelopePdf"; // adjust path if needed
 import { FiPrinter } from "react-icons/fi";
+import PreviewEnvelope from "./EnvelopePreview";
 
 const CustomerMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -104,7 +105,12 @@ const CustomerMaster = ({ isOpen }) => {
     }
   };
 
-  ScrollLock(showModal || editingCustomer != null);
+  ScrollLock(
+    showModal ||
+      editingCustomer != null ||
+      previewCustomer != null ||
+      pdfUrl != null
+  );
 
   useEffect(() => {
     fetchCustomers();
@@ -389,52 +395,61 @@ const CustomerMaster = ({ isOpen }) => {
           }}
         />
         {pdfUrl && previewCustomer && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl h-[90vh] sm:h-[85vh] flex flex-col relative">
-              {/* Close Button */}
-              <button
-                className="absolute top-2 right-2 text-gray-600 hover:text-red-500 text-2xl sm:text-xl"
-                onClick={() => {
-                  setPdfUrl(null);
-                  setPreviewCustomer(null);
-                }}
-              >
-                ✕
-              </button>
+          // <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+          //   <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl h-[90vh] sm:h-[85vh] flex flex-col relative">
+          //     {/* Close Button */}
+          //     <button
+          //       className="absolute top-2 right-2 text-gray-600 hover:text-red-500 text-2xl sm:text-xl"
+          //       onClick={() => {
+          //         setPdfUrl(null);
+          //         setPreviewCustomer(null);
+          //       }}
+          //     >
+          //       ✕
+          //     </button>
 
-              {/* Header */}
-              <div className="px-4 sm:px-6 py-3 border-b">
-                <h2 className="text-base sm:text-lg font-semibold text-gray-800 text-center sm:text-left">
-                  Envelope Preview — {previewCustomer.customerName}
-                </h2>
-              </div>
+          //     {/* Header */}
+          //     <div className="px-4 sm:px-6 py-3 border-b">
+          //       <h2 className="text-base sm:text-lg font-semibold text-gray-800 text-center sm:text-left">
+          //         Envelope Preview — {previewCustomer.customerName}
+          //       </h2>
+          //     </div>
 
-              {/* PDF Preview Area */}
-              <div className="flex-1 overflow-hidden p-2 sm:p-4">
-                {loadingPdf ? (
-                  <div className="flex items-center justify-center h-full text-gray-500 text-sm sm:text-base">
-                    Generating PDF...
-                  </div>
-                ) : (
-                  <iframe
-                    src={pdfUrl}
-                    title="Envelope Preview"
-                    className="w-full h-full border rounded-md"
-                  />
-                )}
-              </div>
+          //     {/* PDF Preview Area */}
+          //     <div className="flex-1 overflow-hidden p-2 sm:p-4">
+          //       {loadingPdf ? (
+          //         <div className="flex items-center justify-center h-full text-gray-500 text-sm sm:text-base">
+          //           Generating PDF...
+          //         </div>
+          //       ) : (
+          //         <iframe
+          //           src={pdfUrl}
+          //           title="Envelope Preview"
+          //           className="w-full h-full border rounded-md"
+          //         />
+          //       )}
+          //     </div>
 
-              {/* Footer with Print Button */}
-              <div className="px-4 sm:px-6 py-3 border-t flex justify-center sm:justify-end">
-                <button
-                  onClick={handlePrintEnvelope}
-                  className="bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-5 py-2 rounded-md text-sm sm:text-base transition-all duration-150"
-                >
-                  Print
-                </button>
-              </div>
-            </div>
-          </div>
+          //     {/* Footer with Print Button */}
+          //     <div className="px-4 sm:px-6 py-3 border-t flex justify-center sm:justify-end">
+          //       <button
+          //         onClick={handlePrintEnvelope}
+          //         className="bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-5 py-2 rounded-md text-sm sm:text-base transition-all duration-150"
+          //       >
+          //         Print
+          //       </button>
+          //     </div>
+          //   </div>
+          // </div>
+          <PreviewEnvelope
+            pdfUrl={pdfUrl}
+            previewCustomer={previewCustomer}
+            onClose={() => {
+              setPdfUrl(null);
+              setPreviewCustomer(null);
+            }}
+            onPrint={handlePrintEnvelope}
+          />
         )}
       </div>
     </>

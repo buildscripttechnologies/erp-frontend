@@ -119,12 +119,19 @@ const Inward = ({ onClose, onAdded }) => {
                   }
                   placeholder="Select Accessory"
                   isSearchable
+                  menuPortalTarget={document.body}
                   styles={{
                     control: (base, state) => ({
                       ...base,
                       borderColor: "#d8b76a",
                       boxShadow: state.isFocused ? "0 0 0 1px #d8b76a" : "none",
                       "&:hover": { borderColor: "#d8b76a" },
+                    }),
+                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    menu: (base) => ({
+                      ...base,
+                      width: "max-content",
+                      minWidth: "100%",
                     }),
                   }}
                 />

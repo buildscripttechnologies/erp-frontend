@@ -103,6 +103,8 @@ const AddStockModal = ({ onClose, onAdded }) => {
     setLoading(true);
 
     try {
+      console.log("selected item", selectedItem);
+
       const payload = {
         itemId: selectedItem.value,
         itemType: selectedItem.type,
@@ -111,10 +113,10 @@ const AddStockModal = ({ onClose, onAdded }) => {
         damagedQty: damagedQty,
         manualEntries: manualEntries.length > 0 ? manualEntries : undefined,
         qualityApproved,
-        qualityNote: qualityNote,
-        poId: selectedPO._id || null,
+        qualityNote: qualityNote || "",
+        poId: selectedPO?._id || null,
       };
-
+      console.log("payload", payload);
       const res = await axios.post("/stocks/add", payload);
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -275,6 +277,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
                 Stock Qty
               </label>
               <input
+                step="any"
                 type="number"
                 placeholder="Stock Quantity"
                 value={manualEntries.length > 0 ? totalStockQty : stockQty}
@@ -291,6 +294,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
                 Base Qty
               </label>
               <input
+                step="any"
                 type="number"
                 placeholder="Base Quantity"
                 value={baseQty}
@@ -307,6 +311,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
                 Damaged Qty
               </label>
               <input
+                step="any"
                 type="number"
                 placeholder="Damaged Quantity"
                 value={manualEntries.length > 0 ? totalDamagedQty : damagedQty}
@@ -329,6 +334,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
                   Base Qty
                 </label>
                 <input
+                  step="any"
                   type="number"
                   placeholder="Base Quantity"
                   className="w-full p-2 cursor-pointer border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
@@ -347,6 +353,7 @@ const AddStockModal = ({ onClose, onAdded }) => {
                   Damaged Qty
                 </label>
                 <input
+                  step="any"
                   type="number"
                   placeholder="Damaged Quantity"
                   className="w-full p-2 cursor-pointer border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
