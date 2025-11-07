@@ -13,6 +13,10 @@ import { debounce } from "lodash";
 
 import { useRef } from "react";
 import Issue from "./Issue";
+import { FaFileDownload } from "react-icons/fa";
+import { PulseLoader } from "react-spinners";
+import IssueDetails from "./IssueDetails";
+import { generateIssueSlip } from "./generateIssueSlip";
 
 // import AddAccessories from "./AddAccessories";
 // import UpdateAccessories from "./UpdateAccessories";
@@ -32,6 +36,23 @@ const AccessoriesIssue = () => {
   });
   const hasMountedRef = useRef(false);
   ScrollLock(formOpen || editAccessory != null);
+  const [expandedAccessoryId, setExpandedAccessoryId] = useState(null);
+  const [downloading, setDownloading] = useState();
+
+  const [companyDetails, setCompanyDetails] = useState();
+
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const res = await axios.get("/settings/company-details");
+
+        setCompanyDetails(res.data || []);
+      } catch {
+        toast.error("Failed to fetch company details");
+      }
+    };
+    fetchCompanyDetails();
+  }, []);
 
   useEffect(() => {
     if (!hasMountedRef.current) {
@@ -81,13 +102,13 @@ const AccessoriesIssue = () => {
     if (!window.confirm("Are you sure you want to delete this Accessory?"))
       return;
     try {
-      let res = await axios.delete(`/accessories/delete-accessory/${id}`);
+      let res = await axios.delete(`/accessory-issue/delete/${id}`);
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
       }
       if (res.data.status == 200) {
-        toast.success("Accessory deleted");
+        toast.success("Accessory Issue deleted");
         fetchAccessories();
       }
     } catch {
@@ -95,44 +116,34 @@ const AccessoriesIssue = () => {
     }
   };
 
-  const handleToggleStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === true ? false : true;
-    try {
-      const res = await axios.patch(`/accessories/update-accessory/${id}`, {
-        status: newStatus,
-      });
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
-
-      if (res.data.status == 200) {
-        toast.success(`Accessory status updated`);
-
-        // ✅ Update local state without refetch
-        setAccessories((prev) =>
-          prev.map((accessory) =>
-            accessory._id === id
-              ? { ...accessory, status: newStatus }
-              : accessory
-          )
-        );
-      } else {
-        toast.error("Failed to update status");
-      }
-    } catch (err) {
-      toast.error("Failed to update status");
-    }
-  };
-
-  const goToPage = (page) => {
-    if (page < 1 || page > pagination.totalPages) return;
-    fetchAccessories(page);
-  };
-
   useEffect(() => {
     fetchAccessories(1);
   }, []);
+
+  const handleDownload = async (b) => {
+    setDownloading(true);
+    try {
+      const res = await axios.get("/settings/letterpad");
+      const letterpadUrl = res.data.path;
+      const url = await generateIssueSlip(b, letterpadUrl, companyDetails);
+
+      // Open in new tab for preview
+      // window.open(url, "_blank");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Accessory Issue -${
+        b.issueNo || "Accessory Issue Slip"
+      }.pdf`; // <-- custom filename here
+      a.click();
+      // Don’t revoke immediately, or the preview tab will break
+      // Instead, revoke after some delay
+      setTimeout(() => window.URL.revokeObjectURL(url), 60 * 1000);
+    } catch (error) {
+      console.error("Download failed:", error);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
@@ -183,14 +194,10 @@ const AccessoriesIssue = () => {
               <th className="px-2 py-1.5 ">Created At</th>
               <th className="px-2 py-1.5 ">Updated At</th>
               <th className="px-2 py-1.5 ">Issue No</th>
-              <th className="px-2 py-1.5 ">Accessory Name</th>
-              <th className="px-2 py-1.5 ">Category</th>
-              <th className="px-2 py-1.5 ">Description</th>
-              <th className="px-2 py-1.5 ">Price</th>
-              <th className="px-2 py-1.5 ">UOM</th>
-              <th className="px-2 py-1.5 ">Issue Qty</th>
-              <th className="px-2 py-1.5 ">Stock Qty</th>
-              {/* <th className="px-2 py-1.5 "></th> */}
+              <th className="px-2 py-1.5 ">Labour / Employee Name</th>
+              <th className="px-2 py-1.5 ">Department</th>
+              <th className="px-2 py-1.5 ">Issue Reason</th>
+              <th className="px-2 py-1.5 ">Received By</th>
               <th className="px-2 py-1.5 ">Created By</th>
               <th className="px-2 py-1.5 ">Actions</th>
             </tr>
@@ -199,104 +206,119 @@ const AccessoriesIssue = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(11).fill({})}
+                columns={Array(10).fill({})}
               />
             ) : (
               <>
                 {accessories.map((accessory, index) => (
-                  <tr
-                    key={accessory._id}
-                    className="border-t text-[11px] border-primary hover:bg-gray-50 whitespace-nowrap"
-                  >
-                    <td className="px-2 border-r border-primary">
-                      {Number(pagination.currentPage - 1) *
-                        Number(pagination.limit) +
-                        index +
-                        1}
-                    </td>
-                    <td className="px-2 hidden md:table-cell  border-r border-primary">
-                      {new Date(accessory.createdAt).toLocaleString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
-                    </td>
-                    <td className="px-2  hidden md:table-cell border-r border-primary">
-                      {new Date(accessory.updatedAt).toLocaleString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
-                    </td>
-                    <td className="px-2 border-r border-primary">
-                      {accessory.issueNo || "-"}
-                    </td>
-                    <td className="px-2 border-r border-primary">
-                      {accessory.accessory?.accessoryName || "-"}
-                    </td>
-                    <td className="px-2 border-r border-primary">
-                      {accessory.accessory?.category || "-"}
-                    </td>
-                    <td className="px-2 border-r border-primary">
-                      {accessory.accessory?.description || "-"}
-                    </td>
-                    {/* <td className="px-2 border-r border-primary">
-                      {accessory.qty ?? "-"}
-                    </td> */}
-                    <td className="px-2 border-r border-primary">
-                      ₹{accessory.accessory?.price ?? "-"}
-                    </td>
-                    <td className="px-2 border-r border-primary">
-                      {accessory.UOM?.unitName || "-"}
-                    </td>
-                    <td className="px-2 border-r border-primary">
-                      {accessory.issueQty || "-"}
-                    </td>
-                    <td className="px-2 border-r border-primary">
-                      {accessory.accessory?.stockQty || "-"}
-                    </td>
-                    <td className="px-2  hidden md:table-cell border-r border-primary">
-                      {accessory.createdBy?.fullName || "-"}
-                    </td>
-                    <td className="px-2 mt-1.5 flex gap-3 text-sm text-primary">
-                      {hasPermission("Accessories Issue", "update") ? (
-                        <FiEdit
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Edit"
-                          className="cursor-pointer text-primary hover:text-blue-600"
-                          onClick={() => setEditAccessory(accessory)}
+                  <React.Fragment key={accessory._id}>
+                    <tr
+                      onClick={() =>
+                        setExpandedAccessoryId(
+                          expandedAccessoryId === accessory._id
+                            ? null
+                            : accessory._id
+                        )
+                      }
+                      key={accessory._id}
+                      className="border-t text-[11px] border-primary hover:bg-gray-50 whitespace-nowrap"
+                    >
+                      <td className="px-2 border-r border-primary">
+                        {Number(pagination.currentPage - 1) *
+                          Number(pagination.limit) +
+                          index +
+                          1}
+                      </td>
+                      <td className="px-2 hidden md:table-cell  border-r border-primary">
+                        {new Date(accessory.createdAt).toLocaleString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}
+                      </td>
+                      <td className="px-2  hidden md:table-cell border-r border-primary">
+                        {new Date(accessory.updatedAt).toLocaleString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}
+                      </td>
+                      <td className="px-2 border-r border-primary">
+                        {accessory.issueNo || "-"}
+                      </td>
+                      <td className="px-2 border-r border-primary">
+                        {accessory.personName || "-"}
+                      </td>
+                      <td className="px-2 border-r border-primary">
+                        {accessory.department || "-"}
+                      </td>
+                      <td className="px-2 border-r border-primary">
+                        {accessory.issueReason || "-"}
+                      </td>
+                      <td className="px-2 border-r border-primary">
+                        {accessory.receivedBy || "-"}
+                      </td>
+                      <td className="px-2  hidden md:table-cell border-r border-primary">
+                        {accessory.createdBy?.fullName || "-"}
+                      </td>
+                      <td className="px-2 mt-1.5 flex gap-3 text-sm text-primary">
+                        {expandedAccessoryId === accessory._id &&
+                        downloading ? (
+                          <PulseLoader size={4} color="#d8b76a" />
+                        ) : (
+                          <FaFileDownload
+                            onClick={() => handleDownload(accessory)}
+                            className="cursor-pointer text-primary hover:text-green-600"
+                          />
+                        )}
+                        {hasPermission("Accessories Issue", "update") ? (
+                          <FiEdit
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Edit"
+                            className="cursor-pointer text-primary hover:text-blue-600"
+                            // onClick={() => setEditAccessory(accessory)}
+                          />
+                        ) : (
+                          "-"
+                        )}
+                        {hasPermission("Accessories Issue", "delete") ? (
+                          <FiTrash2
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Delete"
+                            className="cursor-pointer text-primary hover:text-red-600"
+                            onClick={() => handleDelete(accessory._id)}
+                          />
+                        ) : (
+                          "-"
+                        )}
+                        <Tooltip
+                          id="statusTip"
+                          place="top"
+                          style={{
+                            backgroundColor: "#292926",
+                            color: "#d8b76a",
+                            fontSize: "12px",
+                            fontWeight: "bold",
+                          }}
                         />
-                      ) : (
-                        "-"
-                      )}
-                      {hasPermission("Accessories Issue", "delete") ? (
-                        <FiTrash2
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Delete"
-                          className="cursor-pointer text-primary hover:text-red-600"
-                          onClick={() => handleDelete(accessory._id)}
-                        />
-                      ) : (
-                        "-"
-                      )}
-                      <Tooltip
-                        id="statusTip"
-                        place="top"
-                        style={{
-                          backgroundColor: "#292926",
-                          color: "#d8b76a",
-                          fontSize: "12px",
-                          fontWeight: "bold",
-                        }}
-                      />
-                    </td>
-                  </tr>
+                      </td>
+                    </tr>
+                    {expandedAccessoryId === accessory._id && (
+                      <tr className="">
+                        <td colSpan="100%">
+                          <IssueDetails
+                            accessoriesData={accessory.accessories}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
                 {accessories.length === 0 && (
                   <tr>

@@ -11,13 +11,17 @@ const Issue = ({ onClose, onAdded }) => {
       accessory: null,
       issueQty: 0,
       remarks: "",
-      personName: "",
-      department: "",
-      issueReason: "",
-      receivedBy: "",
+      // personName: "",
+      // department: "",
+      // issueReason: "",
+      // receivedBy: "",
     },
   ]);
   const [loading, setLoading] = useState(false);
+  const [personName, setPersonName] = useState([]);
+  const [department, setDepartment] = useState([]);
+  const [issueReason, setIssueReason] = useState([]);
+  const [receivedBy, setReceivedBy] = useState([]);
   const [accessories, setAccessories] = useState([]);
 
   useEffect(() => {
@@ -59,10 +63,10 @@ const Issue = ({ onClose, onAdded }) => {
         accessory: null,
         issueQty: 0,
         remarks: "",
-        personName: "",
-        department: "",
-        issueReason: "",
-        receivedBy: "",
+        // personName: "",
+        // department: "",
+        // issueReason: "",
+        // receivedBy: "",
       },
     ]);
   };
@@ -78,14 +82,20 @@ const Issue = ({ onClose, onAdded }) => {
     setLoading(true);
     try {
       // prepare clean payload
-      const payload = formList.map((f) => ({
+      const acc = formList.map((f) => ({
         ...f,
         accessory: f.accessory?.value || null,
       }));
 
-      console.log("payload", payload[0]);
+      const payload = {
+        accessories: acc,
+        personName,
+        department,
+        issueReason,
+        receivedBy,
+      };
 
-      const res = await axios.post("/accessory-issue/add-many", payload);
+      const res = await axios.post("/accessory-issue/issue", payload);
 
       if (res.data.status === 200) {
         toast.success("Accessories issued successfully!");
@@ -107,12 +117,66 @@ const Issue = ({ onClose, onAdded }) => {
         <h2 className="text-xl font-bold mb-4 text-primary">Issue Accessory</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label className="block text-sm font-semibold text-black mb-1">
+                Labour / Employee Name
+              </label>
+              <input
+                type="text"
+                name="personName"
+                placeholder="Labour / Employee Name"
+                value={personName}
+                onChange={(e) => setPersonName(e.target.value)}
+                className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-black mb-1">
+                Department
+              </label>
+              <input
+                type="text"
+                name="department"
+                placeholder="Department"
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-black mb-1">
+                Issue Reason
+              </label>
+              <input
+                type="text"
+                name="issueReason"
+                placeholder="Issue Reason"
+                value={issueReason}
+                onChange={(e) => setIssueReason(e.target.value)}
+                className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-black mb-1">
+                Received By
+              </label>
+              <input
+                type="text"
+                name="receivedBy"
+                placeholder="Received By"
+                value={receivedBy}
+                onChange={(e) => setReceivedBy(e.target.value)}
+                className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+              />
+            </div>
+          </div>
           {formList.map((item, index) => (
             <div
               key={index}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start border p-4 rounded border-primary"
+              className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-start border p-4 rounded border-primary"
             >
-              <div className="">
+              <div className="sm:col-span-2">
                 <label className="block text-sm font-semibold text-black mb-1">
                   Accessory
                 </label>
@@ -163,58 +227,6 @@ const Issue = ({ onClose, onAdded }) => {
                   className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-black mb-1">
-                  Labour / Employee Name
-                </label>
-                <input
-                  type="text"
-                  name="personName"
-                  placeholder="Labour / Employee Name"
-                  value={item.personName}
-                  onChange={(e) => handleChange(index, e)}
-                  className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-black mb-1">
-                  Department
-                </label>
-                <input
-                  type="text"
-                  name="department"
-                  placeholder="Department"
-                  value={item.department}
-                  onChange={(e) => handleChange(index, e)}
-                  className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-black mb-1">
-                  Issue Reason
-                </label>
-                <input
-                  type="text"
-                  name="issueReason"
-                  placeholder="Issue Reason"
-                  value={item.issueReason}
-                  onChange={(e) => handleChange(index, e)}
-                  className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-black mb-1">
-                  Received By
-                </label>
-                <input
-                  type="text"
-                  name="receivedBy"
-                  placeholder="Received By"
-                  value={item.receivedBy}
-                  onChange={(e) => handleChange(index, e)}
-                  className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
-                />
-              </div>
 
               {/* Vendor Select */}
 
@@ -224,7 +236,7 @@ const Issue = ({ onClose, onAdded }) => {
                   <button
                     type="button"
                     onClick={() => removeRow(index)}
-                    className="sm:mt-5.5 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-3 rounded cursor-pointer"
+                    className=" bg-red-100 hover:bg-red-200 text-red-700 px-3 py-3 rounded cursor-pointer"
                   >
                     <FiTrash2 />
                   </button>
