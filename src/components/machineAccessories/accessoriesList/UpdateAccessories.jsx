@@ -11,10 +11,16 @@ const UpdateAccessory = ({ onClose, onUpdated, accessory }) => {
     description: "",
     price: "",
     vendor: "",
+    UOM: "",
+    file: [],
   });
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [uoms, setUoms] = useState([]);
 
+  const [existingFiles, setExistingFiles] = useState(accessory.file || []);
+  const [deletedFileIds, setDeletedFileIds] = useState([]);
+  const [newFiles, setNewFiles] = useState([]);
   // Load initial data
   useEffect(() => {
     if (accessory) {
@@ -30,21 +36,27 @@ const UpdateAccessory = ({ onClose, onUpdated, accessory }) => {
               v: accessory.vendor,
             }
           : "",
+        file: accessory.file,
+        UOM: accessory.UOM?.unitName,
       });
     }
   }, [accessory]);
 
   // Fetch vendors
   useEffect(() => {
-    const fetchVendors = async () => {
+    const fetchDropdowns = async () => {
       try {
-        const res = await axios.get("/vendors/get-all");
-        setVendors(res.data.data || []);
+        const [vendorRes, uomRes] = await Promise.all([
+          axios.get("/vendors/get-all"),
+          axios.get("/uoms/all-uoms"),
+        ]);
+        setVendors(vendorRes.data.data || []);
+        setUoms(uomRes.data.data || []);
       } catch {
-        toast.error("Failed to fetch vendors");
+        toast.error("Failed to fetch dropdowns");
       }
     };
-    fetchVendors();
+    fetchDropdowns();
   }, []);
 
   const vendorsOptions = vendors.map((v) => ({
@@ -54,8 +66,11 @@ const UpdateAccessory = ({ onClose, onUpdated, accessory }) => {
   }));
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, files } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "file" ? Array.from(files) : value,
+    }));
   };
 
   const handleVendorChange = (selected) => {
@@ -67,10 +82,25 @@ const UpdateAccessory = ({ onClose, onUpdated, accessory }) => {
     setLoading(true);
 
     try {
-      const payload = {
+      const payload = new FormData();
+      const data = {
         ...formData,
+        file: undefined,
         vendor: formData.vendor?.value || null,
       };
+
+      newFiles.forEach((file) => {
+        payload.append("files", file);
+      });
+
+      if (formData.file.length) {
+        formData.file.forEach((file) => payload.append("files", file));
+      }
+
+      payload.append("data", JSON.stringify(data));
+      payload.append("deletedFiles", JSON.stringify(deletedFileIds));
+
+      console.log("payload updt acc", payload);
 
       const res = await axios.put(
         `/accessories/update/${accessory._id}`,
@@ -85,6 +115,7 @@ const UpdateAccessory = ({ onClose, onUpdated, accessory }) => {
         toast.error(res.data.message || "Update failed");
       }
     } catch (err) {
+      console.error(err);
       toast.error(err.response?.data?.message || "Update failed");
     } finally {
       setLoading(false);
@@ -93,7 +124,7 @@ const UpdateAccessory = ({ onClose, onUpdated, accessory }) => {
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white w-[92vw] max-w-lg rounded-lg p-6 border border-primary shadow-lg">
+      <div className="bg-white w-[92vw] max-w-lg rounded-lg p-6 max-h-[90vh] overflow-auto border border-primary shadow-lg">
         <h2 className="text-xl font-bold mb-4 text-primary">
           Update Accessory
         </h2>
@@ -127,7 +158,25 @@ const UpdateAccessory = ({ onClose, onUpdated, accessory }) => {
               className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
             />
           </div>
-
+          <div>
+            <label className="block text-sm font-semibold text-black">
+              UOM
+            </label>
+            <select
+              name="UOM"
+              value={formData.UOM}
+              onChange={handleChange}
+              className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+              required
+            >
+              <option value={formData.UOM}>{formData.UOM}</option>
+              {uoms.map((u) => (
+                <option key={u._id} value={u.unitName}>
+                  {u.unitName}
+                </option>
+              ))}
+            </select>
+          </div>
           <div>
             <label className="block text-sm font-semibold text-black">
               Price (₹)
@@ -139,20 +188,6 @@ const UpdateAccessory = ({ onClose, onUpdated, accessory }) => {
               onChange={handleChange}
               placeholder="Price"
               className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-black">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Description"
-              className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
-              rows={2}
             />
           </div>
 
@@ -179,6 +214,68 @@ const UpdateAccessory = ({ onClose, onUpdated, accessory }) => {
             />
           </div>
 
+          <div>
+            <div className=" ">
+              <label className="block font-semibold mb-1 text-black">
+                Product Files
+              </label>
+              <input
+                type="file"
+                multiple
+                onChange={(e) => setNewFiles(Array.from(e.target.files))}
+                className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
+              />
+            </div>
+            <div>
+              <p className="font-semibold mb-1 mt-2 text-black">
+                Existing Product Files
+              </p>
+              {existingFiles.length === 0 && (
+                <p className="text-sm text-gray-500">No files uploaded</p>
+              )}
+              {existingFiles.map((file) => (
+                <div
+                  key={file._id}
+                  className="flex justify-between items-center mb-1 bg-primary/20 border border-primary rounded p-1 "
+                >
+                  <a
+                    href={file.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-black underline truncate"
+                  >
+                    {file.fileName}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeletedFileIds((prev) => [...prev, file._id]);
+                      setExistingFiles((prev) =>
+                        prev.filter((f) => f._id !== file._id)
+                      );
+                    }}
+                    className="text-red-500 hover:text-red-700 cursor-pointer"
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-black">
+              Description
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Description"
+              className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+              rows={2}
+            />
+          </div>
           <div className="flex justify-end gap-4 mt-4">
             <button
               type="button"

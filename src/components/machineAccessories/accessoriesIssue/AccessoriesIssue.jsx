@@ -182,11 +182,12 @@ const AccessoriesIssue = () => {
               <th className="px-2 py-1.5 ">#</th>
               <th className="px-2 py-1.5 ">Created At</th>
               <th className="px-2 py-1.5 ">Updated At</th>
+              <th className="px-2 py-1.5 ">Issue No</th>
               <th className="px-2 py-1.5 ">Accessory Name</th>
               <th className="px-2 py-1.5 ">Category</th>
               <th className="px-2 py-1.5 ">Description</th>
-              {/* <th className="px-2 py-1.5 ">Qty</th> */}
               <th className="px-2 py-1.5 ">Price</th>
+              <th className="px-2 py-1.5 ">UOM</th>
               <th className="px-2 py-1.5 ">Issue Qty</th>
               <th className="px-2 py-1.5 ">Stock Qty</th>
               {/* <th className="px-2 py-1.5 "></th> */}
@@ -234,25 +235,31 @@ const AccessoriesIssue = () => {
                       })}
                     </td>
                     <td className="px-2 border-r border-primary">
-                      {accessory.accessory.accessoryName || "-"}
+                      {accessory.issueNo || "-"}
                     </td>
                     <td className="px-2 border-r border-primary">
-                      {accessory.accessory.category || "-"}
+                      {accessory.accessory?.accessoryName || "-"}
                     </td>
                     <td className="px-2 border-r border-primary">
-                      {accessory.accessory.description || "-"}
+                      {accessory.accessory?.category || "-"}
+                    </td>
+                    <td className="px-2 border-r border-primary">
+                      {accessory.accessory?.description || "-"}
                     </td>
                     {/* <td className="px-2 border-r border-primary">
                       {accessory.qty ?? "-"}
                     </td> */}
                     <td className="px-2 border-r border-primary">
-                      ₹{accessory.accessory.price ?? "-"}
+                      ₹{accessory.accessory?.price ?? "-"}
+                    </td>
+                    <td className="px-2 border-r border-primary">
+                      {accessory.UOM?.unitName || "-"}
                     </td>
                     <td className="px-2 border-r border-primary">
                       {accessory.issueQty || "-"}
                     </td>
                     <td className="px-2 border-r border-primary">
-                      {accessory.accessory.stockQty || "-"}
+                      {accessory.accessory?.stockQty || "-"}
                     </td>
                     <td className="px-2  hidden md:table-cell border-r border-primary">
                       {accessory.createdBy?.fullName || "-"}

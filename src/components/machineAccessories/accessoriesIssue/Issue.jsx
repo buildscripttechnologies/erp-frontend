@@ -10,6 +10,11 @@ const Issue = ({ onClose, onAdded }) => {
     {
       accessory: null,
       issueQty: 0,
+      remarks: "",
+      personName: "",
+      department: "",
+      issueReason: "",
+      receivedBy: "",
     },
   ]);
   const [loading, setLoading] = useState(false);
@@ -47,24 +52,26 @@ const Issue = ({ onClose, onAdded }) => {
     setFormList(updated);
   };
 
-  //   const addRow = () => {
-  //     setFormList([
-  //       ...formList,
-  //       {
-  //         accessoryName: "",
-  //         category: "",
-  //         description: "",
-  //         price: "",
-  //         vendor: null,
-  //       },
-  //     ]);
-  //   };
+  const addRow = () => {
+    setFormList([
+      ...formList,
+      {
+        accessory: null,
+        issueQty: 0,
+        remarks: "",
+        personName: "",
+        department: "",
+        issueReason: "",
+        receivedBy: "",
+      },
+    ]);
+  };
 
-  //   const removeRow = (index) => {
-  //     const updated = [...formList];
-  //     updated.splice(index, 1);
-  //     setFormList(updated);
-  //   };
+  const removeRow = (index) => {
+    const updated = [...formList];
+    updated.splice(index, 1);
+    setFormList(updated);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,7 +85,7 @@ const Issue = ({ onClose, onAdded }) => {
 
       console.log("payload", payload[0]);
 
-      const res = await axios.post("/accessory-issue/issue", payload[0]);
+      const res = await axios.post("/accessory-issue/add-many", payload);
 
       if (res.data.status === 200) {
         toast.success("Accessories issued successfully!");
@@ -105,7 +112,7 @@ const Issue = ({ onClose, onAdded }) => {
               key={index}
               className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start border p-4 rounded border-primary"
             >
-              <div className="col-span-2">
+              <div className="">
                 <label className="block text-sm font-semibold text-black mb-1">
                   Accessory
                 </label>
@@ -136,10 +143,75 @@ const Issue = ({ onClose, onAdded }) => {
                 <input
                   type="number"
                   name="issueQty"
-                  placeholder="issueQty"
+                  placeholder="Issue Qty"
                   value={item.issueQty}
                   onChange={(e) => handleChange(index, e)}
                   required
+                  className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-black mb-1">
+                  Remarks
+                </label>
+                <input
+                  type="text"
+                  name="remarks"
+                  placeholder="Remarks"
+                  value={item.remarks}
+                  onChange={(e) => handleChange(index, e)}
+                  className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-black mb-1">
+                  Labour / Employee Name
+                </label>
+                <input
+                  type="text"
+                  name="personName"
+                  placeholder="Labour / Employee Name"
+                  value={item.personName}
+                  onChange={(e) => handleChange(index, e)}
+                  className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-black mb-1">
+                  Department
+                </label>
+                <input
+                  type="text"
+                  name="department"
+                  placeholder="Department"
+                  value={item.department}
+                  onChange={(e) => handleChange(index, e)}
+                  className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-black mb-1">
+                  Issue Reason
+                </label>
+                <input
+                  type="text"
+                  name="issueReason"
+                  placeholder="Issue Reason"
+                  value={item.issueReason}
+                  onChange={(e) => handleChange(index, e)}
+                  className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-black mb-1">
+                  Received By
+                </label>
+                <input
+                  type="text"
+                  name="receivedBy"
+                  placeholder="Received By"
+                  value={item.receivedBy}
+                  onChange={(e) => handleChange(index, e)}
                   className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
@@ -147,52 +219,52 @@ const Issue = ({ onClose, onAdded }) => {
               {/* Vendor Select */}
 
               {/* Buttons */}
-              {/* <div className="flex gap-2 items-end ">
+              <div className="flex gap-2 items-end ">
                 {formList.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeRow(index)}
-                    className="sm:mt-8 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-3 rounded cursor-pointer"
+                    className="sm:mt-5.5 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-3 rounded cursor-pointer"
                   >
                     <FiTrash2 />
                   </button>
                 )}
-                {index === formList.length - 1 && (
-                  <button
-                    type="button"
-                    onClick={addRow}
-                    className="sm:mt-8 bg-primary flex items-center gap-1 hover:bg-primary/80 text-black px-3 py-2 rounded cursor-pointer"
-                  >
-                    <FiPlus /> <span>Add Row</span>
-                  </button>
-                )}
-              </div> */}
+              </div>
             </div>
           ))}
 
           {/* Footer buttons */}
-          <div className="flex justify-end gap-4 mt-4">
+          <div className="flex justify-between gap-4 mt-4">
             <button
               type="button"
-              onClick={onClose}
-              className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-black rounded cursor-pointer"
+              onClick={addRow}
+              className=" bg-primary flex items-center gap-1 hover:bg-primary/80 text-black px-3 py-2 rounded cursor-pointer"
             >
-              Cancel
+              <FiPlus /> <span>Add Row</span>
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-2 bg-primary flex justify-center items-center hover:bg-primary/80 text-secondary font-semibold rounded cursor-pointer"
-            >
-              {loading ? (
-                <>
-                  <span className="mr-2">Saving</span>
-                  <BeatLoader size={5} color="#292926" />
-                </>
-              ) : (
-                "Issue"
-              )}
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-black rounded cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-6 py-2 bg-primary flex justify-center items-center hover:bg-primary/80 text-secondary font-semibold rounded cursor-pointer"
+              >
+                {loading ? (
+                  <>
+                    <span className="mr-2">Saving</span>
+                    <BeatLoader size={5} color="#292926" />
+                  </>
+                ) : (
+                  "Issue"
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>

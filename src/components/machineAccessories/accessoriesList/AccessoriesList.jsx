@@ -14,6 +14,7 @@ import { debounce } from "lodash";
 import { useRef } from "react";
 import AddAccessories from "./AddAccessories";
 import UpdateAccessories from "./UpdateAccessories";
+import AttachmentsModal2 from "../../AttachmentsModal2";
 
 const AccessoriesList = () => {
   const { hasPermission } = useAuth();
@@ -28,6 +29,8 @@ const AccessoriesList = () => {
     totalResults: 0,
     limit: 10,
   });
+  const [openAttachments, setOpenAttachments] = useState(null);
+
   const hasMountedRef = useRef(false);
   ScrollLock(formOpen || editAccessory != null);
 
@@ -79,7 +82,7 @@ const AccessoriesList = () => {
     if (!window.confirm("Are you sure you want to delete this Accessory?"))
       return;
     try {
-      let res = await axios.delete(`/accessories/delete-accessory/${id}`);
+      let res = await axios.delete(`/accessories/delete/${id}`);
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
@@ -188,7 +191,9 @@ const AccessoriesList = () => {
               <th className="px-2 py-1.5 ">Description</th>
               <th className="px-2 py-1.5 ">Stock Qty</th>
               <th className="px-2 py-1.5 ">Price</th>
+              <th className="px-2 py-1.5 ">UOM</th>
               <th className="px-2 py-1.5 ">Vendor</th>
+              <th className="px-2 py-1.5 ">Attachments</th>
               <th className="px-2 py-1.5 ">Created By</th>
               <th className="px-2 py-1.5 ">Actions</th>
             </tr>
@@ -212,7 +217,7 @@ const AccessoriesList = () => {
                         index +
                         1}
                     </td>
-                    <td className="px-2 hidden md:table-cell  border-r border-primary">
+                    <td className="px-2  border-r border-primary">
                       {new Date(accessory.createdAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
@@ -222,7 +227,7 @@ const AccessoriesList = () => {
                         hour12: true,
                       })}
                     </td>
-                    <td className="px-2  hidden md:table-cell border-r border-primary">
+                    <td className="px-2  border-r border-primary">
                       {new Date(accessory.updatedAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
@@ -248,10 +253,26 @@ const AccessoriesList = () => {
                       ₹{accessory.price ?? "-"}
                     </td>
                     <td className="px-2 border-r border-primary">
+                      {accessory.UOM?.unitName || "-"}
+                    </td>
+                    <td className="px-2 border-r border-primary">
                       {accessory.vendor?.vendorName || "-"}
                     </td>
+                    <td className="px-2 border-r border-primary">
+                      {Array.isArray(accessory.file) &&
+                      accessory.file.length > 0 ? (
+                        <button
+                          onClick={() => setOpenAttachments(accessory.file)}
+                          className="cursor-pointer hover:text-primary hover:underline text-center items-center justify-center"
+                        >
+                          View
+                        </button>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
 
-                    <td className="px-2  hidden md:table-cell border-r border-primary">
+                    <td className="px-2  border-r border-primary">
                       {accessory.createdBy?.fullName || "-"}
                     </td>
                     <td className="px-2 mt-1.5 flex gap-3 text-sm text-primary">
@@ -323,6 +344,13 @@ const AccessoriesList = () => {
           fetchAccessories(page, pagination.limit);
         }}
       />
+
+      {openAttachments && (
+        <AttachmentsModal2
+          attachments={openAttachments}
+          onClose={() => setOpenAttachments(null)}
+        />
+      )}
     </div>
   );
 };
