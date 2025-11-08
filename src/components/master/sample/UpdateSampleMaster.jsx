@@ -530,6 +530,34 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
             </div>
             <div className="flex flex-col">
               <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                HSN / SAC
+              </label>
+              <input
+                type="text"
+                placeholder="HSN / SAC"
+                name="hsnOrSac"
+                className="p-2 border border-primary  rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                value={form.hsnOrSac}
+                // onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
+                onChange={(e) => handleFormChange(e)}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                GST (%)
+              </label>
+              <input
+                type="number"
+                placeholder="GST"
+                name="gst"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                value={form.gst}
+                // onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
+                onChange={(e) => handleFormChange(e)}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                 Order Qty
               </label>
               <input
@@ -543,21 +571,6 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
               />
             </div>
 
-            <div className="flex flex-col">
-              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                Date
-              </label>
-              <input
-                type="date"
-                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
-                value={
-                  form.date
-                    ? new Date(form.date).toISOString().split("T")[0]
-                    : ""
-                }
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
-              />
-            </div>
             <div className="flex flex-col ">
               <div>
                 <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
@@ -662,6 +675,21 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                   </div>
                 ))}
               </div>
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                Date
+              </label>
+              <input
+                type="date"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                value={
+                  form.date
+                    ? new Date(form.date).toISOString().split("T")[0]
+                    : ""
+                }
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
+              />
             </div>
           </div>
 

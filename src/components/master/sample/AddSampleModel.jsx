@@ -556,6 +556,34 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
             </div>
             <div className="flex flex-col">
               <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                HSN / SAC
+              </label>
+              <input
+                type="text"
+                placeholder="HSN / SAC"
+                name="hsnOrSac"
+                className="p-2 border border-primary  rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                value={form.hsnOrSac}
+                // onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
+                onChange={(e) => handleFormChange(e)}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                GST (%)
+              </label>
+              <input
+                type="number"
+                placeholder="GST"
+                name="gst"
+                className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                value={form.gst}
+                // onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
+                onChange={(e) => handleFormChange(e)}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
                 Order Qty
               </label>
               <input
