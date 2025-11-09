@@ -277,6 +277,8 @@ const SampleMaster = ({ isOpen }) => {
                   <th className="px-[8px] ">Party Name</th>
                   <th className="px-[8px] ">Product Name</th>
                   <th className="px-[8px] ">Product Size</th>
+                  <th className="px-[8px] ">HSN / SAC</th>
+                  <th className="px-[8px] ">GST (%)</th>
                   <th className="px-[8px] ">Date</th>
                   {/* <th className="px-[8px] ">Status</th> */}
                   <th className="px-[8px] ">Created By</th>
@@ -288,7 +290,7 @@ const SampleMaster = ({ isOpen }) => {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={Array(11).fill({})}
+                    columns={Array(13).fill({})}
                   />
                 ) : (
                   <>
@@ -333,7 +335,6 @@ const SampleMaster = ({ isOpen }) => {
                           <td className="px-[8px] border-r border-primary  ">
                             {b.partyName || "-"}
                           </td>
-
                           <td className="px-[8px] border-r border-primary  ">
                             {b.product?.name || "-"}
                           </td>
@@ -341,6 +342,12 @@ const SampleMaster = ({ isOpen }) => {
                             {`${b.height ?? 0} x ${b.width ?? 0} x ${
                               b.depth ?? 0
                             }`}
+                          </td>
+                          <td className="px-[8px] border-r border-primary  ">
+                            {b.hsnOrSac || "-"}
+                          </td>
+                          <td className="px-[8px] border-r border-primary  ">
+                            {b.gst || "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary ">
                             {new Date(b.date).toLocaleString("en-IN", {
