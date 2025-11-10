@@ -167,7 +167,7 @@ const AccessoriesList = () => {
             className="w-full sm:w-auto justify-center cursor-pointer bg-primary hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
           >
             <FiPlus />
-            {formOpen ? "Close Form" : "Add Accessorie"}
+            {formOpen ? "Close Form" : "Add Accessories"}
           </button>
         )}
       </div>
@@ -202,7 +202,7 @@ const AccessoriesList = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(11).fill({})}
+                columns={Array(13).fill({})}
               />
             ) : (
               <>

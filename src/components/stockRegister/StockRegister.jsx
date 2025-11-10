@@ -385,14 +385,19 @@ const StockRegister = () => {
               <th className="px-2 py-1.5 ">Available Qty</th>
               <th className="px-2 py-1.5 ">Damaged Qty</th>
               <th className="px-2 py-1.5 ">MOQ</th>
-              <th className="px-2 py-1.5 ">Amount</th>
+              <th className="px-2 py-1.5 ">Base Rate</th>
+              <th className="px-2 py-1.5 ">GST (%)</th>
+              <th className="px-2 py-1.5 ">Rate</th>
+              <th className="px-2 py-1.5 ">Base Amount</th>
+              <th className="px-2 py-1.5 ">GST Amount</th>
+              <th className="px-2 py-1.5 ">Total Amount</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(11).fill({})}
+                columns={Array(16).fill({})}
               />
             ) : (
               <>
@@ -435,6 +440,21 @@ const StockRegister = () => {
 
                     <td className="px-2  border-r border-primary ">
                       {stock.moq || 0}
+                    </td>
+                    <td className="px-2  border-r border-primary  ">
+                      {stock.baseRate?.toFixed(2) || 0}
+                    </td>
+                    <td className="px-2  border-r border-primary  ">
+                      {stock.gst?.toFixed(2) || 0}
+                    </td>
+                    <td className="px-2   border-r border-primary ">
+                      {stock.rate?.toFixed(2) || 0}
+                    </td>
+                    <td className="px-2   border-r border-primary ">
+                      {stock.baseAmount?.toFixed(2) || 0}
+                    </td>
+                    <td className="px-2   border-r border-primary ">
+                      {stock.gstAmount?.toFixed(2) || 0}
                     </td>
                     <td className="px-2 ">{stock.amount?.toFixed(2) || 0}</td>
                   </tr>

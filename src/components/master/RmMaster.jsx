@@ -263,8 +263,9 @@ const RmMaster = ({ isOpen }) => {
       moq: e.moq,
       panno: e.panno,
       sqInchRate: e.sqInchRate,
-      rate: e.rate,
+      baseRate: e.baseRate,
       gst: e.gst,
+      rate: e.rate,
       stockQty: e.stockQty,
       baseQty: e.baseQty,
       pkgQty: e.pkgQty,
@@ -507,9 +508,10 @@ const RmMaster = ({ isOpen }) => {
                   "MOQ",
                   "Panno",
                   "SqInch Rate",
+                  "Base Rate",
+                  "GST",
                   "Rate",
                   "Pur. Uom",
-                  "GST",
                   "Stock Qty",
                   "Stock Uom",
                   "Total Rate",
@@ -618,14 +620,18 @@ const RmMaster = ({ isOpen }) => {
                         ₹{(Number(rm.sqInchRate) || 0).toFixed(4)}
                       </td>
                       <td className="px-2 border-r border-r-primary">
+                        ₹{rm.baseRate || "0"}
+                      </td>
+                      <td className="px-2 border-r border-r-primary">
+                        {rm.gst ? rm.gst + "%" : "-"}
+                      </td>
+                      <td className="px-2 border-r border-r-primary">
                         ₹{rm.rate || "0"}
                       </td>
                       <td className="px-2 border-r border-r-primary">
                         {rm.purchaseUOM || "-"}
                       </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.gst ? rm.gst + "%" : "-"}
-                      </td>
+
                       <td className="px-2 border-r border-r-primary">
                         {rm.stockQty?.toFixed(2)}
                       </td>
