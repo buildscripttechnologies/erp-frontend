@@ -124,157 +124,157 @@ const UpdateAccessory = ({ onClose, onUpdated, accessory }) => {
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white w-[92vw] max-w-lg rounded-lg p-6 max-h-[90vh] overflow-auto border border-primary shadow-lg">
+      <div className="bg-white w-[92vw] max-w-4xl rounded-lg p-6 border border-primary overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-primary scrollbar-track-[#fdf6e9]">
         <h2 className="text-xl font-bold mb-4 text-primary">
           Update Accessory
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-black">
-              Accessory Name
-            </label>
-            <input
-              type="text"
-              name="accessoryName"
-              value={formData.accessoryName}
-              onChange={handleChange}
-              placeholder="Accessory Name"
-              className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-black">
-              Category
-            </label>
-            <input
-              type="text"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              placeholder="Category"
-              className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-black">
-              UOM
-            </label>
-            <select
-              name="UOM"
-              value={formData.UOM}
-              onChange={handleChange}
-              className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
-              required
-            >
-              <option value={formData.UOM}>{formData.UOM}</option>
-              {uoms.map((u) => (
-                <option key={u._id} value={u.unitName}>
-                  {u.unitName}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-black">
-              Price (₹)
-            </label>
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              placeholder="Price"
-              className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-black">
-              Vendor
-            </label>
-            <Select
-              options={vendorsOptions}
-              value={formData.vendor}
-              onChange={handleVendorChange}
-              placeholder="Select Vendor"
-              isSearchable
-              styles={{
-                control: (base, state) => ({
-                  ...base,
-                  borderColor: "var(--color-primary)",
-                  boxShadow: state.isFocused
-                    ? "0 0 0 1px var(--color-primary)"
-                    : "none",
-                  "&:hover": { borderColor: "var(--color-primary)" },
-                }),
-              }}
-            />
-          </div>
-
-          <div>
-            <div className=" ">
-              <label className="block font-semibold mb-1 text-black">
-                Product Files
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4 items-start border p-4 rounded border-primary">
+            <div className="flex flex-col">
+              <label className="block text-sm font-semibold text-black">
+                Accessory Name
               </label>
               <input
-                type="file"
-                multiple
-                onChange={(e) => setNewFiles(Array.from(e.target.files))}
-                className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
+                type="text"
+                name="accessoryName"
+                value={formData.accessoryName}
+                onChange={handleChange}
+                placeholder="Accessory Name"
+                className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-black">
+                Category
+              </label>
+              <input    
+                type="text"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                placeholder="Category"
+                className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
               />
             </div>
             <div>
-              <p className="font-semibold mb-1 mt-2 text-black">
-                Existing Product Files
-              </p>
-              {existingFiles.length === 0 && (
-                <p className="text-sm text-gray-500">No files uploaded</p>
-              )}
-              {existingFiles.map((file) => (
-                <div
-                  key={file._id}
-                  className="flex justify-between items-center mb-1 bg-primary/20 border border-primary rounded p-1 "
-                >
-                  <a
-                    href={file.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-black underline truncate"
-                  >
-                    {file.fileName}
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDeletedFileIds((prev) => [...prev, file._id]);
-                      setExistingFiles((prev) =>
-                        prev.filter((f) => f._id !== file._id)
-                      );
-                    }}
-                    className="text-red-500 hover:text-red-700 cursor-pointer"
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))}
+              <label className="block text-sm font-semibold text-black">
+                UOM
+              </label>
+              <select
+                name="UOM"
+                value={formData.UOM}
+                onChange={handleChange}
+                className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+                required
+              >
+                <option value={formData.UOM}>{formData.UOM}</option>
+                {uoms.map((u) => (
+                  <option key={u._id} value={u.unitName}>
+                    {u.unitName}
+                  </option>
+                ))}
+              </select>
             </div>
-          </div>
+            <div>
+              <label className="block text-sm font-semibold text-black">
+                Price (₹)
+              </label>
+              <input
+                type="number"
+                name="price"
+                value={formData.price}
+                onChange={handleChange}
+                placeholder="Price"
+                className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+              />
+            </div>
+            <div className="sm:col-span-4 ">
+              <label className="block text-sm font-semibold text-black">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Description"
+                className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
+                rows={2}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-semibold text-black">
+                Vendor
+              </label>
+              <Select
+                options={vendorsOptions}
+                value={formData.vendor}
+                onChange={handleVendorChange}
+                placeholder="Select Vendor"
+                isSearchable
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    borderColor: "var(--color-primary)",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 1px var(--color-primary)"
+                      : "none",
+                    "&:hover": { borderColor: "var(--color-primary)" },
+                  }),
+                }}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-black">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Description"
-              className="w-full mt-1 p-2 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
-              rows={2}
-            />
+            <div className=" sm:col-span-2">
+              <div className=" ">
+                <label className="block font-semibold mb-1 text-black">
+                  Product Files
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) => setNewFiles(Array.from(e.target.files))}
+                  className="w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-black hover:file:bg-primary/10 file:cursor-pointer"
+                />
+              </div>
+              <div>
+                <p className="font-semibold mb-1 mt-2 text-black">
+                  Existing Product Files
+                </p>
+                {existingFiles.length === 0 && (
+                  <p className="text-sm text-gray-500">No files uploaded</p>
+                )}
+                {existingFiles.map((file) => (
+                  <div
+                    key={file._id}
+                    className="flex justify-between items-center mb-1 bg-primary/20 border border-primary rounded p-1 "
+                  >
+                    <a
+                      href={file.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-black underline truncate"
+                    >
+                      {file.fileName}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeletedFileIds((prev) => [...prev, file._id]);
+                        setExistingFiles((prev) =>
+                          prev.filter((f) => f._id !== file._id)
+                        );
+                      }}
+                      className="text-red-500 hover:text-red-700 cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="flex justify-end gap-4 mt-4">
             <button

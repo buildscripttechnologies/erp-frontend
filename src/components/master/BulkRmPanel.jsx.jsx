@@ -1,4 +1,3 @@
-
 // File: BulkRmPanel.jsx
 import React, { useState, useEffect } from "react";
 import { FiTrash2, FiArrowLeft, FiPlus } from "react-icons/fi";
@@ -74,6 +73,7 @@ const BulkRmPanel = ({ onClose }) => {
         moq: "",
         panno: "",
         sqInchRate: "",
+        baseRate: "",
         rate: "",
         totalRate: "",
         purchaseUOM: "",
@@ -89,6 +89,13 @@ const BulkRmPanel = ({ onClose }) => {
     setRows((prev) => {
       const updated = [...prev];
       updated[index][field] = value;
+
+      const baseRate = updated[index].baseRate || 0;
+      const gst = updated[index].gst || 0;
+
+      if (baseRate && gst) {
+        updated[index].rate = Number(baseRate) + (gst * baseRate) / 100;
+      }
 
       const rate = parseFloat(updated[index].rate) || 0;
       const stockQty = parseFloat(updated[index].stockQty) || 0;
@@ -410,7 +417,32 @@ const BulkRmPanel = ({ onClose }) => {
                     className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
-
+                <div>
+                  <label className="text-xs font-semibold text-[#292926]">
+                    GST %
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="GST %"
+                    value={rm.gst}
+                    onChange={(e) => handleChange(index, "gst", e.target.value)}
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-[#292926]">
+                    Base Rate
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Base Rate"
+                    value={rm.baseRate}
+                    onChange={(e) =>
+                      handleChange(index, "baseRate", e.target.value)
+                    }
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
                 <div>
                   <label className="text-xs font-semibold text-[#292926]">
                     Rate
@@ -444,19 +476,6 @@ const BulkRmPanel = ({ onClose }) => {
                       </option>
                     ))}
                   </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-[#292926]">
-                    GST %
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="GST %"
-                    value={rm.gst}
-                    onChange={(e) => handleChange(index, "gst", e.target.value)}
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
                 </div>
 
                 <div>

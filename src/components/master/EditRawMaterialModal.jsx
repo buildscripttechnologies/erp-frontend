@@ -55,6 +55,13 @@ const EditRawMaterialModal = ({
       [field]: value,
     };
 
+    const baseRate = updatedForm.baseRate || 0;
+    const gst = updatedForm.gst || 0;
+
+    if (baseRate && gst) {
+      updatedForm.rate = Number(baseRate) + (gst * baseRate) / 100;
+    }
+
     // Update totalRate if rate or stockQty changes
     if (field === "rate" || field === "stockQty") {
       const stockQty = Number(
@@ -346,8 +353,30 @@ const EditRawMaterialModal = ({
               className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-
+          {/* GST */}
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">GST (%)</label>
+            <input
+              type="number"
+              placeholder="GST(%)"
+              value={formData.gst}
+              onChange={(e) => handleChange("gst", e.target.value)}
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
           {/* Rate */}
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">
+              Base Rate
+            </label>
+            <input
+              type="number"
+              placeholder="Base Rate"
+              value={formData.baseRate}
+              onChange={(e) => handleChange("baseRate", e.target.value)}
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">Rate</label>
             <input
@@ -376,18 +405,6 @@ const EditRawMaterialModal = ({
                 </option>
               ))}
             </select>
-          </div>
-
-          {/* GST */}
-          <div className="flex flex-col">
-            <label className="text-xs font-semibold text-black">GST (%)</label>
-            <input
-              type="number"
-              placeholder="GST(%)"
-              value={formData.gst}
-              onChange={(e) => handleChange("gst", e.target.value)}
-              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            />
           </div>
 
           {/* Stock Qty */}

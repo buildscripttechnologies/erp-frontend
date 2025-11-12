@@ -200,7 +200,7 @@ const AddAccessories = ({ onClose, onAdded }) => {
               </div>
 
               {/* Vendor Select */}
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <label className="block text-sm font-semibold text-black">
                   Vendor
                 </label>
@@ -222,7 +222,7 @@ const AddAccessories = ({ onClose, onAdded }) => {
                   }}
                 />
               </div>
-              <div className=" col-span-2">
+              <div className=" sm:col-span-2">
                 <label className="block text-sm font-semibold text-black">
                   Product Files
                 </label>
