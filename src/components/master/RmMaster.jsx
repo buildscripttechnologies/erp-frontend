@@ -22,13 +22,14 @@ import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
 import AttachmentsModal from "../AttachmentsModal.jsx";
 import ScrollLock from "../ScrollLock.js";
 import PaginationControls from "../PaginationControls.jsx";
-import { ClipLoader, PulseLoader } from "react-spinners";
+import { BeatLoader, ClipLoader, PulseLoader } from "react-spinners";
 import { span } from "framer-motion/client";
 import AttachmentsModal2 from "../AttachmentsModal2.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 import { debounce } from "lodash";
 import { useRef } from "react";
+import { TbRestore } from "react-icons/tb";
 
 // export const baseurl = "http://localhost:5000";
 
@@ -49,6 +50,10 @@ const RmMaster = ({ isOpen }) => {
   const [sampleDownloading, setSampleDownloading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uoms, setUoms] = useState([]);
+  const [restore, setRestore] = useState(false);
+  const [selectedRMs, setSelectedRMs] = useState([]);
+  const [restoreId, setRestoreId] = useState();
+  const [deleteId, setDeleteId] = useState();
 
   const hasMountedRef = useRef(false);
 
@@ -72,7 +77,11 @@ const RmMaster = ({ isOpen }) => {
       return; // skip first debounce on mount
     }
     const debouncedSearch = debounce(() => {
-      fetchRawMaterials(1); // Always fetch from page 1 for new search
+      if (restore) {
+        fetchDeletedRawMaterials(1);
+      } else {
+        fetchRawMaterials(1); // Always fetch from page 1 for new search
+      }
     }, 400); // 400ms delay
 
     debouncedSearch();
@@ -118,6 +127,32 @@ const RmMaster = ({ isOpen }) => {
       toast.error("Failed to load data");
       setLoading(false);
     }
+  };
+
+  const fetchDeletedRawMaterials = async (page = 1) => {
+    try {
+      setLoading(true);
+      const res = await axios.get("/rms/deleted", {
+        params: {
+          page,
+          limit: pagination.limit,
+          search,
+        },
+      });
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
+
+      setRawMaterials(res.data.rawMaterials || []);
+      setPagination({
+        currentPage: res.data.currentPage,
+        totalPages: res.data.totalPages,
+        totalResults: res.data.totalResults,
+        limit: res.data.limit,
+      });
+      setLoading(false);
+    } catch (error) {}
   };
 
   // console.log("Raw Materials:", rawMaterials);
@@ -166,13 +201,18 @@ const RmMaster = ({ isOpen }) => {
   };
 
   useEffect(() => {
-    fetchRawMaterials(pagination.currentPage);
-  }, [pagination.currentPage, showBulkPanel, pagination.limit]);
+    if (restore) {
+      fetchDeletedRawMaterials(pagination.currentPage);
+    } else {
+      fetchRawMaterials(pagination.currentPage);
+    }
+  }, [pagination.currentPage, showBulkPanel, pagination.limit, restore]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this raw material?"))
       return;
     try {
+      setDeleteId(id);
       const res = await axios.delete(`/rms/delete-rm/${id}`);
       if (res.status == 200) {
         toast.success("Raw material deleted successfully");
@@ -182,6 +222,66 @@ const RmMaster = ({ isOpen }) => {
       }
     } catch (err) {
       toast.error("Failed to delete raw material");
+    } finally {
+      setDeleteId("");
+    }
+  };
+  const handlePermanentDelete = async (id = "") => {
+    if (
+      !window.confirm(
+        "Are you sure you want to Permanently Delete this raw materials?"
+      )
+    )
+      return;
+    try {
+      setDeleteId(id);
+      let payload = { ids: [...selectedRMs, id] };
+      const res = await axios.post(`/rms/permanent-delete/`, payload);
+      if (res.status == 200) {
+        toast.success("Raw materials deleted successfully");
+        fetchDeletedRawMaterials(pagination.currentPage);
+      } else {
+        toast.error("Failed to delete raw materials");
+      }
+    } catch (err) {
+      toast.error("Failed to delete raw materials");
+    } finally {
+      setDeleteId("");
+      setSelectedRMs([]);
+    }
+  };
+  const handleRestore = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Restore Raw Materials?"))
+      return;
+    try {
+      setRestoreId(id);
+      let payload = { ids: [...selectedRMs, id] };
+      const res = await axios.patch(`/rms/restore`, payload);
+      if (res.status == 200) {
+        toast.success("Raw materials Restored successfully");
+        fetchDeletedRawMaterials(pagination.currentPage);
+      } else {
+        toast.error("Failed to Restore raw materials");
+      }
+    } catch (err) {
+      toast.error("Failed to Restore raw materials");
+    } finally {
+      setRestoreId("");
+      setSelectedRMs([]);
+    }
+  };
+
+  const handleSelectRM = (id) => {
+    setSelectedRMs((prev) =>
+      prev.includes(id) ? prev.filter((rmId) => rmId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedRMs.length === rawMaterials.length) {
+      setSelectedRMs([]);
+    } else {
+      setSelectedRMs(rawMaterials.map((rm) => rm.id));
     }
   };
 
@@ -342,10 +442,42 @@ const RmMaster = ({ isOpen }) => {
     <div className={` p-3 max-w-[99vw] mx-auto overflow-x-hidden mt-4 `}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
-          Raw Materials{" "}
-          <span className="text-gray-500">({pagination.totalResults})</span>
-        </h2>
+        <div className="flex fex-wrap gap-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
+            Raw Materials{" "}
+            <span className="text-gray-500">({pagination.totalResults})</span>
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => {
+                setRestore((prev) => !prev);
+                setPagination((prev) => ({ ...prev, currentPage: 1 }));
+                setSelectedRMs([]);
+              }}
+              className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+            >
+              {restore ? "Cancel" : "Restore"}
+            </button>
+            {restore ? (
+              <>
+                <button
+                  onClick={() => handleRestore()}
+                  className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                >
+                  Restore
+                </button>
+                <button
+                  onClick={() => handlePermanentDelete()}
+                  className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                >
+                  Delete
+                </button>
+              </>
+            ) : (
+              ""
+            )}
+          </div>
+        </div>
 
         <div className="flex gap-2 flex-wrap">
           {showExportOptions && (
@@ -490,6 +622,16 @@ const RmMaster = ({ isOpen }) => {
           <table className={`text-[11px] min-w-[100vw]`}>
             <thead className="bg-primary text-[#292926] text-left">
               <tr>
+                {restore && (
+                  <th className="py-1.5 px-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedRMs.length === rawMaterials.length}
+                      onChange={toggleSelectAll}
+                      className="accent-primary"
+                    />
+                  </th>
+                )}
                 {[
                   "#",
                   "Created At",
@@ -533,15 +675,27 @@ const RmMaster = ({ isOpen }) => {
               {loading ? (
                 <TableSkeleton
                   rows={pagination.limit}
-                  columns={Array(27).fill({})}
+                  columns={restore ? Array(29).fill({}) : Array(28).fill({})}
                 />
               ) : (
                 <>
                   {rawMaterials.map((rm, i) => (
                     <tr
                       key={rm.id}
-                      className="border-b text-[11px] whitespace-nowrap border-primary hover:bg-gray-50"
+                      className={`border-b text-[11px] whitespace-nowrap border-primary hover:bg-gray-50`}
                     >
+                      {restore && (
+                        <td className="px-2 border-r border-r-primary ">
+                          <input
+                            type="checkbox"
+                            name=""
+                            id=""
+                            className=" accent-primary "
+                            checked={selectedRMs.includes(rm.id)}
+                            onChange={() => handleSelectRM(rm.id)}
+                          />
+                        </td>
+                      )}
                       <td className="px-2 border-r border-r-primary">
                         {Number(pagination.currentPage - 1) *
                           Number(pagination.limit) +
@@ -673,26 +827,46 @@ const RmMaster = ({ isOpen }) => {
                       </td>
                       <td className="px-2 ">
                         <div className="flex items-center gap-2 text-base text-[#d39c25]">
-                          {hasPermission("RawMaterial", "update") ? (
+                          {hasPermission("RawMaterial", "update") &&
+                          restore == false ? (
                             <FiEdit
                               data-tooltip-id="statusTip"
                               data-tooltip-content="Edit"
                               onClick={() => setEditData(rm)}
                               className="hover:text-blue-500 cursor-pointer"
                             />
+                          ) : restoreId == rm.id ? (
+                            <PulseLoader size={4} color="#d8b76a" />
                           ) : (
-                            "-"
+                            <TbRestore
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Restore"
+                              onClick={() => handleRestore(rm.id)}
+                              className="hover:text-green-500 cursor-pointer"
+                            />
                           )}
 
-                          {hasPermission("RawMaterial", "delete") ? (
+                          {hasPermission("RawMaterial", "delete") &&
+                          restore == false ? (
+                            deleteId == rm.id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
+                            ) : (
+                              <FiTrash2
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Delete"
+                                onClick={() => handleDelete(rm.id)}
+                                className="hover:text-red-500 cursor-pointer"
+                              />
+                            )
+                          ) : deleteId == rm.id ? (
+                            <PulseLoader size={4} color="#d8b76a" />
+                          ) : (
                             <FiTrash2
                               data-tooltip-id="statusTip"
-                              data-tooltip-content="Delete"
-                              onClick={() => handleDelete(rm.id)}
+                              data-tooltip-content="Permanent Delete"
+                              onClick={() => handlePermanentDelete(rm.id)}
                               className="hover:text-red-500 cursor-pointer"
                             />
-                          ) : (
-                            "-"
                           )}
                           <Tooltip
                             id="statusTip"
@@ -731,11 +905,9 @@ const RmMaster = ({ isOpen }) => {
         totalResults={pagination.totalResults}
         onEntriesChange={(limit) => {
           setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-          fetchData(1, limit);
         }}
         onPageChange={(page) => {
           setPagination((prev) => ({ ...prev, currentPage: page }));
-          fetchData(page, pagination.limit);
         }}
       />
       {showBulkPanel && <BulkRmPanel onClose={() => setShowBulkPanel(false)} />}
