@@ -13,6 +13,8 @@ import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
 
 import { useRef } from "react";
+import { TbRestore } from "react-icons/tb";
+import { PulseLoader } from "react-spinners";
 
 const LocationMaster = () => {
   const { hasPermission } = useAuth();
@@ -27,6 +29,12 @@ const LocationMaster = () => {
     totalResults: 0,
     limit: 10,
   });
+
+  const [restore, setRestore] = useState(false);
+  const [selectedLocations, setSelectedLocations] = useState([]);
+  const [restoreId, setRestoreId] = useState();
+  const [deleteId, setDeleteId] = useState();
+
   const hasMountedRef = useRef(false);
   useEffect(() => {
     if (!hasMountedRef.current) {
@@ -34,7 +42,11 @@ const LocationMaster = () => {
       return; // skip first debounce on mount
     }
     const debouncedSearch = debounce(() => {
-      fetchLocations(1); // Always fetch from page 1 for new search
+      if (restore) {
+        fetchDeletedLocations(1);
+      } else {
+        fetchLocations(1); // Always fetch from page 1 for new search
+      }
     }, 400); // 400ms delay
 
     debouncedSearch();
@@ -62,10 +74,34 @@ const LocationMaster = () => {
       setLoading(false);
     }
   };
+  const fetchDeletedLocations = async (page = 1, limit = pagination.limit) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `/locations/deleted?page=${page}&limit=${limit}&search=${search}&isActive=all`
+      );
+      setLocations(res.data.data || []);
+
+      setPagination({
+        currentPage: res.data.currentPage,
+        totalPages: res.data.totalPages,
+        totalResults: res.data.totalResults,
+        limit: res.data.limit,
+      });
+    } catch {
+      toast.error("Failed to fetch locations");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchLocations();
-  }, []);
+    if (restore) {
+      fetchDeletedLocations(pagination.currentPage);
+    } else {
+      fetchLocations(pagination.currentPage); // Always fetch from page 1 for new search
+    }
+  }, [pagination.currentPage, pagination.limit, restore]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this location?"))
@@ -80,6 +116,74 @@ const LocationMaster = () => {
       fetchLocations();
     } catch {
       toast.error("Delete failed");
+    }
+  };
+
+  const handlePermanentDelete = async (id = "") => {
+    if (
+      !window.confirm(
+        "Are you sure you want to Permanently Delete this raw materials?"
+      )
+    )
+      return;
+    try {
+      setDeleteId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selectedLocations, id] };
+      } else {
+        payload = { ids: [...selectedLocations] };
+      }
+      const res = await axios.post(`/locations/permanent-delete/`, payload);
+      if (res.status == 200) {
+        toast.success("locations deleted successfully");
+        fetchDeletedLocations(pagination.currentPage);
+      } else {
+        toast.error("Failed to delete locations");
+      }
+    } catch (err) {
+      toast.error("Failed to delete locations");
+    } finally {
+      setDeleteId("");
+      setSelectedLocations([]);
+    }
+  };
+  const handleRestore = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Restore Locations?")) return;
+    try {
+      setRestoreId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selectedLocations, id] };
+      } else {
+        payload = { ids: [...selectedLocations] };
+      }
+      const res = await axios.patch(`/locations/restore`, payload);
+      if (res.status == 200) {
+        toast.success("Locations Restored successfully");
+        fetchDeletedLocations(pagination.currentPage);
+      } else {
+        toast.error("Failed to Restore Locations");
+      }
+    } catch (err) {
+      toast.error("Failed to Restore Locations");
+    } finally {
+      setRestoreId("");
+      setSelectedLocations([]);
+    }
+  };
+
+  const handleSelect = (id) => {
+    setSelectedLocations((prev) =>
+      prev.includes(id) ? prev.filter((locId) => locId !== id) : [...prev, id]
+    );
+  };
+  console.log("selected loc", selectedLocations);
+  const toggleSelectAll = () => {
+    if (selectedLocations.length === locations.length) {
+      setSelectedLocations([]);
+    } else {
+      setSelectedLocations(locations.map((rm) => rm._id));
     }
   };
 
@@ -128,10 +232,42 @@ const LocationMaster = () => {
 
   return (
     <div className="relative p-3 max-w-[99vw] mx-auto overflow-x-hidden">
-      <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Location Master{" "}
-        <span className="text-gray-500">({pagination.totalResults})</span>
-      </h2>
+      <div className="flex fex-wrap gap-2">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4">
+          Location Master{" "}
+          <span className="text-gray-500">({pagination.totalResults})</span>
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => {
+              setRestore((prev) => !prev);
+              setPagination((prev) => ({ ...prev, currentPage: 1 }));
+              setSelectedLocations([]);
+            }}
+            className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+          >
+            {restore ? "Cancel" : "Restore"}
+          </button>
+          {restore ? (
+            <>
+              <button
+                onClick={() => handleRestore()}
+                className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+              >
+                Restore
+              </button>
+              <button
+                onClick={() => handlePermanentDelete()}
+                className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+              >
+                Delete
+              </button>
+            </>
+          ) : (
+            ""
+          )}
+        </div>
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
         <div className="relative w-full sm:w-80">
@@ -174,6 +310,16 @@ const LocationMaster = () => {
         <table className="min-w-full text-[11px]">
           <thead className="bg-[#d8b76a] text-[#292926] text-left whitespace-nowrap">
             <tr>
+              {restore && (
+                <th className="px-4 py-1.5">
+                  <input
+                    type="checkbox"
+                    checked={selectedLocations.length === locations.length}
+                    onChange={toggleSelectAll}
+                    className="accent-primary"
+                  />
+                </th>
+              )}
               <th className="px-4 py-1.5">#</th>
               <th className="px-4 py-1.5 hidden md:table-cell">Created At</th>
               <th className="px-4 py-1.5 hidden md:table-cell">Updated At</th>
@@ -199,6 +345,18 @@ const LocationMaster = () => {
                     key={loc._id}
                     className="border-t border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
                   >
+                    {restore && (
+                      <td className="px-4  border-r border-[#d8b76a]">
+                        <input
+                          type="checkbox"
+                          name=""
+                          id=""
+                          className=" accent-primary "
+                          checked={selectedLocations.includes(loc._id)}
+                          onChange={() => handleSelect(loc._id)}
+                        />
+                      </td>
+                    )}
                     <td className="px-4  border-r border-[#d8b76a]">
                       {Number(pagination.currentPage - 1) *
                         Number(pagination.limit) +
@@ -249,25 +407,45 @@ const LocationMaster = () => {
                       {loc.createdBy?.fullName || "-"}
                     </td>
                     <td className="px-4 mt-1.5 flex gap-3 text-sm  items-center text-[#d8b76a]">
-                      {hasPermission("Location", "update") ? (
+                      {hasPermission("Location", "update") &&
+                      restore == false ? (
                         <FiEdit
                           data-tooltip-id="statusTip"
                           data-tooltip-content="Edit"
                           onClick={() => setEditingLocation(loc)}
                           className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
                         />
+                      ) : restoreId == loc._id ? (
+                        <PulseLoader size={4} color="#d8b76a" />
                       ) : (
-                        "-"
+                        <TbRestore
+                          data-tooltip-id="statusTip"
+                          data-tooltip-content="Restore"
+                          onClick={() => handleRestore(loc._id)}
+                          className="hover:text-green-500 cursor-pointer"
+                        />
                       )}
-                      {hasPermission("Location", "update") ? (
+                      {hasPermission("Location", "delete") &&
+                      restore == false ? (
+                        deleteId == loc._id ? (
+                          <PulseLoader size={4} color="#d8b76a" />
+                        ) : (
+                          <FiTrash2
+                            data-tooltip-id="statusTip"
+                            data-tooltip-content="Delete"
+                            className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                            onClick={() => handleDelete(loc._id)}
+                          />
+                        )
+                      ) : deleteId == loc._id ? (
+                        <PulseLoader size={4} color="#d8b76a" />
+                      ) : (
                         <FiTrash2
                           data-tooltip-id="statusTip"
-                          data-tooltip-content="Delete"
-                          className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                          onClick={() => handleDelete(loc._id)}
+                          data-tooltip-content="Permanent Delete"
+                          onClick={() => handlePermanentDelete(loc._id)}
+                          className="hover:text-red-500 cursor-pointer"
                         />
-                      ) : (
-                        "-"
                       )}
                       <Tooltip
                         id="statusTip"
@@ -312,11 +490,11 @@ const LocationMaster = () => {
         totalResults={pagination.totalResults}
         onEntriesChange={(limit) => {
           setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-          fetchLocations(1, limit);
+          // fetchLocations(1, limit);
         }}
         onPageChange={(page) => {
           setPagination((prev) => ({ ...prev, currentPage: page }));
-          fetchLocations(page, pagination.limit);
+          // fetchLocations(page, pagination.limit);
         }}
       />
     </div>
