@@ -178,7 +178,7 @@ const LocationMaster = () => {
       prev.includes(id) ? prev.filter((locId) => locId !== id) : [...prev, id]
     );
   };
-  console.log("selected loc", selectedLocations);
+
   const toggleSelectAll = () => {
     if (selectedLocations.length === locations.length) {
       setSelectedLocations([]);
@@ -232,8 +232,8 @@ const LocationMaster = () => {
 
   return (
     <div className="relative p-3 max-w-[99vw] mx-auto overflow-x-hidden">
-      <div className="flex fex-wrap gap-2">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4">
+      <div className="flex fex-wrap gap-2 mb-4">
+        <h2 className="text-xl sm:text-2xl font-bold ">
           Location Master{" "}
           <span className="text-gray-500">({pagination.totalResults})</span>
         </h2>
@@ -244,7 +244,7 @@ const LocationMaster = () => {
               setPagination((prev) => ({ ...prev, currentPage: 1 }));
               setSelectedLocations([]);
             }}
-            className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+            className="bg-primary text-secondary  px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
           >
             {restore ? "Cancel" : "Restore"}
           </button>
