@@ -20,6 +20,8 @@ import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
 import AttachmentsModal2 from "../../AttachmentsModal2";
 import { PulseLoader } from "react-spinners";
+import { TbRestore } from "react-icons/tb";
+import { Tooltip } from "react-tooltip";
 
 const BomMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -40,6 +42,11 @@ const BomMaster = ({ isOpen }) => {
   });
   const [downloading, setDownloading] = useState();
 
+  const [restore, setRestore] = useState(false);
+  const [selected, setSelected] = useState([]);
+  const [restoreId, setRestoreId] = useState();
+  const [deleteId, setDeleteId] = useState();
+
   const hasMountedRef = useRef(false);
 
   useEffect(() => {
@@ -48,7 +55,11 @@ const BomMaster = ({ isOpen }) => {
       return; // skip first debounce on mount
     }
     const debouncedSearch = debounce(() => {
-      fetchBOMs(1); // Always fetch from page 1 for new search
+      if (restore) {
+        fetchDeletedBOMs(1);
+      } else {
+        fetchBOMs(1);
+      }
     }, 400); // 400ms delay
 
     debouncedSearch();
@@ -79,12 +90,39 @@ const BomMaster = ({ isOpen }) => {
       setLoading(false);
     }
   };
+  const fetchDeletedBOMs = async (page = 1, limit = pagination.limit) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `/boms/deleted?page=${page}&search=${search}&limit=${limit}`
+      );
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
+      setBOMs(res.data.data || []);
+      setPagination({
+        currentPage: res.data.currentPage,
+        totalPages: res.data.totalPages,
+        totalResults: res.data.totalResults,
+        limit: res.data.limit,
+      });
+    } catch {
+      toast.error("Failed to fetch BOMs");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   ScrollLock(showModal || editingBOM != null);
 
   useEffect(() => {
-    fetchBOMs();
-  }, []);
+    if (restore) {
+      fetchDeletedBOMs(pagination.currentPage);
+    } else {
+      fetchBOMs(pagination.currentPage);
+    }
+  }, [pagination.currentPage, pagination.limit, restore]);
 
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
@@ -126,26 +164,6 @@ const BomMaster = ({ isOpen }) => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this BOM?")) return;
-    try {
-      const res = await axios.delete(`/boms/delete/${id}`);
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
-
-      if (res.data.status == 200) {
-        toast.success(`BOM Deleted Successfully`);
-        fetchBOMs(pagination.currentPage);
-      } else {
-        toast.error("Failed to Delete BOM");
-      }
-    } catch (err) {
-      toast.error("Failed to Delete BOM");
-    }
-  };
-
   const handlePreviewBom = async (bomData) => {
     try {
       setDownloading(true);
@@ -166,13 +184,128 @@ const BomMaster = ({ isOpen }) => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this BOM?")) return;
+    try {
+      const res = await axios.delete(`/boms/delete/${id}`);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
+
+      if (res.data.status == 200) {
+        toast.success(`BOM Deleted Successfully`);
+        fetchBOMs(pagination.currentPage);
+      } else {
+        toast.error("Failed to Delete BOM");
+      }
+    } catch (err) {
+      toast.error("Failed to Delete BOM");
+    }
+  };
+
+  const handlePermanentDelete = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Delete Permanently?")) return;
+    try {
+      setDeleteId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.post(`/boms/permanent-delete/`, payload);
+      if (res.status == 200) {
+        toast.success("deleted successfully");
+        fetchDeletedBOMs(pagination.currentPage);
+      } else {
+        toast.error("Failed to delete");
+      }
+    } catch (err) {
+      toast.error("Failed to delete");
+    } finally {
+      setDeleteId("");
+      setSelected([]);
+    }
+  };
+  const handleRestore = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Restore?")) return;
+    try {
+      setRestoreId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.patch(`/boms/restore`, payload);
+      if (res.status == 200) {
+        toast.success("Restore successfully");
+        fetchDeletedBOMs(pagination.currentPage);
+      } else {
+        toast.error("Failed to Restore");
+      }
+    } catch (err) {
+      toast.error("Failed to Restore");
+    } finally {
+      setRestoreId("");
+      setSelected([]);
+    }
+  };
+
+  const handleSelect = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.length === BOMs.length) {
+      setSelected([]);
+    } else {
+      setSelected(BOMs.map((item) => item._id));
+    }
+  };
+
   return (
     <>
       <div className="p-3 max-w-[99vw] mx-auto">
-        <h2 className="text-2xl font-bold mb-4">
-          Bill Of Materials{" "}
-          <span className="text-gray-500">({pagination.totalResults})</span>
-        </h2>
+        <div className="flex fex-wrap gap-2 mb-4">
+          <h2 className="text-2xl font-bold ">
+            Bill Of Materials{" "}
+            <span className="text-gray-500">({pagination.totalResults})</span>
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => {
+                setRestore((prev) => !prev);
+                setPagination((prev) => ({ ...prev, currentPage: 1 }));
+                setSelected([]);
+              }}
+              className="bg-primary text-secondary  px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+            >
+              {restore ? "Cancel" : "Restore"}
+            </button>
+            {restore ? (
+              <>
+                <button
+                  onClick={() => handleRestore()}
+                  className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                >
+                  Restore
+                </button>
+                <button
+                  onClick={() => handlePermanentDelete()}
+                  className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                >
+                  Delete
+                </button>
+              </>
+            ) : (
+              ""
+            )}
+          </div>
+        </div>
 
         <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
           <div className="relative w-full sm:w-80">
@@ -183,7 +316,7 @@ const BomMaster = ({ isOpen }) => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:outline-none"
-            />{" "}
+            />
             {search && (
               <FiX
                 className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
@@ -211,6 +344,16 @@ const BomMaster = ({ isOpen }) => {
             >
               <thead className="bg-primary text-secondary">
                 <tr>
+                  {restore && (
+                    <th className="px-[8px] py-1">
+                      <input
+                        type="checkbox"
+                        checked={selected.length === BOMs.length}
+                        onChange={toggleSelectAll}
+                        className="accent-primary"
+                      />
+                    </th>
+                  )}
                   <th className="px-[8px] py-1.5 ">#</th>
                   <th className="px-[8px] ">Created At</th>
                   <th className="px-[8px] ">Updated At</th>
@@ -231,7 +374,7 @@ const BomMaster = ({ isOpen }) => {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={Array(13).fill({})}
+                    columns={restore ? Array(14).fill({}) : Array(13).fill({})}
                   />
                 ) : (
                   <>
@@ -245,6 +388,18 @@ const BomMaster = ({ isOpen }) => {
                             )
                           }
                         >
+                          {restore && (
+                            <td className="px-[8px] border-r border-primary">
+                              <input
+                                type="checkbox"
+                                name=""
+                                id=""
+                                className=" accent-primary "
+                                checked={selected.includes(b._id)}
+                                onChange={() => handleSelect(b._id)}
+                              />
+                            </td>
+                          )}
                           <td className="px-[8px] border-r border-primary py-1">
                             {(pagination.currentPage - 1) * pagination.limit +
                               i +
@@ -330,30 +485,74 @@ const BomMaster = ({ isOpen }) => {
                             )}
                           </td>
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-primary">
-                            {expandedBOMId === b._id && downloading ? (
-                              <PulseLoader size={4} color="#d8b76a" />
+                            {restore ? (
+                              ""
                             ) : (
-                              <FaFileDownload
-                                onClick={() => handlePreviewBom(b)}
-                                className="cursor-pointer text-primary hover:text-green-600"
-                              />
+                              <>
+                                {expandedBOMId === b._id && downloading ? (
+                                  <PulseLoader size={4} color="#d8b76a" />
+                                ) : (
+                                  <FaFileDownload
+                                    data-tooltip-id="statusTip"
+                                    data-tooltip-content="Download"
+                                    onClick={() => handlePreviewBom(b)}
+                                    className="cursor-pointer text-primary hover:text-green-600"
+                                  />
+                                )}
+                              </>
                             )}
-                            {hasPermission("BOM", "update") ? (
+
+                            {hasPermission("BOM", "update") &&
+                            restore == false ? (
                               <FiEdit
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Edit"
                                 onClick={() => setEditingBOM(b)}
                                 className="cursor-pointer text-primary hover:text-blue-600"
                               />
+                            ) : restoreId == b._id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
                             ) : (
-                              "-"
-                            )}
-                            {hasPermission("BOM", "delete") ? (
-                              <FiTrash2
-                                onClick={() => handleDelete(b._id)}
-                                className="cursor-pointer text-primary hover:text-red-600"
+                              <TbRestore
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Restore"
+                                onClick={() => handleRestore(b._id)}
+                                className="hover:text-green-500 cursor-pointer"
                               />
-                            ) : (
-                              "-"
                             )}
+
+                            {hasPermission("BOM", "delete") &&
+                            restore == false ? (
+                              deleteId == b._id ? (
+                                <PulseLoader size={4} color="#d8b76a" />
+                              ) : (
+                                <FiTrash2
+                                  data-tooltip-id="statusTip"
+                                  data-tooltip-content="Delete"
+                                  onClick={() => handleDelete(b._id)}
+                                  className="cursor-pointer text-primary hover:text-red-600"
+                                />
+                              )
+                            ) : deleteId == b._id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
+                            ) : (
+                              <FiTrash2
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Permanent Delete"
+                                onClick={() => handlePermanentDelete(b._id)}
+                                className="hover:text-red-500 cursor-pointer"
+                              />
+                            )}
+                            <Tooltip
+                              id="statusTip"
+                              place="top"
+                              style={{
+                                backgroundColor: "#292926",
+                                color: "white",
+                                fontSize: "12px",
+                                fontWeight: "bold",
+                              }}
+                            />
                           </td>
                         </tr>
                         {expandedBOMId === b._id && (

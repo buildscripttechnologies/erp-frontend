@@ -452,7 +452,7 @@ const SampleMaster = ({ isOpen }) => {
                                 type="checkbox"
                                 name=""
                                 id=""
-                                className=" accent-primary "
+                                className=" accent-primary"
                                 checked={selected.includes(b._id)}
                                 onChange={() => handleSelect(b._id)}
                               />
