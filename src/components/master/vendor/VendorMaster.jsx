@@ -333,7 +333,7 @@ const VendorMaster = ({ isOpen }) => {
               />
             )}
           </div>
-          {hasPermission("Venodr", "write") && (
+          {hasPermission("Vendor", "write") && (
             <button
               onClick={() => setShowModal(true)}
               className="bg-[#d8b76a]   hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center justify-center gap-2 cursor-pointer"
