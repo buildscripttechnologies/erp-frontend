@@ -29,7 +29,8 @@ import ScrollLock from "../ScrollLock";
 import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
 import { useRef } from "react";
-import { BeatLoader } from "react-spinners";
+import { BeatLoader, PulseLoader } from "react-spinners";
+import { TbRestore } from "react-icons/tb";
 
 export default function MasterUsers() {
   const { hasPermission } = useAuth();
@@ -50,6 +51,12 @@ export default function MasterUsers() {
   const [permissionUser, setPermissionUser] = useState(null); // null or user object
 
   const [userTypesLoaded, setUserTypesLoaded] = useState(false);
+
+  const [restore, setRestore] = useState(false);
+  const [selected, setSelected] = useState([]);
+  const [restoreId, setRestoreId] = useState();
+  const [deleteId, setDeleteId] = useState();
+
   const hasMountedRef = useRef(false);
   ScrollLock(
     editUserId != null || editMode || showForm || permissionUser != null
@@ -77,7 +84,11 @@ export default function MasterUsers() {
       return; // skip first debounce on mount
     }
     const debouncedSearch = debounce(() => {
-      fetchUsers(1); // Always fetch from page 1 for new search
+      if (restore) {
+        fetchDeletedUsers(1);
+      } else {
+        fetchUsers(1);
+      }
     }, 400); // 400ms delay
 
     debouncedSearch();
@@ -161,6 +172,55 @@ export default function MasterUsers() {
       setLoading(false);
     }
   };
+  const fetchDeletedUsers = async (page = 1, limit = pagination.limit) => {
+    try {
+      setLoading(true);
+      const params = {
+        page,
+        limit,
+        searchText,
+      };
+      if (filterRole !== "All") {
+        params.userType = filterRole;
+      }
+
+      const res = await axios.get("/users/deleted", { params });
+
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
+      if (res.data.status === 200) {
+        setUsers(res.data.users);
+        setPagination({
+          totalResults: res.data.pagination.totalResults,
+          totalPages: res.data.pagination.totalPages,
+          currentPage: res.data.pagination.currentPage,
+          limit: res.data.pagination.limit,
+        });
+
+        // setAccess(true);
+        setLoading(false);
+      } else {
+        toast.error("Failed to fetch users.");
+        setUsers([]);
+        setPagination({
+          totalResults: 0,
+          totalPages: 1,
+          currentPage: 1,
+          limit: 10,
+        });
+      }
+    } catch (err) {
+      if (err.status == 403) {
+        toast.error("Only Admin Access");
+      } else {
+        toast.error(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const loadUserTypes = async () => {
@@ -172,9 +232,20 @@ export default function MasterUsers() {
 
   useEffect(() => {
     if (userTypesLoaded) {
-      fetchUsers();
+      if (restore) {
+        fetchDeletedUsers(pagination.currentPage);
+      } else {
+        fetchUsers(pagination.currentPage);
+      }
     }
-  }, [userTypesLoaded, filterRole, currentPage]);
+  }, [
+    userTypesLoaded,
+    filterRole,
+    currentPage,
+    pagination.currentPage,
+    pagination.limit,
+    restore,
+  ]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -329,17 +400,6 @@ export default function MasterUsers() {
     }
   };
 
-  // Client-side search
-  // const filteredUsers = users.filter((user) => {
-  //   const q = searchText.toLowerCase();
-  //   return (
-  //     user.fullName?.toLowerCase().includes(q) ||
-  //     user.email?.toLowerCase().includes(q) ||
-  //     user.mobile?.toLowerCase().includes(q) ||
-  //     user.username?.toLowerCase().includes(q)
-  //   );
-  // });
-
   const userTableHeaders = [
     { label: "#", className: "" },
     { label: "Name", className: "" },
@@ -351,6 +411,69 @@ export default function MasterUsers() {
     { label: "Status", className: "" },
     { label: "Actions", className: "" },
   ];
+
+  const handlePermanentDelete = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Delete Permanently?")) return;
+    try {
+      setDeleteId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.post(`/users/permanent-delete/`, payload);
+      if (res.status == 200) {
+        toast.success("deleted successfully");
+        fetchDeletedUsers(pagination.currentPage);
+      } else {
+        toast.error("Failed to delete");
+      }
+    } catch (err) {
+      toast.error("Failed to delete");
+    } finally {
+      setDeleteId("");
+      setSelected([]);
+    }
+  };
+  const handleRestore = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Restore?")) return;
+    try {
+      setRestoreId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.patch(`/users/restore`, payload);
+      if (res.status == 200) {
+        toast.success("Restore successfully");
+        fetchDeletedUsers(pagination.currentPage);
+      } else {
+        toast.error("Failed to Restore");
+      }
+    } catch (err) {
+      toast.error("Failed to Restore");
+    } finally {
+      setRestoreId("");
+      setSelected([]);
+    }
+  };
+
+  const handleSelect = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.length === users.length) {
+      setSelected([]);
+    } else {
+      setSelected(users.map((item) => item.id));
+    }
+  };
 
   return (
     <>
@@ -483,10 +606,44 @@ export default function MasterUsers() {
           ${editMode || showForm ? "scroll-events-none" : ""} `}
         >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
-              All Users{" "}
-              <span className=" text-black">({pagination.totalResults})</span>
-            </h2>
+            <div className="flex fex-wrap gap-2 mb-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
+                All Users{" "}
+                <span className=" text-black">({pagination.totalResults})</span>
+              </h2>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => {
+                    setRestore((prev) => !prev);
+                    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+                    setSelected([]);
+                  }}
+                  className="bg-primary text-secondary  px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                >
+                  {restore ? "Cancel" : "Restore"}
+                </button>
+                {restore ? (
+                  <>
+                    <button
+                      onClick={() => handleRestore()}
+                      className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                    >
+                      Restore
+                    </button>
+                    <button
+                      onClick={() => handlePermanentDelete()}
+                      className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                    >
+                      Delete
+                    </button>
+                  </>
+                ) : (
+                  ""
+                )}
+              </div>
+            </div>
+
             {hasPermission("User", "create") && (
               <button
                 onClick={() => setShowForm(true)}
@@ -578,13 +735,23 @@ export default function MasterUsers() {
             <table className="min-w-full text-[11px]  whitespace-nowrap">
               <thead className="bg-[#d8b76a] text-[#292927] text-left">
                 <tr>
+                  {restore && (
+                    <th className="py-1.5 px-3">
+                      <input
+                        type="checkbox"
+                        checked={selected.length === users.length}
+                        onChange={toggleSelectAll}
+                        className="accent-primary"
+                      />
+                    </th>
+                  )}
                   <th className="py-1.5 px-2">#</th>
                   <th className=" px-2">Name</th>
-                  <th className=" px-2 hidden md:table-cell">Mobile</th>
-                  <th className=" px-2 hidden lg:table-cell">Email</th>
-                  <th className=" px-2 hidden lg:table-cell">IsVerified</th>
+                  <th className=" px-2">Mobile</th>
+                  <th className=" px-2 ">Email</th>
+                  <th className=" px-2 ">IsVerified</th>
                   <th className=" px-2">Role</th>
-                  <th className=" px-2 hidden xl:table-cell">Username</th>
+                  <th className=" px-2 ">Username</th>
                   <th className=" px-2">Status</th>
                   <th className=" px-2">Actions</th>
                 </tr>
@@ -593,11 +760,14 @@ export default function MasterUsers() {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={userTableHeaders}
+                    columns={restore ? Array(10).fill({}) : Array(9).fill({})}
                   />
                 ) : users.length == 0 ? (
                   <tr>
-                    <td colSpan="9" className="text-center py-4 text-gray-500">
+                    <td
+                      colSpan="100%"
+                      className="text-center py-4 text-gray-500"
+                    >
                       No Users found.
                     </td>
                   </tr>
@@ -608,6 +778,18 @@ export default function MasterUsers() {
                         key={u.id}
                         className="border-b  border-[#d8b76a] hover:bg-gray-50"
                       >
+                        {restore && (
+                          <td className="px-[8px] border-r border-primary">
+                            <input
+                              type="checkbox"
+                              name=""
+                              id=""
+                              className=" accent-primary"
+                              checked={selected.includes(u.id)}
+                              onChange={() => handleSelect(u.id)}
+                            />
+                          </td>
+                        )}
                         <td className="px-2  border-r  border-[#d8b76a]">
                           {Number(pagination.currentPage - 1) *
                             Number(pagination.limit) +
@@ -617,13 +799,13 @@ export default function MasterUsers() {
                         <td className=" px-2 border-r  border-[#d8b76a]">
                           {u.fullName}
                         </td>
-                        <td className=" px-2 border-r  border-[#d8b76a] hidden md:table-cell">
+                        <td className=" px-2 border-r  border-[#d8b76a] ">
                           {u.mobile}
                         </td>
-                        <td className=" px-2 border-r  border-[#d8b76a] hidden lg:table-cell">
+                        <td className=" px-2 border-r  border-[#d8b76a]">
                           {u.email}
                         </td>
-                        <td className=" px-2 border-r  border-[#d8b76a] hidden lg:table-cell ">
+                        <td className=" px-2 border-r  border-[#d8b76a]">
                           <Toggle
                             defaultChecked={u.isVerified}
                             onChange={() => toggleVerification(u)}
@@ -633,7 +815,7 @@ export default function MasterUsers() {
                         <td className=" px-2 border-r  border-[#d8b76a]">
                           {u.userType}
                         </td>
-                        <td className=" px-2 border-r  border-[#d8b76a] hidden xl:table-cell">
+                        <td className=" px-2 border-r  border-[#d8b76a] ">
                           {u.username}
                         </td>
                         <td className=" px-2 border-r  border-[#d8b76a]">
@@ -643,17 +825,26 @@ export default function MasterUsers() {
                           />
                         </td>
                         <td className="pt-1 px-2 flex gap-2 text-sm items-center  text-[#d39c25]">
-                          {hasPermission("User", "update") ? (
+                          {hasPermission("User", "update") &&
+                          restore == false ? (
                             <FiEdit
                               data-tooltip-id="statusTip"
                               data-tooltip-content="Edit User"
                               onClick={() => handleEdit(u)}
                               className="hover:text-blue-500 cursor-pointer"
                             />
+                          ) : restoreId == u.id ? (
+                            <PulseLoader size={4} color="#d8b76a" />
                           ) : (
-                            "-"
+                            <TbRestore
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Restore"
+                              onClick={() => handleRestore(u.id)}
+                              className="hover:text-green-500 cursor-pointer"
+                            />
                           )}
-                          {hasPermission("User", "update") ? (
+
+                          {hasPermission("User", "update") && !restore ? (
                             <LuUserCog
                               data-tooltip-id="statusTip"
                               data-tooltip-content="User Permission"
@@ -661,17 +852,30 @@ export default function MasterUsers() {
                               className="hover:text-red-500 cursor-pointer"
                             />
                           ) : (
-                            "-"
+                            ""
                           )}
-                          {hasPermission("User", "delete") ? (
+
+                          {hasPermission("User", "delete") &&
+                          restore == false ? (
+                            deleteId == u.id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
+                            ) : (
+                              <FiTrash2
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Delete User"
+                                onClick={() => handleDelete(u.id)}
+                                className="hover:text-red-500 cursor-pointer"
+                              />
+                            )
+                          ) : deleteId == u.id ? (
+                            <PulseLoader size={4} color="#d8b76a" />
+                          ) : (
                             <FiTrash2
                               data-tooltip-id="statusTip"
-                              data-tooltip-content="Delete User"
-                              onClick={() => handleDelete(u.id)}
+                              data-tooltip-content="Permanent Delete"
+                              onClick={() => handlePermanentDelete(u.id)}
                               className="hover:text-red-500 cursor-pointer"
                             />
-                          ) : (
-                            "-"
                           )}
 
                           {/* {u.status === "Active" ? (

@@ -129,10 +129,6 @@ const RoleMaster = () => {
     }
   };
 
-  // const filteredRoles = roles.filter(
-  //   (r) => r.name?.toLowerCase().includes(search.toLowerCase()) || ""
-  // );
-
   const userTableHeaders = [
     { label: "#", className: "" },
     { label: "Created At", className: "hidden md:table-cell" },
@@ -324,7 +320,7 @@ const RoleMaster = () => {
               />
             ) : roles.length === 0 ? (
               <tr>
-                <td colSpan="7" className="text-center py-4 text-gray-500">
+                <td colSpan="100%" className="text-center py-4 text-gray-500">
                   No roles found.
                 </td>
               </tr>
