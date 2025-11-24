@@ -906,7 +906,7 @@ const SfgMaster = ({ isOpen }) => {
                   {sfgs.length === 0 && (
                     <tr>
                       <td
-                        colSpan="17"
+                        colSpan="100%"
                         className="text-center text-gray-500 py-3"
                       >
                         No SFGs found.

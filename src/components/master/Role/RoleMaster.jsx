@@ -131,8 +131,8 @@ const RoleMaster = () => {
 
   const userTableHeaders = [
     { label: "#", className: "" },
-    { label: "Created At", className: "hidden md:table-cell" },
-    { label: "Updated At", className: "hidden md:table-cell" },
+    { label: "Created At", className: "" },
+    { label: "Updated At", className: "" },
     { label: "Role Name", className: "" },
     { label: "Status", className: "" },
     { label: "Created By", className: "" },
@@ -403,7 +403,7 @@ const RoleMaster = () => {
                         />
                       )}
 
-                      {hasPermission("Vendor", "delete") && restore == false ? (
+                      {hasPermission("Role", "delete") && restore == false ? (
                         deleteId == role._id ? (
                           <PulseLoader size={4} color="#d8b76a" />
                         ) : (
@@ -449,11 +449,9 @@ const RoleMaster = () => {
         totalResults={pagination.totalResults}
         onEntriesChange={(limit) => {
           setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-          fetchRoles(1, limit);
         }}
         onPageChange={(page) => {
           setPagination((prev) => ({ ...prev, currentPage: page }));
-          fetchRoles(page, pagination.limit);
         }}
       />
 

@@ -649,7 +649,7 @@ const FgMaster = ({ isOpen }) => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-          />{" "}
+          />
           {search && (
             <FiX
               className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
@@ -1046,11 +1046,11 @@ const FgMaster = ({ isOpen }) => {
         totalResults={pagination.totalResults}
         onEntriesChange={(limit) => {
           setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-          fetchFGs(1, limit);
+          
         }}
         onPageChange={(page) => {
           setPagination((prev) => ({ ...prev, currentPage: page }));
-          fetchFGs(page, pagination.limit);
+         
         }}
       />
     </div>

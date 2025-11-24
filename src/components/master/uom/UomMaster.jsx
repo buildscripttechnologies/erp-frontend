@@ -497,11 +497,11 @@ const UomMaster = () => {
         totalResults={pagination.totalResults}
         onEntriesChange={(limit) => {
           setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-          fetchUOMs(1, limit);
+          
         }}
         onPageChange={(page) => {
           setPagination((prev) => ({ ...prev, currentPage: page }));
-          fetchUOMs(page, pagination.limit);
+          
         }}
       />
     </div>

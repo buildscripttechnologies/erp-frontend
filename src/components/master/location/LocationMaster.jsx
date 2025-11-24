@@ -278,7 +278,7 @@ const LocationMaster = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
-          />{" "}
+          />
           {search && (
             <FiX
               className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
@@ -321,14 +321,14 @@ const LocationMaster = () => {
                 </th>
               )}
               <th className="px-4 py-1.5">#</th>
-              <th className="px-4 py-1.5 hidden md:table-cell">Created At</th>
-              <th className="px-4 py-1.5 hidden md:table-cell">Updated At</th>
+              <th className="px-4 py-1.5 ">Created At</th>
+              <th className="px-4 py-1.5 ">Updated At</th>
               <th className="px-4 py-1.5">Location ID</th>
               <th className="px-4 py-1.5">Store No.</th>
               <th className="px-4 py-1.5">Store R. No.</th>
               <th className="px-4 py-1.5">Bin No.</th>
               <th className="px-4 py-1.5">Status</th>
-              <th className="px-4 py-1.5 hidden md:table-cell">Created By</th>
+              <th className="px-4 py-1.5 ">Created By</th>
               <th className="px-4 py-1.5">Actions</th>
             </tr>
           </thead>
@@ -336,7 +336,7 @@ const LocationMaster = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(10).fill({})}
+                columns={restore ? Array(11).fill({}) : Array(10).fill({})}
               />
             ) : (
               <>
@@ -363,7 +363,7 @@ const LocationMaster = () => {
                         index +
                         1}
                     </td>
-                    <td className="px-4  border-r border-[#d8b76a] hidden md:table-cell">
+                    <td className="px-4  border-r border-[#d8b76a] ">
                       {new Date(loc.createdAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
@@ -373,7 +373,7 @@ const LocationMaster = () => {
                         hour12: true,
                       }) || "-"}
                     </td>
-                    <td className="px-4  border-r border-[#d8b76a] hidden md:table-cell">
+                    <td className="px-4  border-r border-[#d8b76a] ">
                       {new Date(loc.updatedAt).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
@@ -403,7 +403,7 @@ const LocationMaster = () => {
                         }
                       />
                     </td>
-                    <td className="px-4  border-r border-[#d8b76a] hidden md:table-cell">
+                    <td className="px-4  border-r border-[#d8b76a] ">
                       {loc.createdBy?.fullName || "-"}
                     </td>
                     <td className="px-4 mt-1.5 flex gap-3 text-sm  items-center text-[#d8b76a]">

@@ -931,11 +931,11 @@ export default function MasterUsers() {
             totalResults={pagination.totalResults}
             onEntriesChange={(limit) => {
               setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-              fetchUsers(1, limit);
+              
             }}
             onPageChange={(page) => {
               setPagination((prev) => ({ ...prev, currentPage: page }));
-              fetchUsers(page, pagination.limit);
+              
             }}
           />
         </div>
