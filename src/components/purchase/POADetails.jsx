@@ -19,6 +19,7 @@ const POADetails = ({ PO }) => {
         <thead className="bg-primary/70">
           <tr>
             <th className="px-2 py-1 border-r border-primary">S. No.</th>
+            <th className="px-2 py-1 border-r border-primary">Image</th>
             <th className="px-2 py-1 border-r border-primary">Sku Code</th>
             <th className="px-2 py-1 border-r border-primary">Item Name</th>
             <th className="px-2 py-1 border-r border-primary">
@@ -61,6 +62,12 @@ const POADetails = ({ PO }) => {
               >
                 <td className="px-2 py-1 border-r border-primary">
                   {index + 1}
+                </td>
+                <td className="px-2 py-1  border-r border-primary">
+                  <img
+                    src={poItem.item?.attachments?.[0]?.fileUrl}
+                    alt={poItem.item?.attachments?.[0]?.fileName}
+                  />
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
                   {poItem.item?.skuCode || "-"}

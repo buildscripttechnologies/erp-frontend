@@ -1,7 +1,14 @@
 import React, { Fragment, useEffect, useState } from "react";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
-import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
+import {
+  FiEdit,
+  FiTrash2,
+  FiPlus,
+  FiSearch,
+  FiX,
+  FiPrinter,
+} from "react-icons/fi";
 import Dashboard from "../../../pages/Dashboard";
 import AddVendorModal from "./AddVendorModel";
 import TableSkeleton from "../../TableSkeleton";
@@ -18,6 +25,11 @@ import { useRef } from "react";
 import { debounce } from "lodash";
 import { PulseLoader } from "react-spinners";
 import { TbRestore } from "react-icons/tb";
+import {
+  generateEnvelopePdf,
+  generateEnvelopePdfWithoutBG,
+} from "../customer/generateEnvelopePdf";
+import PreviewEnvelope from "../customer/EnvelopePreview";
 
 const VendorMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -45,6 +57,51 @@ const VendorMaster = ({ isOpen }) => {
   const handleEdit = (vendor) => {
     setSelectedVendor(vendor); // vendor object from the list
     setShowUpdateModal(true);
+  };
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [previewCustomer, setPreviewCustomer] = useState(null);
+  const [loadingPdf, setLoadingPdf] = useState(false);
+  const handlePreviewEnvelope = async (vendor) => {
+    const fields = {
+      vendorName: "Customer name is required",
+      address: "Address is required",
+      city: "City is required",
+      state: "State is required",
+      postalCode: "Postal code is required",
+      country: "Country is required",
+      mobile: "Mobile number is required",
+    };
+
+    for (const [key, message] of Object.entries(fields)) {
+      if (!vendor[key] && key !== "mobile") {
+        toast.error(message);
+        return;
+      }
+    }
+
+    if (!vendor.contactPersons?.[0]?.phone) {
+      toast.error("Mobile number is required");
+      return;
+    }
+
+    setLoadingPdf(true);
+    try {
+      const { url } = await generateEnvelopePdf(vendor, "/env.pdf");
+      setPdfUrl(url);
+      setPreviewCustomer(vendor);
+    } catch (err) {
+      toast.error("Failed to generate envelope");
+    } finally {
+      setLoadingPdf(false);
+    }
+  };
+
+  const handlePrintEnvelope = async () => {
+    const { url } = await generateEnvelopePdfWithoutBG(previewCustomer, "");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${previewCustomer.vendorName || "Receipt"}.pdf`; // <-- custom filename here
+    a.click();
   };
 
   const [pagination, setPagination] = useState({
@@ -501,7 +558,6 @@ const VendorMaster = ({ isOpen }) => {
                                 className="hover:text-green-500 cursor-pointer"
                               />
                             )}
-
                             {hasPermission("Vendor", "delete") &&
                             restore == false ? (
                               deleteId == v._id ? (
@@ -522,6 +578,13 @@ const VendorMaster = ({ isOpen }) => {
                                 data-tooltip-content="Permanent Delete"
                                 onClick={() => handlePermanentDelete(v._id)}
                                 className="hover:text-red-500 cursor-pointer"
+                              />
+                            )}
+                            {!restore && (
+                              <FiPrinter
+                                onClick={() => handlePreviewEnvelope(v)}
+                                className="cursor-pointer text-primary hover:text-green-600"
+                                title="Print Envelope"
                               />
                             )}
                             <Tooltip
@@ -588,6 +651,17 @@ const VendorMaster = ({ isOpen }) => {
               fetchVendors(); // optional: refresh table
               setShowUpdateModal(false);
             }}
+          />
+        )}
+        {pdfUrl && previewCustomer && (
+          <PreviewEnvelope
+            pdfUrl={pdfUrl}
+            previewCustomer={previewCustomer}
+            onClose={() => {
+              setPdfUrl(null);
+              setPreviewCustomer(null);
+            }}
+            onPrint={handlePrintEnvelope}
           />
         )}
       </div>

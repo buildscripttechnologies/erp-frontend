@@ -47,11 +47,16 @@ import {
   MdPattern,
   MdPrint,
 } from "react-icons/md";
-import { RiBillFill, RiBillLine, RiScissorsCutLine } from "react-icons/ri";
+import {
+  RiBillFill,
+  RiBillLine,
+  RiMoneyRupeeCircleLine,
+  RiScissorsCutLine,
+} from "react-icons/ri";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { GrDomain } from "react-icons/gr";
 import { TbNeedleThread } from "react-icons/tb";
-import { PiEyedropperSampleFill } from "react-icons/pi";
+import { PiEyedropperSampleFill, PiMoneyWavy } from "react-icons/pi";
 import { CiInboxOut } from "react-icons/ci";
 import { useTabs } from "../context/TabsContext";
 export function Sidebar({ isOpen }) {
@@ -108,21 +113,27 @@ export function Sidebar({ isOpen }) {
       module: "Quotation Master",
       action: "read",
     },
-    {
-      icon: FiShoppingCart,
-      label: "Customer Order",
-      path: "/customer-order",
-      module: "Customer Order",
-      action: "read",
-    },
-    {
-      icon: FiLayers,
-      label: "CO Pendency",
-      path: "/co-pendency",
-      module: "CO Pendency",
-      action: "read",
-    },
 
+    {
+      icon: PiMoneyWavy,
+      label: "Sales",
+      subMenu: [
+        {
+          icon: FiShoppingCart,
+          label: "Customer Order",
+          path: "/customer-order",
+          module: "Customer Order",
+          action: "read",
+        },
+        {
+          icon: FiLayers,
+          label: "CO Pendency",
+          path: "/co-pendency",
+          module: "CO Pendency",
+          action: "read",
+        },
+      ],
+    },
     {
       icon: LuShoppingBag,
       label: "Purchase",
