@@ -22,6 +22,8 @@ import {
 } from "./generateEnvelopePdf"; // adjust path if needed
 import { FiPrinter } from "react-icons/fi";
 import PreviewEnvelope from "./EnvelopePreview";
+import { PulseLoader } from "react-spinners";
+import { TbRestore } from "react-icons/tb";
 
 const CustomerMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -65,6 +67,11 @@ const CustomerMaster = ({ isOpen }) => {
     limit: 10,
   });
 
+  const [restore, setRestore] = useState(false);
+  const [selected, setSelected] = useState([]);
+  const [restoreId, setRestoreId] = useState();
+  const [deleteId, setDeleteId] = useState();
+
   const hasMountedRef = useRef(false);
 
   useEffect(() => {
@@ -73,7 +80,11 @@ const CustomerMaster = ({ isOpen }) => {
       return; // skip first debounce on mount
     }
     const debouncedSearch = debounce(() => {
-      fetchCustomers(1); // Always fetch from page 1 for new search
+      if (restore) {
+        fetchDeletedCustomers(1);
+      } else {
+        fetchCustomers(1);
+      }
     }, 400); // 400ms delay
 
     debouncedSearch();
@@ -104,6 +115,29 @@ const CustomerMaster = ({ isOpen }) => {
       setLoading(false);
     }
   };
+  const fetchDeletedCustomers = async (page = 1, limit = pagination.limit) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `/customers/deleted?page=${page}&search=${search}&limit=${limit}`
+      );
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
+      setCustomers(res.data.data || []);
+      setPagination({
+        currentPage: res.data.currentPage,
+        totalPages: res.data.totalPages,
+        totalResults: res.data.totalResults,
+        limit: res.data.limit,
+      });
+    } catch {
+      toast.error("Failed to fetch customers");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   ScrollLock(
     showModal ||
@@ -113,8 +147,12 @@ const CustomerMaster = ({ isOpen }) => {
   );
 
   useEffect(() => {
-    fetchCustomers();
-  }, []);
+    if (restore) {
+      fetchDeletedCustomers(pagination.currentPage);
+    } else {
+      fetchCustomers(pagination.currentPage);
+    }
+  }, [pagination.currentPage, pagination.limit, restore]);
 
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
@@ -162,6 +200,69 @@ const CustomerMaster = ({ isOpen }) => {
     }
   };
 
+  const handlePermanentDelete = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Delete Permanently?")) return;
+    try {
+      setDeleteId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.post(`/customers/permanent-delete/`, payload);
+      if (res.status == 200) {
+        toast.success("deleted successfully");
+        fetchDeletedCustomers(pagination.currentPage);
+      } else {
+        toast.error("Failed to delete");
+      }
+    } catch (err) {
+      toast.error("Failed to delete");
+    } finally {
+      setDeleteId("");
+      setSelected([]);
+    }
+  };
+  const handleRestore = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Restore?")) return;
+    try {
+      setRestoreId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.patch(`/customers/restore`, payload);
+      if (res.status == 200) {
+        toast.success("Restore successfully");
+        fetchDeletedCustomers(pagination.currentPage);
+      } else {
+        toast.error("Failed to Restore");
+      }
+    } catch (err) {
+      toast.error("Failed to Restore");
+    } finally {
+      setRestoreId("");
+      setSelected([]);
+    }
+  };
+
+  const handleSelect = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.length === customers.length) {
+      setSelected([]);
+    } else {
+      setSelected(customers.map((item) => item._id));
+    }
+  };
+
   return (
     <>
       {showModal && (
@@ -172,20 +273,51 @@ const CustomerMaster = ({ isOpen }) => {
       )}
 
       <div className="p-3 max-w-[99vw] mx-auto">
-        <h2 className="text-2xl font-bold mb-4">
-          Customers{" "}
-          <span className="text-gray-500">({pagination.totalResults})</span>
-        </h2>
-
+        <div className="flex fex-wrap gap-2 mb-4">
+          <h2 className="text-2xl font-bold ">
+            Customers{" "}
+            <span className="text-gray-500">({pagination.totalResults})</span>
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => {
+                setRestore((prev) => !prev);
+                setPagination((prev) => ({ ...prev, currentPage: 1 }));
+                setSelected([]);
+              }}
+              className="bg-primary text-secondary  px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+            >
+              {restore ? "Cancel" : "Restore"}
+            </button>
+            {restore ? (
+              <>
+                <button
+                  onClick={() => handleRestore()}
+                  className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                >
+                  Restore
+                </button>
+                <button
+                  onClick={() => handlePermanentDelete()}
+                  className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                >
+                  Delete
+                </button>
+              </>
+            ) : (
+              ""
+            )}
+          </div>
+        </div>
         <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
           <div className="relative w-full sm:w-80">
-            <FiSearch className="absolute left-3 top-2.5 text-[#d8b76a]" />
+            <FiSearch className="absolute left-3 top-2.5 text-primary" />
             <input
               type="text"
               placeholder="Search by Customer Code or Name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:outline-none"
+              className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:outline-none"
             />{" "}
             {search && (
               <FiX
@@ -198,22 +330,32 @@ const CustomerMaster = ({ isOpen }) => {
           {hasPermission("Customer", "write") && (
             <button
               onClick={() => setShowModal(true)}
-              className="bg-[#d8b76a] hover:bg-[#b38a37]  justify-center text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
+              className="bg-primary hover:bg-[#b38a37]  justify-center text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer"
             >
               <FiPlus /> Add Customer
             </button>
           )}
         </div>
 
-        <div className="relative overflow-x-auto  overflow-y-auto rounded border border-[#d8b76a] shadow-sm">
+        <div className="relative overflow-x-auto  overflow-y-auto rounded border border-primary shadow-sm">
           <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[98vw]`}`}>
             <table
               className={
                 "text-[11px] whitespace-nowrap min-w-[100vw] text-left"
               }
             >
-              <thead className="bg-[#d8b76a] text-[#292926]">
+              <thead className="bg-primary text-[#292926]">
                 <tr>
+                  {restore && (
+                    <th className="px-[8px] py-1">
+                      <input
+                        type="checkbox"
+                        checked={selected.length === customers.length}
+                        onChange={toggleSelectAll}
+                        className="accent-primary"
+                      />
+                    </th>
+                  )}
                   <th className="px-[8px] py-1.5 ">#</th>
                   <th className="px-[8px] ">Created At</th>
                   <th className="px-[8px] ">Updated At</th>
@@ -237,26 +379,39 @@ const CustomerMaster = ({ isOpen }) => {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={Array(17).fill({})}
+                    columns={restore ? Array(18).fill({}) : Array(17).fill({})}
                   />
                 ) : (
                   <>
                     {customers.map((c, i) => (
                       <React.Fragment key={c._id}>
                         <tr
-                          className="border-t border-[#d8b76a] hover:bg-gray-50 cursor-pointer"
+                          className="border-t border-primary hover:bg-gray-50 cursor-pointer"
                           onClick={() =>
                             setExpandedCustomerId(
                               expandedCustomerId === c._id ? null : c._id
                             )
                           }
                         >
-                          <td className="px-[8px] border-r border-[#d8b76a] py-1">
+                          {restore && (
+                            <td className="px-[8px] border-r border-primary">
+                              <input
+                                type="checkbox"
+                                name=""
+                                id=""
+                                className=" accent-primary"
+                                checked={selected.includes(c._id)}
+                                onChange={() => handleSelect(c._id)}
+                              />
+                            </td>
+                          )}
+
+                          <td className="px-[8px] border-r border-primary py-1">
                             {(pagination.currentPage - 1) * pagination.limit +
                               i +
                               1}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {new Date(c.createdAt).toLocaleString("en-IN", {
                               day: "2-digit",
                               month: "short",
@@ -266,7 +421,7 @@ const CustomerMaster = ({ isOpen }) => {
                               hour12: true,
                             })}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {new Date(c.updatedAt).toLocaleString("en-IN", {
                               day: "2-digit",
                               month: "short",
@@ -276,40 +431,40 @@ const CustomerMaster = ({ isOpen }) => {
                               hour12: true,
                             })}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {c.customerCode || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {c.customerName || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {c.aliasName || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {c.natureOfBusiness || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {c.address || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {c.city || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {c.state || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {c.country || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {c.postalCode || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {c.gst || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {c.pan || "-"}
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             <Toggle
                               checked={c.isActive}
                               onChange={() =>
@@ -317,31 +472,59 @@ const CustomerMaster = ({ isOpen }) => {
                               }
                             />
                           </td>
-                          <td className="px-[8px] border-r border-[#d8b76a] ">
+                          <td className="px-[8px] border-r border-primary ">
                             {c.createdBy?.fullName || "-"}
                           </td>
-                          <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-[#d8b76a]">
-                            {hasPermission("Customer", "update") ? (
+                          <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-primary">
+                            {hasPermission("Customer", "update") &&
+                            restore == false ? (
                               <FiEdit
                                 onClick={() => setEditingCustomer(c)}
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Edit"
                                 className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
                               />
+                            ) : restoreId == c._id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
                             ) : (
-                              "-"
-                            )}
-                            {hasPermission("Customer", "delete") ? (
-                              <FiTrash2
-                                onClick={() => handleDelete(c._id)}
-                                className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                              <TbRestore
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Restore"
+                                onClick={() => handleRestore(c._id)}
+                                className="hover:text-green-500 cursor-pointer"
                               />
+                            )}
+
+                            {hasPermission("Customer", "delete") &&
+                            restore == false ? (
+                              deleteId == c._id ? (
+                                <PulseLoader size={4} color="#d8b76a" />
+                              ) : (
+                                <FiTrash2
+                                  data-tooltip-id="statusTip"
+                                  data-tooltip-content="Delete"
+                                  onClick={() => handleDelete(c._id)}
+                                  className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                                />
+                              )
+                            ) : deleteId == c._id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
                             ) : (
-                              "-"
-                            )}{" "}
-                            <FiPrinter
-                              onClick={() => handlePreviewEnvelope(c)}
-                              className="cursor-pointer text-[#d8b76a] hover:text-green-600"
-                              title="Print Envelope"
-                            />
+                              <FiTrash2
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Permanent Delete"
+                                onClick={() => handlePermanentDelete(c._id)}
+                                className="hover:text-red-500 cursor-pointer"
+                              />
+                            )}
+
+                            {!restore && (
+                              <FiPrinter
+                                onClick={() => handlePreviewEnvelope(c)}
+                                className="cursor-pointer text-primary hover:text-green-600"
+                                title="Print Envelope"
+                              />
+                            )}
                           </td>
                         </tr>
                         {expandedCustomerId === c._id && (
@@ -395,52 +578,6 @@ const CustomerMaster = ({ isOpen }) => {
           }}
         />
         {pdfUrl && previewCustomer && (
-          // <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
-          //   <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl h-[90vh] sm:h-[85vh] flex flex-col relative">
-          //     {/* Close Button */}
-          //     <button
-          //       className="absolute top-2 right-2 text-gray-600 hover:text-red-500 text-2xl sm:text-xl"
-          //       onClick={() => {
-          //         setPdfUrl(null);
-          //         setPreviewCustomer(null);
-          //       }}
-          //     >
-          //       ✕
-          //     </button>
-
-          //     {/* Header */}
-          //     <div className="px-4 sm:px-6 py-3 border-b">
-          //       <h2 className="text-base sm:text-lg font-semibold text-gray-800 text-center sm:text-left">
-          //         Envelope Preview — {previewCustomer.customerName}
-          //       </h2>
-          //     </div>
-
-          //     {/* PDF Preview Area */}
-          //     <div className="flex-1 overflow-hidden p-2 sm:p-4">
-          //       {loadingPdf ? (
-          //         <div className="flex items-center justify-center h-full text-gray-500 text-sm sm:text-base">
-          //           Generating PDF...
-          //         </div>
-          //       ) : (
-          //         <iframe
-          //           src={pdfUrl}
-          //           title="Envelope Preview"
-          //           className="w-full h-full border rounded-md"
-          //         />
-          //       )}
-          //     </div>
-
-          //     {/* Footer with Print Button */}
-          //     <div className="px-4 sm:px-6 py-3 border-t flex justify-center sm:justify-end">
-          //       <button
-          //         onClick={handlePrintEnvelope}
-          //         className="bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-5 py-2 rounded-md text-sm sm:text-base transition-all duration-150"
-          //       >
-          //         Print
-          //       </button>
-          //     </div>
-          //   </div>
-          // </div>
           <PreviewEnvelope
             pdfUrl={pdfUrl}
             previewCustomer={previewCustomer}

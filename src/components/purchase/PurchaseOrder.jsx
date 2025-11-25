@@ -17,9 +17,10 @@ import { debounce } from "lodash";
 import AddPO from "./AddPO";
 import UpdatePO from "./UpdatePO";
 import { generateLPPO } from "./generateLPPO";
-import { BeatLoader, ClipLoader } from "react-spinners";
+import { BeatLoader, ClipLoader, PulseLoader } from "react-spinners";
 import POADetails from "./POADetails";
 import { useAuth } from "../../context/AuthContext";
+import { TbRestore } from "react-icons/tb";
 
 const PurchaseOrder = ({ isOpen }) => {
   const [pos, setPos] = useState([]);
@@ -54,6 +55,11 @@ const PurchaseOrder = ({ isOpen }) => {
     fetchCompanyDetails();
   }, []);
 
+  const [restore, setRestore] = useState(false);
+  const [selected, setSelected] = useState([]);
+  const [restoreId, setRestoreId] = useState();
+  const [deleteId, setDeleteId] = useState();
+
   const hasMountedRef = useRef(false);
   ScrollLock(showAddPO == true || editingPO != null);
 
@@ -63,7 +69,11 @@ const PurchaseOrder = ({ isOpen }) => {
       return; // skip first debounce on mount
     }
     const debouncedSearch = debounce(() => {
-      fetchPOs(1); // Always fetch from page 1 for new search
+      if (restore) {
+        fetchDeletedPOs(1);
+      } else {
+        fetchPOs(1);
+      }
     }, 400); // 400ms delay
 
     debouncedSearch();
@@ -95,9 +105,33 @@ const PurchaseOrder = ({ isOpen }) => {
     }
   };
 
+  const fetchDeletedPOs = async (page = 1, limit = pagination.limit) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `/pos/deleted?page=${page}&limit=${limit}&search=${search}`
+      );
+      setPos(res.data.data || []);
+      setPagination({
+        currentPage: res.data.currentPage,
+        totalPages: res.data.totalPages,
+        totalResults: res.data.totalResults,
+        limit: res.data.limit,
+      });
+    } catch {
+      toast.error("Failed to fetch POs");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchPOs();
-  }, []);
+    if (restore) {
+      fetchDeletedPOs(pagination.currentPage);
+    } else {
+      fetchPOs(pagination.currentPage);
+    }
+  }, [pagination.currentPage, pagination.limit, restore]);
 
   useEffect(() => {
     const fetchLetterpad = async () => {
@@ -207,12 +241,107 @@ const PurchaseOrder = ({ isOpen }) => {
     return new Date(`20${year}-${month}-${day}`); // converts to yyyy-MM-dd
   };
 
+  const handlePermanentDelete = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Delete Permanently?")) return;
+    try {
+      setDeleteId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.post(`/pos/permanent-delete/`, payload);
+      if (res.status == 200) {
+        toast.success("deleted successfully");
+        fetchDeletedPOs(pagination.currentPage);
+      } else {
+        toast.error("Failed to delete");
+      }
+    } catch (err) {
+      toast.error("Failed to delete");
+    } finally {
+      setDeleteId("");
+      setSelected([]);
+    }
+  };
+  const handleRestore = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Restore?")) return;
+    try {
+      setRestoreId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.patch(`/pos/restore`, payload);
+      if (res.status == 200) {
+        toast.success("Restore successfully");
+        fetchDeletedPOs(pagination.currentPage);
+      } else {
+        toast.error("Failed to Restore");
+      }
+    } catch (err) {
+      toast.error("Failed to Restore");
+    } finally {
+      setRestoreId("");
+      setSelected([]);
+    }
+  };
+
+  const handleSelect = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.length === pos.length) {
+      setSelected([]);
+    } else {
+      setSelected(pos.map((item) => item._id));
+    }
+  };
+
   return (
     <div className="p-3 max-w-[99vw] mx-auto overflow-x-hidden mt-4">
-      <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Purchase Order{" "}
-        <span className="text-gray-500">({pagination.totalResults})</span>
-      </h2>
+      <div className="flex fex-wrap gap-2 mb-4">
+        <h2 className="text-xl sm:text-2xl font-bold ">
+          Purchase Order{" "}
+          <span className="text-gray-500">({pagination.totalResults})</span>
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => {
+              setRestore((prev) => !prev);
+              setPagination((prev) => ({ ...prev, currentPage: 1 }));
+              setSelected([]);
+            }}
+            className="bg-primary text-secondary  px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+          >
+            {restore ? "Cancel" : "Restore"}
+          </button>
+          {restore ? (
+            <>
+              <button
+                onClick={() => handleRestore()}
+                className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+              >
+                Restore
+              </button>
+              <button
+                onClick={() => handlePermanentDelete()}
+                className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+              >
+                Delete
+              </button>
+            </>
+          ) : (
+            ""
+          )}
+        </div>
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
         <div className="relative w-full sm:w-80">
@@ -262,6 +391,16 @@ const PurchaseOrder = ({ isOpen }) => {
           >
             <thead className="bg-primary text-secondary text-left ">
               <tr>
+                {restore && (
+                  <th className="px-[8px] py-1">
+                    <input
+                      type="checkbox"
+                      checked={selected.length === pos.length}
+                      onChange={toggleSelectAll}
+                      className="accent-primary"
+                    />
+                  </th>
+                )}
                 <th className="px-[8px] py-1">#</th>
                 <th className="px-[8px] py-1">Created At</th>
                 <th className="px-[8px] py-1 ">Date</th>
@@ -279,7 +418,7 @@ const PurchaseOrder = ({ isOpen }) => {
               {loading ? (
                 <TableSkeleton
                   rows={pagination.limit}
-                  columns={Array(10).fill({})}
+                  columns={restore ? Array(12).fill({}) : Array(11).fill({})}
                 />
               ) : (
                 <>
@@ -293,6 +432,19 @@ const PurchaseOrder = ({ isOpen }) => {
                         }
                         className="border-t  border-primary hover:bg-gray-50 cursor-pointer"
                       >
+                        {restore && (
+                          <td className="px-[8px] border-r border-primary">
+                            <input
+                              type="checkbox"
+                              name=""
+                              id=""
+                              className=" accent-primary "
+                              checked={selected.includes(po._id)}
+                              onChange={() => handleSelect(po._id)}
+                            />
+                          </td>
+                        )}
+
                         <td className="px-[8px] py-1  border-r border-r-primary ">
                           {Number(pagination.currentPage - 1) *
                             Number(pagination.limit) +
@@ -362,7 +514,8 @@ const PurchaseOrder = ({ isOpen }) => {
                         </td>
                         <td className="px-[8px] pt-1 text-sm flex gap-2 border-r border-r-primary/30">
                           {po.status != "rejected" &&
-                            po.status != "pending" && (
+                            po.status != "pending" &&
+                            !restore && (
                               <>
                                 {expandedPOId === po._id && downloading ? (
                                   <BeatLoader size={4} color="#d8b76a" />
@@ -377,22 +530,48 @@ const PurchaseOrder = ({ isOpen }) => {
                               </>
                             )}
 
-                          {hasPermission("Purchase Order", "update") && (
+                          {hasPermission("Purchase Order", "update") &&
+                          restore == false ? (
                             <FiEdit
                               data-tooltip-id="statusTip"
                               data-tooltip-content="Edit"
                               className="cursor-pointer text-primary hover:text-blue-600"
                               onClick={() => setEditingPO(po)}
                             />
-                          )}
-                          {hasPermission("Purchase Order", "delete") && (
-                            <FiTrash2
+                          ) : restoreId == po._id ? (
+                            <PulseLoader size={4} color="#d8b76a" />
+                          ) : (
+                            <TbRestore
                               data-tooltip-id="statusTip"
-                              data-tooltip-content="Delete"
-                              className="cursor-pointer text-primary hover:text-red-600"
-                              onClick={() => handleDelete(po._id)}
+                              data-tooltip-content="Restore"
+                              onClick={() => handleRestore(po._id)}
+                              className="hover:text-green-500 text-primary cursor-pointer"
                             />
                           )}
+
+                          {hasPermission("Purchase Order", "delete") &&
+                          restore == false ? (
+                            deleteId == po._id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
+                            ) : (
+                              <FiTrash2
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Delete"
+                                className="cursor-pointer text-primary hover:text-red-600"
+                                onClick={() => handleDelete(po._id)}
+                              />
+                            )
+                          ) : deleteId == po._id ? (
+                            <PulseLoader size={4} color="#d8b76a" />
+                          ) : (
+                            <FiTrash2
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Permanent Delete"
+                              onClick={() => handlePermanentDelete(po._id)}
+                              className="hover:text-red-500 text-primary cursor-pointer"
+                            />
+                          )}
+
                           <Tooltip
                             id="statusTip"
                             place="top"

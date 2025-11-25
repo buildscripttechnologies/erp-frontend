@@ -27,7 +27,9 @@ import { debounce } from "lodash";
 import { useRef } from "react";
 import FgDetailSection from "./FgDetailSection";
 import { exportFGToExcel, exportFGToPDF } from "../../../utils/exportData";
-import { BeatLoader } from "react-spinners";
+import { BeatLoader, PulseLoader } from "react-spinners";
+import { TbRestore } from "react-icons/tb";
+import { Tooltip } from "react-tooltip";
 
 const renderNestedMaterials = (
   materials,
@@ -269,6 +271,11 @@ const FgMaster = ({ isOpen }) => {
     limit: 10,
   });
 
+  const [restore, setRestore] = useState(false);
+  const [selected, setSelected] = useState([]);
+  const [restoreId, setRestoreId] = useState();
+  const [deleteId, setDeleteId] = useState();
+
   const hasMountedRef = useRef(false);
 
   ScrollLock(showAddFG == true || editingFg != null);
@@ -280,7 +287,11 @@ const FgMaster = ({ isOpen }) => {
     }
 
     const debouncedSearch = debounce(() => {
-      fetchFGs(1); // Always fetch from page 1 for new search
+      if (restore) {
+        fetchDeletedFGs(1);
+      } else {
+        fetchFGs(1);
+      }
     }, 400); // 400ms delay
 
     debouncedSearch();
@@ -339,10 +350,37 @@ const FgMaster = ({ isOpen }) => {
       setLoading(false);
     }
   };
+  const fetchDeletedFGs = async (page = 1, limit = pagination.limit) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `/fgs/deleted?page=${page}&search=${search}&limit=${limit}`
+      );
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
+      setFgs(res.data.data || []);
+      setPagination({
+        currentPage: res.data.currentPage,
+        totalPages: res.data.totalPages,
+        totalResults: res.data.totalResults,
+        limit: res.data.limit,
+      });
+    } catch {
+      toast.error("Failed to fetch SFGs");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchFGs();
-  }, []);
+    if (restore) {
+      fetchDeletedFGs(pagination.currentPage);
+    } else {
+      fetchFGs(pagination.currentPage);
+    }
+  }, [pagination.currentPage, pagination.limit, restore]);
 
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
@@ -423,24 +461,6 @@ const FgMaster = ({ isOpen }) => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this FG ?")) return;
-    try {
-      const res = await axios.delete(`/fgs/delete/${id}`);
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
-      if (res.status == 200) {
-        toast.success("FG deleted successfully");
-        fetchFGs(); // reload list
-      } else {
-        toast.error("Failed to delete FG");
-      }
-    } catch (err) {
-      toast.error("Failed to delete FG");
-    }
-  };
   const data = (data) => {
     return data.map((e) => ({
       skuCode: e.skuCode,
@@ -498,12 +518,127 @@ const FgMaster = ({ isOpen }) => {
       exportFGToPDF(data);
     }
   };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this FG ?")) return;
+    try {
+      const res = await axios.delete(`/fgs/delete/${id}`);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
+      if (res.status == 200) {
+        toast.success("FG deleted successfully");
+        fetchFGs(); // reload list
+      } else {
+        toast.error("Failed to delete FG");
+      }
+    } catch (err) {
+      toast.error("Failed to delete FG");
+    }
+  };
+
+  const handlePermanentDelete = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Delete Permanently?")) return;
+    try {
+      setDeleteId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.post(`/fgs/permanent-delete/`, payload);
+      if (res.status == 200) {
+        toast.success("deleted successfully");
+        fetchDeletedFGs(pagination.currentPage);
+      } else {
+        toast.error("Failed to delete");
+      }
+    } catch (err) {
+      toast.error("Failed to delete");
+    } finally {
+      setDeleteId("");
+      setSelected([]);
+    }
+  };
+  const handleRestore = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Restore?")) return;
+    try {
+      setRestoreId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.patch(`/fgs/restore`, payload);
+      if (res.status == 200) {
+        toast.success("Restore successfully");
+        fetchDeletedFGs(pagination.currentPage);
+      } else {
+        toast.error("Failed to Restore");
+      }
+    } catch (err) {
+      toast.error("Failed to Restore");
+    } finally {
+      setRestoreId("");
+      setSelected([]);
+    }
+  };
+
+  const handleSelect = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.length === fgs.length) {
+      setSelected([]);
+    } else {
+      setSelected(fgs.map((item) => item.id));
+    }
+  };
+
   return (
     <div className="relative p-3 max-w-[99vw] mx-auto overflow-x-hidden">
-      <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Finished Goods (FG){" "}
-        <span className="text-gray-500">({pagination.totalResults})</span>
-      </h2>
+      <div className="flex fex-wrap gap-2 mb-4">
+        <h2 className="text-xl sm:text-2xl font-bold ">
+          Finished Goods (FG){" "}
+          <span className="text-gray-500">({pagination.totalResults})</span>
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => {
+              setRestore((prev) => !prev);
+              setPagination((prev) => ({ ...prev, currentPage: 1 }));
+              setSelected([]);
+            }}
+            className="bg-primary text-secondary  px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+          >
+            {restore ? "Cancel" : "Restore"}
+          </button>
+          {restore ? (
+            <>
+              <button
+                onClick={() => handleRestore()}
+                className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+              >
+                Restore
+              </button>
+              <button
+                onClick={() => handlePermanentDelete()}
+                className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+              >
+                Delete
+              </button>
+            </>
+          ) : (
+            ""
+          )}
+        </div>
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between mb-6">
         <div className="relative w-full sm:w-80">
@@ -514,7 +649,7 @@ const FgMaster = ({ isOpen }) => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-          />{" "}
+          />
           {search && (
             <FiX
               className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
@@ -589,6 +724,16 @@ const FgMaster = ({ isOpen }) => {
           <table className={"text-[11px] whitespace-nowrap min-w-[100vw]"}>
             <thead className="bg-primary text-secondary text-left ">
               <tr>
+                {restore && (
+                  <th className="px-[8px] py-1">
+                    <input
+                      type="checkbox"
+                      checked={selected.length === fgs.length}
+                      onChange={toggleSelectAll}
+                      className="accent-primary"
+                    />
+                  </th>
+                )}
                 <th className="px-[8px] py-1">#</th>
                 <th className="px-[8px] ">Created At</th>
                 <th className="px-[8px] ">Updated At</th>
@@ -613,7 +758,7 @@ const FgMaster = ({ isOpen }) => {
               {loading ? (
                 <TableSkeleton
                   rows={pagination.limit}
-                  columns={Array(18).fill({})}
+                  columns={restore ? Array(19).fill({}) : Array(18).fill({})}
                 />
               ) : (
                 <>
@@ -628,6 +773,19 @@ const FgMaster = ({ isOpen }) => {
                         }}
                         className="border-t border-primary hover:bg-gray-50 cursor-pointer "
                       >
+                        {restore && (
+                          <td className="px-[8px] border-r border-primary">
+                            <input
+                              type="checkbox"
+                              name=""
+                              id=""
+                              className=" accent-primary "
+                              checked={selected.includes(fg.id)}
+                              onChange={() => handleSelect(fg.id)}
+                            />
+                          </td>
+                        )}
+
                         <td className="px-[8px] border-r border-primary">
                           {Number(pagination.currentPage - 1) *
                             Number(pagination.limit) +
@@ -726,29 +884,61 @@ const FgMaster = ({ isOpen }) => {
                           {fg.createdBy?.fullName || "-"}
                         </td>
                         <td className="px-[8px]  pt-2 text-sm flex gap-2 text-primary">
-                          <FaFileDownload className="cursor-pointer text-primary hover:text-green-600" />
-                          {hasPermission("FG", "update") ? (
+                          {restore ? (
+                            ""
+                          ) : (
+                            <FaFileDownload className="cursor-pointer text-primary hover:text-green-600" />
+                          )}
+                          {hasPermission("FG", "update") && restore == false ? (
                             <FiEdit
                               className="cursor-pointer text-primary hover:text-blue-600"
                               onClick={() => setEditingFg(fg)}
                             />
+                          ) : restoreId == fg.id ? (
+                            <PulseLoader size={4} color="#d8b76a" />
                           ) : (
-                            "-"
-                          )}
-                          {hasPermission("FG", "delete") ? (
-                            <FiTrash2
-                              className="cursor-pointer text-primary hover:text-red-600"
-                              onClick={() => handleDelete(fg.id)}
+                            <TbRestore
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Restore"
+                              onClick={() => handleRestore(fg.id)}
+                              className="hover:text-green-500 cursor-pointer"
                             />
-                          ) : (
-                            "-"
                           )}
+                          {hasPermission("FG", "delete") && restore == false ? (
+                            deleteId == fg.id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
+                            ) : (
+                              <FiTrash2
+                                className="cursor-pointer text-primary hover:text-red-600"
+                                onClick={() => handleDelete(fg.id)}
+                              />
+                            )
+                          ) : deleteId == fg.id ? (
+                            <PulseLoader size={4} color="#d8b76a" />
+                          ) : (
+                            <FiTrash2
+                              data-tooltip-id="statusTip"
+                              data-tooltip-content="Permanent Delete"
+                              onClick={() => handlePermanentDelete(fg.id)}
+                              className="hover:text-red-500 cursor-pointer"
+                            />
+                          )}
+                          <Tooltip
+                            id="statusTip"
+                            place="top"
+                            style={{
+                              backgroundColor: "#292926",
+                              color: "white",
+                              fontSize: "12px",
+                              fontWeight: "bold",
+                            }}
+                          />
                         </td>
                       </tr>
                       {expandedL1 == fg.id &&
                         (fg.rm.length !== 0 || fg.sfg.length !== 0) && (
                           <tr>
-                            <td colSpan="18" className="px-2">
+                            <td colSpan="100%" className="px-2">
                               <div className="border border-green-600 rounded overflow-x-auto mb-2 ">
                                 <table className="min-w-full text-[11px] text-left rounded">
                                   <thead className="bg-green-100 rounded ">
@@ -856,11 +1046,11 @@ const FgMaster = ({ isOpen }) => {
         totalResults={pagination.totalResults}
         onEntriesChange={(limit) => {
           setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-          fetchFGs(1, limit);
+          
         }}
         onPageChange={(page) => {
           setPagination((prev) => ({ ...prev, currentPage: page }));
-          fetchFGs(page, pagination.limit);
+         
         }}
       />
     </div>

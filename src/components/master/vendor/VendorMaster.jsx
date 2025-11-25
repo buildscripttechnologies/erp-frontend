@@ -16,6 +16,8 @@ import { useAuth } from "../../../context/AuthContext";
 import { useRef } from "react";
 
 import { debounce } from "lodash";
+import { PulseLoader } from "react-spinners";
+import { TbRestore } from "react-icons/tb";
 
 const VendorMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -31,6 +33,11 @@ const VendorMaster = ({ isOpen }) => {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [expandedVendorId, setExpandedVendorId] = useState(null);
+
+  const [restore, setRestore] = useState(false);
+  const [selected, setSelected] = useState([]);
+  const [restoreId, setRestoreId] = useState();
+  const [deleteId, setDeleteId] = useState();
 
   const hasMountedRef = useRef(false);
   ScrollLock(showModal || showUpdateModal);
@@ -53,7 +60,11 @@ const VendorMaster = ({ isOpen }) => {
       return; // skip first debounce on mount
     }
     const debouncedSearch = debounce(() => {
-      fetchVendors(1); // Always fetch from page 1 for new search
+      if (restore) {
+        fetchDeletedVendors(1);
+      } else {
+        fetchVendors(1);
+      }
     }, 400); // 400ms delay
 
     debouncedSearch();
@@ -66,6 +77,29 @@ const VendorMaster = ({ isOpen }) => {
     try {
       const res = await axios.get(
         `/vendors/get-all?page=${page}&search=${search}&limit=${limit}`
+      );
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
+      setVendors(res.data.data || []);
+      setPagination({
+        currentPage: res.data.currentPage,
+        totalPages: res.data.totalPages,
+        totalResults: res.data.totalResults,
+        limit: res.data.limit,
+      });
+    } catch {
+      toast.error("Failed to fetch vendors");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchDeletedVendors = async (page = 1, limit = pagination.limit) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `/vendors/deleted?page=${page}&search=${search}&limit=${limit}`
       );
       if (res.data.status == 403) {
         toast.error(res.data.message);
@@ -103,9 +137,13 @@ const VendorMaster = ({ isOpen }) => {
   };
 
   useEffect(() => {
-    fetchVendors();
+    if (restore) {
+      fetchDeletedVendors(pagination.currentPage);
+    } else {
+      fetchVendors(pagination.currentPage);
+    }
     fetchMetaData();
-  }, []);
+  }, [pagination.currentPage, pagination.limit, restore]);
 
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
@@ -164,6 +202,69 @@ const VendorMaster = ({ isOpen }) => {
     }
   };
 
+  const handlePermanentDelete = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Delete Permanently?")) return;
+    try {
+      setDeleteId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.post(`/vendors/permanent-delete/`, payload);
+      if (res.status == 200) {
+        toast.success("deleted successfully");
+        fetchDeletedVendors(pagination.currentPage);
+      } else {
+        toast.error("Failed to delete");
+      }
+    } catch (err) {
+      toast.error("Failed to delete");
+    } finally {
+      setDeleteId("");
+      setSelected([]);
+    }
+  };
+  const handleRestore = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Restore?")) return;
+    try {
+      setRestoreId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.patch(`/vendors/restore`, payload);
+      if (res.status == 200) {
+        toast.success("Restore successfully");
+        fetchDeletedVendors(pagination.currentPage);
+      } else {
+        toast.error("Failed to Restore");
+      }
+    } catch (err) {
+      toast.error("Failed to Restore");
+    } finally {
+      setRestoreId("");
+      setSelected([]);
+    }
+  };
+
+  const handleSelect = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.length === vendors.length) {
+      setSelected([]);
+    } else {
+      setSelected(vendors.map((item) => item._id));
+    }
+  };
+
   return (
     <>
       {showModal && (
@@ -177,10 +278,42 @@ const VendorMaster = ({ isOpen }) => {
         />
       )}
       <div className="p-3 max-w-[99vw] mx-auto">
-        <h2 className="text-2xl font-bold mb-4">
-          Vendors{" "}
-          <span className="text-gray-500">({pagination.totalResults})</span>
-        </h2>
+        <div className="flex fex-wrap gap-2 mb-4">
+          <h2 className="text-2xl font-bold">
+            Vendors{" "}
+            <span className="text-gray-500">({pagination.totalResults})</span>
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => {
+                setRestore((prev) => !prev);
+                setPagination((prev) => ({ ...prev, currentPage: 1 }));
+                setSelected([]);
+              }}
+              className="bg-primary text-secondary  px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+            >
+              {restore ? "Cancel" : "Restore"}
+            </button>
+            {restore ? (
+              <>
+                <button
+                  onClick={() => handleRestore()}
+                  className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                >
+                  Restore
+                </button>
+                <button
+                  onClick={() => handlePermanentDelete()}
+                  className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                >
+                  Delete
+                </button>
+              </>
+            ) : (
+              ""
+            )}
+          </div>
+        </div>
 
         <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
           <div className="relative w-full sm:w-80">
@@ -200,7 +333,7 @@ const VendorMaster = ({ isOpen }) => {
               />
             )}
           </div>
-          {hasPermission("Venodr", "write") && (
+          {hasPermission("Vendor", "write") && (
             <button
               onClick={() => setShowModal(true)}
               className="bg-[#d8b76a]   hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center justify-center gap-2 cursor-pointer"
@@ -215,6 +348,16 @@ const VendorMaster = ({ isOpen }) => {
             <table className={"text-[11px] whitespace-nowrap min-w-[100vw]"}>
               <thead className="bg-[#d8b76a] text-[#292926] text-left ">
                 <tr>
+                  {restore && (
+                    <th className="px-[8px] py-1">
+                      <input
+                        type="checkbox"
+                        checked={selected.length === vendors.length}
+                        onChange={toggleSelectAll}
+                        className="accent-primary"
+                      />
+                    </th>
+                  )}
                   <th className="px-2 py-1.5">#</th>
                   <th className="px-2 py-1.5">Created At</th>
                   <th className="px-2 py-1.5">Updated At</th>
@@ -237,7 +380,7 @@ const VendorMaster = ({ isOpen }) => {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={Array(16).fill({})}
+                    columns={restore ? Array(17).fill({}) : Array(16).fill({})}
                   />
                 ) : (
                   <>
@@ -252,6 +395,19 @@ const VendorMaster = ({ isOpen }) => {
                           key={v._id}
                           className=" border-t border-t-[#d8b76a] hover:bg-gray-50 cursor-pointer"
                         >
+                          {restore && (
+                            <td className="px-[8px] border-r border-primary">
+                              <input
+                                type="checkbox"
+                                name=""
+                                id=""
+                                className=" accent-primary"
+                                checked={selected.includes(v._id)}
+                                onChange={() => handleSelect(v._id)}
+                              />
+                            </td>
+                          )}
+
                           <td className="px-2 border-r border-[#d8b76a]">
                             {(pagination.currentPage - 1) * pagination.limit +
                               i +
@@ -327,25 +483,46 @@ const VendorMaster = ({ isOpen }) => {
                             {v.createdBy?.fullName || "-"}
                           </td>
                           <td className="px-2 mt-1.5 text-sm  flex gap-2 text-[#d8b76a]">
-                            {hasPermission("Vendor", "update") ? (
+                            {hasPermission("Vendor", "update") &&
+                            restore == false ? (
                               <FiEdit
                                 onClick={() => handleEdit(v)}
                                 data-tooltip-id="statusTip"
                                 data-tooltip-content="Edit"
                                 className="cursor-pointer text-[#d8b76a] hover:text-blue-600"
                               />
+                            ) : restoreId == v._id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
                             ) : (
-                              "-"
+                              <TbRestore
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Restore"
+                                onClick={() => handleRestore(v._id)}
+                                className="hover:text-green-500 cursor-pointer"
+                              />
                             )}
-                            {hasPermission("Vendor", "delete") ? (
+
+                            {hasPermission("Vendor", "delete") &&
+                            restore == false ? (
+                              deleteId == v._id ? (
+                                <PulseLoader size={4} color="#d8b76a" />
+                              ) : (
+                                <FiTrash2
+                                  data-tooltip-id="statusTip"
+                                  data-tooltip-content="Delete"
+                                  onClick={() => handleDelete(v._id)}
+                                  className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                                />
+                              )
+                            ) : deleteId == v._id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
+                            ) : (
                               <FiTrash2
                                 data-tooltip-id="statusTip"
-                                data-tooltip-content="Delete"
-                                onClick={() => handleDelete(v._id)}
-                                className="cursor-pointer text-[#d8b76a] hover:text-red-600"
+                                data-tooltip-content="Permanent Delete"
+                                onClick={() => handlePermanentDelete(v._id)}
+                                className="hover:text-red-500 cursor-pointer"
                               />
-                            ) : (
-                              "-"
                             )}
                             <Tooltip
                               id="statusTip"

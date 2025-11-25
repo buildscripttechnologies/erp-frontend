@@ -22,6 +22,7 @@ import { PulseLoader } from "react-spinners";
 import { generateSampleEstimate } from "../../../utils/generateSampleEstimate";
 import { Tooltip } from "react-tooltip";
 import PdfOptionsModal from "./PdfOptionsModal";
+import { TbRestore } from "react-icons/tb";
 
 const SampleMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -54,6 +55,11 @@ const SampleMaster = ({ isOpen }) => {
     }
   }, [location.state, navigate, location.pathname]);
 
+  const [restore, setRestore] = useState(false);
+  const [selected, setSelected] = useState([]);
+  const [restoreId, setRestoreId] = useState();
+  const [deleteId, setDeleteId] = useState();
+
   const hasMountedRef = useRef(false);
 
   useEffect(() => {
@@ -62,7 +68,11 @@ const SampleMaster = ({ isOpen }) => {
       return; // skip first debounce on mount
     }
     const debouncedSearch = debounce(() => {
-      fetchSamples(1); // Always fetch from page 1 for new search
+      if (restore) {
+        fetchDeletedSamples(1);
+      } else {
+        fetchSamples(1);
+      }
     }, 400); // 400ms delay
 
     debouncedSearch();
@@ -93,12 +103,39 @@ const SampleMaster = ({ isOpen }) => {
       setLoading(false);
     }
   };
+  const fetchDeletedSamples = async (page = 1, limit = pagination.limit) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `/samples/deleted?page=${page}&search=${search}&limit=${limit}`
+      );
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
+      setSamples(res.data.data || []);
+      setPagination({
+        currentPage: res.data.currentPage,
+        totalPages: res.data.totalPages,
+        totalResults: res.data.totalResults,
+        limit: res.data.limit,
+      });
+    } catch {
+      toast.error("Failed to fetch Samples");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   ScrollLock(showModal || editingSample != null || openAttachments != null);
 
   useEffect(() => {
-    fetchSamples();
-  }, []);
+    if (restore) {
+      fetchDeletedSamples(pagination.currentPage);
+    } else {
+      fetchSamples(pagination.currentPage);
+    }
+  }, [pagination.currentPage, pagination.limit, restore]);
 
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
@@ -132,26 +169,6 @@ const SampleMaster = ({ isOpen }) => {
       }
     } catch (err) {
       toast.error("Failed to update status");
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this Sample?")) return;
-    try {
-      const res = await axios.delete(`/samples/delete/${id}`);
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
-
-      if (res.data.status == 200) {
-        toast.success(`Sample Deleted Successfully`);
-        fetchSamples();
-      } else {
-        toast.error("Failed to Delete Sample");
-      }
-    } catch (err) {
-      toast.error("Failed to Delete Sample");
     }
   };
 
@@ -227,13 +244,128 @@ const SampleMaster = ({ isOpen }) => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this Sample?")) return;
+    try {
+      const res = await axios.delete(`/samples/delete/${id}`);
+      if (res.data.status == 403) {
+        toast.error(res.data.message);
+        return;
+      }
+
+      if (res.data.status == 200) {
+        toast.success(`Sample Deleted Successfully`);
+        fetchSamples();
+      } else {
+        toast.error("Failed to Delete Sample");
+      }
+    } catch (err) {
+      toast.error("Failed to Delete Sample");
+    }
+  };
+
+  const handlePermanentDelete = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Delete Permanently?")) return;
+    try {
+      setDeleteId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.post(`/samples/permanent-delete/`, payload);
+      if (res.status == 200) {
+        toast.success("deleted successfully");
+        fetchDeletedSamples(pagination.currentPage);
+      } else {
+        toast.error("Failed to delete");
+      }
+    } catch (err) {
+      toast.error("Failed to delete");
+    } finally {
+      setDeleteId("");
+      setSelected([]);
+    }
+  };
+  const handleRestore = async (id = "") => {
+    if (!window.confirm("Are you sure you want to Restore?")) return;
+    try {
+      setRestoreId(id);
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selected, id] };
+      } else {
+        payload = { ids: [...selected] };
+      }
+      const res = await axios.patch(`/samples/restore`, payload);
+      if (res.status == 200) {
+        toast.success("Restore successfully");
+        fetchDeletedSamples(pagination.currentPage);
+      } else {
+        toast.error("Failed to Restore");
+      }
+    } catch (err) {
+      toast.error("Failed to Restore");
+    } finally {
+      setRestoreId("");
+      setSelected([]);
+    }
+  };
+
+  const handleSelect = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.length === Samples.length) {
+      setSelected([]);
+    } else {
+      setSelected(Samples.map((item) => item._id));
+    }
+  };
+
   return (
     <>
       <div className="p-3 max-w-[99vw] mx-auto">
-        <h2 className="text-2xl font-bold mb-4">
-          Product Samples
-          <span className="text-gray-500">({pagination.totalResults})</span>
-        </h2>
+        <div className="flex fex-wrap gap-2 mb-4">
+          <h2 className="text-2xl font-bold ">
+            Product Samples
+            <span className="text-gray-500">({pagination.totalResults})</span>
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => {
+                setRestore((prev) => !prev);
+                setPagination((prev) => ({ ...prev, currentPage: 1 }));
+                setSelected([]);
+              }}
+              className="bg-primary text-secondary  px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+            >
+              {restore ? "Cancel" : "Restore"}
+            </button>
+            {restore ? (
+              <>
+                <button
+                  onClick={() => handleRestore()}
+                  className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                >
+                  Restore
+                </button>
+                <button
+                  onClick={() => handlePermanentDelete()}
+                  className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                >
+                  Delete
+                </button>
+              </>
+            ) : (
+              ""
+            )}
+          </div>
+        </div>
         <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
           <div className="relative w-full sm:w-80">
             <FiSearch className="absolute left-3 top-2.5 text-primary" />
@@ -243,7 +375,7 @@ const SampleMaster = ({ isOpen }) => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:outline-none"
-            />{" "}
+            />
             {search && (
               <FiX
                 className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
@@ -270,6 +402,16 @@ const SampleMaster = ({ isOpen }) => {
             >
               <thead className="bg-primary text-secondary">
                 <tr>
+                  {restore && (
+                    <th className="px-[8px] py-1">
+                      <input
+                        type="checkbox"
+                        checked={selected.length === Samples.length}
+                        onChange={toggleSelectAll}
+                        className="accent-primary"
+                      />
+                    </th>
+                  )}
                   <th className="px-[8px] py-1.5 ">#</th>
                   <th className="px-[8px] ">Created At</th>
                   <th className="px-[8px] ">Updated At</th>
@@ -290,7 +432,7 @@ const SampleMaster = ({ isOpen }) => {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={Array(13).fill({})}
+                    columns={restore ? Array(14).fill({}) : Array(13).fill({})}
                   />
                 ) : (
                   <>
@@ -304,6 +446,19 @@ const SampleMaster = ({ isOpen }) => {
                             )
                           }
                         >
+                          {restore && (
+                            <td className="px-[8px] border-r border-primary">
+                              <input
+                                type="checkbox"
+                                name=""
+                                id=""
+                                className=" accent-primary"
+                                checked={selected.includes(b._id)}
+                                onChange={() => handleSelect(b._id)}
+                              />
+                            </td>
+                          )}
+
                           <td className="px-[8px] border-r border-primary py-1">
                             {(pagination.currentPage - 1) * pagination.limit +
                               i +
@@ -408,35 +563,61 @@ const SampleMaster = ({ isOpen }) => {
                                 )}
                               </>
                             )} */}
-                            {expandedSampleId === b._id && downloading ? (
-                              <PulseLoader size={4} color="#d8b76a" />
+                            {restore ? (
+                              ""
                             ) : (
-                              <FaFileDownload
-                                data-tooltip-id="statusTip"
-                                data-tooltip-content="Download"
-                                onClick={() => handlePreviewSample(b)}
-                                className="cursor-pointer text-primary hover:text-green-600"
-                              />
+                              <>
+                                {expandedSampleId === b._id && downloading ? (
+                                  <PulseLoader size={4} color="#d8b76a" />
+                                ) : (
+                                  <FaFileDownload
+                                    data-tooltip-id="statusTip"
+                                    data-tooltip-content="Download"
+                                    onClick={() => handlePreviewSample(b)}
+                                    className="cursor-pointer text-primary hover:text-green-600"
+                                  />
+                                )}
+                              </>
                             )}
-                            {hasPermission("Sample", "update") ? (
+                            {hasPermission("Sample", "update") &&
+                            restore == false ? (
                               <FiEdit
                                 data-tooltip-id="statusTip"
                                 data-tooltip-content="Edit"
                                 onClick={() => setEditingSample(b)}
                                 className="cursor-pointer text-primary hover:text-blue-600"
                               />
+                            ) : restoreId == b._id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
                             ) : (
-                              "-"
+                              <TbRestore
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Restore"
+                                onClick={() => handleRestore(b._id)}
+                                className="hover:text-green-500 cursor-pointer"
+                              />
                             )}
-                            {hasPermission("Sample", "delete") ? (
+                            {hasPermission("Sample", "delete") &&
+                            restore == false ? (
+                              deleteId == b._id ? (
+                                <PulseLoader size={4} color="#d8b76a" />
+                              ) : (
+                                <FiTrash2
+                                  data-tooltip-id="statusTip"
+                                  data-tooltip-content="Delete"
+                                  onClick={() => handleDelete(b._id)}
+                                  className="cursor-pointer text-primary hover:text-red-600"
+                                />
+                              )
+                            ) : deleteId == b._id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
+                            ) : (
                               <FiTrash2
                                 data-tooltip-id="statusTip"
-                                data-tooltip-content="Delete"
-                                onClick={() => handleDelete(b._id)}
-                                className="cursor-pointer text-primary hover:text-red-600"
+                                data-tooltip-content="Permanent Delete"
+                                onClick={() => handlePermanentDelete(b._id)}
+                                className="hover:text-red-500 cursor-pointer"
                               />
-                            ) : (
-                              "-"
                             )}
                             <Tooltip
                               id="statusTip"
@@ -462,7 +643,7 @@ const SampleMaster = ({ isOpen }) => {
                     {Samples.length === 0 && (
                       <tr>
                         <td
-                          colSpan="16"
+                          colSpan="100%"
                           className="text-center py-4 text-gray-500"
                         >
                           No Samples found.

@@ -235,7 +235,12 @@ const RmMaster = ({ isOpen }) => {
       return;
     try {
       setDeleteId(id);
-      let payload = { ids: [...selectedRMs, id] };
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selectedRMs, id] };
+      } else {
+        payload = { ids: [...selectedRMs] };
+      }
       const res = await axios.post(`/rms/permanent-delete/`, payload);
       if (res.status == 200) {
         toast.success("Raw materials deleted successfully");
@@ -255,7 +260,12 @@ const RmMaster = ({ isOpen }) => {
       return;
     try {
       setRestoreId(id);
-      let payload = { ids: [...selectedRMs, id] };
+      let payload;
+      if (id != "") {
+        payload = { ids: [...selectedRMs, id] };
+      } else {
+        payload = { ids: [...selectedRMs] };
+      }
       const res = await axios.patch(`/rms/restore`, payload);
       if (res.status == 200) {
         toast.success("Raw materials Restored successfully");
