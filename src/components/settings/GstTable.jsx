@@ -62,7 +62,7 @@ export default function GstTable() {
   };
 
   const saveEdit = async () => {
-    if (!editHsn.trim()) return toast.error("Gst value is required");
+    if (!editHsn.trim()) return toast.error("Hsn value is required");
     try {
       const res = await axios.put("/settings/gst-table/edit", {
         oldHsn: editingGstRow,
@@ -73,11 +73,11 @@ export default function GstTable() {
       setEditingGstRow(null);
       setEditHsn("");
       setEditGst("");
-      toast.success("Gst updated ✅");
+      toast.success("Hsn updated ✅");
       await refreshGstTable();
     } catch (err) {
       console.error(err);
-      toast.error(err.response?.data?.message || "Failed to update Gst");
+      toast.error(err.response?.data?.message || "Failed to update Hsn");
     }
   };
 
@@ -89,19 +89,19 @@ export default function GstTable() {
 
   // Delete Gst
   const deleteGst = async (cat) => {
-    if (!window.confirm("Are you sure you want to delete this Gst?")) return;
+    if (!window.confirm("Are you sure you want to delete this Hsn?")) return;
     try {
       const res = await axios.delete(
-        `/settings/gst-table/delete/${cat.name}/${cat.type}`
+        `/settings/gst-table/delete/${cat.hsn}/${cat.gst}`
       );
       console.log("res", res);
 
       setGst(res.data.gstTable);
-      toast.success("Gst deleted ✅");
+      toast.success("Hsn deleted ✅");
       await refreshGstTable();
     } catch (err) {
       console.error(err);
-      toast.error("Failed to delete category");
+      toast.error(err.response?.data?.message || "Failed to delete Hsn");
     }
   };
 
