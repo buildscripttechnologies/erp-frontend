@@ -605,11 +605,9 @@ const BomMaster = ({ isOpen }) => {
           totalResults={pagination.totalResults}
           onEntriesChange={(limit) => {
             setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-            fetchBOMs(1, limit);
           }}
           onPageChange={(page) => {
             setPagination((prev) => ({ ...prev, currentPage: page }));
-            fetchBOMs(page, pagination.limit);
           }}
         />
       </div>

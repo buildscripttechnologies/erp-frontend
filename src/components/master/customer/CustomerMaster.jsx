@@ -40,6 +40,28 @@ const CustomerMaster = ({ isOpen }) => {
   const [previewCustomer, setPreviewCustomer] = useState(null);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const handlePreviewEnvelope = async (customer) => {
+    const fields = {
+      customerName: "Customer name is required",
+      address: "Address is required",
+      city: "City is required",
+      state: "State is required",
+      postalCode: "Postal code is required",
+      country: "Country is required",
+      mobile: "Mobile number is required",
+    };
+
+    for (const [key, message] of Object.entries(fields)) {
+      if (!customer[key] && key !== "mobile") {
+        toast.error(message);
+        return;
+      }
+    }
+
+    if (!customer.contactPersons?.[0]?.phone) {
+      toast.error("Mobile number is required");
+      return;
+    }
+
     setLoadingPdf(true);
     try {
       const { url } = await generateEnvelopePdf(customer, "/env.pdf");

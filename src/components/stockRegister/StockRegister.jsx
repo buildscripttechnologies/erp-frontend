@@ -37,6 +37,7 @@ const StockRegister = () => {
     totalResults: 0,
     limit: 10,
   });
+  const [overallTotalAmount, setOverallTotalAmount] = useState();
 
   const [filters, setFilters] = useState({
     type: "",
@@ -118,6 +119,7 @@ const StockRegister = () => {
         return;
       }
       if (res.data.status == 200) {
+        setOverallTotalAmount(res.data.overallTotalAmount || "");
         setstocks(res.data.data || []);
         setPagination({
           currentPage: res.data.currentPage,
@@ -370,7 +372,11 @@ const StockRegister = () => {
           onAdded={fetchstocks}
         />
       )}
-
+      <div className="flex justify-end">
+        <p className="text-red-600 font-bold text-sm">
+          {overallTotalAmount ? `TotalAmount : ₹${overallTotalAmount}` : ""}
+        </p>
+      </div>
       <div className="overflow-x-auto rounded border border-primary shadow-sm">
         <table className="min-w-full text-[11px] ">
           <thead className="bg-primary  text-[#292926] text-left whitespace-nowrap">
@@ -385,10 +391,10 @@ const StockRegister = () => {
               <th className="px-2 py-1.5 ">Available Qty</th>
               <th className="px-2 py-1.5 ">Damaged Qty</th>
               <th className="px-2 py-1.5 ">MOQ</th>
-              <th className="px-2 py-1.5 ">Base Rate</th>
+              {/* <th className="px-2 py-1.5 ">Base Rate</th> */}
               <th className="px-2 py-1.5 ">GST (%)</th>
               <th className="px-2 py-1.5 ">Rate</th>
-              <th className="px-2 py-1.5 ">Base Amount</th>
+              {/* <th className="px-2 py-1.5 ">Base Amount</th> */}
               <th className="px-2 py-1.5 ">GST Amount</th>
               <th className="px-2 py-1.5 ">Total Amount</th>
             </tr>
@@ -397,7 +403,7 @@ const StockRegister = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(16).fill({})}
+                columns={Array(14).fill({})}
               />
             ) : (
               <>
@@ -441,18 +447,18 @@ const StockRegister = () => {
                     <td className="px-2  border-r border-primary ">
                       {stock.moq || 0}
                     </td>
-                    <td className="px-2  border-r border-primary  ">
+                    {/* <td className="px-2  border-r border-primary  ">
                       {stock.baseRate?.toFixed(2) || 0}
-                    </td>
+                    </td> */}
                     <td className="px-2  border-r border-primary  ">
                       {stock.gst?.toFixed(2) || 0}
                     </td>
                     <td className="px-2   border-r border-primary ">
                       {stock.rate?.toFixed(2) || 0}
                     </td>
-                    <td className="px-2   border-r border-primary ">
+                    {/* <td className="px-2   border-r border-primary ">
                       {stock.baseAmount?.toFixed(2) || 0}
-                    </td>
+                    </td> */}
                     <td className="px-2   border-r border-primary ">
                       {stock.gstAmount?.toFixed(2) || 0}
                     </td>
@@ -461,7 +467,10 @@ const StockRegister = () => {
                 ))}
                 {stocks.length === 0 && (
                   <tr>
-                    <td colSpan="14" className="text-center py-4 text-gray-500">
+                    <td
+                      colSpan="100%"
+                      className="text-center py-4 text-gray-500"
+                    >
                       No stocks found.
                     </td>
                   </tr>
