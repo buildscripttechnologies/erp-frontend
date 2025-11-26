@@ -9,7 +9,7 @@ const QuotationDetails = ({ quotationData }) => {
           dateStyle: "medium",
           timeStyle: "short",
         })
-      : "N/A";
+      : "-";
 
   return (
     <div className="bg-white border border-primary rounded shadow  pb-3 px-2 mx-2 mb-3 text-[11px] text-black">
@@ -74,19 +74,19 @@ const QuotationDetails = ({ quotationData }) => {
                           {idx + 1}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.skuCode || "N/A"}
+                          {item.skuCode || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.itemName || "N/A"}
+                          {item.itemName || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.type || "N/A"}
+                          {item.type || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.partName || "N/A"}
+                          {item.partName || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.category || "N/A"}
+                          {item.category || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
                           {item.height || "-"}
@@ -151,19 +151,19 @@ const QuotationDetails = ({ quotationData }) => {
                           {idx + 1}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.skuCode || "N/A"}
+                          {item.skuCode || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.itemName || "N/A"}
+                          {item.itemName || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.category || "N/A"}
+                          {item.category || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.weight || "N/A"}
+                          {item.weight == "N/A" ? "-" : item.weight || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.qty || "N/A"}
+                          {item.qty || "-"}
                         </td>
                       </tr>
                     ))
@@ -173,7 +173,7 @@ const QuotationDetails = ({ quotationData }) => {
                         colSpan={6}
                         className="text-center py-2 text-gray-500"
                       >
-                        No consumption details available
+                        No consumption details available.
                       </td>
                     </tr>
                   )}

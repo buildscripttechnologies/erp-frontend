@@ -37,7 +37,7 @@ const CustomerMaster = ({ isOpen }) => {
   const [expandedCustomerId, setExpandedCustomerId] = useState(null);
 
   const [pdfUrl, setPdfUrl] = useState(null);
-  const [previewCustomer, setPreviewCustomer] = useState(null);
+  const [previewItem, setPreviewItem] = useState(null);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const handlePreviewEnvelope = async (customer) => {
     const fields = {
@@ -66,7 +66,7 @@ const CustomerMaster = ({ isOpen }) => {
     try {
       const { url } = await generateEnvelopePdf(customer, "/env.pdf");
       setPdfUrl(url);
-      setPreviewCustomer(customer);
+      setPreviewItem(customer);
     } catch (err) {
       toast.error("Failed to generate envelope");
     } finally {
@@ -75,10 +75,10 @@ const CustomerMaster = ({ isOpen }) => {
   };
 
   const handlePrintEnvelope = async () => {
-    const { url } = await generateEnvelopePdfWithoutBG(previewCustomer, "");
+    const { url } = await generateEnvelopePdfWithoutBG(previewItem, "");
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${previewCustomer.customerName || "Receipt"}.pdf`; // <-- custom filename here
+    a.download = `${previewItem.customerName || "Receipt"}.pdf`; // <-- custom filename here
     a.click();
   };
 
@@ -164,7 +164,7 @@ const CustomerMaster = ({ isOpen }) => {
   ScrollLock(
     showModal ||
       editingCustomer != null ||
-      previewCustomer != null ||
+      previewItem != null ||
       pdfUrl != null
   );
 
@@ -599,13 +599,13 @@ const CustomerMaster = ({ isOpen }) => {
             fetchCustomers(page, pagination.limit);
           }}
         />
-        {pdfUrl && previewCustomer && (
+        {pdfUrl && previewItem && (
           <PreviewEnvelope
             pdfUrl={pdfUrl}
-            previewCustomer={previewCustomer}
+            previewItem={previewItem}
             onClose={() => {
               setPdfUrl(null);
-              setPreviewCustomer(null);
+              setPreviewItem(null);
             }}
             onPrint={handlePrintEnvelope}
           />

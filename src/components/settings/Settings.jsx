@@ -3,6 +3,7 @@ import LetterpadSetting from "./LetterpadSetting";
 import Vendors from "./Vendors";
 import CompanyDetails from "./CompanyDetails";
 import Categories from "./Categories";
+import GstTable from "./GstTable";
 
 const Settings = () => {
   return (
@@ -14,6 +15,7 @@ const Settings = () => {
       <Vendors />
       <CompanyDetails />
       <Categories />
+      <GstTable />
     </div>
   );
 };

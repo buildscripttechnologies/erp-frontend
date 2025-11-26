@@ -660,7 +660,7 @@ const RmMaster = ({ isOpen }) => {
                   "MOQ",
                   "Panno",
                   "SqInch Rate",
-                  "Base Rate",
+                  // "Base Rate",
                   "GST",
                   "Rate",
                   "Pur. Uom",
@@ -685,7 +685,7 @@ const RmMaster = ({ isOpen }) => {
               {loading ? (
                 <TableSkeleton
                   rows={pagination.limit}
-                  columns={restore ? Array(29).fill({}) : Array(28).fill({})}
+                  columns={restore ? Array(28).fill({}) : Array(27).fill({})}
                 />
               ) : (
                 <>
@@ -783,9 +783,9 @@ const RmMaster = ({ isOpen }) => {
                       <td className="px-2 border-r border-r-primary">
                         ₹{(Number(rm.sqInchRate) || 0).toFixed(4)}
                       </td>
-                      <td className="px-2 border-r border-r-primary">
+                      {/* <td className="px-2 border-r border-r-primary">
                         ₹{rm.baseRate || "0"}
-                      </td>
+                      </td> */}
                       <td className="px-2 border-r border-r-primary">
                         {rm.gst ? rm.gst + "%" : "-"}
                       </td>

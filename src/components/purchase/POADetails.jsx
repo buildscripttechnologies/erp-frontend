@@ -64,10 +64,15 @@ const POADetails = ({ PO }) => {
                   {index + 1}
                 </td>
                 <td className="px-2 py-1  border-r border-primary">
-                  <img
-                    src={poItem.item?.attachments?.[0]?.fileUrl}
-                    alt={poItem.item?.attachments?.[0]?.fileName}
-                  />
+                  {poItem.item?.attachments?.[0]?.fileUrl ? (
+                    <img
+                      src={poItem.item?.attachments?.[0]?.fileUrl}
+                      alt={poItem.item?.itemName}
+                      className="w-20 h-20 object-contain rounded"
+                    />
+                  ) : (
+                    <div className=" flex items-center justify-center">-</div>
+                  )}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
                   {poItem.item?.skuCode || "-"}
@@ -76,7 +81,7 @@ const POADetails = ({ PO }) => {
                   {poItem.item?.itemName || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
-                  {poItem.item?.description || "-"}
+                  {poItem.description || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
                   {poItem.item?.itemCategory || "-"}

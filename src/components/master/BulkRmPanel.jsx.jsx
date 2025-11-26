@@ -8,6 +8,7 @@ import { BeatLoader } from "react-spinners";
 
 import Select from "react-select";
 import { useCategoryArrays } from "../../data/dropdownData";
+import { useCategories } from "../../context/CategoryContext";
 
 const BulkRmPanel = ({ onClose }) => {
   const [rows, setRows] = useState([]);
@@ -16,6 +17,10 @@ const BulkRmPanel = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState();
   const { fabric, slider, plastic, zipper } = useCategoryArrays();
+
+  const { gstTable } = useCategories();
+
+  console.log("gst table", gstTable);
 
   const fetchCategories = async () => {
     try {
@@ -90,11 +95,18 @@ const BulkRmPanel = ({ onClose }) => {
       const updated = [...prev];
       updated[index][field] = value;
 
-      const baseRate = updated[index].baseRate || 0;
-      const gst = updated[index].gst || 0;
+      // const baseRate = updated[index].baseRate || 0;
+      // const gst = updated[index].gst || 0;
 
-      if (baseRate && gst) {
-        updated[index].rate = Number(baseRate) + (gst * baseRate) / 100;
+      // if (baseRate && gst) {
+      //   updated[index].rate = Number(baseRate) + (gst * baseRate) / 100;
+      // }
+
+      const hsnOrSac = updated[index].hsnOrSac;
+
+      if (hsnOrSac) {
+        const gst = gstTable.find((g) => g.hsn === hsnOrSac);
+        updated[index].gst = gst ? gst.gst : "";
       }
 
       const rate = parseFloat(updated[index].rate) || 0;
@@ -148,8 +160,6 @@ const BulkRmPanel = ({ onClose }) => {
       "rawMaterials",
       JSON.stringify(rows.map(({ attachments, ...rest }) => rest))
     );
-
-    console.log("formdata", rows);
 
     rows.forEach((rm, i) => {
       Array.from(rm.attachments).forEach((file) => {
@@ -304,16 +314,40 @@ const BulkRmPanel = ({ onClose }) => {
                   <label className="text-xs font-semibold text-[#292926]">
                     HSN/SAC
                   </label>
-                  <input
-                    placeholder="HSN/SAC"
+
+                  <select
                     value={rm.hsnOrSac}
                     onChange={(e) =>
                       handleChange(index, "hsnOrSac", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  >
+                    <option value="">Select HSN</option>
+                    {gstTable?.map((cat, i) => (
+                      <option key={i} value={cat.hsn}>
+                        {cat.hsn}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+                <div>
+                  <label className="text-xs font-semibold text-[#292926]">
+                    GST %
+                  </label>
 
+                  <select
+                    value={rm.gst}
+                    onChange={(e) => handleChange(index, "gst", e.target.value)}
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  >
+                    <option value="">Select GST</option>
+                    {gstTable?.map((cat, i) => (
+                      <option key={i} value={cat.gst}>
+                        {cat.gst}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div>
                   <label className="text-xs font-semibold text-[#292926]">
                     Quality Inspection
@@ -417,19 +451,8 @@ const BulkRmPanel = ({ onClose }) => {
                     className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
-                <div>
-                  <label className="text-xs font-semibold text-[#292926]">
-                    GST %
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="GST %"
-                    value={rm.gst}
-                    onChange={(e) => handleChange(index, "gst", e.target.value)}
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-                <div>
+
+                {/* <div>
                   <label className="text-xs font-semibold text-[#292926]">
                     Base Rate
                   </label>
@@ -442,7 +465,7 @@ const BulkRmPanel = ({ onClose }) => {
                     }
                     className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
-                </div>
+                </div> */}
                 <div>
                   <label className="text-xs font-semibold text-[#292926]">
                     Rate

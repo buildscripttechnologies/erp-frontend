@@ -103,17 +103,23 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
 
   // UPDATE handleAddItem
   const handleAddItem = () => {
-    if (
-      !selectedItem ||
-      !selectedVendor ||
-      !orderQty ||
-      !itemDetails.rate ||
-      !date ||
-      !expiryDate ||
-      !deliveryDate ||
-      !address
-    ) {
-      return toast.error("All fields are required before adding item");
+    const validators = [
+      { valid: selectedItem, message: "Please select an item" },
+      { valid: selectedVendor, message: "Please select a vendor" },
+      { valid: orderQty, message: "Order quantity is required" },
+      { valid: itemDetails?.rate, message: "Rate is required" },
+      { valid: date, message: "Order date is required" },
+      { valid: expiryDate, message: "Expiry date is required" },
+      { valid: deliveryDate, message: "Delivery date is required" },
+      { valid: address, message: "Please select an address" },
+      { valid: itemDetails?.description, message: "Description is required" },
+    ];
+
+    for (const v of validators) {
+      if (!v.valid) {
+        toast.error(v.message);
+        return;
+      }
     }
 
     if (orderQty < moq) {
@@ -125,7 +131,7 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
     const amount = Number(orderQty) * rate;
     const gstAmount = Number((amount * gst) / 100).toFixed(2);
     const amountWithGst = Number(Number(amount) + Number(gstAmount)).toFixed(2);
-
+    const description = itemDetails?.description || "";
     const newItem = {
       item: selectedItem,
       orderQty,
@@ -134,6 +140,7 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
       gst,
       amount,
       amountWithGst,
+      description,
     };
 
     if (editIndex !== null) {
@@ -163,6 +170,7 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
     setItemDetails(item.itemDetails);
     setOrderQty(item.orderQty);
     setMoq(item.itemDetails?.moq || 1);
+    setDescription(item.description);
     setEditIndex(index);
   };
 
@@ -174,8 +182,6 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
   };
 
   const handleSubmit = async (e) => {
-    console.log("in handle submit");
-
     e.preventDefault();
     if (poItems.length === 0) return toast.error("Add at least one item");
 
@@ -190,6 +196,7 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
           amount: Number(p.amount).toFixed(2),
           gstAmount: (Number(p.amountWithGst) - Number(p.amount)).toFixed(2),
           amountWithGst: Number(p.amountWithGst).toFixed(2),
+          description: p.itemDetails.description || "",
         })),
         expiryDate,
         deliveryDate,
@@ -201,10 +208,7 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
         totalAmountWithGst: totalAmountWithGst.toFixed(2),
       };
 
-      console.log("payload", payload);
-
       const res = await axios.post("/pos/add-po", payload);
-      console.log("res", res);
 
       if (res.data.status === 403) {
         toast.error(res.data.message);
@@ -349,6 +353,21 @@ const AddPO = ({ onClose, onAdded, prefillItem }) => {
                   <strong className="mr-1">GST:</strong>{" "}
                   {`${itemDetails.gst ? itemDetails.gst + "%" : "—"}`}
                 </div>
+              </div>
+              <div className="flex">
+                <strong className="mr-1">Description:</strong>{" "}
+                <textarea
+                  name=""
+                  id=""
+                  placeholder="Item Description"
+                  className="w-full px-1 py-0.5 border rounded"
+                  value={itemDetails?.description || ""}
+                  onChange={(e) => {
+                    const newItems = { ...itemDetails }; // copy array
+                    newItems.description = e.target.value; // update rate for specific row
+                    setItemDetails(newItems); // update state
+                  }}
+                ></textarea>
               </div>
             </div>
           )}

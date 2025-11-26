@@ -28,7 +28,7 @@ import { TbRestore } from "react-icons/tb";
 import {
   generateEnvelopePdf,
   generateEnvelopePdfWithoutBG,
-} from "../customer/generateEnvelopePdf";
+} from "./generateEnvelopePdf";
 import PreviewEnvelope from "../customer/EnvelopePreview";
 
 const VendorMaster = ({ isOpen }) => {
@@ -59,11 +59,11 @@ const VendorMaster = ({ isOpen }) => {
     setShowUpdateModal(true);
   };
   const [pdfUrl, setPdfUrl] = useState(null);
-  const [previewCustomer, setPreviewCustomer] = useState(null);
+  const [previewItem, setPreviewItem] = useState(null);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const handlePreviewEnvelope = async (vendor) => {
     const fields = {
-      vendorName: "Customer name is required",
+      vendorName: "Vendor Name is required",
       address: "Address is required",
       city: "City is required",
       state: "State is required",
@@ -88,7 +88,7 @@ const VendorMaster = ({ isOpen }) => {
     try {
       const { url } = await generateEnvelopePdf(vendor, "/env.pdf");
       setPdfUrl(url);
-      setPreviewCustomer(vendor);
+      setPreviewItem(vendor);
     } catch (err) {
       toast.error("Failed to generate envelope");
     } finally {
@@ -97,10 +97,10 @@ const VendorMaster = ({ isOpen }) => {
   };
 
   const handlePrintEnvelope = async () => {
-    const { url } = await generateEnvelopePdfWithoutBG(previewCustomer, "");
+    const { url } = await generateEnvelopePdfWithoutBG(previewItem, "");
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${previewCustomer.vendorName || "Receipt"}.pdf`; // <-- custom filename here
+    a.download = `${previewItem.vendorName || "Receipt"}.pdf`; // <-- custom filename here
     a.click();
   };
 
@@ -653,13 +653,13 @@ const VendorMaster = ({ isOpen }) => {
             }}
           />
         )}
-        {pdfUrl && previewCustomer && (
+        {pdfUrl && previewItem && (
           <PreviewEnvelope
             pdfUrl={pdfUrl}
-            previewCustomer={previewCustomer}
+            previewItem={previewItem}
             onClose={() => {
               setPdfUrl(null);
-              setPreviewCustomer(null);
+              setPreviewItem(null);
             }}
             onPrint={handlePrintEnvelope}
           />

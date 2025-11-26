@@ -114,6 +114,8 @@ const StockRegister = () => {
       const res = await axios.get(
         `/stocks/get-all-merged?${queryParams.toString()}`
       );
+      console.log("stock res", res.data);
+
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
@@ -394,7 +396,7 @@ const StockRegister = () => {
               {/* <th className="px-2 py-1.5 ">Base Rate</th> */}
               <th className="px-2 py-1.5 ">GST (%)</th>
               <th className="px-2 py-1.5 ">Rate</th>
-              {/* <th className="px-2 py-1.5 ">Base Amount</th> */}
+              <th className="px-2 py-1.5 ">Net Amount</th>
               <th className="px-2 py-1.5 ">GST Amount</th>
               <th className="px-2 py-1.5 ">Total Amount</th>
             </tr>
@@ -403,7 +405,7 @@ const StockRegister = () => {
             {loading ? (
               <TableSkeleton
                 rows={pagination.limit}
-                columns={Array(14).fill({})}
+                columns={Array(15).fill({})}
               />
             ) : (
               <>
@@ -456,9 +458,9 @@ const StockRegister = () => {
                     <td className="px-2   border-r border-primary ">
                       {stock.rate?.toFixed(2) || 0}
                     </td>
-                    {/* <td className="px-2   border-r border-primary ">
+                    <td className="px-2   border-r border-primary ">
                       {stock.baseAmount?.toFixed(2) || 0}
-                    </td> */}
+                    </td>
                     <td className="px-2   border-r border-primary ">
                       {stock.gstAmount?.toFixed(2) || 0}
                     </td>

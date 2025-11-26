@@ -8,7 +8,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 export default function PreviewEnvelope({
   pdfUrl,
-  previewCustomer,
+  previewItem,
   onClose,
   onPrint,
 }) {
@@ -77,7 +77,8 @@ export default function PreviewEnvelope({
         </button>
 
         <h2 className="text-sm sm:text-xl font-bold text-primary mb-6">
-          Envelope Preview — {previewCustomer.customerName}
+          Envelope Preview —{" "}
+          {previewItem.customerName || previewItem.vendorName || ""}
         </h2>
 
         {/* PDF Viewer */}
