@@ -194,7 +194,7 @@ export default function CompanyDetails() {
   if (loading)
     return (
       <div className="p-4">
-        <BeatLoader color="#2563eb" />
+        <BeatLoader color="#d8b76a" />
       </div>
     );
 

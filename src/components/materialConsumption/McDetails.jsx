@@ -50,7 +50,7 @@ const McDetails = ({ MI, filter = "" }) => {
                     {item.category || "-"}
                   </td>
                   <td className="px-2 py-1 border-r border-primary">
-                    {item.weight || "-"}
+                    {item.weight == "N/A" ? "-" : item.weight || "-"}
                   </td>
                   <td className="px-2 py-1 border-r border-primary">
                     {item.qty || "-"}

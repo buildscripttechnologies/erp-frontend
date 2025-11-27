@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import Select from "react-select";
 import { BeatLoader } from "react-spinners";
 import { useCategoryArrays } from "../../data/dropdownData";
-
+import { useCategories } from "../../context/CategoryContext";
 const EditRawMaterialModal = ({
   rawMaterial = [],
   onClose,
@@ -19,6 +19,8 @@ const EditRawMaterialModal = ({
   const [newAttachments, setNewAttachments] = useState([]);
   const [categories, setCategories] = useState();
   const { fabric, slider, plastic, zipper } = useCategoryArrays();
+
+  const { gstTable } = useCategories();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -55,11 +57,18 @@ const EditRawMaterialModal = ({
       [field]: value,
     };
 
-    const baseRate = updatedForm.baseRate || 0;
-    const gst = updatedForm.gst || 0;
+    // const baseRate = updatedForm.baseRate || 0;
+    // const gst = updatedForm.gst || 0;
 
-    if (baseRate && gst) {
-      updatedForm.rate = Number(baseRate) + (gst * baseRate) / 100;
+    // if (baseRate && gst) {
+    //   updatedForm.rate = Number(baseRate) + (gst * baseRate) / 100;
+    // }
+
+    const hsnOrSac = updatedForm.hsnOrSac;
+
+    if (hsnOrSac) {
+      const gst = gstTable.find((g) => g.hsn === hsnOrSac);
+      updatedForm.gst = gst ? gst.gst : ""; // Updated to use updatedForm instead of updated[index]
     }
 
     // Update totalRate if rate or stockQty changes
@@ -109,12 +118,6 @@ const EditRawMaterialModal = ({
       newAttachments.forEach((file) => {
         form.append("attachments", file);
       });
-
-      // console.log("attachments: ", form.attachments);
-
-      for (let pair of form.entries()) {
-        console.log(pair[0], pair[1]);
-      }
 
       const res = await axios.patch(`/rms/edit-rm/${formData.id}`, form, {
         headers: {
@@ -183,7 +186,6 @@ const EditRawMaterialModal = ({
               required
             />
           </div>
-
           {/* Description */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">
@@ -214,7 +216,6 @@ const EditRawMaterialModal = ({
               ))}
             </select>
           </div>
-
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">
               Item Color
@@ -227,21 +228,43 @@ const EditRawMaterialModal = ({
               className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-
           {/* HSN/SAC */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">
               HSN / SAC
             </label>
-            <input
-              type="text"
-              placeholder="HSN / SAC"
+
+            <select
               value={formData.hsnOrSac}
               onChange={(e) => handleChange("hsnOrSac", e.target.value)}
-              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              <option value="">Select HSN</option>
+              {gstTable?.map((cat, i) => (
+                <option key={i} value={cat.hsn}>
+                  {cat.hsn}
+                </option>
+              ))}
+            </select>
           </div>
 
+          {/* GST */}
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">GST (%)</label>
+
+            <select
+              value={formData.gst}
+              onChange={(e) => handleChange("gst", e.target.value)}
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              <option value="">Select GST</option>
+              {gstTable?.map((cat, i) => (
+                <option key={i} value={cat.gst}>
+                  {cat.gst}
+                </option>
+              ))}
+            </select>
+          </div>
           {/* Type */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">Type</label>
@@ -252,7 +275,6 @@ const EditRawMaterialModal = ({
               className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-
           {/* Quality Inspection */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">
@@ -274,7 +296,6 @@ const EditRawMaterialModal = ({
               <option>Not Required</option>
             </select>
           </div>
-
           {/* Location */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">Location</label>
@@ -311,7 +332,6 @@ const EditRawMaterialModal = ({
               }}
             />
           </div>
-
           {/* Base Qty */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">
@@ -325,7 +345,6 @@ const EditRawMaterialModal = ({
               className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-
           {/* Pkg Qty */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">
@@ -339,7 +358,6 @@ const EditRawMaterialModal = ({
               className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-
           {/* MOQ */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">
@@ -353,19 +371,8 @@ const EditRawMaterialModal = ({
               className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-          {/* GST */}
-          <div className="flex flex-col">
-            <label className="text-xs font-semibold text-black">GST (%)</label>
-            <input
-              type="number"
-              placeholder="GST(%)"
-              value={formData.gst}
-              onChange={(e) => handleChange("gst", e.target.value)}
-              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
           {/* Rate */}
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">
               Base Rate
             </label>
@@ -376,7 +383,7 @@ const EditRawMaterialModal = ({
               onChange={(e) => handleChange("baseRate", e.target.value)}
               className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
-          </div>
+          </div> */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">Rate</label>
             <input
@@ -387,7 +394,6 @@ const EditRawMaterialModal = ({
               className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-
           {/* Purchase UOM */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">
@@ -406,7 +412,6 @@ const EditRawMaterialModal = ({
               ))}
             </select>
           </div>
-
           {/* Stock Qty */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">
@@ -424,7 +429,6 @@ const EditRawMaterialModal = ({
               className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed"
             />
           </div>
-
           {/* Stock UOM */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">
@@ -443,7 +447,6 @@ const EditRawMaterialModal = ({
               ))}
             </select>
           </div>
-
           {fabric.includes(formData.itemCategory.toLowerCase()) && (
             <>
               {/* Panno */}
@@ -485,7 +488,6 @@ const EditRawMaterialModal = ({
               )}
             </span>
           </div>
-
           <div className="col-span-full">
             <label className="block mb-2 font-medium">
               {formData.attachments.length != 0
@@ -521,7 +523,6 @@ const EditRawMaterialModal = ({
               )}
             </ul>
           </div>
-
           <div className="col-span-full">
             <label className="block mb-2 font-medium">
               Add New Attachments
@@ -533,7 +534,6 @@ const EditRawMaterialModal = ({
               className="block w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-primary/10 file:cursor-pointer"
             />
           </div>
-
           {/* Actions */}
           <div className="col-span-full flex justify-end gap-3 mt-6">
             <button

@@ -38,37 +38,37 @@ const SampleDetailsSection = ({ SampleData }) => {
               <tr key={idx} className="border-b border-primary">
                 <td className="px-2 py-1 border-r border-primary">{idx + 1}</td>
                 <td className="px-2 py-1 border-r border-primary  ">
-                  {item.skuCode || "N/A"}
+                  {item.skuCode || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary ">
-                  {item.itemName || "N/A"}
+                  {item.itemName || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary ">
-                  {item.type || "N/A"}
+                  {item.type || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary ">
-                  {item.partName || "N/A"}
+                  {item.partName || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary ">
-                  {item.category || "N/A"}
+                  {item.category || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary ">
-                  {item.height || "N/A"}
+                  {item.height || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary ">
-                  {item.width || "N/A"}
+                  {item.width || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
-                  {item.qty || "N/A"}
+                  {item.qty || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
-                  {item.grams ? `${item.grams / 1000} kg` : "N/A"}
+                  {item.grams ? `${item.grams / 1000} kg` : "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
-                  {item.rate || "N/A"}
+                  {item.rate || "-"}
                 </td>
                 {/* <td className="px-2 py-1 border-r border-primary">
-                  {item.itemId?.UOM?.unit || "N/A"}
+                  {item.itemId?.UOM?.unit || "-"}
                 </td> */}
               </tr>
             ))
@@ -103,19 +103,19 @@ const SampleDetailsSection = ({ SampleData }) => {
               <tr key={idx} className="border-b border-primary">
                 <td className="px-2 py-1 border-r border-primary">{idx + 1}</td>
                 <td className="px-2 py-1 border-r border-primary ">
-                  {item.skuCode || "N/A"}
+                  {item.skuCode || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary ">
-                  {item.itemName || "N/A"}
+                  {item.itemName || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary ">
-                  {item.category || "N/A"}
+                  {item.category || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
-                  {item.weight || "N/A"}
+                  {item.weight == "N/A" ? "-" : item.weight || "-"}
                 </td>
                 <td className="px-2 py-1 border-r border-primary">
-                  {item.qty || "N/A"}
+                  {item.qty || "-"}
                 </td>
               </tr>
             ))
