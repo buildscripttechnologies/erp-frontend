@@ -10,6 +10,8 @@ import { X, ChevronLeft, ChevronRight } from "react-feather";
 // import * as Lu from "react-icons/lu";
 // import * as Pi from "react-icons/pi";
 
+import { TiPinOutline } from "react-icons/ti";
+
 import { useTabs } from "../context/TabsContext";
 import {
   DndContext,
@@ -40,7 +42,13 @@ import {
   FaUserFriends,
 } from "react-icons/fa";
 import { TbNeedleThread, TbTruckDelivery } from "react-icons/tb";
-import { RiBillFill, RiBillLine, RiScissorsCutLine } from "react-icons/ri";
+import {
+  RiBillFill,
+  RiBillLine,
+  RiCloseCircleLine,
+  RiCloseFill,
+  RiScissorsCutLine,
+} from "react-icons/ri";
 import {
   MdPrint,
   MdPattern,
@@ -121,9 +129,9 @@ function SortableTab({
       {...listeners}
     >
       {/* 📌 Pin Button */}
-      {/* <button
+      <button
         className={`text-xs ${
-          pinned ? "text-yellow-600" : "text-gray-400"
+          pinned ? "text-red-600" : "text-gray-400"
         } hover:text-yellow-600`}
         onClick={(e) => {
           e.stopPropagation();
@@ -131,8 +139,8 @@ function SortableTab({
         }}
         title={pinned ? "Unpin" : "Pin"}
       >
-        📌
-      </button> */}
+        <TiPinOutline size={14} />
+      </button>
 
       {/* 🧭 Icon */}
       <IconComponent
@@ -279,6 +287,13 @@ export default function TabsBar({ isOpen = false }) {
           <ChevronRight size={18} />
         </button>
       )}
+
+      <button
+        onClick={() => closeAll()}
+        className="p-1 rounded-full bg-[#fdfcf8] hover:bg-gray-200 shadow-sm ml-2 cursor-pointer border "
+      >
+        <RiCloseFill size={18} />
+      </button>
     </div>
   );
 }

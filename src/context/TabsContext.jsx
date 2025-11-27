@@ -118,6 +118,7 @@ export function TabsProvider({ children }) {
     const seg = path
       .split("?")[0]
       .split("#")[0]
+      
       .split("/")
       .filter(Boolean)
       .pop();
