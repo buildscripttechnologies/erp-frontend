@@ -91,8 +91,6 @@ const EditRawMaterialModal = ({
     const fabricRate =
       category.includes("cotton") || category.includes("canvas") ? 38 : 39;
 
-    console.log("cat", category);
-
     // Recalculate sqInchRate if category contains fabric/cotton/canvas
     if (rate && panno && fabric.includes(category)) {
       updatedForm.sqInchRate = Number((rate / panno / fabricRate) * 1.05);
