@@ -74,6 +74,13 @@ const Receive = ({ onClose, onAdded }) => {
     return isNaN(num) ? 0 : parseFloat(num.toFixed(2));
   };
 
+  const fmt = (val) => {
+    if (val === "N/A" || val === null || val === undefined) return "-";
+    const num = Number(val);
+    if (isNaN(num)) return val; // if it's text, return as-is
+    return parseFloat(num.toFixed(4)); // removes trailing zeros
+  };
+
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
       <div
@@ -180,24 +187,26 @@ const Receive = ({ onClose, onAdded }) => {
                           {idx + 1}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.skuCode || "N/A"}
+                          {item.skuCode || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.itemName || "N/A"}
+                          {item.itemName || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.category || "N/A"}
-                        </td>
-                        <td className="px-2 py-1 border-r border-primary">
-                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-yellow-200">
-                            {item.weight || "N/A"}
-                          </span>
+                          {item.category || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
                           <span className="px-2 py-0.5 rounded text-xs font-semibold bg-yellow-200">
-                            {item.qty || "N/A"}
+                            {fmt(item.weight)}
                           </span>
                         </td>
+
+                        <td className="px-2 py-1 border-r border-primary">
+                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-yellow-200">
+                            {fmt(item.qty)}
+                          </span>
+                        </td>
+
                         <td className="px-2 py-1 border-r border-primary">
                           <input
                             type="text" // keep text so decimals like 0.012 work

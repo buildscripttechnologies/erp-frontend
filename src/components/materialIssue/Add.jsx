@@ -426,13 +426,13 @@ const Add = ({ onClose, onAdded }) => {
                           {idx + 1}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.skuCode || "N/A"}
+                          {item.skuCode || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.itemName || "N/A"}
+                          {item.itemName || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
-                          {item.category || "N/A"}
+                          {item.category || "-"}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
                           {item.weight !== "N/A" ? (
@@ -469,7 +469,7 @@ const Add = ({ onClose, onAdded }) => {
                               <span className="text-xs text-gray-600">kg</span>
                             </div>
                           ) : (
-                            "N/A"
+                            "-"
                           )}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
@@ -520,7 +520,7 @@ const Add = ({ onClose, onAdded }) => {
                               </span>
                             </div>
                           ) : (
-                            "N/A"
+                            "-"
                           )}
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
@@ -677,9 +677,12 @@ const Add = ({ onClose, onAdded }) => {
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
                           {item.grams
-                            ? `${item.grams / 1000} kg`
-                            : item.qty || "-"}
+                            ? `${parseFloat((item.grams / 1000).toFixed(4))} kg`
+                            : item.qty
+                            ? parseFloat(Number(item.qty).toFixed(4))
+                            : "-"}
                         </td>
+
                         {/* <td className="px-2 py-1 border-r border-primary">
                           {item.rate || "-"}
                         </td> */}

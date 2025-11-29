@@ -562,11 +562,9 @@ const QuotationMaster = ({ isOpen }) => {
           totalResults={pagination.totalResults}
           onEntriesChange={(limit) => {
             setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-            fetchQuotations(1, limit);
           }}
           onPageChange={(page) => {
             setPagination((prev) => ({ ...prev, currentPage: page }));
-            fetchQuotations(page, pagination.limit);
           }}
         />
       </div>

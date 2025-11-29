@@ -199,8 +199,10 @@ const VendorMaster = ({ isOpen }) => {
     } else {
       fetchVendors(pagination.currentPage);
     }
-    fetchMetaData();
   }, [pagination.currentPage, pagination.limit, restore]);
+  useEffect(() => {
+    fetchMetaData();
+  }, []);
 
   const goToPage = (page) => {
     if (page < 1 || page > pagination.totalPages) return;
@@ -381,7 +383,7 @@ const VendorMaster = ({ isOpen }) => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:outline-none"
-            />{" "}
+            />
             {search && (
               <FiX
                 className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
@@ -632,11 +634,9 @@ const VendorMaster = ({ isOpen }) => {
           totalResults={pagination.totalResults}
           onEntriesChange={(limit) => {
             setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-            fetchVendors(1, limit);
           }}
           onPageChange={(page) => {
             setPagination((prev) => ({ ...prev, currentPage: page }));
-            fetchVendors(page, pagination.limit);
           }}
         />
         {showUpdateModal && (

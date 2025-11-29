@@ -20,7 +20,7 @@ const BulkRmPanel = ({ onClose }) => {
 
   const { gstTable } = useCategories();
 
-  console.log("gst table", gstTable);
+  // console.log("gst table", gstTable);
 
   const fetchCategories = async () => {
     try {
