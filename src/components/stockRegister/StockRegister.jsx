@@ -385,6 +385,7 @@ const StockRegister = () => {
             <tr>
               <th className="px-2 py-1.5 ">#</th>
               <th className="px-2 py-1.5 ">Type</th>
+              <th className="px-2 py-1.5 ">Image</th>
               <th className="px-2 py-1.5 ">Sku Code</th>
               <th className="px-2 py-1.5 ">Item Name</th>
               <th className="px-2 py-1.5 ">Description</th>
@@ -423,6 +424,19 @@ const StockRegister = () => {
 
                     <td className="px-2  border-r border-primary">
                       {stock.type || "-"}
+                    </td>
+                    <td className="px-2 py-1 border-r border-primary">
+                      {stock?.attachments?.[0]?.fileUrl ? (
+                        <img
+                          src={stock?.attachments?.[0]?.fileUrl}
+                          alt={stock?.itemName}
+                          className="w-20 h-20 object-contain rounded"
+                        />
+                      ) : (
+                        <div className=" flex items-center justify-center">
+                          -
+                        </div>
+                      )}
                     </td>
                     <td className="px-2  border-r border-primary">
                       {stock.skuCode}

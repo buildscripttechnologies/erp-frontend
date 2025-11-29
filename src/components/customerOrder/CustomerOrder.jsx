@@ -190,6 +190,7 @@ const CustomerOrder = ({ isOpen }) => {
                   <th className="px-[8px] ">Product Name</th>
                   <th className="px-[8px] ">Order Qty</th>
                   <th className="px-[8px] ">Product Size</th>
+                  <th className="px-[8px] ">Rate</th>
                   <th className="px-[8px] ">GST (%)</th>
                   <th className="px-[8px] ">Amount</th>
                   <th className="px-[8px] ">BOM Date</th>
@@ -269,6 +270,9 @@ const CustomerOrder = ({ isOpen }) => {
                             {`${b.height ?? 0} x ${b.width ?? 0} x ${
                               b.depth ?? 0
                             }`}
+                          </td>
+                          <td className="px-[8px] border-r border-primary  ">
+                            {b.unitD2CRate || "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary  ">
                             {b.gst || "-"}
