@@ -478,9 +478,9 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                                     const diff = numericVal - prevVal;
 
                                     // adjust stockQty live
-                                    // updated[idx].stockQty = parseFloat(
-                                    //   (updated[idx].stockQty - diff).toFixed(3)
-                                    // );
+                                    updated[idx].stockQty = parseFloat(
+                                      (updated[idx].stockQty - diff).toFixed(3)
+                                    );
 
                                     updated[idx].weight = `${numericVal} kg`;
                                     setConsumptionTable(updated);
@@ -513,9 +513,9 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                                       ) || 0;
                                     const diff = numericVal - prevVal;
 
-                                    // updated[idx].stockQty = parseFloat(
-                                    //   (updated[idx].stockQty - diff).toFixed(3)
-                                    // );
+                                    updated[idx].stockQty = parseFloat(
+                                      (updated[idx].stockQty - diff).toFixed(3)
+                                    );
 
                                     const unit =
                                       item.category &&

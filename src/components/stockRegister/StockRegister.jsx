@@ -23,6 +23,8 @@ import { FaBarcode } from "react-icons/fa";
 import { useRef } from "react";
 import { ClipLoader } from "react-spinners";
 import { exportStockToPDF, exportToExcel } from "../../utils/exportData";
+import { TbTransfer } from "react-icons/tb";
+import StockTransfer from "./StockTransfer";
 
 const StockRegister = () => {
   const { hasPermission } = useAuth();
@@ -38,7 +40,7 @@ const StockRegister = () => {
     limit: 10,
   });
   const [overallTotalAmount, setOverallTotalAmount] = useState();
-
+  const [expandedStockId, setExpandedStockId] = useState(null);
   const [filters, setFilters] = useState({
     type: "",
     uom: "",
@@ -69,6 +71,10 @@ const StockRegister = () => {
   const [exportScope, setExportScope] = useState("current");
   const [exportFormat, setExportFormat] = useState("excel");
   const hasMountedRef = useRef(false);
+
+  const [openTransferModal, setOpenTransferModal] = useState(false);
+
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const handleViewBarcodes = (stock) => {
     setSelectedStock(stock); // this should include barcode list
@@ -385,7 +391,7 @@ const StockRegister = () => {
             <tr>
               <th className="px-2 py-1.5 ">#</th>
               <th className="px-2 py-1.5 ">Type</th>
-              <th className="px-2 py-1.5 ">Image</th>
+              {/* <th className="px-2 py-1.5 ">Image</th> */}
               <th className="px-2 py-1.5 ">Sku Code</th>
               <th className="px-2 py-1.5 ">Item Name</th>
               <th className="px-2 py-1.5 ">Description</th>
@@ -400,6 +406,7 @@ const StockRegister = () => {
               <th className="px-2 py-1.5 ">Net Amount</th>
               <th className="px-2 py-1.5 ">GST Amount</th>
               <th className="px-2 py-1.5 ">Total Amount</th>
+              <th className="px-2 py-1.5 ">Transfer</th>
             </tr>
           </thead>
           <tbody>
@@ -411,75 +418,110 @@ const StockRegister = () => {
             ) : (
               <>
                 {stocks.map((stock, index) => (
-                  <tr
-                    key={stock._id}
-                    className="border-t text-[11px] border-primary hover:bg-gray-50 whitespace-nowrap"
-                  >
-                    <td className="px-2 border-r border-primary">
-                      {Number(pagination.currentPage - 1) *
-                        Number(pagination.limit) +
-                        index +
-                        1}
-                    </td>
+                  <React.Fragment key={stock._id}>
+                    <tr
+                      key={stock._id}
+                      onClick={() =>
+                        setExpandedStockId(
+                          expandedStockId === stock._id ? null : stock._id
+                        )
+                      }
+                      className="border-t text-[11px] border-primary hover:bg-gray-50 whitespace-nowrap"
+                    >
+                      <td className="px-2 py-1 border-r border-primary">
+                        {Number(pagination.currentPage - 1) *
+                          Number(pagination.limit) +
+                          index +
+                          1}
+                      </td>
 
-                    <td className="px-2  border-r border-primary">
-                      {stock.type || "-"}
-                    </td>
-                    <td className="px-2 py-1 border-r border-primary">
-                      {stock?.attachments?.[0]?.fileUrl ? (
-                        <img
-                          src={stock?.attachments?.[0]?.fileUrl}
-                          alt={stock?.itemName}
-                          className="w-20 h-20 object-contain rounded"
-                        />
-                      ) : (
-                        <div className=" flex items-center justify-center">
-                          -
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-2  border-r border-primary">
-                      {stock.skuCode}
-                    </td>
-                    <td className="px-2  border-r border-primary">
-                      {stock.itemName}
-                    </td>
-                    <td className="px-2  border-r border-primary">
-                      {stock.description || "-"}
-                    </td>
-                    <td className="px-2  border-r border-primary">
-                      {stock.stockUOM?.unitName || "-"}
-                    </td>
-                    <td className="px-2  border-r border-primary">
-                      {stock.stockQty.toFixed(2) || 0}
-                    </td>
-                    <td className="px-2  border-r border-primary">
-                      {stock.availableQty.toFixed(2) || 0}
-                    </td>
-                    <td className="px-2  border-r border-primary">
-                      {stock.damagedQty.toFixed(2) || 0}
-                    </td>
+                      <td className="px-2  border-r border-primary">
+                        {stock.type || "-"}
+                      </td>
+                      {/* <td className="px-2 py-1 border-r border-primary">
+                        {stock?.attachments?.[0]?.fileUrl ? (
+                          <img
+                            src={stock?.attachments?.[0]?.fileUrl}
+                            alt={stock?.itemName}
+                            className="w-20 h-20 object-contain rounded"
+                          />
+                        ) : (
+                          <div className=" flex items-center justify-center">
+                            -
+                          </div>
+                        )}
+                      </td> */}
+                      <td className="px-2  border-r border-primary">
+                        {stock.skuCode}
+                      </td>
+                      <td className="px-2  border-r border-primary">
+                        {stock.itemName}
+                      </td>
+                      <td className="px-2  border-r border-primary">
+                        {stock.description || "-"}
+                      </td>
+                      <td className="px-2  border-r border-primary">
+                        {stock.stockUOM?.unitName || "-"}
+                      </td>
+                      <td className="px-2  border-r border-primary">
+                        {stock.stockQty?.toFixed(2) || 0}
+                      </td>
+                      <td className="px-2  border-r border-primary">
+                        {stock.availableQty?.toFixed(2) || 0}
+                      </td>
+                      <td className="px-2  border-r border-primary">
+                        {stock.damagedQty.toFixed(2) || 0}
+                      </td>
 
-                    <td className="px-2  border-r border-primary ">
-                      {stock.moq || 0}
-                    </td>
-                    {/* <td className="px-2  border-r border-primary  ">
+                      <td className="px-2  border-r border-primary ">
+                        {stock.moq || 0}
+                      </td>
+                      {/* <td className="px-2  border-r border-primary  ">
                       {stock.baseRate?.toFixed(2) || 0}
                     </td> */}
-                    <td className="px-2  border-r border-primary  ">
-                      {stock.gst?.toFixed(2) || 0}
-                    </td>
-                    <td className="px-2   border-r border-primary ">
-                      {stock.rate?.toFixed(2) || 0}
-                    </td>
-                    <td className="px-2   border-r border-primary ">
-                      {stock.baseAmount?.toFixed(2) || 0}
-                    </td>
-                    <td className="px-2   border-r border-primary ">
-                      {stock.gstAmount?.toFixed(2) || 0}
-                    </td>
-                    <td className="px-2 ">{stock.amount?.toFixed(2) || 0}</td>
-                  </tr>
+                      <td className="px-2  border-r border-primary  ">
+                        {stock.gst?.toFixed(2) || 0}
+                      </td>
+                      <td className="px-2   border-r border-primary ">
+                        {stock.rate?.toFixed(2) || 0}
+                      </td>
+                      <td className="px-2   border-r border-primary ">
+                        {stock.baseAmount?.toFixed(2) || 0}
+                      </td>
+                      <td className="px-2   border-r border-primary ">
+                        {stock.gstAmount?.toFixed(2) || 0}
+                      </td>
+                      <td className="px-2  border-r border-primary">
+                        {stock.totalAmount?.toFixed(2) || 0}
+                      </td>
+                      <td className="px-2 ">
+                        <TbTransfer
+                          className="text-primary hover:text-blue-500 text-base cursor-pointer"
+                          onClick={() => {
+                            setSelectedItem(stock); // set the row item you clicked
+                            setOpenTransferModal(true);
+                          }}
+                        />
+                      </td>
+                    </tr>
+                    {expandedStockId === stock._id && (
+                      <tr className="border-t border-primary">
+                        <td colSpan="100%" className="px-4 py-2 ">
+                          {stock?.attachments?.[0]?.fileUrl ? (
+                            <img
+                              src={stock?.attachments?.[0]?.fileUrl}
+                              alt={stock?.itemName}
+                              className="w-30 h-30 object-contain pl-5 rounded"
+                            />
+                          ) : (
+                            <div className=" flex items-center justify-center">
+                              No Image Available
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
                 {stocks.length === 0 && (
                   <tr>
@@ -503,6 +545,17 @@ const StockRegister = () => {
           onClose={() => setBarcodeModalOpen(false)}
         />
       )} */}
+
+      {openTransferModal && selectedItem && (
+        <StockTransfer
+          item={selectedItem}
+          onTransfer={() => {
+            fetchstocks();
+            setOpenTransferModal(false);
+          }}
+          onClose={() => setOpenTransferModal(false)}
+        />
+      )}
 
       <PaginationControls
         currentPage={pagination.currentPage}

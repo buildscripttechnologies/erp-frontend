@@ -27,7 +27,7 @@ import PaginationControls from "../PaginationControls";
 import UserPermissionForm from "./UserPermissionForm";
 import ScrollLock from "../ScrollLock";
 import { useAuth } from "../../context/AuthContext";
-import { debounce } from "lodash";
+import { debounce, set } from "lodash";
 import { useRef } from "react";
 import { BeatLoader, PulseLoader } from "react-spinners";
 import { TbRestore } from "react-icons/tb";
@@ -57,6 +57,22 @@ export default function MasterUsers() {
   const [restoreId, setRestoreId] = useState();
   const [deleteId, setDeleteId] = useState();
 
+  const [companyDetails, setCompanyDetails] = useState();
+  const [warehouses, setWarehouses] = useState([]);
+  useEffect(() => {
+    const fetchCompanyDetails = async () => {
+      try {
+        const res = await axios.get("/settings/company-details");
+
+        setCompanyDetails(res.data || []);
+        setWarehouses(res.data.warehouses || []);
+      } catch {
+        toast.error("Failed to fetch company details");
+      }
+    };
+    fetchCompanyDetails();
+  }, []);
+
   const hasMountedRef = useRef(false);
   ScrollLock(
     editUserId != null || editMode || showForm || permissionUser != null
@@ -75,6 +91,7 @@ export default function MasterUsers() {
     mobile: "",
     password: "",
     userType: "",
+    warehouse: "",
     userGroup: "UserGrp",
   });
 
@@ -116,6 +133,7 @@ export default function MasterUsers() {
       mobile: "",
       password: "",
       userType: "",
+      warehouse: "",
       userGroup: "UserGrp",
     });
     setEditMode(false);
@@ -287,6 +305,8 @@ export default function MasterUsers() {
   };
 
   const handleEdit = (user) => {
+    console.log("user to edit:", user);
+
     setFormData({
       fullName: user.fullName,
       username: user.username,
@@ -294,6 +314,7 @@ export default function MasterUsers() {
       mobile: user.mobile,
       // password: user.password, // leave blank for update
       userType: user.userType,
+      warehouse: user.warehouse,
       userGroup: user.userGroup || "UserGrp",
     });
     setEditMode(true);
@@ -578,6 +599,30 @@ export default function MasterUsers() {
                   </select>
                 </div>
 
+                <div className="space-y-1">
+                  <label
+                    htmlFor="userType"
+                    className="block text-sm font-semibold text-[#292926]"
+                  >
+                    Warehouse
+                  </label>
+                  <select
+                    id="warehouse"
+                    value={formData.warehouse}
+                    onChange={(e) =>
+                      setFormData({ ...formData, warehouse: e.target.value })
+                    }
+                    className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none cursor-pointer"
+                    required
+                  >
+                    <option value="">Select Warehouse</option>
+                    {warehouses.map((wh) => (
+                      <option key={wh.id} value={wh.name}>
+                        {wh.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <button
                   type="submit"
                   className="w-full bg-[#d8b76a] hover:bg-[#c3a14f] text-white font-semibold py-2 rounded"
@@ -931,11 +976,9 @@ export default function MasterUsers() {
             totalResults={pagination.totalResults}
             onEntriesChange={(limit) => {
               setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-              
             }}
             onPageChange={(page) => {
               setPagination((prev) => ({ ...prev, currentPage: page }));
-              
             }}
           />
         </div>

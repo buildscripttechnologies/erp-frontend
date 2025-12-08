@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
     username: "",
     fullName: "",
     userType: "",
+    warehouse: "",
     permissions: [],
   });
 
@@ -40,6 +41,7 @@ export const AuthProvider = ({ children }) => {
       username: user.username,
       fullName: user.fullName,
       userType: user.userType,
+      warehouse: user.warehouse,
       permissions: user.permissions || [], // ✅ include permissions
     });
   };
