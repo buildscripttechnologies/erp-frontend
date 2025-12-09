@@ -34,7 +34,8 @@ import { TbRestore } from "react-icons/tb";
 // export const baseurl = "http://localhost:5000";
 
 const RmMaster = ({ isOpen }) => {
-  const { hasPermission } = useAuth();
+  const { hasPermission, user } = useAuth();
+  console.log("user in RM Master:", user);
 
   const [rawMaterials, setRawMaterials] = useState([]);
   const [editData, setEditData] = useState(null);
@@ -448,6 +449,19 @@ const RmMaster = ({ isOpen }) => {
     { label: "Action", className: "" },
   ];
 
+  const userWarehouse = user?.warehouse;
+  // const isAdmin = user?.userType.toLowerCase() == "admin";
+  const isAdmin = false;
+
+  const getVisibleWarehouseStock = (rm, isAdmin, userWarehouse) => {
+    if (isAdmin) return rm.stockByWarehouse || [];
+
+    // For normal user, show only his warehouse
+    return (
+      rm.stockByWarehouse?.filter((w) => w.warehouse === userWarehouse) || []
+    );
+  };
+
   return (
     <div className={` p-3 max-w-[99vw] mx-auto overflow-x-hidden mt-4 `}>
       {/* Header */}
@@ -796,9 +810,38 @@ const RmMaster = ({ isOpen }) => {
                         {rm.purchaseUOM || "-"}
                       </td>
 
-                      <td className="px-2 border-r border-r-primary">
+                      {/* <td className="px-2 border-r border-r-primary">
                         {rm.stockQty?.toFixed(2)}
+                      </td> */}
+
+                      <td className="px-2 border-r border-r-primary">
+                        {isAdmin ? (
+                          <>
+                            <div className="">{rm.stockQty?.toFixed(2)}</div>
+                          </>
+                        ) : (
+                          ""
+                        )}
+
+                        {/* Filtered warehouse stock */}
+                        {getVisibleWarehouseStock(
+                          rm,
+                          isAdmin,
+                          userWarehouse
+                        ).map((w) => (
+                          <div key={w._id} className="text-[11px] ">
+                            {isAdmin
+                              ? `${w.warehouse}: ${w.qty?.toFixed(2)} `
+                              : `${w.qty?.toFixed(2)}`}
+                          </div>
+                        ))}
+
+                        {/* If no stock for this user's warehouse */}
+                        {!isAdmin &&
+                          getVisibleWarehouseStock(rm, isAdmin, userWarehouse)
+                            .length === 0 && <div className="">0</div>}
                       </td>
+
                       <td className="px-2 border-r border-r-primary ">
                         {rm.stockUOM || "-"}
                       </td>

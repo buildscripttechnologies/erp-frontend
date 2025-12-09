@@ -142,6 +142,13 @@ const JobDetails = ({ MI, filter, fetchMis }) => {
 
   const actions = allowedActions(displayedItems, filter);
 
+  const fmt = (val) => {
+    if (val === "N/A" || val === null || val === undefined) return "-";
+    const num = Number(val);
+    if (isNaN(num)) return val; // if it's text, return as-is
+    return parseFloat(num.toFixed(4)); // removes trailing zeros
+  };
+
   return (
     <div className="bg-white border border-primary rounded shadow pt-3 pb-4 px-4 mx-2 mb-2 text-[11px] text-black whitespace-nowrap">
       {/* Header + Bulk Actions */}
@@ -312,7 +319,9 @@ const JobDetails = ({ MI, filter, fetchMis }) => {
                     {item.width || "-"}
                   </td>
                   <td className="px-2 py-1 border-r border-primary">
-                    {item.grams ? `${item.grams / 1000} kg` : item.qty || "-"}
+                    {item.grams
+                      ? `${fmt(item.weight)}`
+                      : `${fmt(item.qty)}` || "-"}
                   </td>
                   {filter !== "printing" && filter !== "stitching" && (
                     <td className="px-2 py-1 border-r border-primary">
