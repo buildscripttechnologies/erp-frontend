@@ -8,7 +8,7 @@ const StockTransfer = ({ item, onTransfer, onClose }) => {
   const [openTransferModal, setOpenTransferModal] = useState(false);
   const [transferQty, setTransferQty] = useState("");
   const [toWarehouse, setToWarehouse] = useState("");
-  const [fromWarehouse, setFromWarehouse] = useState("");
+  const [fromWarehouse, setFromWarehouse] = useState(item.warehouse || "");
   const [loading, setLoading] = useState(false);
   const [warehouses, setWarehouses] = useState([]);
   useEffect(() => {
@@ -79,7 +79,7 @@ const StockTransfer = ({ item, onTransfer, onClose }) => {
           />
 
           {/* Warehouse Select */}
-          <label className="text-sm font-medium">From</label>
+          {/* <label className="text-sm font-medium">From</label>
           <select
             className="w-full  p-2  mt-1 mb-4 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             value={fromWarehouse}
@@ -91,20 +91,22 @@ const StockTransfer = ({ item, onTransfer, onClose }) => {
                 {wh.name}
               </option>
             ))}
-          </select>
+          </select> */}
           {/* Warehouse Select */}
-          <label className="text-sm font-medium">To</label>
+          <label className="text-sm font-medium">To Warehouse</label>
           <select
             className="w-full  p-2 rounded mt-1 mb-4 border border-primary  focus:outline-none focus:ring-2 focus:ring-primary"
             value={toWarehouse}
             onChange={(e) => setToWarehouse(e.target.value)}
           >
             <option value="">Select Warehouse</option>
-            {warehouses.map((wh) => (
-              <option key={wh.id} value={wh.name}>
-                {wh.name}
-              </option>
-            ))}
+            {warehouses
+              .filter((e) => !(e.name == fromWarehouse))
+              .map((wh) => (
+                <option key={wh.id} value={wh.name}>
+                  {wh.name}
+                </option>
+              ))}
           </select>
 
           {/* Buttons */}
