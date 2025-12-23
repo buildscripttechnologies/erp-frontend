@@ -64,12 +64,12 @@ const EditRawMaterialModal = ({
     //   updatedForm.rate = Number(baseRate) + (gst * baseRate) / 100;
     // }
 
-    const hsnOrSac = updatedForm.hsnOrSac;
+    // const hsnOrSac = updatedForm.hsnOrSac;
 
-    if (hsnOrSac) {
-      const gst = gstTable.find((g) => g.hsn === hsnOrSac);
-      updatedForm.gst = gst ? gst.gst : ""; // Updated to use updatedForm instead of updated[index]
-    }
+    // if (hsnOrSac) {
+    //   const gst = gstTable.find((g) => g.hsn === hsnOrSac);
+    //   updatedForm.gst = gst ? gst.gst : ""; // Updated to use updatedForm instead of updated[index]
+    // }
 
     // Update totalRate if rate or stockQty changes
     if (field === "rate" || field === "stockQty") {
@@ -226,8 +226,30 @@ const EditRawMaterialModal = ({
               className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-          {/* HSN/SAC */}
           <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">
+              HSN / SAC
+            </label>
+            <input
+              type="text"
+              placeholder="HSN / SAC"
+              value={formData.hsnOrSac}
+              onChange={(e) => handleChange("hsnOrSac", e.target.value)}
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-black">GST (%)</label>
+            <input
+              type="text"
+              placeholder="GST (%)"
+              value={formData.gst}
+              onChange={(e) => handleChange("hsgstnOrSac", e.target.value)}
+              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          {/* HSN/SAC */}
+          {/* <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">
               HSN / SAC
             </label>
@@ -244,10 +266,10 @@ const EditRawMaterialModal = ({
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
 
           {/* GST */}
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">GST (%)</label>
 
             <select
@@ -262,7 +284,7 @@ const EditRawMaterialModal = ({
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
           {/* Type */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-black">Type</label>

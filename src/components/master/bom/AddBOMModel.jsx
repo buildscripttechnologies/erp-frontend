@@ -1024,10 +1024,10 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
             </div>
           </div>
 
-          <div className="bg-primary w-full h-[1px] my-5"></div>
+          {/* <div className="bg-primary w-full h-[1px] my-5"></div> */}
 
           {/* bottom fields */}
-          <div className="sm:text-[12px] mb-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+          {/* <div className="sm:text-[12px] mb-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
             <div className="flex flex-col">
               <label className="font-semibold mb-1">B2B (%)</label>
               <input
@@ -1253,7 +1253,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                 className="p-2 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200 disabled:cursor-not-allowed"
               />
             </div>
-          </div>
+          </div> */}
 
           {/* Footer */}
           <div className="flex justify-end">
