@@ -102,12 +102,12 @@ const BulkRmPanel = ({ onClose }) => {
       //   updated[index].rate = Number(baseRate) + (gst * baseRate) / 100;
       // }
 
-      const hsnOrSac = updated[index].hsnOrSac;
+      // const hsnOrSac = updated[index].hsnOrSac;
 
-      if (hsnOrSac) {
-        const gst = gstTable.find((g) => g.hsn === hsnOrSac);
-        updated[index].gst = gst ? gst.gst : "";
-      }
+      // if (hsnOrSac) {
+      //   const gst = gstTable.find((g) => g.hsn === hsnOrSac);
+      //   updated[index].gst = gst ? gst.gst : "";
+      // }
 
       const rate = parseFloat(updated[index].rate) || 0;
       const stockQty = parseFloat(updated[index].stockQty) || 0;
@@ -309,8 +309,32 @@ const BulkRmPanel = ({ onClose }) => {
                     className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
-
                 <div>
+                  <label className="text-xs font-semibold text-[#292926]">
+                    HSN/SAC
+                  </label>
+                  <input
+                    placeholder="HSN/SAC"
+                    value={rm.hsnOrSac}
+                    onChange={(e) =>
+                      handleChange(index, "hsnOrSac", e.target.value)
+                    }
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-[#292926]">
+                    GST %
+                  </label>
+                  <input
+                    placeholder="Item Color"
+                    value={rm.gst}
+                    onChange={(e) => handleChange(index, "gst", e.target.value)}
+                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+
+                {/* <div>
                   <label className="text-xs font-semibold text-[#292926]">
                     HSN/SAC
                   </label>
@@ -347,7 +371,8 @@ const BulkRmPanel = ({ onClose }) => {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div> */}
+
                 <div>
                   <label className="text-xs font-semibold text-[#292926]">
                     Quality Inspection
