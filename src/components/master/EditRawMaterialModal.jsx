@@ -353,13 +353,12 @@ const EditRawMaterialModal = ({
             />
           </div>
           {/* Base Qty */}
+          {/* changed it to unit from baseqty, only in frontend, in backend still name is baseqty and using it in all calculations */}
           <div className="flex flex-col">
-            <label className="text-xs font-semibold text-black">
-              Base Quantity
-            </label>
+            <label className="text-xs font-semibold text-black">Unit</label>
             <input
               type="number"
-              placeholder="Base Quantity"
+              placeholder="Unit"
               value={formData.baseQty}
               onChange={(e) => handleChange("baseQty", e.target.value)}
               className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"

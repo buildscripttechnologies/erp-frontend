@@ -434,13 +434,14 @@ const BulkRmPanel = ({ onClose }) => {
                   />
                 </div>
 
+                {/* changed it to unit from baseqty, only in frontend, in backend still name is baseqty and using it in all calculations */}
                 <div>
                   <label className="text-xs font-semibold text-[#292926]">
-                    Base Qty
+                    Unit
                   </label>
                   <input
                     type="number"
-                    placeholder="Base Qty"
+                    placeholder="Unit"
                     value={rm.baseQty}
                     onChange={(e) =>
                       handleChange(index, "baseQty", e.target.value)
