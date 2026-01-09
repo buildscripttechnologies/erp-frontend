@@ -117,8 +117,8 @@ const BulkRmPanel = ({ onClose }) => {
       const panno = parseFloat(updated[index].panno) || 0;
 
       // Determine fabricRate
-      const fabricRate =
-        category.includes("cotton") || category.includes("canvas") ? 38 : 39;
+      // const fabricRate = category.includes("cotton") || category.includes("canvas") ? 38 : 39;
+      const fabricRate = 39;
 
       console.log("fabric rate", fabricRate);
 
