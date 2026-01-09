@@ -117,14 +117,14 @@ const BulkRmPanel = ({ onClose }) => {
       const panno = parseFloat(updated[index].panno) || 0;
 
       // Determine fabricRate
-      // const fabricRate = category.includes("cotton") || category.includes("canvas") ? 38 : 39;
-      const fabricRate = 39;
+      const fabricRate = category.includes("cotton") || category.includes("canvas") ? 38 : 39;
+      // const fabricRate = 39;
 
       console.log("fabric rate", fabricRate);
 
       // Recalculate sqInchRate if category contains fabric/cotton/canvas
       if (rate && panno && fabric.includes(category)) {
-        updated[index].sqInchRate = Number((rate / panno / fabricRate) * 1.05);
+        updated[index].sqInchRate = Number((rate / panno / fabricRate) /**1.05*/);
       } else {
         updated[index].sqInchRate = 0;
       }
