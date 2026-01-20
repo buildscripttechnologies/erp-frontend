@@ -6,26 +6,20 @@ import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 // import EditstockModal from "./EditstockModal";
 import TableSkeleton from "../../TableSkeleton";
 import ScrollLock from "../../ScrollLock";
-import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";
-import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
-// import LabelPrint from "./LabelPrint";
-import { FaBarcode } from "react-icons/fa";
+
 
 import { useRef } from "react";
-import MIdetails from "../../materialIssue/Midetails";
 import JobDetails from "../JobDetails";
 
 // import UpdateMI from "./UpdateMI";
 // import Add from "./Add";
 
 const QualityCheck = () => {
-  const { hasPermission } = useAuth();
   const [mi, setMis] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
-  const [editstock, setEditstock] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editMIData, setEditMIData] = useState(null);
   const [search, setSearch] = useState("");
@@ -305,12 +299,6 @@ const QualityCheck = () => {
         </table>
       </div>
 
-      {/* {barcodeModalOpen && selectedStock && (
-        <LabelPrint
-          stock={selectedStock}
-          onClose={() => setBarcodeModalOpen(false)}
-        />
-      )} */}
       {editModalOpen && (
         <UpdateMI
           isOpen={editModalOpen}

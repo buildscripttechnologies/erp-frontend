@@ -27,12 +27,6 @@ const VerifyOtp = () => {
     }
   }, [location.state]);
 
-  // useEffect(() => {
-  //   if (!location.state?.email) {
-  //     toast.error("Invalid access");
-  //     navigate("/"); // or redirect to login/signup
-  //   }
-  // }, [location]);
 
   useEffect(() => {
     if (timer > 0) {

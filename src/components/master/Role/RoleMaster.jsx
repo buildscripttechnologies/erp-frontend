@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 import axios from "../../../utils/axios";
-import Dashboard from "../../../pages/Dashboard";
 import toast from "react-hot-toast";
 import EditRoleModal from "./EditRoleModal";
 import AddRoleModal from "./AddRoleModal";

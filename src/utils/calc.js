@@ -1,4 +1,3 @@
-// import { fabric, plastic, slider, zipper } from "../data/dropdownData";
 
 // utils/calc.js
 export const calculateRate = (comp, qtyOverride = null, categoryData) => {
@@ -48,17 +47,6 @@ export const calculateRate = (comp, qtyOverride = null, categoryData) => {
     const inches = Number(comp.width) || 0; // qty here is already in inches
     const baseQtyMeter = Number(comp.baseQty) || 1; // baseQty in meters
     const baseQtyInches = baseQtyMeter * 39.37; // convert meters → inches
-
-    // console.log(
-    //   "q",
-    //   qty,
-    //   "w",
-    //   inches,
-    //   "base qty",
-    //   baseQtyMeter,
-    //   "base inch",
-    //   baseQtyInches
-    // );
 
     if (!inches || !baseQtyInches || !comp.itemRate) return null;
 

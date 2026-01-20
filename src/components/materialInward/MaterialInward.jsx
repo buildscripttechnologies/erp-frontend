@@ -4,20 +4,15 @@ import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 
 import AddStockModal from "./AddStock";
-// import EditstockModal from "./EditstockModal";
 import TableSkeleton from "../TableSkeleton";
 import ScrollLock from "../ScrollLock";
-import Toggle from "react-toggle";
 import PaginationControls from "../PaginationControls";
 import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
-import BarcodeModal from "./BarcodeModal";
-// import LabelPrint from "./LabelPrint";
 import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
-import UpdateStockModal from "./UpdateStockModal";
 import { makeLabelPdf } from "./makeStickerPdf";
 import { PulseLoader } from "react-spinners";
 
@@ -521,20 +516,6 @@ const MaterialInward = () => {
         </table>
       </div>
 
-      {barcodeModalOpen && selectedStock && (
-        <LabelPrint
-          stock={selectedStock}
-          onClose={() => setBarcodeModalOpen(false)}
-        />
-      )}
-      {/* {editModalOpen && (
-        <UpdateStockModal
-          isOpen={editModalOpen}
-          onClose={() => setEditModalOpen(false)}
-          stockData={editStockData}
-          onUpdated={fetchstocks}
-        />
-      )} */}
 
       <PaginationControls
         currentPage={pagination.currentPage}

@@ -9,7 +9,6 @@ import {
   FiDownload,
   FiX,
 } from "react-icons/fi";
-import Dashboard from "../../../pages/Dashboard";
 import TableSkeleton from "../../TableSkeleton";
 import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";

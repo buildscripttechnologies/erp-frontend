@@ -6,16 +6,11 @@ import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 // import EditstockModal from "./EditstockModal";
 import TableSkeleton from "../../TableSkeleton";
 import ScrollLock from "../../ScrollLock";
-import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";
-import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
-// import LabelPrint from "./LabelPrint";
-import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
-import MIdetails from "../../materialIssue/Midetails";
 import JobDetails from "../JobDetails";
 import PrintingFile from "../PrintingFile";
 
@@ -23,10 +18,8 @@ import PrintingFile from "../PrintingFile";
 // import Add from "./Add";
 
 const Printing = () => {
-  const { hasPermission } = useAuth();
   const [mi, setMis] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
-  const [editstock, setEditstock] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editMIData, setEditMIData] = useState(null);
   const [search, setSearch] = useState("");
@@ -48,15 +41,6 @@ const Printing = () => {
     toDate: "",
   });
 
-  const handleResetFilters = () => {
-    setFilters({
-      type: "",
-      uom: "",
-      fromDate: "",
-      toDate: "",
-    });
-    // call API without filters
-  };
 
   useEffect(() => {
     fetchMis();
@@ -70,10 +54,6 @@ const Printing = () => {
 
   const hasMountedRef = useRef(false);
 
-  const handleViewBarcodes = (stock) => {
-    setSelectedStock(stock); // this should include barcode list
-    setBarcodeModalOpen(true);
-  };
 
   ScrollLock(
     formOpen ||
@@ -327,12 +307,6 @@ const Printing = () => {
         </table>
       </div>
 
-      {/* {barcodeModalOpen && selectedStock && (
-        <LabelPrint
-          stock={selectedStock}
-          onClose={() => setBarcodeModalOpen(false)}
-        />
-      )} */}
       {editModalOpen && (
         <UpdateMI
           isOpen={editModalOpen}

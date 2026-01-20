@@ -1,20 +1,10 @@
 import React from "react";
 
 const SfgDetailsSection = ({ sfgData }) => {
-  const formatDate = (date) =>
-    new Date(date).toLocaleString("en-IN", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
 
-  // console.log("sfgData", sfgData);
 
   return (
     <div className=" rounded mx-2 mb-2 text-[11px] text-black">
-      {/* <h2 className="text-[14px] text-primary font-bold underline underline-offset-4 mb-2">
-        FG Details
-      </h2> */}
-
       <table className="w-full  text-[11px] border border-primary  rounded">
         <tbody>
           <tr className="border-b border-primary">

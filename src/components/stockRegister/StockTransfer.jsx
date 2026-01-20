@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { TbTransfer } from "react-icons/tb";
 import axios from "../../utils/axios";
 import { BeatLoader } from "react-spinners";
 import toast from "react-hot-toast";

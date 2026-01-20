@@ -2,35 +2,25 @@ import React, { useEffect, useState } from "react";
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import {
-  FiEdit,
-  FiTrash2,
-  FiPlus,
   FiSearch,
   FiDownload,
   FiX,
 } from "react-icons/fi";
 
-// import EditstockModal from "./EditstockModal";
 import TableSkeleton from "../TableSkeleton";
 import ScrollLock from "../ScrollLock";
-import Toggle from "react-toggle";
 import PaginationControls from "../PaginationControls";
-import { Tooltip } from "react-tooltip";
-import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
-import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
-import { ClipLoader } from "react-spinners";
 import { exportStockToPDF, exportToExcel } from "../../utils/exportData";
 import { TbTransfer } from "react-icons/tb";
 import StockTransfer from "./StockTransfer";
 
 const StockRegister = () => {
-  const { hasPermission } = useAuth();
   const [stocks, setstocks] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
-  const [editstock, setEditstock] = useState(null);
+  const [editstock] = useState(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -76,10 +66,6 @@ const StockRegister = () => {
 
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const handleViewBarcodes = (stock) => {
-    setSelectedStock(stock); // this should include barcode list
-    setBarcodeModalOpen(true);
-  };
 
   ScrollLock(
     formOpen ||
@@ -147,27 +133,8 @@ const StockRegister = () => {
     fetchstocks();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this stock?")) return;
-    try {
-      let res = await axios.delete(`/stocks/delete/${id}`);
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
-      if (res.data.status == 200) {
-        toast.success("stock deleted");
-        fetchstocks();
-      }
-    } catch {
-      toast.error("Delete failed");
-    }
-  };
 
-  const goToPage = (page) => {
-    if (page < 1 || page > pagination.totalPages) return;
-    fetchstocks(page);
-  };
+
 
   useEffect(() => {
     fetchstocks(1);
@@ -304,18 +271,6 @@ const StockRegister = () => {
               className="border border-primary rounded px-2 py-1.5 text-sm"
             />
           </div>
-          {/* <button
-            disabled={
-              filters.type == "" &&
-              filters.fromDate == "" &&
-              filters.toDate == "" &&
-              filters.uom == ""
-            }
-            onClick={() => fetchstocks(1)}
-            className="bg-primary hover:bg-[#b38a37] disabled:hover:bg-primary/50 disabled:bg-primary/50 disabled:cursor-not-allowed text-[#292926] font-semibold px-4 py-1.5 rounded transition duration-200 cursor-pointer"
-          >
-            Apply Filters
-          </button> */}
           <button
             disabled={
               filters.type == "" &&
@@ -437,20 +392,7 @@ const StockRegister = () => {
 
                       <td className="px-2  border-r border-primary">
                         {stock.type || "-"}
-                      </td>
-                      {/* <td className="px-2 py-1 border-r border-primary">
-                        {stock?.attachments?.[0]?.fileUrl ? (
-                          <img
-                            src={stock?.attachments?.[0]?.fileUrl}
-                            alt={stock?.itemName}
-                            className="w-20 h-20 object-contain rounded"
-                          />
-                        ) : (
-                          <div className=" flex items-center justify-center">
-                            -
-                          </div>
-                        )}
-                      </td> */}
+                      </td>                        
                       <td className="px-2  border-r border-primary">
                         {stock.skuCode}
                       </td>
@@ -476,9 +418,6 @@ const StockRegister = () => {
                       <td className="px-2  border-r border-primary ">
                         {stock.moq || 0}
                       </td>
-                      {/* <td className="px-2  border-r border-primary  ">
-                      {stock.baseRate?.toFixed(2) || 0}
-                    </td> */}
                       <td className="px-2  border-r border-primary  ">
                         {stock.gst?.toFixed(2) || 0}
                       </td>
@@ -538,13 +477,6 @@ const StockRegister = () => {
           </tbody>
         </table>
       </div>
-
-      {/* {barcodeModalOpen && selectedStock && (
-        <LabelPrint
-          stock={selectedStock}
-          onClose={() => setBarcodeModalOpen(false)}
-        />
-      )} */}
 
       {openTransferModal && selectedItem && (
         <StockTransfer

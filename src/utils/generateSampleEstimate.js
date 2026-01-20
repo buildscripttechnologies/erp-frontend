@@ -1,8 +1,5 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { getBase64ImageFromPDF } from "./convertPDFPageToImage"; // You need this util
-import { calculateRate } from "./calc";
-import { capitalize } from "lodash";
 import { getCompressedImageFromPDF } from "./imageCompress";
 
 export const generateSampleEstimate = async (SampleData, letterpadUrl) => {

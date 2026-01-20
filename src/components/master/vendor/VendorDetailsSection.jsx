@@ -12,32 +12,6 @@ const VendorDetailsSection = ({ vendorData }) => {
       </h2>
       <table className="w-full text-[11px] border border-[#d8b76a] mb-4 rounded ">
         <tbody className="rounded">
-          {/* <tr className="border-b border-[#d8b76a]">
-            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
-              Factory/Store Address
-            </td>
-            <td className="px-2 py-1 border-r border-[#d8b76a]">
-              {vendorData.factoryAddress || "-"}
-            </td>
-            <td className="font-semibold bg-[#f8f8f8] px-2 py-1  border-r border-[#d8b76a]">
-              Factory City
-            </td>
-            <td className="px-2 py-1">{vendorData.factoryCity || "-"}</td>
-          </tr>
-          <tr className="border-b  border-[#d8b76a]">
-            <td className="font-semibold bg-[#f8f8f8] px-2 py-1  border-r border-[#d8b76a]">
-              Factory State{" "}
-            </td>
-            <td className="px-2 py-1 border-r border-[#d8b76a]">
-              {vendorData.factoryState || "-"}
-            </td>
-            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
-              Factory Postal Code
-            </td>
-            <td className="px-2 py-1 border-r border-[#d8b76a]">
-              {vendorData.factoryPostalCode || "-"}
-            </td>
-          </tr> */}
           <tr className="border-b  border-[#d8b76a]">
             <td className="font-semibold bg-[#f8f8f8] px-2 py-1  border-r border-[#d8b76a]">
               Bank Name
@@ -74,35 +48,6 @@ const VendorDetailsSection = ({ vendorData }) => {
             </td>
             <td className="px-2 py-1">{vendorData.paymentTerms || "-"}</td>
           </tr>
-          {/* <tr>
-            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
-              Created At
-            </td>
-            <td className="px-2 py-1 border-r border-[#d8b76a]">
-              {new Date(vendorData.createdAt || "-").toLocaleString("en-IN", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-              })}
-            </td>
-            <td className="font-semibold bg-[#f8f8f8] px-2 py-1 border-r border-[#d8b76a]">
-              Updated At
-            </td>
-            <td className="px-2 py-1">
-              {" "}
-              {new Date(vendorData.updatedAt || "-").toLocaleString("en-IN", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true,
-              })}
-            </td>
-          </tr> */}
         </tbody>
       </table>
 

@@ -39,12 +39,6 @@ export const generateBOM = (sfgData) => {
     { label: "HSN/SAC", value: sfgData.hsnOrSac || "-" },
     { label: "Type", value: sfgData.type },
     { label: "UOM", value: sfgData.uom },
-    // {
-    //   label: "Quality Inspection",
-    //   value: sfgData.qualityInspectionNeeded ? "Required" : "Not-required",
-    // },
-    // { label: "Location", value: sfgData.location },
-    // { label: "Status", value: sfgData.status },
   ];
 
   doc.setFontSize(10);
@@ -58,23 +52,6 @@ export const generateBOM = (sfgData) => {
     y += 6;
   });
 
-  //   // SFG Hierarchy Table (L0)
-  //   autoTable(doc, {
-  //     startY: y + 5,
-  //     head: [["Level", "SKU Code", "Item Name"]],
-  //     body: [["L0", sfgData.skuCode, sfgData.itemName]],
-  //     theme: "grid",
-  //     headStyles: {
-  //       fillColor: GOLD,
-  //       textColor: [255, 255, 255],
-  //       halign: "center",
-  //       fontStyle: "bold",
-  //     },
-  //     styles: {
-  //       fontSize: 9,
-  //       textColor: DARK,
-  //     },
-  //   });
 
   // Flatten Components (RM and nested SFGs)
   

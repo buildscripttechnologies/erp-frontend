@@ -37,27 +37,22 @@ import {
 } from "react-icons/lu";
 import { BiExport, BiImport, BiSolidPurchaseTag } from "react-icons/bi";
 
-import { GiCutDiamond, GiMaterialsScience } from "react-icons/gi";
+import { GiMaterialsScience } from "react-icons/gi";
 import { TbTruckDelivery } from "react-icons/tb";
 import {
   MdAssignmentInd,
-  MdContentPaste,
   MdOutlineSettings,
-  MdPalette,
   MdPattern,
   MdPrint,
 } from "react-icons/md";
 import {
   RiBillFill,
   RiBillLine,
-  RiMoneyRupeeCircleLine,
   RiScissorsCutLine,
 } from "react-icons/ri";
-import { AiOutlineShoppingCart } from "react-icons/ai";
 import { GrDomain } from "react-icons/gr";
 import { TbNeedleThread } from "react-icons/tb";
 import { PiEyedropperSampleFill, PiMoneyWavy } from "react-icons/pi";
-import { CiInboxOut } from "react-icons/ci";
 import { useTabs } from "../context/TabsContext";
 export function Sidebar({ isOpen }) {
   const navigate = useNavigate();

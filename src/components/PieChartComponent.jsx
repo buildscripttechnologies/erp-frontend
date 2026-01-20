@@ -2,11 +2,6 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 export function OrderPieChart({ data }) {
-  // const data = [
-  //   { name: "Single PO", value: 10000 },
-  //   { name: "Scattered PO", value: 5000 },
-  //   { name: "RC PO", value: 2000 },
-  // ];
   const colors = ["#d8b76a", "#86efac", "#93c5fd"]; // gold, green, blue
   return (
     <div className="relative bg-white shadow-md drop-shadow-sm rounded-lg p-5 mt-4">

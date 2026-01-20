@@ -4,26 +4,12 @@ import Register from "./pages/Register";
 import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./pages/ResetPassword";
 import ChangePassword from "./pages/ChangePassword";
-import Dash from "./components/Dash";
-import MasterUsers from "./components/master/MasterUsers";
-import RmMaster from "./components/master/RmMaster";
 import "react-toggle/style.css";
 import { useAuth } from "./context/AuthContext";
-import UomMaster from "./components/master/uom/UomMaster";
-import "react-toggle/style.css";
-import SfgMaster from "./components/master/sfg/SfgMaster";
-import LocationMaster from "./components/master/location/LocationMaster";
-import FgMaster from "./components/master/fg/FgMaster";
-import VendorMaster from "./components/master/vendor/VendorMaster";
-
-import RoleMaster from "./components/master/Role/RoleMaster";
 import Dashboard from "./pages/Dashboard";
-
-import CustomerMaster from "./components/master/customer/CustomerMaster";
 import PwaInstallPrompt from "./components/PWAInstallPrompt";
 import { useEffect, useState } from "react";
-import BOMMaster from "./components/master/bom/BomMaster";
-import SampleMaster from "./components/master/sample/SampleMaster";
+import Dash from "./components/Dash";
 
 // Authenticated page components are now mounted via TabContentHost; keep router lean
 

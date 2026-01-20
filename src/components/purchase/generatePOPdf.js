@@ -1,9 +1,5 @@
-// import jsPDF from "jspdf";
-// import autoTable from "jspdf-autotable";
-// import { getBase64ImageFromPDF } from "../../utils/convertPDFPageToImage";
-
-// // Terms & Conditions (multi-line string)
-// const TERMS = `TERMS and CONDITIONS 
+// Terms & Conditions (multi-line string)
+const TERMS = `TERMS and CONDITIONS 
 // 1. IKhodal submission of the purchase Order is conditioned on Supplier’s agreement that any terms different from or in addition to the terms of the Purchase Order, whether communicated orally or contained in any purchase order confirmation, invoice, acknowledgement, acceptance or other written correspondence, irrespective of the timing, shall not form a part of the Purchase Order, even if Supplier purports to condition its acceptance of the Purchase Order on IKhodal agreement to such different or additional terms. 
 // 2. Supplier will immediately notify IKhodal if Supplier’s timely performance under the Purchase Order is delayed or is likely to be delayed. IKhodal's acceptance of Supplier’s notice will not constitute IKhodal's waiver of any of Supplier’s obligations. 
 // 3. If Supplier delivers Work after the Delivery Date, IKhodal may reject such Work. 

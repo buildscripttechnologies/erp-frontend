@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "../../../utils/axios";
-import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
+import {FiPlus, FiTrash2 } from "react-icons/fi";
 import { BeatLoader } from "react-spinners";
 
 const AddUomModal = ({ onClose, onAdded }) => {

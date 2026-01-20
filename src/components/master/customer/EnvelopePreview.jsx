@@ -1,8 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
-import { FaRegArrowAltCircleRight } from "react-icons/fa";
-
-import { BeatLoader } from "react-spinners";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 

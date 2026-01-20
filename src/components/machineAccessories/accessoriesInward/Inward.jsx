@@ -47,24 +47,6 @@ const Inward = ({ onClose, onAdded }) => {
     setFormList(updated);
   };
 
-  //   const addRow = () => {
-  //     setFormList([
-  //       ...formList,
-  //       {
-  //         accessoryName: "",
-  //         category: "",
-  //         description: "",
-  //         price: "",
-  //         vendor: null,
-  //       },
-  //     ]);
-  //   };
-
-  //   const removeRow = (index) => {
-  //     const updated = [...formList];
-  //     updated.splice(index, 1);
-  //     setFormList(updated);
-  //   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -152,30 +134,6 @@ const Inward = ({ onClose, onAdded }) => {
                   className="w-full  px-2 py-1.5 border border-primary rounded focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
-
-              {/* Vendor Select */}
-
-              {/* Buttons */}
-              {/* <div className="flex gap-2 items-end ">
-                {formList.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeRow(index)}
-                    className="sm:mt-8 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-3 rounded cursor-pointer"
-                  >
-                    <FiTrash2 />
-                  </button>
-                )}
-                {index === formList.length - 1 && (
-                  <button
-                    type="button"
-                    onClick={addRow}
-                    className="sm:mt-8 bg-primary flex items-center gap-1 hover:bg-primary/80 text-black px-3 py-2 rounded cursor-pointer"
-                  >
-                    <FiPlus /> <span>Add Row</span>
-                  </button>
-                )}
-              </div> */}
             </div>
           ))}
 

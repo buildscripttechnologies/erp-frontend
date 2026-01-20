@@ -6,17 +6,13 @@ import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 // import EditstockModal from "./EditstockModal";
 import TableSkeleton from "../TableSkeleton";
 import ScrollLock from "../ScrollLock";
-import Toggle from "react-toggle";
 import PaginationControls from "../PaginationControls";
 import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
-// import LabelPrint from "./LabelPrint";
-import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
 
-import MIdetails from "./MRdetails";
 import UpdateMI from "./UpdateMI";
 import Receive from "./Receive";
 import MRdetails from "./MRdetails";
@@ -25,7 +21,6 @@ const MaterialReceive = () => {
   const { hasPermission } = useAuth();
   const [mr, setMrs] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
-  const [editstock, setEditstock] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editMIData, setEditMIData] = useState(null);
   const [search, setSearch] = useState("");
@@ -46,15 +41,6 @@ const MaterialReceive = () => {
     toDate: "",
   });
 
-  const handleResetFilters = () => {
-    setFilters({
-      type: "",
-      uom: "",
-      fromDate: "",
-      toDate: "",
-    });
-    // call API without filters
-  };
 
   useEffect(() => {
     fetchMrs();
@@ -68,10 +54,6 @@ const MaterialReceive = () => {
 
   const hasMountedRef = useRef(false);
 
-  const handleViewBarcodes = (stock) => {
-    setSelectedStock(stock); // this should include barcode list
-    setBarcodeModalOpen(true);
-  };
 
   ScrollLock(
     formOpen ||
@@ -426,12 +408,6 @@ const MaterialReceive = () => {
         </table>
       </div>
 
-      {/* {barcodeModalOpen && selectedStock && (
-        <LabelPrint
-          stock={selectedStock}
-          onClose={() => setBarcodeModalOpen(false)}
-        />
-      )} */}
       {editModalOpen && (
         <UpdateMI
           isOpen={editModalOpen}

@@ -7,17 +7,11 @@ import TableSkeleton from "./../TableSkeleton";
 import ScrollLock from "./../ScrollLock";
 import Toggle from "react-toggle";
 import PaginationControls from "./../PaginationControls";
-// import BomDetailsSection from "./BomDetailsSection";
-// import AddBomModal from "./AddBOMModel";
-// import UpdateBomModal from "./UpdateBomModal";
 import { FaFileDownload } from "react-icons/fa";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import { useRef } from "react";
 
 import { useAuth } from "./../../context/AuthContext";
 import { debounce } from "lodash";
-// import AttachmentsModal2 from "../../AttachmentsModal2";
 import { PulseLoader } from "react-spinners";
 import AddQuotation from "./AddQuotation";
 import UpdateQuotation from "./UpdateQuotation";
@@ -32,10 +26,8 @@ const QuotationMaster = ({ isOpen }) => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [expandedRow, setExpandedRow] = useState(null);
   const [editingBOM, setEditingBOM] = useState(null);
   const [expandedBOMId, setExpandedBOMId] = useState(null);
-  const [openAttachments, setOpenAttachments] = useState(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,

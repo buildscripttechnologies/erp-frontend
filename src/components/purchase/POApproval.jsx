@@ -1,12 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
-import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
-import { FaCircleArrowDown, FaCircleArrowUp } from "react-icons/fa6";
+import { FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 import TableSkeleton from "../TableSkeleton";
 import Toggle from "react-toggle";
-// import AddSfgModal from "./AddSfgModel";
-// import UpdateSfgModal from "./UpdateSFGModel";
 import PaginationControls from "../PaginationControls";
 import { FaFileDownload } from "react-icons/fa";
 import ScrollLock from "../ScrollLock";

@@ -11,8 +11,6 @@ import PaginationControls from "../PaginationControls";
 import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
-// import LabelPrint from "./LabelPrint";
-import { FaBarcode } from "react-icons/fa";
 
 import { useRef } from "react";
 
@@ -397,12 +395,6 @@ const MaterialIssue = () => {
         </table>
       </div>
 
-      {/* {barcodeModalOpen && selectedStock && (
-        <LabelPrint
-          stock={selectedStock}
-          onClose={() => setBarcodeModalOpen(false)}
-        />
-      )} */}
       {editModalOpen && (
         <UpdateMI
           isOpen={editModalOpen}

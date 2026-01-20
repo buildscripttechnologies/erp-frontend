@@ -5,7 +5,6 @@ import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 
 import TableSkeleton from "../../TableSkeleton";
 import ScrollLock from "../../ScrollLock";
-import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";
 import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../../context/AuthContext";
@@ -13,8 +12,6 @@ import { debounce } from "lodash";
 
 import { useRef } from "react";
 import Inward from "./Inward";
-// import AddAccessories from "./AddAccessories";
-// import UpdateAccessories from "./UpdateAccessories";
 
 const AccessoriesInward = () => {
   const { hasPermission } = useAuth();
@@ -76,58 +73,6 @@ const AccessoriesInward = () => {
     fetchAccessories();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this Accessory?"))
-      return;
-    try {
-      let res = await axios.delete(`/accessories/delete-accessory/${id}`);
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
-      if (res.data.status == 200) {
-        toast.success("Accessory deleted");
-        fetchAccessories();
-      }
-    } catch {
-      toast.error("Delete failed");
-    }
-  };
-
-  const handleToggleStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === true ? false : true;
-    try {
-      const res = await axios.patch(`/accessories/update-accessory/${id}`, {
-        status: newStatus,
-      });
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
-
-      if (res.data.status == 200) {
-        toast.success(`Accessory status updated`);
-
-        // ✅ Update local state without refetch
-        setAccessories((prev) =>
-          prev.map((accessory) =>
-            accessory._id === id
-              ? { ...accessory, status: newStatus }
-              : accessory
-          )
-        );
-      } else {
-        toast.error("Failed to update status");
-      }
-    } catch (err) {
-      toast.error("Failed to update status");
-    }
-  };
-
-  const goToPage = (page) => {
-    if (page < 1 || page > pagination.totalPages) return;
-    fetchAccessories(page);
-  };
 
   useEffect(() => {
     fetchAccessories(1);

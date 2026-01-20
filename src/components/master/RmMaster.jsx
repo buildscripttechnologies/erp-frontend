@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Dashboard from "../../pages/Dashboard";
 import {
   FiPlus,
   FiSearch,
@@ -15,23 +14,18 @@ import toast from "react-hot-toast";
 import { Tooltip } from "react-tooltip";
 import TableSkeleton from "../TableSkeleton";
 import EditRawMaterialModal from "./EditRawMaterialModal";
-import AddBulkRawMaterials from "./BulkRmPanel.jsx";
-import BulkRmPanel from "./BulkRmPanel.jsx";
+import BulkRmPanel from "./BulkRmPanel";
 import Toggle from "react-toggle";
 import { exportToExcel, exportToPDF } from "../../utils/exportData.js";
 import AttachmentsModal from "../AttachmentsModal.jsx";
 import ScrollLock from "../ScrollLock.js";
 import PaginationControls from "../PaginationControls.jsx";
 import { BeatLoader, ClipLoader, PulseLoader } from "react-spinners";
-import { span } from "framer-motion/client";
 import AttachmentsModal2 from "../AttachmentsModal2.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
-
 import { debounce } from "lodash";
 import { useRef } from "react";
 import { TbRestore } from "react-icons/tb";
-
-// export const baseurl = "http://localhost:5000";
 
 const RmMaster = ({ isOpen }) => {
   const { hasPermission, user } = useAuth();

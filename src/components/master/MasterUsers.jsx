@@ -13,7 +13,6 @@ import {
 } from "react-icons/fi";
 import { LuUserCog } from "react-icons/lu";
 
-import Dashboard from "../../pages/Dashboard";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../utils/axios";

@@ -1,8 +1,6 @@
 // File: BulkRmPanel.jsx
 import React, { useState, useEffect } from "react";
 import { FiTrash2, FiArrowLeft, FiPlus } from "react-icons/fi";
-import { RiResetRightLine } from "react-icons/ri";
-import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import { BeatLoader } from "react-spinners";
 

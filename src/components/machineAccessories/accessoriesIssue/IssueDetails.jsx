@@ -1,11 +1,7 @@
 import React from "react";
 
 const IssueDetails = ({ accessoriesData }) => {
-  const formatDate = (date) =>
-    new Date(date).toLocaleString("en-IN", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
+
 
   return (
     <div className="bg-white border border-primary rounded shadow pt-3 pb-4 px-4 mx-2 mb-2 text-[11px] text-black">

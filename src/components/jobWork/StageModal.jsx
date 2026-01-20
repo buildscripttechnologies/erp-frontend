@@ -62,17 +62,6 @@ const StageModal = ({
 
     const action = isBulk ? bulkAction : itm.action;
 
-    // if (itm.jobWorkType === "Outside Company") {
-    //   if (action === "start") return { ...current, status: "In Progress" };
-    //   if (action === "next") {
-    //     return {
-    //       completedStage: { ...current, status: "Completed" },
-    //       newStage: { stage: getNextStageName(itm), status: "Yet to Start" },
-    //     };
-    //   }
-    //   return current;
-    // }
-
     switch (action) {
       case "start":
         return { ...current, status: "In Progress" };
@@ -103,14 +92,12 @@ const StageModal = ({
     if (!MI?.itemDetails || MI.itemDetails.length === 0) return false;
 
     if (stage == "Stitching" && action == "start") {
-      // All items must already have Stitching stage (any status) OR be beyond
       console.log("stitch", MI.readyForStitching);
 
       return MI.readyForStitching;
     }
 
     if (stage == "Checking" && action == "start") {
-      // All items must have Stitching marked Completed
       console.log("stitch", MI.readyForChecking);
       return MI.readyForChecking;
     }

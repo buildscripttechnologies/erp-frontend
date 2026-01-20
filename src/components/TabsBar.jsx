@@ -1,14 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { X, ChevronLeft, ChevronRight } from "react-feather";
-// import * as Icons from "react-feather";
-// import * as Fi from "react-icons/fi";
-// import * as Fa from "react-icons/fa";
-// import * as Bi from "react-icons/bi";
-// import * as Tb from "react-icons/tb";
-// import * as Md from "react-icons/md";
-// import * as Ri from "react-icons/ri";
-// import * as Lu from "react-icons/lu";
-// import * as Pi from "react-icons/pi";
 
 import { TiPinOutline } from "react-icons/ti";
 
@@ -45,7 +36,6 @@ import { TbNeedleThread, TbTruckDelivery } from "react-icons/tb";
 import {
   RiBillFill,
   RiBillLine,
-  RiCloseCircleLine,
   RiCloseFill,
   RiScissorsCutLine,
 } from "react-icons/ri";

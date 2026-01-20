@@ -9,7 +9,6 @@ import {
   FiX,
   FiPrinter,
 } from "react-icons/fi";
-import Dashboard from "../../../pages/Dashboard";
 import AddVendorModal from "./AddVendorModel";
 import TableSkeleton from "../../TableSkeleton";
 import ScrollLock from "../../ScrollLock";

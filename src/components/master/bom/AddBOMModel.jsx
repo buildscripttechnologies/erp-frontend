@@ -5,16 +5,13 @@ import toast from "react-hot-toast";
 import CreatableSelect from "react-select/creatable";
 import { FiTrash2 } from "react-icons/fi";
 import { BeatLoader, PuffLoader } from "react-spinners";
-import { capitalize } from "lodash";
 import { calculateRate } from "../../../utils/calc";
 import { generateConsumptionTable } from "../../../utils/consumptionTable";
 import { useCategoryArrays } from "../../../data/dropdownData";
-// import { plastic, slider, zipper } from "../../../data/dropdownData";
 
 const AddBomModal = ({ onClose, onSuccess, coData }) => {
   const { fabric, slider, plastic, zipper } = useCategoryArrays();
   let categoryData = useCategoryArrays();
-  // console.log("coData", coData);
 
   const [form, setForm] = useState({
     partyName: "",
@@ -48,7 +45,6 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
   });
 
   const [productDetails, setProductDetails] = useState([]);
-  // const [selectedProduct, setSelectedFg] = useState();
   const [rms, setRms] = useState([]);
   const [sfgs, setSfgs] = useState([]);
   const [fgs, setFgs] = useState([]);
@@ -339,10 +335,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
       (c) =>
         !c.itemId || c.qty <= 0 || c.height <= 0 || c.width <= 0 || !c.partName
     );
-    // if (hasEmpty) {
-    //   setLoading(false);
-    //   return toast.error("Please fill or remove all incomplete RM/SFG rows");
-    // }
+
     try {
       const consumptionTable = generateConsumptionTable(
         productDetails,

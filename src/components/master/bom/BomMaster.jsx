@@ -5,16 +5,11 @@ import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 import TableSkeleton from "../../TableSkeleton";
 import ScrollLock from "../../ScrollLock";
-import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";
 import BomDetailsSection from "./BomDetailsSection";
 import AddBomModal from "./AddBOMModel";
 import UpdateBomModal from "./UpdateBomModal";
 import { FaFileDownload } from "react-icons/fa";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import { useRef } from "react";
-import { generateBom } from "../../../utils/generateBom";
 import { generateBomLP } from "../../../utils/generateBomLP";
 import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
@@ -30,7 +25,6 @@ const BomMaster = ({ isOpen }) => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [expandedRow, setExpandedRow] = useState(null);
   const [editingBOM, setEditingBOM] = useState(null);
   const [expandedBOMId, setExpandedBOMId] = useState(null);
   const [openAttachments, setOpenAttachments] = useState(null);
@@ -129,14 +123,6 @@ const BomMaster = ({ isOpen }) => {
     fetchBOMs(page);
   };
 
-  // const filtered = BOMs.filter(
-  //   (c) =>
-  //     c.partyName?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.productName?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.bomNo?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.sampleNo?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.createdBy?.fullName.toLowerCase().includes(search.toLowerCase())
-  // );
 
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === true ? false : true;

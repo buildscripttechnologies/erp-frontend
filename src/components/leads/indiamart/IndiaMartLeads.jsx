@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "../../../utils/axios";
 import toast from "react-hot-toast";
 import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
-import Dashboard from "../../../pages/Dashboard";
 
 import TableSkeleton from "../../TableSkeleton";
 import ScrollLock from "../../ScrollLock";

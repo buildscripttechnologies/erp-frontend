@@ -2,28 +2,18 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
-import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
+import {FiSearch, FiX } from "react-icons/fi";
 import TableSkeleton from "../TableSkeleton";
 import ScrollLock from "../ScrollLock";
-import Toggle from "react-toggle";
 import PaginationControls from "../PaginationControls";
-// import BomDetailsSection from "./BomDetailsSection";
-// import AddBomModal from "./AddBOMModel";
 import UpdateBomModal from "../master/bom/UpdateBomModal";
-import { FaCheckCircle, FaFileDownload } from "react-icons/fa";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import { useRef } from "react";
-// import { generateBomLP } from "../../../utils/generateBomLP";
 import { useAuth } from "../../context/AuthContext";
 import { debounce } from "lodash";
-import AttachmentsModal2 from "../AttachmentsModal2";
 import AddBomModal from "../master/bom/AddBOMModel";
-import { MdCancel, MdCheck } from "react-icons/md";
+import { MdCancel } from "react-icons/md";
 import { IoMdCheckmarkCircle } from "react-icons/io";
 import { Tooltip } from "react-tooltip";
-
-// import AddCO from "./AddCO";
 
 const COP = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -32,10 +22,8 @@ const COP = ({ isOpen }) => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [bomModalItem, setBomModalItem] = useState(false);
-  const [expandedRow, setExpandedRow] = useState(null);
   const [editingBOM, setEditingBOM] = useState(null);
   const [expandedCOId, setExpandedCOId] = useState(null);
-  const [openAttachments, setOpenAttachments] = useState(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -89,20 +77,6 @@ const COP = ({ isOpen }) => {
     fetchCOs();
   }, []);
 
-  const goToPage = (page) => {
-    if (page < 1 || page > pagination.totalPages) return;
-    fetchCOs(page);
-  };
-
-  // const filtered = BOMs.filter(
-  //   (c) =>
-  //     c.partyName?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.productName?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.bomNo?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.sampleNo?.toLowerCase().includes(search.toLowerCase()) ||
-  //     c.createdBy?.fullName.toLowerCase().includes(search.toLowerCase())
-  // );
-
   const handleReject = async (id) => {
     if (!window.confirm("Are you sure you want to Reject this CO?")) return;
     try {
@@ -129,25 +103,6 @@ const COP = ({ isOpen }) => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this BOM?")) return;
-    try {
-      const res = await axios.delete(`/boms/delete/${id}`);
-      if (res.data.status == 403) {
-        toast.error(res.data.message);
-        return;
-      }
-
-      if (res.data.status == 200) {
-        toast.success(`BOM Deleted Successfully`);
-        fetchCOs(pagination.currentPage);
-      } else {
-        toast.error("Failed to Delete BOM");
-      }
-    } catch (err) {
-      toast.error("Failed to Delete BOM");
-    }
-  };
 
   return (
     <>
@@ -264,11 +219,6 @@ const COP = ({ isOpen }) => {
                           <td className="px-[8px] border-r border-primary  ">
                             {b.orderQty || "-"}
                           </td>
-                          {/* <td className="px-[8px] border-r border-primary ">
-                            {`${b.height ?? 0} x ${b.width ?? 0} x ${
-                              b.depth ?? 0
-                            }`}
-                          </td> */}
 
                           <td className="px-[8px] border-r border-primary ">
                             {new Date(b.date).toLocaleString("en-IN", {
@@ -277,18 +227,6 @@ const COP = ({ isOpen }) => {
                               year: "numeric",
                             }) || "-"}{" "}
                           </td>
-                          {/* <td className="px-[8px] border-r border-primary ">
-                            {b.productionDate
-                              ? new Date(b.productionDate).toLocaleString(
-                                  "en-IN",
-                                  {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  }
-                                )
-                              : "-"}
-                          </td> */}
                           <td className="px-[8px] border-r border-primary ">
                             {b.deliveryDate
                               ? new Date(b.deliveryDate).toLocaleString(

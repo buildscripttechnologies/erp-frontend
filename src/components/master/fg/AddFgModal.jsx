@@ -6,7 +6,6 @@ import { BeatLoader } from "react-spinners";
 import Select from "react-select";
 import { calculateRate } from "../../../utils/calc";
 import { useCategoryArrays } from "../../../data/dropdownData";
-// import { zipper, plastic, slider } from "../../../data/dropdownData";
 
 const AddFgModal = ({ onClose, onAdded }) => {
   const { fabric, slider, plastic, zipper } = useCategoryArrays();

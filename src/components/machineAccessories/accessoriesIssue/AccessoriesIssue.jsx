@@ -5,7 +5,6 @@ import { FiEdit, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 
 import TableSkeleton from "../../TableSkeleton";
 import ScrollLock from "../../ScrollLock";
-import Toggle from "react-toggle";
 import PaginationControls from "../../PaginationControls";
 import { Tooltip } from "react-tooltip";
 import { useAuth } from "../../../context/AuthContext";
@@ -17,9 +16,6 @@ import { FaFileDownload } from "react-icons/fa";
 import { PulseLoader } from "react-spinners";
 import IssueDetails from "./IssueDetails";
 import { generateIssueSlip } from "./generateIssueSlip";
-
-// import AddAccessories from "./AddAccessories";
-// import UpdateAccessories from "./UpdateAccessories";
 
 const AccessoriesIssue = () => {
   const { hasPermission } = useAuth();
