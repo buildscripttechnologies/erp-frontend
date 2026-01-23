@@ -10,6 +10,7 @@ import BomDetailsSection from "./BomDetailsSection";
 import AddBomModal from "./AddBOMModel";
 import UpdateBomModal from "./UpdateBomModal";
 import { FaFileDownload } from "react-icons/fa";
+import { useRef } from "react";
 import { generateBomLP } from "../../../utils/generateBomLP";
 import { useAuth } from "../../../context/AuthContext";
 import { debounce } from "lodash";
