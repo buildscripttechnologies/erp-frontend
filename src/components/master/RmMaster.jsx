@@ -456,507 +456,628 @@ const RmMaster = ({ isOpen }) => {
     );
   };
 
+
   return (
-    <div className={` p-3 max-w-[99vw] mx-auto overflow-x-hidden mt-4 `}>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-        <div className="flex fex-wrap gap-2">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#292926]">
-            Raw Materials{" "}
-            <span className="text-gray-500">({pagination.totalResults})</span>
-          </h2>
-          <div className="flex flex-wrap gap-2">
+    <div className="p-3 sm:p-4 lg:p-6 max-w-[99vw] mx-auto overflow-x-hidden">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-5 lg:p-6 mb-4 sm:mb-5 lg:mb-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 lg:gap-6">
+          <div className="flex-1 w-full">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <div className="w-1 h-6 sm:h-8 bg-primary rounded-full"></div>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-secondary">
+                Raw Materials Master
+              </h1>
+            </div>
+            <p className="text-gray-600 text-xs sm:text-sm ml-3 sm:ml-4">
+              Manage and track all raw materials in your inventory
+              <span className="ml-2 font-semibold text-primary">
+                ({pagination.totalResults} items)
+              </span>
+            </p>
+            {restore && (
+              <div className="mt-3 sm:mt-4 ml-3 sm:ml-4 flex flex-wrap items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-1.5 sm:gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
+                  <TbRestore className="text-amber-600 text-sm sm:text-base" />
+                  <span className="text-xs sm:text-sm font-medium text-amber-800">
+                    Restore Mode Active
+                  </span>
+                </div>
+                {selectedRMs.length > 0 && (
+                  <span className="text-xs sm:text-sm text-gray-600">
+                    {selectedRMs.length} selected
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2 sm:gap-3 w-full lg:w-auto">
             <button
               onClick={() => {
                 setRestore((prev) => !prev);
                 setPagination((prev) => ({ ...prev, currentPage: 1 }));
                 setSelectedRMs([]);
               }}
-              className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+              className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 shadow-sm flex items-center gap-1.5 sm:gap-2 ${
+                restore
+                  ? "bg-red-500 hover:bg-red-600 text-white"
+                  : "bg-gray-100 hover:bg-gray-200 text-secondary"
+              }`}
             >
-              {restore ? "Cancel" : "Restore"}
+              {restore ? (
+                <>
+                  <FiX className="text-sm sm:text-base" /> 
+                  <span className="whitespace-nowrap">Cancel</span>
+                </>
+              ) : (
+                <>
+                  <TbRestore className="text-sm sm:text-base" /> 
+                  <span className="whitespace-nowrap">Restore</span>
+                </>
+              )}
             </button>
-            {restore ? (
+            {restore && (
               <>
                 <button
                   onClick={() => handleRestore()}
-                  className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                  disabled={selectedRMs.length === 0}
+                  className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-semibold text-xs sm:text-sm bg-green-500 hover:bg-green-600 text-white transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2"
                 >
-                  Restore
+                  <TbRestore className="text-sm sm:text-base" /> 
+                  <span className="whitespace-nowrap hidden sm:inline">Restore Selected</span>
+                  <span className="whitespace-nowrap sm:hidden">Restore</span>
                 </button>
                 <button
                   onClick={() => handlePermanentDelete()}
-                  className="bg-primary text-secondary px-2 font-semibold rounded cursor-pointer hover:bg-primary/80 "
+                  disabled={selectedRMs.length === 0}
+                  className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-semibold text-xs sm:text-sm bg-red-500 hover:bg-red-600 text-white transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2"
                 >
-                  Delete
+                  <FiTrash2 className="text-sm sm:text-base" /> 
+                  <span className="whitespace-nowrap hidden sm:inline">Delete Permanently</span>
+                  <span className="whitespace-nowrap sm:hidden">Delete</span>
                 </button>
               </>
-            ) : (
-              ""
             )}
           </div>
-        </div>
-
-        <div className="flex gap-2 flex-wrap">
-          {showExportOptions && (
-            <div className="flex gap-2 items-center">
-              <select
-                value={exportScope}
-                onChange={(e) => setExportScope(e.target.value)}
-                className="border border-primary px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
-              >
-                <option value="current">This Page</option>
-                <option value="filtered">Filtered Data</option>
-                <option value="all">All Data</option>
-              </select>
-
-              <select
-                value={exportFormat}
-                onChange={(e) => setExportFormat(e.target.value)}
-                className="border border-primary px-3 py-1.5 rounded text-sm text-[#292926] cursor-pointer"
-              >
-                <option value="excel">Excel</option>
-                <option value="pdf">PDF</option>
-              </select>
-
-              <button
-                disabled={downloading}
-                onClick={handleExport}
-                className="bg-primary hover:bg-primary/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
-              >
-                {downloading ? (
-                  <span className="flex justify-center items-center gap-1 px-4 py-2">
-                    {/* Downloading */}
-                    <PulseLoader size={5} color="#292926" />
-                  </span>
-                ) : (
-                  "Download"
-                )}
-              </button>
-            </div>
-          )}
-          <button
-            onClick={toggleExportOptions}
-            className="bg-primary cursor-pointer hover:bg-primary/80 text-black font-semibold px-4 py-1.5 rounded flex justify-center items-center whitespace-nowrap transition"
-          >
-            <FiDownload className="mr-2" /> Export
-          </button>
-
-          <button
-            disabled={sampleDownloading}
-            onClick={handleSampleDownload}
-            className="flex items-center gap-2 bg-primary hover:bg-primary/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
-          >
-            {sampleDownloading ? (
-              <span className="flex justify-center items-center gap-1">
-                {/* Downloading */}
-                <PulseLoader size={5} color="#292926" />
-              </span>
-            ) : (
-              <>
-                <FiDownload /> Sample Excel
-              </>
-            )}
-          </button>
-
-          <div className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/80 px-4 py-1.5 rounded cursor-pointer text-[#292926] font-semibold ">
-            <label
-              title={file ? file.name : "Upload Excel"}
-              className="flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <FiUploadCloud />
-              <span className="w-24 truncate">
-                {file ? file.name : "Upload Excel"}
-              </span>
-              <input
-                type="file"
-                accept=".xlsx, .xls"
-                className="hidden"
-                onChange={(e) => setFile(e.target.files[0])}
-              />
-            </label>
-            {file && (
-              <button
-                onClick={() => setFile(null)}
-                className="text-[#292926] border rounded-full p-1 hover:text-red-600 cursor-pointer"
-                title="Remove file"
-              >
-                <FiX size={16} />
-              </button>
-            )}
-          </div>
-
-          <button
-            disabled={uploading}
-            onClick={handleFileUpload}
-            className="bg-primary hover:bg-primary/80 text-black font-semibold px-4 py-1.5 rounded transition cursor-pointer"
-          >
-            {uploading ? (
-              <span className="flex justify-center items-center gap-1">
-                {/* Downloading */}
-                <PulseLoader size={5} color="#292926" />
-              </span>
-            ) : (
-              "Submit"
-            )}
-          </button>
         </div>
       </div>
 
-      {/* Search */}
-      <div className="flex flex-col w-auto sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div className="relative w-full sm:w-80">
-          <input
-            type="text"
-            placeholder="Search raw materials..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full  pl-10 pr-4 py-1 text-[#292926] border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
-          />
-          <FiSearch className="absolute left-2 top-2 text-primary" />{" "}
-          {search && (
-            <FiX
-              className="absolute right-2 top-2 cursor-pointer text-gray-500 hover:text-primary transition"
-              onClick={() => setSearch("")}
-              title="Clear"
-            />
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-5 lg:p-6 mb-4 sm:mb-5 lg:mb-6">
+        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 items-start lg:items-center">
+          <div className="flex-1 relative w-full">
+            <div className="relative">
+              <FiSearch className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-base sm:text-lg" />
+              <input
+                type="text"
+                placeholder="Search by SKU, name, description, HSN/SAC..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 text-secondary border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-gray-50 focus:bg-white text-sm sm:text-base"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors"
+                  title="Clear search"
+                >
+                  <FiX className="text-base sm:text-lg" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {hasPermission("RawMaterial", "write") && (
+            <button
+              onClick={() => setShowBulkPanel(true)}
+              className="w-full lg:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-primary hover:bg-primary/90 text-secondary font-semibold rounded-lg flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm sm:text-base"
+            >
+              <FiPlus className="text-base sm:text-lg" /> 
+              <span className="whitespace-nowrap">Add Raw Material</span>
+            </button>
           )}
         </div>
-        {hasPermission("RawMaterial", "write") && (
-          <button
-            onClick={() => setShowBulkPanel(true)}
-            className="w-full sm:w-40 justify-center bg-primary hover:bg-primary/80 text-black font-semibold px-4 py-1.5 rounded flex items-center gap-2 cursor-pointer transition duration-200"
-          >
-            <FiPlus /> Add R.M.
-          </button>
-        )}
+
+        <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
+          <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
+            {showExportOptions && (
+              <div className="flex flex-wrap gap-2 sm:gap-3 items-center bg-gray-50 rounded-lg p-2 sm:p-3 border border-gray-200 w-full lg:w-auto">
+                <select
+                  value={exportScope}
+                  onChange={(e) => setExportScope(e.target.value)}
+                  className="border border-gray-300 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm text-secondary cursor-pointer bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all flex-1 sm:flex-none"
+                >
+                  <option value="current">This Page</option>
+                  <option value="filtered">Filtered Data</option>
+                  <option value="all">All Data</option>
+                </select>
+
+                <select
+                  value={exportFormat}
+                  onChange={(e) => setExportFormat(e.target.value)}
+                  className="border border-gray-300 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm text-secondary cursor-pointer bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all flex-1 sm:flex-none"
+                >
+                  <option value="excel">Excel</option>
+                  <option value="pdf">PDF</option>
+                </select>
+
+                <button
+                  disabled={downloading}
+                  onClick={handleExport}
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-primary hover:bg-primary/90 text-secondary font-semibold rounded-lg transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
+                >
+                  {downloading ? (
+                    <PulseLoader size={5} color="#292926" />
+                  ) : (
+                    <>
+                      <FiDownload className="text-sm sm:text-base" /> 
+                      <span className="whitespace-nowrap">Download</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            <button
+              onClick={toggleExportOptions}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-100 hover:bg-gray-200 text-secondary font-semibold rounded-lg flex items-center gap-1.5 sm:gap-2 transition-all duration-200 text-xs sm:text-sm"
+            >
+              <FiDownload className="text-sm sm:text-base" /> 
+              <span className="whitespace-nowrap">{showExportOptions ? "Hide" : "Export"}</span>
+            </button>
+
+            <button
+              disabled={sampleDownloading}
+              onClick={handleSampleDownload}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-100 hover:bg-gray-200 text-secondary font-semibold rounded-lg flex items-center gap-1.5 sm:gap-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
+            >
+              {sampleDownloading ? (
+                <PulseLoader size={5} color="#292926" />
+              ) : (
+                <>
+                  <FiDownload className="text-sm sm:text-base" /> 
+                  <span className="whitespace-nowrap hidden sm:inline">Sample Excel</span>
+                  <span className="whitespace-nowrap sm:hidden">Sample</span>
+                </>
+              )}
+            </button>
+
+            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 flex-1 sm:flex-none min-w-0">
+              <label className="flex items-center gap-1.5 sm:gap-2 cursor-pointer text-secondary font-semibold min-w-0 flex-1">
+                <FiUploadCloud className="text-base sm:text-lg flex-shrink-0" />
+                <span className="text-xs sm:text-sm truncate min-w-0">
+                  {file ? file.name : "Upload Excel"}
+                </span>
+                <input
+                  type="file"
+                  accept=".xlsx, .xls"
+                  className="hidden"
+                  onChange={(e) => setFile(e.target.files[0])}
+                />
+              </label>
+              {file && (
+                <button
+                  onClick={() => setFile(null)}
+                  className="text-gray-500 hover:text-red-500 transition-colors flex-shrink-0"
+                  title="Remove file"
+                >
+                  <FiX size={16} className="sm:hidden" />
+                  <FiX size={18} className="hidden sm:block" />
+                </button>
+              )}
+            </div>
+
+            {file && (
+              <button
+                disabled={uploading}
+                onClick={handleFileUpload}
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-primary hover:bg-primary/90 text-secondary font-semibold rounded-lg transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap"
+              >
+                {uploading ? (
+                  <PulseLoader size={5} color="#292926" />
+                ) : (
+                  "Submit"
+                )}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Table */}
-      <div
-        className={`relative overflow-x-auto  overflow-y-auto rounded border border-primary shadow-sm`}
-      >
-        <div className={` ${isOpen ? `max-w-[40.8vw]` : `max-w-[99vw]`}`}>
-          <table className={`text-[11px] min-w-[100vw]`}>
-            <thead className="bg-primary text-[#292926] text-left">
-              <tr>
-                {restore && (
-                  <th className="py-1.5 px-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedRMs.length === rawMaterials.length}
-                      onChange={toggleSelectAll}
-                      className="accent-primary"
-                    />
-                  </th>
-                )}
-                {[
-                  "#",
-                  "Created At",
-                  "Updated At",
-                  "SKU Code",
-                  "Item Name",
-                  "Description",
-                  "Item Category",
-                  "Item Color",
-                  "HSN/SAC",
-                  "Type",
-                  "Qual. Insp.",
-                  "Location",
-                  "Base Qty",
-                  "Pkg Qty",
-                  "MOQ",
-                  "Panno",
-                  "SqInch Rate",
-                  // "Base Rate",
-                  "GST",
-                  "Rate",
-                  "Pur. Uom",
-                  "Stock Qty",
-                  "Stock Uom",
-                  "Total Rate",
-                  "Attachment",
-                  "Status",
-                  "Created By",
-                  "Action",
-                ].map((th) => (
-                  <th
-                    key={th}
-                    className="py-1.5 px-2 text-[11px] whitespace-nowrap"
-                  >
-                    {th}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <TableSkeleton
-                  rows={pagination.limit}
-                  columns={restore ? Array(28).fill({}) : Array(27).fill({})}
-                />
-              ) : (
-                <>
-                  {rawMaterials.map((rm, i) => (
-                    <tr
-                      key={rm.id}
-                      className={`border-b text-[11px] whitespace-nowrap border-primary hover:bg-gray-50`}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto w-full rm-table-scrollbar">
+          <div className={`min-w-full ${isOpen ? `max-w-[40.8vw]` : `w-full`}`}>
+            <table className="w-full text-[11px] min-w-max">
+              <thead className="bg-gradient-to-r from-primary to-primary/90 text-secondary sticky top-0 z-20">
+                <tr>
+                  {restore && (
+                    <th className="py-2.5 px-2 sticky left-0 z-30 bg-primary border-r border-primary/30">
+                      <input
+                        type="checkbox"
+                        checked={selectedRMs.length === rawMaterials.length}
+                        onChange={toggleSelectAll}
+                        className="w-3.5 h-3.5 accent-secondary cursor-pointer"
+                      />
+                    </th>
+                  )}
+                  {[
+                    "#",
+                    "Created At",
+                    "Updated At",
+                    "SKU Code",
+                    "Item Name",
+                    "Description",
+                    "Item Category",
+                    "Item Color",
+                    "HSN/SAC",
+                    "Type",
+                    "Qual. Insp.",
+                    "Location",
+                    "Base Qty",
+                    "Pkg Qty",
+                    "MOQ",
+                    "Panno",
+                    "SqInch Rate",
+                    "GST",
+                    "Rate",
+                    "Pur. Uom",
+                    "Stock Qty",
+                    "Stock Uom",
+                    "Total Rate",
+                    "Attachment",
+                    "Status",
+                    "Created By",
+                    "Action",
+                  ].map((th) => (
+                    <th
+                      key={th}
+                      className="py-2.5 px-2 text-left font-semibold text-[11px] whitespace-nowrap border-r border-primary/30 last:border-r-0"
                     >
-                      {restore && (
-                        <td className="px-2 border-r border-r-primary ">
-                          <input
-                            type="checkbox"
-                            name=""
-                            id=""
-                            className=" accent-primary "
-                            checked={selectedRMs.includes(rm.id)}
-                            onChange={() => handleSelectRM(rm.id)}
-                          />
-                        </td>
-                      )}
-                      <td className="px-2 border-r border-r-primary">
-                        {Number(pagination.currentPage - 1) *
-                          Number(pagination.limit) +
-                          i +
-                          1}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {new Date(rm.createdAt).toLocaleString("en-IN", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        })}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {new Date(rm.updatedAt).toLocaleString("en-IN", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        })}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.skuCode}
-                      </td>
-                      <td className="px-2 border-r border-r-primary ">
-                        {rm.itemName}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.description || "-"}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.itemCategory || "-"}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.itemColor || "-"}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.hsnOrSac}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.type}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        <Toggle
-                          checked={rm.qualityInspectionNeeded}
-                          onChange={() =>
-                            handleToggleQualityInspection(
-                              rm.id,
-                              rm.qualityInspectionNeeded
-                            )
-                          }
-                        />
-                      </td>
-
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.location || "-"}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.baseQty}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.pkgQty}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.moq}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.panno || "0"}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        ₹{(Number(rm.sqInchRate) || 0).toFixed(4)}
-                      </td>
-                      {/* <td className="px-2 border-r border-r-primary">
-                        ₹{rm.baseRate || "0"}
-                      </td> */}
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.gst ? rm.gst + "%" : "-"}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        ₹{rm.rate || "0"}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.purchaseUOM || "-"}
-                      </td>
-
-                      {/* <td className="px-2 border-r border-r-primary">
-                        {rm.stockQty?.toFixed(2)}
-                      </td> */}
-
-                      <td className="px-2 border-r border-r-primary">
-                        {isAdmin ? (
-                          <>
-                            <div className="">{rm.stockQty?.toFixed(2)}</div>
-                          </>
-                        ) : (
-                          ""
-                        )}
-
-                        {/* Filtered warehouse stock */}
-                        {getVisibleWarehouseStock(
-                          rm,
-                          isAdmin,
-                          userWarehouse
-                        ).map((w) => (
-                          <div key={w._id} className="text-[11px] ">
-                            {isAdmin
-                              ? `${w.warehouse}: ${w.qty?.toFixed(2)} `
-                              : `${w.qty?.toFixed(2)}`}
-                          </div>
-                        ))}
-
-                        {/* If no stock for this user's warehouse */}
-                        {!isAdmin &&
-                          getVisibleWarehouseStock(rm, isAdmin, userWarehouse)
-                            .length === 0 && <div className="">0</div>}
-                      </td>
-
-                      <td className="px-2 border-r border-r-primary ">
-                        {rm.stockUOM || "-"}
-                      </td>
-                      <td className="px-2 border-r border-r-primary ">
-                        ₹{rm.totalRate?.toFixed(2) || "0"}
-                      </td>
-
-                      <td className="text-center items-center justify-center border-r border-r-primary">
-                        {Array.isArray(rm.attachments) &&
-                        rm.attachments.length > 0 ? (
-                          <button
-                            onClick={() => setOpenAttachments(rm.attachments)}
-                            className="cursor-pointer hover:text-primary hover:underline text-center items-center justify-center"
-                          >
-                            View
-                          </button>
-                        ) : (
-                          "-"
-                        )}
-
-                        {openAttachments && (
-                          <AttachmentsModal2
-                            attachments={openAttachments}
-                            onClose={() => setOpenAttachments(null)}
-                          />
-                        )}
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        <Toggle
-                          checked={rm.status === "Active"}
-                          onChange={() => handleToggleStatus(rm.id, rm.status)}
-                        />
-                      </td>
-                      <td className="px-2 border-r border-r-primary">
-                        {rm.createdByName || "-"}
-                      </td>
-                      <td className="px-2 ">
-                        <div className="flex items-center gap-2 text-base text-[#d39c25]">
-                          {hasPermission("RawMaterial", "update") &&
-                          restore == false ? (
-                            <FiEdit
-                              data-tooltip-id="statusTip"
-                              data-tooltip-content="Edit"
-                              onClick={() => setEditData(rm)}
-                              className="hover:text-blue-500 cursor-pointer"
+                      {th}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {loading ? (
+                  <tr>
+                    <td colSpan={restore ? 28 : 27} className="p-8">
+                      <TableSkeleton
+                        rows={pagination.limit}
+                        columns={restore ? Array(28).fill({}) : Array(27).fill({})}
+                      />
+                    </td>
+                  </tr>
+                ) : (
+                  <>
+                    {rawMaterials.map((rm, i) => (
+                      <tr
+                        key={rm.id}
+                        className="hover:bg-gray-50 transition-colors duration-150 group"
+                      >
+                        {restore && (
+                          <td className="px-2 py-2 sticky left-0 z-10 bg-white group-hover:bg-gray-50 border-r border-gray-200">
+                            <input
+                              type="checkbox"
+                              checked={selectedRMs.includes(rm.id)}
+                              onChange={() => handleSelectRM(rm.id)}
+                              className="w-3.5 h-3.5 accent-primary cursor-pointer"
                             />
-                          ) : restoreId == rm.id ? (
-                            <PulseLoader size={4} color="#d8b76a" />
+                          </td>
+                        )}
+                        <td className="px-2 py-2 text-gray-600 font-medium border-r border-gray-200">
+                          {Number(pagination.currentPage - 1) *
+                            Number(pagination.limit) +
+                            i +
+                            1}
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 border-r border-gray-200 whitespace-nowrap">
+                          {new Date(rm.createdAt).toLocaleString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 border-r border-gray-200 whitespace-nowrap">
+                          {new Date(rm.updatedAt).toLocaleString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-200">
+                          <span className="font-semibold text-secondary bg-gray-100 px-1.5 py-0.5 rounded text-[11px]">
+                            {rm.skuCode}
+                          </span>
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-200">
+                          <span className="font-medium text-secondary">
+                            {rm.itemName}
+                          </span>
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 max-w-[150px] truncate border-r border-gray-200">
+                          {rm.description || (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 border-r border-gray-200">
+                          {rm.itemCategory || (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 border-r border-gray-200">
+                          {rm.itemColor || (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-200">
+                          <span className="text-secondary font-medium">
+                            {rm.hsnOrSac}
+                          </span>
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-200">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800">
+                            {rm.type}
+                          </span>
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-200">
+                          <div className="flex items-center justify-center">
+                            <Toggle
+                              checked={rm.qualityInspectionNeeded}
+                              onChange={() =>
+                                handleToggleQualityInspection(
+                                  rm.id,
+                                  rm.qualityInspectionNeeded
+                                )
+                              }
+                            />
+                          </div>
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 border-r border-gray-200">
+                          {rm.location || (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 font-medium border-r border-gray-200">
+                          {rm.baseQty}
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 font-medium border-r border-gray-200">
+                          {rm.pkgQty}
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 font-medium border-r border-gray-200">
+                          {rm.moq}
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 border-r border-gray-200">
+                          {rm.panno || "0"}
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-200">
+                          <span className="font-semibold text-secondary whitespace-nowrap">
+                            ₹{(Number(rm.sqInchRate) || 0).toFixed(4)}
+                          </span>
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-200">
+                          {rm.gst ? (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800">
+                              {rm.gst}%
+                            </span>
                           ) : (
-                            <TbRestore
-                              data-tooltip-id="statusTip"
-                              data-tooltip-content="Restore"
-                              onClick={() => handleRestore(rm.id)}
-                              className="hover:text-green-500 cursor-pointer"
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-200">
+                          <span className="font-semibold text-secondary whitespace-nowrap">
+                            ₹{rm.rate || "0"}
+                          </span>
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 border-r border-gray-200">
+                          {rm.purchaseUOM || (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-200">
+                          {isAdmin ? (
+                            <div className="font-semibold text-secondary">
+                              {rm.stockQty?.toFixed(2)}
+                            </div>
+                          ) : (
+                            ""
+                          )}
+                          {getVisibleWarehouseStock(
+                            rm,
+                            isAdmin,
+                            userWarehouse
+                          ).map((w) => (
+                            <div
+                              key={w._id}
+                              className="font-medium text-secondary"
+                            >
+                              {isAdmin
+                                ? `${w.warehouse}: ${w.qty?.toFixed(2)}`
+                                : `${w.qty?.toFixed(2)}`}
+                            </div>
+                          ))}
+                          {!isAdmin &&
+                            getVisibleWarehouseStock(rm, isAdmin, userWarehouse)
+                              .length === 0 && (
+                              <span className="text-gray-400">0</span>
+                            )}
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 border-r border-gray-200">
+                          {rm.stockUOM || (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-200">
+                          <span className="font-bold text-primary whitespace-nowrap">
+                            ₹{rm.totalRate?.toFixed(2) || "0"}
+                          </span>
+                        </td>
+                        <td className="px-2 py-2 text-center border-r border-gray-200">
+                          {Array.isArray(rm.attachments) &&
+                          rm.attachments.length > 0 ? (
+                            <button
+                              onClick={() => setOpenAttachments(rm.attachments)}
+                              className="text-primary hover:text-primary/80 font-medium hover:underline transition-colors text-[11px]"
+                            >
+                              View ({rm.attachments.length})
+                            </button>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                          {openAttachments && (
+                            <AttachmentsModal2
+                              attachments={openAttachments}
+                              onClose={() => setOpenAttachments(null)}
                             />
                           )}
-
-                          {hasPermission("RawMaterial", "delete") &&
-                          restore == false ? (
-                            deleteId == rm.id ? (
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-200">
+                          <div className="flex items-center justify-center gap-1">
+                            <Toggle
+                              checked={rm.status === "Active"}
+                              onChange={() =>
+                                handleToggleStatus(rm.id, rm.status)
+                              }
+                            />
+                            <span
+                              className={`text-[10px] font-medium ${
+                                rm.status === "Active"
+                                  ? "text-green-600"
+                                  : "text-gray-500"
+                              }`}
+                            >
+                              {rm.status}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-2 py-2 text-gray-600 border-r border-gray-200">
+                          {rm.createdByName || (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-2">
+                          <div className="flex items-center gap-1.5 justify-center">
+                            {hasPermission("RawMaterial", "update") &&
+                            restore == false ? (
+                              <button
+                                onClick={() => setEditData(rm)}
+                                className="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors"
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Edit"
+                              >
+                                <FiEdit className="text-base" />
+                              </button>
+                            ) : restoreId == rm.id ? (
                               <PulseLoader size={4} color="#d8b76a" />
                             ) : (
-                              <FiTrash2
+                              <button
+                                onClick={() => handleRestore(rm.id)}
+                                className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors"
                                 data-tooltip-id="statusTip"
-                                data-tooltip-content="Delete"
-                                onClick={() => handleDelete(rm.id)}
-                                className="hover:text-red-500 cursor-pointer"
-                              />
-                            )
-                          ) : deleteId == rm.id ? (
-                            <PulseLoader size={4} color="#d8b76a" />
-                          ) : (
-                            <FiTrash2
-                              data-tooltip-id="statusTip"
-                              data-tooltip-content="Permanent Delete"
-                              onClick={() => handlePermanentDelete(rm.id)}
-                              className="hover:text-red-500 cursor-pointer"
+                                data-tooltip-content="Restore"
+                              >
+                                <TbRestore className="text-base" />
+                              </button>
+                            )}
+
+                            {hasPermission("RawMaterial", "delete") &&
+                            restore == false ? (
+                              deleteId == rm.id ? (
+                                <PulseLoader size={4} color="#d8b76a" />
+                              ) : (
+                                <button
+                                  onClick={() => handleDelete(rm.id)}
+                                  className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors"
+                                  data-tooltip-id="statusTip"
+                                  data-tooltip-content="Delete"
+                                >
+                                  <FiTrash2 className="text-base" />
+                                </button>
+                              )
+                            ) : deleteId == rm.id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
+                            ) : (
+                              <button
+                                onClick={() => handlePermanentDelete(rm.id)}
+                                className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Permanent Delete"
+                              >
+                                <FiTrash2 className="text-base" />
+                              </button>
+                            )}
+                            <Tooltip
+                              id="statusTip"
+                              place="top"
+                              style={{
+                                backgroundColor: "#292926",
+                                color: "#d8b76a",
+                                fontSize: "11px",
+                                fontWeight: "bold",
+                                borderRadius: "4px",
+                                padding: "4px 8px",
+                              }}
                             />
-                          )}
-                          <Tooltip
-                            id="statusTip"
-                            place="top"
-                            style={{
-                              backgroundColor: "#292926",
-                              color: "#d8b76a",
-                              fontSize: "12px",
-                              fontWeight: "bold",
-                            }}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {rawMaterials.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan="22"
-                        className="text-center py-4 text-gray-500 w-full"
-                      >
-                        No RMs found.
-                      </td>
-                    </tr>
-                  )}
-                </>
-              )}
-            </tbody>
-          </table>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {rawMaterials.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={restore ? 28 : 27}
+                          className="px-4 py-8 text-center"
+                        >
+                          <div className="flex flex-col items-center justify-center">
+                            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                              <FiSearch className="text-xl text-gray-400" />
+                            </div>
+                            <p className="text-gray-500 font-medium text-sm">
+                              No raw materials found
+                            </p>
+                            <p className="text-gray-400 text-xs mt-1">
+                              {search
+                                ? "Try adjusting your search criteria"
+                                : "Get started by adding a new raw material"}
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
+        {openAttachments && (
+          <AttachmentsModal2
+            attachments={openAttachments}
+            onClose={() => setOpenAttachments(null)}
+          />
+        )}
       </div>
-      <PaginationControls
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-        entriesPerPage={pagination.limit}
-        totalResults={pagination.totalResults}
-        onEntriesChange={(limit) => {
-          setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-        }}
-        onPageChange={(page) => {
-          setPagination((prev) => ({ ...prev, currentPage: page }));
-        }}
-      />
+
+      <div className="mt-6">
+        <PaginationControls
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          entriesPerPage={pagination.limit}
+          totalResults={pagination.totalResults}
+          onEntriesChange={(limit) => {
+            setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
+          }}
+          onPageChange={(page) => {
+            setPagination((prev) => ({ ...prev, currentPage: page }));
+          }}
+        />
+      </div>
       {showBulkPanel && <BulkRmPanel onClose={() => setShowBulkPanel(false)} />}
       {editData && (
         <EditRawMaterialModal

@@ -1,6 +1,7 @@
 // File: BulkRmPanel.jsx
 import React, { useState, useEffect } from "react";
-import { FiTrash2, FiArrowLeft, FiPlus } from "react-icons/fi";
+import axios from "../../utils/axios";
+import { FiTrash2, FiArrowLeft, FiPlus, FiX, FiSave } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { BeatLoader } from "react-spinners";
 
@@ -193,17 +194,26 @@ const BulkRmPanel = ({ onClose }) => {
   }));
 
   return (
-    <div className="fixed inset-0  backdrop-blur-xs  flex items-center justify-center z-50">
-      <div className="bg-white w-full  max-w-[92vw] sm:max-w-5xl rounded-lg  border border-primary overflow-y-auto max-h-[90vh]  scrollbar-thin scrollbar-thumb-primary scrollbar-track-[#fdf6e9]">
-        <div className="flex justify-between items-center sticky top-0 bg-white z-10 px-4 py-4">
-          <h2 className="text-xl font-semibold">Add Raw Materials</h2>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white w-full max-w-[95vw] sm:max-w-[92vw] sm:max-w-5xl rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh]">
+        {/* Modern Header */}
+        <div className="bg-gradient-to-r from-primary to-primary/90 px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-primary/20 sticky top-0 z-10">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-1 h-6 sm:h-8 bg-secondary rounded-full"></div>
+            <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-secondary">
+              Add Raw Materials
+            </h2>
+          </div>
           <button
             onClick={onClose}
-            className="text-black hover:text-red-500 font-bold text-xl cursor-pointer"
+            className="p-1.5 sm:p-2 hover:bg-secondary/10 rounded-lg transition-colors text-secondary hover:text-red-600"
+            title="Close"
           >
-            ×
+            <FiX className="text-lg sm:text-xl" />
           </button>
         </div>
+
+        <div className="overflow-y-auto rm-modal-scrollbar flex-1">
 
         {/* Header Controls */}
         {/* <div className="flex justify-between mb-6">
@@ -222,18 +232,30 @@ const BulkRmPanel = ({ onClose }) => {
         </div> */}
 
         {/* Form Rows */}
-        <div className="space-y-6 px-6  ">
+        <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6">
           {rows.map((rm, index) => (
             <div
               key={index}
-              className="bg-white border border-primary rounded-lg p-4 space-y-4 shadow-md"
+              className="bg-white border-2 border-primary/30 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 shadow-lg hover:shadow-xl transition-shadow"
             >
-              <h2 className="text-[15px] font-semibold text-[#292926] mb-1">
-                Item {index + 1}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="flex items-center justify-between mb-2 pb-2 sm:pb-3 border-b border-gray-200">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="w-1 h-4 sm:h-6 bg-primary rounded-full"></div>
+                  <h2 className="text-sm sm:text-base md:text-lg font-bold text-secondary">
+                    Item {index + 1}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => handleRemove(index)}
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 text-red-600 hover:bg-red-50 rounded-md sm:rounded-lg transition-colors font-medium text-xs sm:text-sm"
+                >
+                  <FiTrash2 className="text-sm sm:text-base" />
+                  <span className="hidden sm:inline">Remove</span>
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     Sku Code
                   </label>
                   <input
@@ -243,11 +265,11 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "skuCode", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     Item Name
                   </label>
                   <input
@@ -256,12 +278,12 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "itemName", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     Description
                   </label>
                   <input
@@ -270,12 +292,12 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "description", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#292926] mb-1 block">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     Item Category
                   </label>
                   <select
@@ -283,7 +305,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "itemCategory", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary cursor-pointer transition-all"
                   >
                     <option value="">Select Category</option>
                     {categories?.map((cat, i) => (
@@ -295,7 +317,7 @@ const BulkRmPanel = ({ onClose }) => {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     Item Color
                   </label>
                   <input
@@ -304,11 +326,11 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "itemColor", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     HSN/SAC
                   </label>
                   <input
@@ -317,18 +339,18 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "hsnOrSac", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     GST %
                   </label>
                   <input
-                    placeholder="Item Color"
+                    placeholder="GST %"
                     value={rm.gst}
                     onChange={(e) => handleChange(index, "gst", e.target.value)}
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
 
@@ -372,7 +394,7 @@ const BulkRmPanel = ({ onClose }) => {
                 </div> */}
 
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     Quality Inspection
                   </label>
                   <select
@@ -384,7 +406,7 @@ const BulkRmPanel = ({ onClose }) => {
                         e.target.value
                       )
                     }
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary cursor-pointer transition-all"
                   >
                     <option>Required</option>
                     <option>Not Required</option>
@@ -392,7 +414,7 @@ const BulkRmPanel = ({ onClose }) => {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     Location
                   </label>
                   <Select
@@ -415,25 +437,30 @@ const BulkRmPanel = ({ onClose }) => {
                       control: (base, state) => ({
                         ...base,
                         borderColor: "#d8b76a",
+                        borderWidth: "2px",
+                        borderRadius: "0.5rem",
                         boxShadow: state.isFocused
-                          ? "0 0 0 2px #b38a37"
+                          ? "0 0 0 2px rgba(216, 183, 106, 0.2)"
                           : "none",
                         "&:hover": {
-                          borderColor: "#b38a37",
+                          borderColor: "#d8b76a",
                         },
                         padding: "2px",
-                        fontSize: "0.875rem", // text-sm
+                        fontSize: "0.875rem",
+                        minHeight: "38px",
                       }),
                       menu: (base) => ({
                         ...base,
                         zIndex: 9999,
+                        borderRadius: "0.5rem",
                       }),
                     }}
+                    className="text-xs sm:text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     Base Qty
                   </label>
                   <input
@@ -443,12 +470,12 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "baseQty", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     Pkg Qty
                   </label>
                   <input
@@ -458,12 +485,12 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "pkgQty", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     MOQ
                   </label>
                   <input
@@ -471,7 +498,7 @@ const BulkRmPanel = ({ onClose }) => {
                     placeholder="MOQ"
                     value={rm.moq}
                     onChange={(e) => handleChange(index, "moq", e.target.value)}
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
 
@@ -490,7 +517,7 @@ const BulkRmPanel = ({ onClose }) => {
                   />
                 </div> */}
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     Rate
                   </label>
                   <input
@@ -500,12 +527,12 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "rate", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     Purchase UOM
                   </label>
                   <select
@@ -513,7 +540,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "purchaseUOM", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary cursor-pointer transition-all"
                   >
                     <option value="">Select UOM</option>
                     {uoms.map((u) => (
@@ -525,7 +552,7 @@ const BulkRmPanel = ({ onClose }) => {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     Stock Qty
                   </label>
                   <input
@@ -541,12 +568,12 @@ const BulkRmPanel = ({ onClose }) => {
                         val === "" ? 0 : Number(val)
                       );
                     }}
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all disabled:cursor-not-allowed disabled:bg-gray-50"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#292926]">
+                  <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                     Stock UOM
                   </label>
                   <select
@@ -554,7 +581,7 @@ const BulkRmPanel = ({ onClose }) => {
                     onChange={(e) =>
                       handleChange(index, "stockUOM", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary cursor-pointer transition-all"
                   >
                     <option value="">Select UOM</option>
                     {uoms.map((u) => (
@@ -567,7 +594,7 @@ const BulkRmPanel = ({ onClose }) => {
                 {fabric.includes(rm.itemCategory.toLowerCase()) && (
                   <>
                     <div>
-                      <label className="text-xs font-semibold text-[#292926]">
+                      <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                         Panno
                       </label>
                       <input
@@ -577,11 +604,11 @@ const BulkRmPanel = ({ onClose }) => {
                         onChange={(e) =>
                           handleChange(index, "panno", e.target.value)
                         }
-                        className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-[#292926]">
+                      <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                         SqInch Rate
                       </label>
                       <input
@@ -591,67 +618,72 @@ const BulkRmPanel = ({ onClose }) => {
                         onChange={(e) =>
                           handleChange(index, "sqInchRate", e.target.value)
                         }
-                        className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                       />
                     </div>
                   </>
                 )}
 
                 <div>
-                  <label className="text-xs font-semibold text-red-600">
+                  <label className="text-[10px] sm:text-xs font-semibold text-red-600 mb-1 sm:mb-1.5 block">
                     Total Rate
                   </label>
-                  <div className="w-full px-4 py-2 text-red-600 border border-red-600 rounded bg-gray-50">
+                  <div className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-red-700 font-bold border-2 border-red-300 rounded-md sm:rounded-lg bg-gradient-to-r from-red-50 to-red-100">
                     ₹ {parseFloat(rm.totalRate || 0).toFixed(2)}
                   </div>
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[#292926]">
+                <label className="text-[10px] sm:text-xs font-semibold text-[#292926] mb-1 sm:mb-1.5 block">
                   Attachments
                 </label>
                 <input
                   type="file"
                   multiple
                   onChange={(e) => handleFileChange(index, e.target.files)}
-                  className=" block w-full text-sm text-gray-600 cursor-pointer bg-white border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary file:mr-4 file:py-2.5 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#fdf6e9] file:text-[#292926] hover:file:bg-primary/10 file:cursor-pointer"
+                  className="block w-full text-xs sm:text-sm text-gray-600 cursor-pointer bg-white border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2.5 file:px-2 sm:file:px-4 file:rounded-md sm:file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-primary/10 file:text-secondary hover:file:bg-primary/20 file:cursor-pointer transition-colors"
                 />
-              </div>
-
-              <div className="flex justify-end gap-1 items-center text-red-600 ">
-                <span
-                  onClick={() => handleRemove(index)}
-                  className="flex items-center gap-1 hover:underline cursor-pointer"
-                >
-                  <FiTrash2 className="text-red-500 hover:text-red-700 cursor-pointer text-xl" />
-                  Remove
-                </span>
               </div>
             </div>
           ))}
         </div>
+        </div>
 
         {/* Bottom Actions */}
-        <div className="mt-6 flex justify-end gap-4 p-6">
+        <div className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-3">
           <button
             onClick={addRow}
-            className="bg-primary text-[#292926] px-4 py-2 rounded flex items-center gap-2 hover:bg-primary/80 cursor-pointer"
+            className="w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 bg-primary hover:bg-primary/90 text-secondary rounded-lg flex items-center justify-center gap-2 font-semibold text-sm sm:text-base transition-all duration-200 shadow-md hover:shadow-lg"
           >
-            <FiPlus /> Add Row
+            <FiPlus className="text-sm sm:text-base" /> 
+            <span>Add Row</span>
           </button>
-          <button
-            onClick={handleSubmit}
-            className=" bg-primary text-[#292926] px-4 py-2 rounded hover:bg-primary/80 cursor-pointer"
-          >
-            {loading ? (
-              <div className="flex items-center gap-2">
-                <span>Saving...</span>
-                <BeatLoader size={5} color="#292926" />
-              </div>
-            ) : (
-              "Save"
-            )}
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+            <button
+              onClick={onClose}
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 bg-gray-100 hover:bg-gray-200 text-secondary rounded-lg font-semibold text-sm sm:text-base transition-all duration-200 shadow-sm hover:shadow"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 bg-primary hover:bg-primary/90 text-secondary rounded-lg font-semibold text-sm sm:text-base transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <span>Saving...</span>
+                  <BeatLoader size={5} color="#292926" />
+                </>
+              ) : (
+                <>
+                  <FiSave className="text-sm sm:text-base" />
+                  <span className="hidden sm:inline">Save All</span>
+                  <span className="sm:hidden">Save</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>
