@@ -7,6 +7,8 @@ import {
   FiUsers,
   FiLogOut,
   FiTool,
+  FiChevronRight,
+  FiChevronLeft,
 } from "react-icons/fi";
 import {
   FaAngleDown,
@@ -54,7 +56,7 @@ import { GrDomain } from "react-icons/gr";
 import { TbNeedleThread } from "react-icons/tb";
 import { PiEyedropperSampleFill, PiMoneyWavy } from "react-icons/pi";
 import { useTabs } from "../context/TabsContext";
-export function Sidebar({ isOpen }) {
+export function Sidebar({ isOpen, onCollapseChange }) {
   const navigate = useNavigate();
   const { logout, hasPermission } = useAuth();
   let tabs;
@@ -67,10 +69,23 @@ export function Sidebar({ isOpen }) {
 
   // console.log("haspermission", hasPermission("User", "read"));
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [isHovering, setIsHovering] = useState(false);
   const [openMenus, setOpenMenus] = useState({
     Purchase: false,
     Master: false,
   });
+
+  // Notify parent when collapse state changes
+  const handleMouseEnter = () => {
+    setIsHovering(true);
+    onCollapseChange?.(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+    onCollapseChange?.(true);
+  };
 
   const toggleMenu = (menuLabel) => {
     setOpenMenus((prev) => ({
@@ -376,6 +391,8 @@ export function Sidebar({ isOpen }) {
     toggleMenu,
     navigate,
     hasPermission,
+    sidebarCollapsed,
+    isHovering,
   }) => {
     const { icon: Icon, label, path, subMenu, module, action } = item;
     // console.log("item", item);
@@ -403,9 +420,11 @@ export function Sidebar({ isOpen }) {
     if (subMenu && filteredSubMenu.length === 0) return null;
 
     return (
-      <div>
+      <div className={sidebarCollapsed && !isHovering ? "w-full" : ""}>
         <div
-          className="flex items-center gap-3 px-1 py-0.5 hover:bg-gray-100 rounded cursor-pointer text-sm"
+          className={`flex items-center gap-3 px-2 py-2.5 hover:bg-primary/5 rounded-lg cursor-pointer text-sm transition-all duration-200 ${
+            sidebarCollapsed && !isHovering ? "flex-col justify-center items-center w-full" : ""
+          }`}
           onClick={() => {
             if (subMenu) {
               toggleMenu(label);
@@ -417,49 +436,72 @@ export function Sidebar({ isOpen }) {
               }
             }
           }}
+          title={sidebarCollapsed && !isHovering ? label : ""}
         >
-          {Icon && <Icon className="text-primary" />}
-          <span className="flex items-center gap-1">
+          {Icon && <Icon className="text-primary flex-shrink-0 text-base" />}
+          {(isHovering || !sidebarCollapsed) && (
+            <span className="flex items-center gap-1.5 flex-1 text-gray-700">
+              {label}
+              {subMenu && (openMenus[label] ? <FaAngleUp size={12} /> : <FaAngleDown size={12} />)}
+            </span>
+          )}
+        
+        {/* Tooltip for collapsed state */}
+        {sidebarCollapsed && !isHovering && (
+          <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 font-medium shadow-lg">
             {label}
-            {subMenu && (openMenus[label] ? <FaAngleUp /> : <FaAngleDown />)}
-          </span>
-        </div>
-
-        {subMenu && (
-          <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              openMenus[label] ? "max-h-[500px]" : "max-h-0"
-            }`}
-          >
-            <div className="ml-4 mt-1">
-              {filteredSubMenu.map((sm) => (
-                <MenuItem
-                  key={sm.label}
-                  item={sm}
-                  openMenus={openMenus}
-                  toggleMenu={toggleMenu}
-                  navigate={navigate}
-                  hasPermission={hasPermission}
-                />
-              ))}
-            </div>
+            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
           </div>
         )}
+      </div>
+
+      {subMenu && (isHovering || !sidebarCollapsed) && (
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            openMenus[label] ? "max-h-[500px]" : "max-h-0"
+          }`}
+        >
+          <div className="ml-4 mt-1 space-y-1">
+            {filteredSubMenu.map((sm) => (
+              <MenuItem
+                key={sm.label}
+                item={sm}
+                openMenus={openMenus}
+                toggleMenu={toggleMenu}
+                navigate={navigate}
+                hasPermission={hasPermission}
+                sidebarCollapsed={sidebarCollapsed}
+                isHovering={isHovering}
+              />
+            ))}
+          </div>
+        </div>
+      )}
       </div>
     );
   };
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-50 h-full w-60 bg-white shadow-xl drop-shadow-xl transform ${
+      className={`fixed top-0 left-0 z-50 h-full bg-white shadow-xl drop-shadow-xl transform transition-all duration-300 ease-in-out overflow-hidden flex flex-col ${
         isOpen ? "translate-x-0" : "-translate-x-full"
-      } transition-transform duration-300 ease-in-out overflow-y-auto `}
+      } ${isHovering || !sidebarCollapsed ? "w-60 overflow-y-auto" : "w-20"}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      <div className="flex h-15 justify-between bg-primary/50 items-center p-3">
-        <img src="/images/logo4.png" alt="smartflow360 logo" />
+      {/* Header with collapse button */}
+      <div className="flex h-15 justify-between bg-gradient-to-r from-primary to-primary/80 items-center px-3 flex-shrink-0">
+        {/* Collapsed sidebar - show fav4.png */}
+        {sidebarCollapsed && !isHovering && (
+          <img src="/images/fav4.png" alt="smartflow360 icon" className="w-full h-6 object-contain" />
+        )}
+        {/* Expanded sidebar - show logo4.png */}
+        {(isHovering || !sidebarCollapsed) && (
+          <img src="/images/logo4.png" alt="smartflow360 logo" className="w-45" />
+        )}
       </div>
 
-      <nav className="flex flex-col px-3 pt-1 text-base font-semibold text-gray-800">
+      <nav className={`flex flex-col flex-1 px-2 pt-2 text-base font-semibold text-gray-800 gap-1`}>
         {sidebarMenus.map((item) => (
           <MenuItem
             key={item.label}
@@ -468,14 +510,17 @@ export function Sidebar({ isOpen }) {
             toggleMenu={toggleMenu}
             navigate={navigate}
             hasPermission={hasPermission}
+            sidebarCollapsed={sidebarCollapsed}
+            isHovering={isHovering}
           />
         ))}
 
         <button
           onClick={logout}
-          className="flex items-center border-t border-primary text-lg gap-3 text-primary hover:bg-gray-100 p-2 mt-4 cursor-pointer"
+          className={`flex items-center justify-center border-t border-gray-200 text-lg gap-3 text-primary hover:bg-red-50 p-3 mt-auto cursor-pointer transition-all w-full font-medium`}
+          title={sidebarCollapsed && !isHovering ? "Logout" : ""}
         >
-          <FiLogOut /> Logout
+          <FiLogOut size={18} /> {(isHovering || !sidebarCollapsed) && "Logout"}
         </button>
       </nav>
     </aside>

@@ -256,7 +256,7 @@ const BomMaster = ({ isOpen }) => {
 
   return (
     <>
-      <div className="p-3 max-w-[99vw] mx-auto">
+      <div className="p-3 pt-5 max-w-[99vw] mx-auto">
         <div className="flex fex-wrap gap-2 mb-4">
           <h2 className="text-2xl font-bold ">
             Bill Of Materials{" "}

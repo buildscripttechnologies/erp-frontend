@@ -5,6 +5,38 @@
   --color-secondary: #292926; /* Pink */
 }
 
+/* Custom Scrollbar Styling - Theme Matching */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #d8b76a 0%, #c5a25a 100%);
+  border-radius: 10px;
+  border: 2px solid #f5f5f5;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #e6c580 0%, #d8b76a 100%);
+  box-shadow: 0 0 6px rgba(216, 183, 106, 0.4);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #c5a25a 0%, #b89550 100%);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-color: #d8b76a #f5f5f5;
+  scrollbar-width: thin;
+}
 
 .scrollbar-hide {
   -ms-overflow-style: none;

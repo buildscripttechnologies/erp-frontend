@@ -22,7 +22,7 @@ export default memo(function TabContentHost() {
   if (!items || items.length === 0) return null;
 
   return (
-    <div className="p-2">
+    <div className="p-4 pt-8 pb-8">
       {items.map((t) => (
         <TabPane key={t.path} path={t.path} active={t.path === activePath} />
       ))}

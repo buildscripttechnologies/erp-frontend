@@ -9,6 +9,7 @@ import { useLocation } from "react-router-dom";
 
 export default function Dashboard({ children }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const location = useLocation();
   const { user } = useAuth();
 
@@ -33,18 +34,19 @@ export default function Dashboard({ children }) {
         setIsOpen={toggleSidebar}
         title="SmartFlow360"
         user={user}
+        sidebarCollapsed={sidebarCollapsed}
       />
 
       <TabsProvider>
-        <TabsBar isOpen={isOpen} />
+        <TabsBar isOpen={isOpen} sidebarCollapsed={sidebarCollapsed} />
         <div className="flex min-h-screen pt-20  w-full bg-[#fdfcf8]  ">
           {/* Sidebar */}
-          <Sidebar isOpen={isOpen} setIsOpen={toggleSidebar} />
+          <Sidebar isOpen={isOpen} setIsOpen={toggleSidebar} onCollapseChange={setSidebarCollapsed} />
 
           {/* Main Content */}
           <main
             className={`flex-1 transition-all overflow-auto duration-300 ease-in-out ${
-              isOpen ? "ml-60 " : "ml-0"
+              isOpen ? (sidebarCollapsed ? "ml-20" : "ml-60") : "ml-0"
             }`}
           >
             <TabContentHost />

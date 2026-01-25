@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { FiMenu, FiX } from "react-icons/fi";
+import { FiMenu } from "react-icons/fi";
 import { FaUserCircle } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { Tooltip } from "react-tooltip";
 
-export function Navbar({ isOpen, setIsOpen, title = "SmartFlow360" }) {
+export function Navbar({ isOpen, setIsOpen, title = "SmartFlow360", sidebarCollapsed = true }) {
   const [showUser, setShowUser] = useState(false);
   const { user } = useAuth();
 
@@ -15,15 +15,15 @@ export function Navbar({ isOpen, setIsOpen, title = "SmartFlow360" }) {
   return (
     <div
       className={`fixed w-full top-0 flex h-15 ${
-        isOpen ? `pl-63` : `pl-4`
-      } p-4 transition-transform duration-300 ease-in-out justify-between items-center  bg-[#fdfcf8] z-30`}
+        isOpen ? (sidebarCollapsed ? `pl-23` : `pl-63`) : `pl-4`
+      } p-4 transition-all duration-300 ease-in-out justify-between items-center  bg-[#fdfcf8] z-30`}
     >
       {/* Sidebar Toggle */}
       <button
         className="text-2xl text-[#292927] cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? <FiX /> : <FiMenu />}
+        {isOpen ? "" : <FiMenu />}
       </button>
 
       <img

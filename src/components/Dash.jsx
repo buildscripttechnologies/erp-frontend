@@ -53,7 +53,7 @@ const Dash = () => {
     return <p className="text-center mt-10 text-gray-500">No data found.</p>;
 
   return (
-    <div className="relative max-w-[99vw] mx-auto overflow-x-hidden">
+    <div className="relative max-w-[99vw] mx-auto overflow-x-hidden pb-16">
       {/* ===================== Orders Section ===================== */}
       <h2 className="text-2xl font-semibold mt-8 ml-[1%] border-b-4 w-25 border-primary">
         Orders
@@ -117,7 +117,7 @@ const Dash = () => {
         Tables
       </h2>
 
-      <div className="w-[98%] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-x-4">
+      <div className="w-[98%] mx-auto grid grid-cols-1 gap-y-6">
         {/* Material Inward */}
         <OrderTable
           title="Material Inward"

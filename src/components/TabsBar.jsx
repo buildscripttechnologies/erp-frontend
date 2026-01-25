@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import { X, ChevronLeft, ChevronRight } from "react-feather";
 
 import { TiPinOutline } from "react-icons/ti";
@@ -108,11 +109,11 @@ function SortableTab({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center  gap-x-2 px-3 py-1.5   rounded-t  font-semibold ${
+      className={`group flex items-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all duration-200 ${
         isActive
-          ? "bg-[#fdfcf8] border-primary border-x-2 border-t-2 border-b-2 border-b-[#fdfcf8]  text-gray-900"
-          : "bg-gray-200 text-gray-700  hover:bg-gray-200"
-      } cursor-pointer select-none`}
+          ? "bg-gradient-to-r from-primary/15 to-primary/10 border border-primary/40 text-gray-900 shadow-sm"
+          : "bg-gray-100 text-gray-600 hover:bg-gray-150 border border-gray-200 hover:border-gray-300"
+      } cursor-pointer select-none whitespace-nowrap`}
       onClick={onClick}
       onContextMenu={onContextMenu}
       {...attributes}
@@ -156,7 +157,19 @@ function SortableTab({
   );
 }
 
-export default function TabsBar({ isOpen = false }) {
+SortableTab.propTypes = {
+  id: PropTypes.string.isRequired,
+  isActive: PropTypes.bool.isRequired,
+  title: PropTypes.string.isRequired,
+  pinned: PropTypes.bool.isRequired,
+  icon: PropTypes.string,
+  onClick: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onContextMenu: PropTypes.func.isRequired,
+  onTogglePin: PropTypes.func.isRequired,
+};
+
+export default function TabsBar({ isOpen = false, sidebarCollapsed = true }) {
   const {
     tabs,
     activePath,
@@ -167,6 +180,8 @@ export default function TabsBar({ isOpen = false }) {
     reorderTabs,
     togglePin,
   } = useTabs();
+
+  const [showCloseAllModal, setShowCloseAllModal] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -208,82 +223,126 @@ export default function TabsBar({ isOpen = false }) {
 
   return (
     <div
-      className={`fixed w-full top-15 flex h-8 ${
-        isOpen ? `pl-63` : `pl-4`
-      } p-4 transition-transform duration-300 ease-in-out border-b-2 bg-[#fdfcf8] border-primary justify-between items-center  z-30`}
+      className={`fixed w-full top-15 flex h-auto ${
+        isOpen ? (sidebarCollapsed ? `pl-23` : `pl-63`) : `pl-4`
+      } transition-all duration-300 ease-in-out border-b-2 bg-[#fdfcf8] border-primary items-center justify-start z-30 px-3 py-3 gap-2`}
     >
+      {/* Left Scroll Button */}
       {canScrollLeft && (
         <button
           onClick={() => scroll("left")}
-          className="p-1 rounded-full bg-[#fdfcf8] border hover:bg-gray-200 shadow-sm mr-1   cursor-pointer hidden sm:block"
+          className="p-2.5 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 hover:from-primary/20 hover:to-primary/10 hover:border-primary/40 shadow-md hover:shadow-lg text-primary transition-all duration-300 ease-in-out cursor-pointer flex items-center justify-center flex-shrink-0"
+          title="Scroll left"
         >
-          <ChevronLeft size={18} />
+          <ChevronLeft size={22} className="stroke-[2.5]" />
         </button>
       )}
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={(event) => {
-          const { active, over } = event;
-          if (!over || active.id === over.id) return;
-          const oldIndex = tabs.findIndex((t) => t.path === active.id);
-          const newIndex = tabs.findIndex((t) => t.path === over.id);
-          if (oldIndex !== -1 && newIndex !== -1)
-            reorderTabs(oldIndex, newIndex);
-        }}
-      >
-        <div
-          ref={scrollRef}
-          className="flex items-center gap-1 px-2 py-1 overflow-x-auto no-scrollbar sm:h-auto h-10"
+      {/* Tabs Container */}
+      <div className="flex-1 overflow-hidden mx-1">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={(event) => {
+            const { active, over } = event;
+            if (!over || active.id === over.id) return;
+            const oldIndex = tabs.findIndex((t) => t.path === active.id);
+            const newIndex = tabs.findIndex((t) => t.path === over.id);
+            if (oldIndex !== -1 && newIndex !== -1)
+              reorderTabs(oldIndex, newIndex);
+          }}
         >
-          <SortableContext
-            items={tabs.map((t) => t.path)}
-            strategy={horizontalListSortingStrategy}
+          <div
+            ref={scrollRef}
+            className="flex items-center gap-2 overflow-x-auto no-scrollbar"
           >
-            {tabs
-              .slice()
-              .sort((a, b) => (a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1))
-              .map((t) => {
-                const isActive = t.path === activePath;
-                return (
-                  <SortableTab
-                    key={t.path}
-                    id={t.path}
-                    isActive={isActive}
-                    title={t.title}
-                    pinned={!!t.pinned}
-                    icon={t.icon} // ✅ Added icon prop
-                    onClick={() => activateTab(t.path)}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      if (e.altKey) closeOthers(t.path);
-                      else if (e.ctrlKey) closeAll();
-                    }}
-                    onClose={() => closeTab(t.path)}
-                    onTogglePin={() => togglePin(t.path)}
-                  />
-                );
-              })}
-          </SortableContext>
-        </div>
-      </DndContext>
+            <SortableContext
+              items={tabs.map((t) => t.path)}
+              strategy={horizontalListSortingStrategy}
+            >
+              {tabs
+                .slice()
+                .sort((a, b) => (a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1))
+                .map((t) => {
+                  const isActive = t.path === activePath;
+                  return (
+                    <SortableTab
+                      key={t.path}
+                      id={t.path}
+                      isActive={isActive}
+                      title={t.title}
+                      pinned={!!t.pinned}
+                      icon={t.icon}
+                      onClick={() => activateTab(t.path)}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        if (e.altKey) closeOthers(t.path);
+                        else if (e.ctrlKey) closeAll();
+                      }}
+                      onClose={() => closeTab(t.path)}
+                      onTogglePin={() => togglePin(t.path)}
+                    />
+                  );
+                })}
+            </SortableContext>
+          </div>
+        </DndContext>
+      </div>
 
+      {/* Right Scroll Button */}
       {canScrollRight && (
         <button
           onClick={() => scroll("right")}
-          className="p-1 rounded-full bg-[#fdfcf8] hover:bg-gray-200 shadow-sm ml-1 cursor-pointer border hidden sm:block"
+          className="p-2.5 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 hover:from-primary/20 hover:to-primary/10 hover:border-primary/40 shadow-md hover:shadow-lg text-primary transition-all duration-300 ease-in-out cursor-pointer flex items-center justify-center flex-shrink-0"
+          title="Scroll right"
         >
-          <ChevronRight size={18} />
+          <ChevronRight size={22} className="stroke-[2.5]" />
         </button>
       )}
 
-      <button
-        onClick={() => closeAll()}
-        className="p-1 rounded-full bg-[#fdfcf8] hover:bg-gray-200 shadow-sm ml-2 cursor-pointer border "
-      >
-        <RiCloseFill size={18} />
-      </button>
+      {/* Close All Tabs Button */}
+      {tabs && tabs.length > 2 && (
+        <button
+          onClick={() => setShowCloseAllModal(true)}
+          className="p-2.5 rounded-lg bg-gradient-to-r from-red-100 to-red-50 border border-red-200 hover:from-red-200 hover:to-red-100 hover:border-red-400 shadow-md hover:shadow-lg text-red-600 transition-all duration-300 ease-in-out cursor-pointer flex items-center justify-center flex-shrink-0 ml-2"
+          title="Close all tabs"
+        >
+          <X size={22} className="stroke-[2.5]" />
+        </button>
+      )}
+
+      {/* Close All Tabs Confirmation Modal */}
+      {showCloseAllModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] backdrop-blur-sm">
+          <div className="bg-white rounded-lg shadow-2xl p-6 max-w-sm mx-4 border border-gray-200">
+            <h3 className="text-lg font-bold text-gray-900 mb-3">Close All Tabs?</h3>
+            <p className="text-gray-600 text-sm mb-6">
+              Are you sure you want to close all tabs? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowCloseAllModal(false)}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  closeAll();
+                  setShowCloseAllModal(false);
+                }}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-all duration-200"
+              >
+                Close All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+TabsBar.propTypes = {
+  isOpen: PropTypes.bool,
+};
