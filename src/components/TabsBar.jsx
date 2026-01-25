@@ -220,6 +220,8 @@ export default function TabsBar({ isOpen = false, sidebarCollapsed = true }) {
   };
 
   if (!tabs || tabs.length === 0) return null;
+  
+  const isOnlyDashboard = tabs.length === 1 && tabs[0].path === "/dashboard";
 
   return (
     <div
@@ -228,7 +230,7 @@ export default function TabsBar({ isOpen = false, sidebarCollapsed = true }) {
       } transition-all duration-300 ease-in-out border-b-2 bg-[#fdfcf8] border-primary items-center justify-start z-30 px-3 py-3 gap-2`}
     >
       {/* Left Scroll Button */}
-      {canScrollLeft && (
+      {!isOnlyDashboard && canScrollLeft && (
         <button
           onClick={() => scroll("left")}
           className="p-2.5 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 hover:from-primary/20 hover:to-primary/10 hover:border-primary/40 shadow-md hover:shadow-lg text-primary transition-all duration-300 ease-in-out cursor-pointer flex items-center justify-center flex-shrink-0"
@@ -256,41 +258,43 @@ export default function TabsBar({ isOpen = false, sidebarCollapsed = true }) {
             ref={scrollRef}
             className="flex items-center gap-2 overflow-x-auto no-scrollbar"
           >
-            <SortableContext
-              items={tabs.map((t) => t.path)}
-              strategy={horizontalListSortingStrategy}
-            >
-              {tabs
-                .slice()
-                .sort((a, b) => (a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1))
-                .map((t) => {
-                  const isActive = t.path === activePath;
-                  return (
-                    <SortableTab
-                      key={t.path}
-                      id={t.path}
-                      isActive={isActive}
-                      title={t.title}
-                      pinned={!!t.pinned}
-                      icon={t.icon}
-                      onClick={() => activateTab(t.path)}
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        if (e.altKey) closeOthers(t.path);
-                        else if (e.ctrlKey) closeAll();
-                      }}
-                      onClose={() => closeTab(t.path)}
-                      onTogglePin={() => togglePin(t.path)}
-                    />
-                  );
-                })}
-            </SortableContext>
+            {!isOnlyDashboard && (
+              <SortableContext
+                items={tabs.map((t) => t.path)}
+                strategy={horizontalListSortingStrategy}
+              >
+                {tabs
+                  .slice()
+                  .sort((a, b) => (a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1))
+                  .map((t) => {
+                    const isActive = t.path === activePath;
+                    return (
+                      <SortableTab
+                        key={t.path}
+                        id={t.path}
+                        isActive={isActive}
+                        title={t.title}
+                        pinned={!!t.pinned}
+                        icon={t.icon}
+                        onClick={() => activateTab(t.path)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          if (e.altKey) closeOthers(t.path);
+                          else if (e.ctrlKey) closeAll();
+                        }}
+                        onClose={() => closeTab(t.path)}
+                        onTogglePin={() => togglePin(t.path)}
+                      />
+                    );
+                  })}
+              </SortableContext>
+            )}
           </div>
         </DndContext>
       </div>
 
       {/* Right Scroll Button */}
-      {canScrollRight && (
+      {!isOnlyDashboard && canScrollRight && (
         <button
           onClick={() => scroll("right")}
           className="p-2.5 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 hover:from-primary/20 hover:to-primary/10 hover:border-primary/40 shadow-md hover:shadow-lg text-primary transition-all duration-300 ease-in-out cursor-pointer flex items-center justify-center flex-shrink-0"
@@ -301,7 +305,7 @@ export default function TabsBar({ isOpen = false, sidebarCollapsed = true }) {
       )}
 
       {/* Close All Tabs Button */}
-      {tabs && tabs.length > 2 && (
+      {!isOnlyDashboard && tabs && tabs.length > 2 && (
         <button
           onClick={() => setShowCloseAllModal(true)}
           className="p-2.5 rounded-lg bg-gradient-to-r from-red-100 to-red-50 border border-red-200 hover:from-red-200 hover:to-red-100 hover:border-red-400 shadow-md hover:shadow-lg text-red-600 transition-all duration-300 ease-in-out cursor-pointer flex items-center justify-center flex-shrink-0 ml-2"
