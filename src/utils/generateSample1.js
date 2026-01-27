@@ -42,21 +42,34 @@ export const generateSample = async (SampleData, letterpadUrl) => {
     margin: { left: margin },
     tableWidth: pageWidth - margin * 2, // full width
     theme: "grid",
+
+    // head: [
+    //   [
+    //     {
+    //       content: "BOM Details",
+    //       colSpan: 4,
+    //       styles: { fontStyle: "bold", halign: "center" },
+    //     },
+    //   ],
+    // ],
     body: [
+      // Row 1
       [
         { content: "Party Name:", styles: { fontStyle: "bold" } },
         SampleData.partyName || "",
         { content: "Product Name:", styles: { fontStyle: "bold" } },
         SampleData.product.name || "",
       ],
+      // Row 2
       [
         { content: "Order Qty:", styles: { fontStyle: "bold" } },
         SampleData.orderQty || "",
         { content: "Product Size:", styles: { fontStyle: "bold" } },
-        `${SampleData.height ?? 0} x ${SampleData.width ?? 0} x ${
+        `${SampleData.height ?? 0}  x ${SampleData.width ?? 0} x ${
           SampleData.depth ?? 0
-        } (In)`,
+        } (In)` || "",
       ],
+      // Row 3
       [
         { content: "Sample No.:", styles: { fontStyle: "bold" } },
         SampleData.sampleNo || "",
@@ -74,20 +87,20 @@ export const generateSample = async (SampleData, letterpadUrl) => {
       halign: "left",
       valign: "middle",
       fillColor: false,
-      lineColor: [0, 0, 0],
+      lineColor: [0, 0, 0], // border color black
       lineWidth: 0.1,
     },
     headStyles: {
-      fillColor: [216, 183, 106],
-      textColor: [41, 41, 38],
+      fillColor: [216, 183, 106], // gold
+      textColor: [41, 41, 38], // dark text
       fontStyle: "bold",
       lineWidth: 0.1,
     },
     columnStyles: {
-      0: { cellWidth: 28 },
-      1: { cellWidth: 71 },
-      2: { cellWidth: 28 },
-      3: { cellWidth: 71 },
+      0: { cellWidth: 28 }, // Label
+      1: { cellWidth: 71 }, // Value
+      2: { cellWidth: 28 }, // Label
+      3: { cellWidth: 71 }, // Value
     },
   });
 
@@ -107,6 +120,7 @@ export const generateSample = async (SampleData, letterpadUrl) => {
     item.width || "N/A",
     item.qty || "N/A",
     item.grams ? `${item.grams / 1000} kg` : "N/A",
+    // item.rate || "N/A",
   ]);
 
   autoTable(doc, {
@@ -122,6 +136,7 @@ export const generateSample = async (SampleData, letterpadUrl) => {
         "W (In)",
         "Qty",
         "Weight",
+        // "Rate",
       ],
     ],
     body: tableBody,
@@ -131,7 +146,7 @@ export const generateSample = async (SampleData, letterpadUrl) => {
       textColor: "#292926",
       fillColor: false,
       halign: "left",
-      lineColor: [0, 0, 0],
+      lineColor: [0, 0, 0], // border color black
       lineWidth: 0.1,
     },
     headStyles: {
@@ -139,13 +154,14 @@ export const generateSample = async (SampleData, letterpadUrl) => {
       textColor: [41, 41, 38],
       halign: "left",
       fontStyle: "bold",
-      lineColor: [0, 0, 0],
+      lineColor: [0, 0, 0], // border color black
       lineWidth: 0.1,
     },
     margin: { left: margin, right: margin },
   });
 
-  // --- Raw Material Consumption ---
+  // --- Raw Material Conjunction Table ---
+  // --- Raw Material Conjunction Table ---
   doc.setFont("helvetica", "bold");
   doc.setFontSize("12");
   doc.setTextColor("#d8b76a");
@@ -154,74 +170,99 @@ export const generateSample = async (SampleData, letterpadUrl) => {
   const mergedRawMaterials = {};
   (SampleData.productDetails || []).forEach((item) => {
     const sku = item.skuCode || "N/A";
+    const category = (item.category || "N/A").toLowerCase();
     const qty = Number(item.qty) || 0;
     const width = Number(item.width) || 0;
+    const height = Number(item.height) || 0;
     const grams = Number(item.grams) || 0;
-    const type = item.categoryType; // ✅ ONLY NEW FIELD USED
 
     if (!mergedRawMaterials[sku]) {
       mergedRawMaterials[sku] = {
         skuCode: sku,
         itemName: item.itemName || "N/A",
-        category: item.category,
-        categoryType: type,
+        category: category,
         qty: 0,
         weight: 0,
         attachments: item.attachments || [],
       };
     }
 
-    if (type === "W x Q") {
-      const totalMeters = (width * qty) / 39.37;
-      mergedRawMaterials[sku].qty += totalMeters;
-
-    } else if (type === "H x W x Q") {
+    if (category === "zipper") {
+      // total inches = width * qty
+      const totalInches = width * qty;
+      const totalMeters = totalInches / 39.37;
+      mergedRawMaterials[sku].qty += totalMeters; // save in meters
+      // mergedRawMaterials[sku].qty += qty;
+    } else if (category === "fabric") {
       const pieceWidth = Number(item.width) || 0;
       const pieceHeight = Number(item.height) || 0;
+      const qty = Number(item.qty) || 0;
       const panno = Number(item.panno) || 0;
 
       if (pieceWidth && pieceHeight && qty && panno) {
+        // --- Orientation A ---
         const perRowA = Math.floor(panno / pieceWidth);
         const rowsA = perRowA > 0 ? Math.ceil(qty / perRowA) : Infinity;
         const totalInchesA = rowsA * pieceHeight;
 
+        // --- Orientation B (rotated) ---
         const perRowB = Math.floor(panno / pieceHeight);
         const rowsB = perRowB > 0 ? Math.ceil(qty / perRowB) : Infinity;
         const totalInchesB = rowsB * pieceWidth;
 
+        // pick better (smaller total inches)
         const bestInches = Math.min(totalInchesA, totalInchesB);
-        mergedRawMaterials[sku].qty += bestInches / 39.37;
+
+        const totalMeters = bestInches / 39.37;
+        mergedRawMaterials[sku].qty += totalMeters; // in meters
       }
-
-    } else if (type === "G x Q") {
+    } else if (["plastic", "non woven", "ld cord"].includes(category)) {
+      // grams -> kg
       mergedRawMaterials[sku].weight += grams / 1000;
-
-    } else if (type === "Q") {
+      mergedRawMaterials[sku].qty += qty;
+    } else if (
+      [
+        "slider",
+        "bidding",
+        "adjuster",
+        "buckel",
+        "dkadi",
+        "accessories",
+      ].includes(category)
+    ) {
+      // only qty
+      mergedRawMaterials[sku].qty += qty;
+    } else {
+      // fallback
       mergedRawMaterials[sku].qty += qty;
     }
   });
 
-  // --- Display Table (ONLY logic changed) ---
+  // Build table rows
   const rawMatTableBody = Object.values(mergedRawMaterials).map(
     (item, index) => {
       let weightDisplay = "N/A";
       let qtyDisplay = "N/A";
 
-      if (item.categoryType === "G x Q") {
+      if (["plastic", "non woven", "ld cord"].includes(item.category))
         weightDisplay = `${item.weight.toFixed(2)} kg`;
-      }
 
-      if (
-        item.categoryType === "W x Q" ||
-        item.categoryType === "H x W x Q"
-      ) {
+      if (["zipper", "fabric", "canvas", "cotton"].includes(item.category)) {
         qtyDisplay = `${Number(item.qty).toFixed(2)} m`;
-      }
-
-      if (item.categoryType === "Q") {
+      } else if (["plastic", "non woven", "ld cord"].includes(item.category)) {
+        qtyDisplay = "N/A";
+      } else if (
+        [
+          "slider",
+          "bidding",
+          "adjuster",
+          "buckel",
+          "dkadi",
+          "accessories",
+        ].includes(item.category)
+      ) {
         qtyDisplay = item.qty;
       }
-
       return [
         index + 1,
         item.skuCode,
@@ -257,10 +298,11 @@ export const generateSample = async (SampleData, letterpadUrl) => {
     margin: { left: margin, right: margin },
   });
 
-  // --- Everything below remains EXACTLY SAME (second page, images, etc) ---
+  // --- Always Last Page for Images ---
+  // --- Always Last Page for Images + BOM No ---
   doc.addPage();
-  addBackground("last");
-doc.setFont("helvetica", "bold");
+  addBackground("last"); // background for last page
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.setTextColor("#d8b76a");
   doc.text("Material Images", pageWidth / 2, 10, { align: "center" });
@@ -396,6 +438,8 @@ doc.setFont("helvetica", "bold");
     }
   }
 
+  // Return blob url
   const pdfBlob = doc.output("blob");
-  return URL.createObjectURL(pdfBlob);
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  return blobUrl;
 };
