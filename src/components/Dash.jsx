@@ -55,71 +55,90 @@ const Dash = () => {
   return (
     <div className="relative max-w-[99vw] mx-auto overflow-x-hidden pb-16">
 
-      <div className="w-[98%] mx-auto mt-2 bg-gradient-to-r from-primary/10 to-primary/5 py-5 rounded-xl border border-primary/20">
-        <h1 className="text-3xl font-bold text-center text-gray-800">
-          Dashboard
-          <div className="w-20 h-1 bg-primary mx-auto mt-2 rounded-full"></div>
-        </h1>
+      <div className="w-[98%] mx-auto mt-2 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 py-4 pb-5 rounded-xl border border-primary/30 shadow-md">
+        <div className="flex items-center justify-center gap-3">
+          <div className="w-1.5 h-10 bg-primary rounded-full"></div>
+          <h1 className="text-3xl font-bold text-gray-800 tracking-wide">
+            Dashboard
+          </h1>
+          <div className="w-1.5 h-10 bg-primary rounded-full"></div>
+        </div>
+        <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto mt-3 rounded-full"></div>
       </div>
 
-      <h2 className="text-2xl font-semibold mt-6 ml-[1%] border-b-4 w-25 border-primary">
-        Orders
-      </h2>
+      <div className="w-[98%] mx-auto mt-4 bg-white rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
 
-      <div className="relative w-[98%] mx-auto flex flex-col md:flex-row gap-5 items-center justify-between">
-        <div className="mt-4 gap-3 md:gap-6 w-full md:w-1/2 grid grid-cols-1 sm:grid-cols-2 ">
-          <OrderCard
-            name="Customer Orders"
-            numbers={orderStats.customer.totalOrders}
-            value={`₹${orderStats.customer.totalAmount?.toLocaleString()}`}
-          />
-          <OrderCard
-            name="Purchase Orders"
-            numbers={orderStats.purchase.totalOrders}
-            value={`₹${orderStats.purchase.totalAmount?.toLocaleString()}`}
-          />
-          <OrderCard
-            name="In Production"
-            numbers={orderStats.production.totalOrders}
-            value={`₹${orderStats.production.totalAmount?.toLocaleString()}`}
-          />
-          <OrderCard name="RC PO" numbers="0" value="₹0" />
+        <div className="bg-gradient-to-r from-primary/10 to-transparent py-3 px-4 rounded-lg mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-6 bg-primary rounded-full"></div>
+            <h2 className="text-lg md:text-xl font-semibold text-gray-800">Orders</h2>
+          </div>
         </div>
 
-        <div className="drop-shadow-sm w-full md:w-1/2">
-          <OrderPieChart
-            data={[
-              {
-                name: "Customer",
-                value: orderStats.customer.totalAmount || 0,
-              },
-              {
-                name: "Purchase",
-                value: orderStats.purchase.totalAmount || 0,
-              },
-              {
-                name: "Production",
-                value: orderStats.production.totalAmount || 0,
-              },
-            ]}
-          />
+        <div className="flex flex-col lg:flex-row gap-5 items-stretch">
+          <div className="gap-3 md:gap-4 w-full lg:w-1/2 grid grid-cols-1 sm:grid-cols-2">
+            <OrderCard
+              name="Customer Orders"
+              numbers={orderStats.customer.totalOrders}
+              value={`₹${orderStats.customer.totalAmount?.toLocaleString()}`}
+            />
+            <OrderCard
+              name="Purchase Orders"
+              numbers={orderStats.purchase.totalOrders}
+              value={`₹${orderStats.purchase.totalAmount?.toLocaleString()}`}
+            />
+            <OrderCard
+              name="In Production"
+              numbers={orderStats.production.totalOrders}
+              value={`₹${orderStats.production.totalAmount?.toLocaleString()}`}
+            />
+            <OrderCard name="RC PO" numbers="0" value="₹0" />
+          </div>
+
+          <div className="w-full lg:w-1/2 bg-gray-50 rounded-xl p-4 border border-gray-100">
+            <OrderPieChart
+              data={[
+                {
+                  name: "Customer",
+                  value: orderStats.customer.totalAmount || 0,
+                },
+                {
+                  name: "Purchase",
+                  value: orderStats.purchase.totalAmount || 0,
+                },
+                {
+                  name: "Production",
+                  value: orderStats.production.totalAmount || 0,
+                },
+              ]}
+            />
+          </div>
+        </div>
+
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent my-6"></div>
+
+        <div className="bg-gradient-to-r from-primary/10 to-transparent py-3 px-4 rounded-lg mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-6 bg-primary rounded-full"></div>
+            <h2 className="text-lg md:text-xl font-semibold text-gray-800">Master</h2>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+          <DashboardCard title="RM" value={masterStats.totalRM} />
+          <DashboardCard title="SFG" value={masterStats.totalSFG} />
+          <DashboardCard title="FG" value={masterStats.totalFG} />
+          <DashboardCard title="Vendor" value={masterStats.totalVendor} />
+          <DashboardCard title="Customer" value={masterStats.totalCustomer} />
         </div>
       </div>
 
-      <h2 className="text-2xl font-semibold mt-8 ml-[1%] border-b-4 w-25 border-primary">
-        Master
-      </h2>
-      <div className="mt-4 w-[98%] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <DashboardCard title="RM" value={masterStats.totalRM} />
-        <DashboardCard title="SFG" value={masterStats.totalSFG} />
-        <DashboardCard title="FG" value={masterStats.totalFG} />
-        <DashboardCard title="Vendor" value={masterStats.totalVendor} />
-        <DashboardCard title="Customer" value={masterStats.totalCustomer} />
+      <div className="w-[98%] mx-auto mt-6 bg-gradient-to-r from-primary/10 to-transparent py-3 px-4 rounded-lg">
+        <div className="flex items-center gap-3">
+          <div className="w-1 h-6 bg-primary rounded-full"></div>
+          <h2 className="text-lg md:text-xl font-semibold text-gray-800">Tables</h2>
+        </div>
       </div>
-
-      <h2 className="text-2xl font-semibold mt-8 ml-[1%] border-b-4 w-22 border-primary">
-        Tables
-      </h2>
 
       <div className="w-[98%] mx-auto grid grid-cols-1 gap-y-6">
 

@@ -533,9 +533,9 @@ export function Sidebar({ isOpen, setIsOpen, onCollapseChange, isMobile }) {
       </nav>
 
       <div className="flex flex-col flex-shrink-0 w-full border-t border-gray-200 bg-white">
-        <div className={`pt-3 px-2 ${sidebarCollapsed && !isHovering ? "flex flex-col items-center" : ""}`}>
-          <div className={`flex items-center gap-3 ${sidebarCollapsed && !isHovering ? "flex-col" : ""}`}>
-            <FaUserCircle className="text-2xl text-primary flex-shrink-0" />
+        <div className={`py-4 px-3 flex items-center justify-center`}>
+          <div className={`flex items-center gap-3`}>
+            <FaUserCircle className="text-3xl text-primary flex-shrink-0" />
             {(isHovering || !sidebarCollapsed) && (
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-gray-700">{user?.fullName}</span>
@@ -548,7 +548,7 @@ export function Sidebar({ isOpen, setIsOpen, onCollapseChange, isMobile }) {
         </div>
         <button
           onClick={logout}
-          className={`flex items-center justify-center border-t border-gray-200 text-lg gap-3 text-primary hover:bg-red-50 p-3 cursor-pointer transition-all w-full font-medium`}
+          className={`flex items-center justify-center border-t border-gray-200 text-lg gap-3 text-primary hover:bg-red-50 py-4 px-3 cursor-pointer transition-all w-full font-medium`}
           title={sidebarCollapsed && !isHovering ? "Logout" : ""}
         >
           <FiLogOut size={18} /> {(isHovering || !sidebarCollapsed) && "Logout"}
