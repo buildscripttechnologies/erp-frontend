@@ -21,8 +21,11 @@ export default memo(function TabContentHost() {
   const items = useMemo(() => tabs || [], [tabs]);
   if (!items || items.length === 0) return null;
 
+  const isOnlyDashboard = items.length === 1 && items[0].path === "/dashboard";
+  const showTabsBar = !isOnlyDashboard;
+
   return (
-    <div className="p-4 pt-8 pb-8">
+    <div className={`p-4 pb-8 ${showTabsBar ? "pt-16" : "pt-8"}`}>
       {items.map((t) => (
         <TabPane key={t.path} path={t.path} active={t.path === activePath} />
       ))}

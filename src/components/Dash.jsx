@@ -1,4 +1,4 @@
-// components/Dash.jsx
+
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "./../utils/axios";
 import toast from "react-hot-toast";
@@ -15,7 +15,7 @@ const Dash = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/dashboard"); // your API endpoint
+      const res = await axios.get("/dashboard"); 
       setData(res.data);
     } catch (error) {
       console.error(error);
@@ -29,7 +29,7 @@ const Dash = () => {
     fetchDashboardData();
   }, []);
 
-  // ✅ Memoized values (prevents unnecessary re-renders)
+  
   const orderStats = useMemo(() => {
     if (!data) return {};
     return {
@@ -54,8 +54,15 @@ const Dash = () => {
 
   return (
     <div className="relative max-w-[99vw] mx-auto overflow-x-hidden pb-16">
-      {/* ===================== Orders Section ===================== */}
-      <h2 className="text-2xl font-semibold mt-8 ml-[1%] border-b-4 w-25 border-primary">
+
+      <div className="w-[98%] mx-auto mt-2 bg-gradient-to-r from-primary/10 to-primary/5 py-5 rounded-xl border border-primary/20">
+        <h1 className="text-3xl font-bold text-center text-gray-800">
+          Dashboard
+          <div className="w-20 h-1 bg-primary mx-auto mt-2 rounded-full"></div>
+        </h1>
+      </div>
+
+      <h2 className="text-2xl font-semibold mt-6 ml-[1%] border-b-4 w-25 border-primary">
         Orders
       </h2>
 
@@ -79,7 +86,6 @@ const Dash = () => {
           <OrderCard name="RC PO" numbers="0" value="₹0" />
         </div>
 
-        {/* Chart */}
         <div className="drop-shadow-sm w-full md:w-1/2">
           <OrderPieChart
             data={[
@@ -100,7 +106,6 @@ const Dash = () => {
         </div>
       </div>
 
-      {/* ===================== Master Metrics ===================== */}
       <h2 className="text-2xl font-semibold mt-8 ml-[1%] border-b-4 w-25 border-primary">
         Master
       </h2>
@@ -112,13 +117,12 @@ const Dash = () => {
         <DashboardCard title="Customer" value={masterStats.totalCustomer} />
       </div>
 
-      {/* ===================== Tables Section ===================== */}
       <h2 className="text-2xl font-semibold mt-8 ml-[1%] border-b-4 w-22 border-primary">
         Tables
       </h2>
 
       <div className="w-[98%] mx-auto grid grid-cols-1 gap-y-6">
-        {/* Material Inward */}
+
         <OrderTable
           title="Material Inward"
           columns={["Date", "SKU Code", "Item Name", "Qty", "Inward By"]}
@@ -138,7 +142,6 @@ const Dash = () => {
           ])}
         />
 
-        {/* Purchase Orders */}
         <OrderTable
           title="Purchase Orders"
           columns={["Date", "PO No", "Vendor Name", "Value", "Created By"]}
@@ -158,7 +161,6 @@ const Dash = () => {
           ])}
         />
 
-        {/* Job Orders */}
         <OrderTable
           title="Job Orders"
           columns={[
@@ -185,7 +187,6 @@ const Dash = () => {
           ])}
         />
 
-        {/* Customer Orders */}
         <OrderTable
           title="Customer Orders"
           columns={[

@@ -11,8 +11,6 @@ import PwaInstallPrompt from "./components/PWAInstallPrompt";
 import { useEffect, useState } from "react";
 import Dash from "./components/Dash";
 
-// Authenticated page components are now mounted via TabContentHost; keep router lean
-
 const App = () => {
   const { isAuthenticated, authChecked } = useAuth();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -25,7 +23,7 @@ const App = () => {
     const lastDismissed = new Date(parseInt(dismissedAt, 10));
     const now = new Date();
     const diffInDays = (now - lastDismissed) / (1000 * 60 * 60 * 24);
-    return diffInDays >= 5; // Show again after 5 days
+    return diffInDays >= 5;
   };
 
   useEffect(() => {
@@ -78,7 +76,6 @@ const App = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/change-password" element={<ChangePassword />} />
 
-          {/* Authenticated area: single shell route; tab content is managed inside Dashboard */}
           <Route
             path="/dashboard"
             element={

@@ -82,7 +82,7 @@ const ICONS = {
 };
 
 function getIconComponent(name) {
-  return ICONS[name] || FiClipboard; // fallback
+  return ICONS[name] || FiClipboard;
 }
 
 function SortableTab({
@@ -119,7 +119,7 @@ function SortableTab({
       {...attributes}
       {...listeners}
     >
-      {/* 📌 Pin Button */}
+
       <button
         className={`text-xs ${
           pinned ? "text-red-600" : "text-gray-400"
@@ -133,16 +133,13 @@ function SortableTab({
         <TiPinOutline size={14} />
       </button>
 
-      {/* 🧭 Icon */}
       <IconComponent
         size={14}
         className={isActive ? "text-primary" : "text-gray-500"}
       />
 
-      {/* 🏷️ Title */}
       <span className="whitespace-nowrap text-sm">{title}</span>
 
-      {/* ❌ Close */}
       <button
         className=" hover:text-red-600 cursor-pointer"
         onClick={(e) => {
@@ -223,13 +220,15 @@ export default function TabsBar({ isOpen = false, sidebarCollapsed = true }) {
   
   const isOnlyDashboard = tabs.length === 1 && tabs[0].path === "/dashboard";
 
+  if (isOnlyDashboard) return null;
+
   return (
     <div
-      className={`fixed w-full top-15 flex h-auto ${
+      className={`fixed w-full ${isOpen ? "top-0" : "top-15"} flex h-auto ${
         isOpen ? (sidebarCollapsed ? `pl-23` : `pl-63`) : `pl-4`
       } transition-all duration-300 ease-in-out border-b-2 bg-[#fdfcf8] border-primary items-center justify-start z-30 px-3 py-3 gap-2`}
     >
-      {/* Left Scroll Button */}
+
       {!isOnlyDashboard && canScrollLeft && (
         <button
           onClick={() => scroll("left")}
@@ -240,7 +239,6 @@ export default function TabsBar({ isOpen = false, sidebarCollapsed = true }) {
         </button>
       )}
 
-      {/* Tabs Container */}
       <div className="flex-1 overflow-hidden mx-1">
         <DndContext
           sensors={sensors}
@@ -256,7 +254,8 @@ export default function TabsBar({ isOpen = false, sidebarCollapsed = true }) {
         >
           <div
             ref={scrollRef}
-            className="flex items-center gap-2 overflow-x-auto no-scrollbar"
+            className="flex items-center gap-2 overflow-x-scroll no-scrollbar"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {!isOnlyDashboard && (
               <SortableContext
@@ -293,7 +292,6 @@ export default function TabsBar({ isOpen = false, sidebarCollapsed = true }) {
         </DndContext>
       </div>
 
-      {/* Right Scroll Button */}
       {!isOnlyDashboard && canScrollRight && (
         <button
           onClick={() => scroll("right")}
@@ -304,7 +302,6 @@ export default function TabsBar({ isOpen = false, sidebarCollapsed = true }) {
         </button>
       )}
 
-      {/* Close All Tabs Button */}
       {!isOnlyDashboard && tabs && tabs.length > 2 && (
         <button
           onClick={() => setShowCloseAllModal(true)}
@@ -315,7 +312,6 @@ export default function TabsBar({ isOpen = false, sidebarCollapsed = true }) {
         </button>
       )}
 
-      {/* Close All Tabs Confirmation Modal */}
       {showCloseAllModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] backdrop-blur-sm">
           <div className="bg-white rounded-lg shadow-2xl p-6 max-w-sm mx-4 border border-gray-200">

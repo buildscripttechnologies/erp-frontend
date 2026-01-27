@@ -10,43 +10,59 @@ import { useLocation } from "react-router-dom";
 export default function Dashboard({ children }) {
   const [isOpen, setIsOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024); 
   const location = useLocation();
   const { user } = useAuth();
 
   useEffect(() => {
-    const isMobile = window.innerWidth < 768;
-    setIsOpen(isMobile ? false : true);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 1024);
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Close sidebar on route change if mobile
   useEffect(() => {
-    const isMobile = window.innerWidth < 768;
+    setIsOpen(!isMobile);
+  }, [isMobile]);
+
+  useEffect(() => {
     if (isMobile) {
       setIsOpen(false);
     }
-  }, [location.pathname]);
+  }, [location.pathname, isMobile]);
+
   const toggleSidebar = () => setIsOpen((prev) => !prev);
 
   return (
     <>
-      <Navbar
-        isOpen={isOpen}
-        setIsOpen={toggleSidebar}
-        title="SmartFlow360"
-        user={user}
-        sidebarCollapsed={sidebarCollapsed}
-      />
+
+      {isMobile && (
+        <Navbar
+          isOpen={isOpen}
+          setIsOpen={toggleSidebar}
+          title="SmartFlow360"
+          user={user}
+          sidebarCollapsed={sidebarCollapsed}
+        />
+      )}
 
       <TabsProvider>
         <TabsBar isOpen={isOpen} sidebarCollapsed={sidebarCollapsed} />
-        <div className="flex min-h-screen pt-20  w-full bg-[#fdfcf8]  ">
-          {/* Sidebar */}
-          <Sidebar isOpen={isOpen} setIsOpen={toggleSidebar} onCollapseChange={setSidebarCollapsed} />
+        <div className={`flex min-h-screen w-full bg-[#fdfcf8] ${isMobile ? "pt-20" : "pt-0"}`}>
+ 
+          {((!isMobile && isOpen) || (isMobile && isOpen)) && (
+            <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} onCollapseChange={setSidebarCollapsed} isMobile={isMobile} />
+          )}
 
-          {/* Main Content */}
           <main
             className={`flex-1 transition-all overflow-auto duration-300 ease-in-out ${
-              isOpen ? (sidebarCollapsed ? "ml-20" : "ml-60") : "ml-0"
+              isOpen && !isMobile
+                ? sidebarCollapsed
+                  ? "ml-20"
+                  : "ml-60"
+                : "ml-0"
             }`}
           >
             <TabContentHost />

@@ -26,6 +26,7 @@ import {
   FaCube,
   FaIndustry,
   FaUserFriends,
+  FaUserCircle,
 } from "react-icons/fa";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -56,18 +57,16 @@ import { GrDomain } from "react-icons/gr";
 import { TbNeedleThread } from "react-icons/tb";
 import { PiEyedropperSampleFill, PiMoneyWavy } from "react-icons/pi";
 import { useTabs } from "../context/TabsContext";
-export function Sidebar({ isOpen, onCollapseChange }) {
+export function Sidebar({ isOpen, setIsOpen, onCollapseChange, isMobile }) {
   const navigate = useNavigate();
-  const { logout, hasPermission } = useAuth();
+  const { logout, hasPermission, user } = useAuth();
   let tabs;
   try {
-    // Sidebar is inside Dashboard which provides TabsProvider
+
     tabs = useTabs();
   } catch (e) {
     tabs = null;
   }
-
-  // console.log("haspermission", hasPermission("User", "read"));
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
@@ -76,15 +75,17 @@ export function Sidebar({ isOpen, onCollapseChange }) {
     Master: false,
   });
 
-  // Notify parent when collapse state changes
   const handleMouseEnter = () => {
-    setIsHovering(true);
-    onCollapseChange?.(false);
+    if (!isMobile) {
+      setIsHovering(true);
+      onCollapseChange?.(false);
+    }
   };
-
   const handleMouseLeave = () => {
-    setIsHovering(false);
-    onCollapseChange?.(true);
+    if (!isMobile) {
+      setIsHovering(false);
+      onCollapseChange?.(true);
+    }
   };
 
   const toggleMenu = (menuLabel) => {
@@ -393,11 +394,11 @@ export function Sidebar({ isOpen, onCollapseChange }) {
     hasPermission,
     sidebarCollapsed,
     isHovering,
+    isMobile,
+    isOpen,
   }) => {
     const { icon: Icon, label, path, subMenu, module, action } = item;
-    // console.log("item", item);
 
-    // Permission check
     if (!subMenu && module && !hasPermission(module, action)) return null;
 
     const filterSubMenu = (subMenu) => {
@@ -438,15 +439,15 @@ export function Sidebar({ isOpen, onCollapseChange }) {
           }}
           title={sidebarCollapsed && !isHovering ? label : ""}
         >
-          {Icon && <Icon className="text-primary flex-shrink-0 text-base" />}
-          {(isHovering || !sidebarCollapsed) && (
+
+          {!(isMobile && isOpen) && Icon && <Icon className="text-primary flex-shrink-0 text-base" />}
+          {(isHovering || !sidebarCollapsed || (isMobile && isOpen)) && (
             <span className="flex items-center gap-1.5 flex-1 text-gray-700">
               {label}
               {subMenu && (openMenus[label] ? <FaAngleUp size={12} /> : <FaAngleDown size={12} />)}
             </span>
           )}
-        
-        {/* Tooltip for collapsed state */}
+
         {sidebarCollapsed && !isHovering && (
           <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 font-medium shadow-lg">
             {label}
@@ -455,7 +456,7 @@ export function Sidebar({ isOpen, onCollapseChange }) {
         )}
       </div>
 
-      {subMenu && (isHovering || !sidebarCollapsed) && (
+      {subMenu && (isHovering || !sidebarCollapsed || (isMobile && isOpen)) && (
         <div
           className={`overflow-hidden transition-all duration-300 ease-in-out ${
             openMenus[label] ? "max-h-[500px]" : "max-h-0"
@@ -472,6 +473,8 @@ export function Sidebar({ isOpen, onCollapseChange }) {
                 hasPermission={hasPermission}
                 sidebarCollapsed={sidebarCollapsed}
                 isHovering={isHovering}
+                isMobile={isMobile}
+                isOpen={isOpen}
               />
             ))}
           </div>
@@ -484,24 +487,35 @@ export function Sidebar({ isOpen, onCollapseChange }) {
   return (
     <aside
       className={`fixed top-0 left-0 z-50 h-full bg-white shadow-xl drop-shadow-xl transform transition-all duration-300 ease-in-out overflow-hidden flex flex-col ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
-      } ${isHovering || !sidebarCollapsed ? "w-60 overflow-y-auto" : "w-20"}`}
+        isOpen ? (isMobile ? "translate-x-0 w-60" : (isHovering || !sidebarCollapsed ? "translate-x-0 w-60" : "translate-x-0 w-20")) : "-translate-x-full w-60"
+      }`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Header with collapse button */}
-      <div className="flex h-15 justify-between bg-gradient-to-r from-primary to-primary/80 items-center px-3 flex-shrink-0">
-        {/* Collapsed sidebar - show fav4.png */}
-        {sidebarCollapsed && !isHovering && (
+
+      <div className="relative flex h-16 bg-gradient-to-r from-primary to-primary/80 items-center px-4 flex-shrink-0 border-b border-primary/30">
+
+        {!isMobile && sidebarCollapsed && !isHovering && (
           <img src="/images/fav4.png" alt="smartflow360 icon" className="w-full h-6 object-contain" />
         )}
-        {/* Expanded sidebar - show logo4.png */}
-        {(isHovering || !sidebarCollapsed) && (
-          <img src="/images/logo4.png" alt="smartflow360 logo" className="w-45" />
+
+        {(isMobile || isHovering || !sidebarCollapsed) && (
+          <img src="/images/logo4.png" alt="smartflow360 logo" className="h-6 object-contain" />
+        )}
+
+        {isMobile && isOpen && (
+          <button
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full bg-primary border border-primary text-white text-xl transition-colors duration-200 focus:outline-none hover:bg-[#d8b76a] hover:text-primary"
+            onClick={() => setIsOpen(false)}
+            aria-label="Close sidebar"
+            tabIndex={0}
+          >
+            <span className="leading-none">&#10005;</span>
+          </button>
         )}
       </div>
 
-      <nav className={`flex flex-col flex-1 px-2 pt-2 text-base font-semibold text-gray-800 gap-1`}>
+      <nav className="flex-1 overflow-auto px-2 pt-2 text-base font-semibold text-gray-800 gap-1 flex flex-col">
         {sidebarMenus.map((item) => (
           <MenuItem
             key={item.label}
@@ -512,17 +526,34 @@ export function Sidebar({ isOpen, onCollapseChange }) {
             hasPermission={hasPermission}
             sidebarCollapsed={sidebarCollapsed}
             isHovering={isHovering}
+            isMobile={isMobile}
+            isOpen={isOpen}
           />
         ))}
+      </nav>
 
+      <div className="flex flex-col flex-shrink-0 w-full border-t border-gray-200 bg-white">
+        <div className={`pt-3 px-2 ${sidebarCollapsed && !isHovering ? "flex flex-col items-center" : ""}`}>
+          <div className={`flex items-center gap-3 ${sidebarCollapsed && !isHovering ? "flex-col" : ""}`}>
+            <FaUserCircle className="text-2xl text-primary flex-shrink-0" />
+            {(isHovering || !sidebarCollapsed) && (
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-gray-700">{user?.fullName}</span>
+                <span className="text-xs bg-[#292926] text-[#d8b76a] px-2 py-0.5 rounded uppercase font-bold w-fit">
+                  {user?.userType}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
         <button
           onClick={logout}
-          className={`flex items-center justify-center border-t border-gray-200 text-lg gap-3 text-primary hover:bg-red-50 p-3 mt-auto cursor-pointer transition-all w-full font-medium`}
+          className={`flex items-center justify-center border-t border-gray-200 text-lg gap-3 text-primary hover:bg-red-50 p-3 cursor-pointer transition-all w-full font-medium`}
           title={sidebarCollapsed && !isHovering ? "Logout" : ""}
         >
           <FiLogOut size={18} /> {(isHovering || !sidebarCollapsed) && "Logout"}
         </button>
-      </nav>
+      </div>
     </aside>
   );
 }

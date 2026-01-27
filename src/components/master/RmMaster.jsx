@@ -8,6 +8,7 @@ import {
   FiEdit,
   FiTrash2,
   FiX,
+  FiEye,
 } from "react-icons/fi";
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
@@ -49,6 +50,7 @@ const RmMaster = ({ isOpen }) => {
   const [selectedRMs, setSelectedRMs] = useState([]);
   const [restoreId, setRestoreId] = useState();
   const [deleteId, setDeleteId] = useState();
+  const [detailData, setDetailData] = useState(null);
 
   const hasMountedRef = useRef(false);
 
@@ -56,7 +58,7 @@ const RmMaster = ({ isOpen }) => {
   useEffect(() => {
     const fetchUOMs = async () => {
       try {
-        const res = await axios.get("/uoms/all-uoms"); // your UOM endpoint
+        const res = await axios.get("/uoms/all-uoms"); 
         setUoms(res.data.data || []);
       } catch (err) {
         toast.error("Failed to load UOMs");
@@ -69,20 +71,20 @@ const RmMaster = ({ isOpen }) => {
   useEffect(() => {
     if (!hasMountedRef.current) {
       hasMountedRef.current = true;
-      return; // skip first debounce on mount
+      return;
     }
     const debouncedSearch = debounce(() => {
       if (restore) {
         fetchDeletedRawMaterials(1);
       } else {
-        fetchRawMaterials(1); // Always fetch from page 1 for new search
+        fetchRawMaterials(1);
       }
-    }, 400); // 400ms delay
+    }, 400);
 
     debouncedSearch();
 
-    return () => debouncedSearch.cancel(); // Cleanup on unmount/change
-  }, [search]); // Re-run on search change
+    return () => debouncedSearch.cancel();
+  }, [search]);
 
   const toggleExportOptions = () => {
     setShowExportOptions((prev) => !prev);
@@ -101,8 +103,8 @@ const RmMaster = ({ isOpen }) => {
       const res = await axios.get("/rms/rm", {
         params: {
           page,
-          limit: pagination.limit, // or dynamic
-          search, // if you have search
+          limit: pagination.limit,
+          search,
         },
       });
       if (res.data.status == 403) {
@@ -150,7 +152,6 @@ const RmMaster = ({ isOpen }) => {
     } catch (error) {}
   };
 
-  // console.log("Raw Materials:", rawMaterials);
 
   const handleSampleDownload = async () => {
     try {
@@ -188,7 +189,7 @@ const RmMaster = ({ isOpen }) => {
       toast.success("Raw materials uploaded");
       setFile(null);
       setUploading(false);
-      fetchRawMaterials(); // reload list
+      fetchRawMaterials();
     } catch (err) {
       toast.error(err.response?.data?.message);
       setUploading(false);
@@ -211,7 +212,7 @@ const RmMaster = ({ isOpen }) => {
       const res = await axios.delete(`/rms/delete-rm/${id}`);
       if (res.status == 200) {
         toast.success("Raw material deleted successfully");
-        fetchRawMaterials(pagination.currentPage); // reload list
+        fetchRawMaterials(pagination.currentPage);
       } else {
         toast.error("Failed to delete raw material");
       }
@@ -305,7 +306,6 @@ const RmMaster = ({ isOpen }) => {
       if (res.status === 200) {
         toast.success("Quality Inspection status updated");
 
-        // ✅ Optimistically update the item locally in state
         setRawMaterials((prev) =>
           prev.map((rm) =>
             rm.id === id ? { ...rm, qualityInspectionNeeded: newValue } : rm
@@ -337,7 +337,6 @@ const RmMaster = ({ isOpen }) => {
       if (res.status === 200) {
         toast.success(`Raw material status updated to ${newStatus}`);
 
-        // ✅ Update local state without refetch
         setRawMaterials((prev) =>
           prev.map((rm) => (rm.id === id ? { ...rm, status: newStatus } : rm))
         );
@@ -392,10 +391,10 @@ const RmMaster = ({ isOpen }) => {
 
       if (exportScope === "current" || exportScope === "filtered") {
         exportData = data(rawMaterials);
-        generateExportFile(exportData); // Synchronous export
+        generateExportFile(exportData);
         setDownloading(false);
       } else {
-        // Export all: fetch full data from backend first
+
         const res = await axios.get("/rms/rm", {
           params: { limit: pagination.totalResults },
         });
@@ -444,13 +443,12 @@ const RmMaster = ({ isOpen }) => {
   ];
 
   const userWarehouse = user?.warehouse;
-  // const isAdmin = user?.userType.toLowerCase() == "admin";
+
   const isAdmin = false;
 
   const getVisibleWarehouseStock = (rm, isAdmin, userWarehouse) => {
     if (isAdmin) return rm.stockByWarehouse || [];
 
-    // For normal user, show only his warehouse
     return (
       rm.stockByWarehouse?.filter((w) => w.warehouse === userWarehouse) || []
     );
@@ -459,21 +457,16 @@ const RmMaster = ({ isOpen }) => {
 
   return (
     <div className="p-3 sm:p-4 lg:p-6 max-w-[99vw] mx-auto overflow-x-hidden">
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-5 lg:p-6 mb-4 sm:mb-5 lg:mb-6">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 lg:gap-6">
+
+      <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl border border-primary/20 p-2 sm:p-3 lg:p-4 mb-2 sm:mb-3 lg:mb-4">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2 lg:gap-4">
           <div className="flex-1 w-full">
-            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+            <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
               <div className="w-1 h-6 sm:h-8 bg-primary rounded-full"></div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-secondary">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 leading-tight">
                 Raw Materials Master
               </h1>
             </div>
-            <p className="text-gray-600 text-xs sm:text-sm ml-3 sm:ml-4">
-              Manage and track all raw materials in your inventory
-              <span className="ml-2 font-semibold text-primary">
-                ({pagination.totalResults} items)
-              </span>
-            </p>
             {restore && (
               <div className="mt-3 sm:mt-4 ml-3 sm:ml-4 flex flex-wrap items-center gap-2 sm:gap-3">
                 <div className="flex items-center gap-1.5 sm:gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
@@ -542,146 +535,49 @@ const RmMaster = ({ isOpen }) => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-5 lg:p-6 mb-4 sm:mb-5 lg:mb-6">
-        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 items-start lg:items-center">
-          <div className="flex-1 relative w-full">
-            <div className="relative">
-              <FiSearch className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-base sm:text-lg" />
-              <input
-                type="text"
-                placeholder="Search by SKU, name, description, HSN/SAC..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 text-secondary border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-gray-50 focus:bg-white text-sm sm:text-base"
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch("")}
-                  className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors"
-                  title="Clear search"
-                >
-                  <FiX className="text-base sm:text-lg" />
-                </button>
-              )}
-            </div>
-          </div>
+<div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden mt-2 mb-4">
+  <div  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 px-3 py-2" >
+    <div className="flex items-center gap-2 min-w-50">
+      <input
+        type="text"
+        placeholder="Search by SKU, name, description, HSN/SAC..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full min-w-[600px] pl-8 pr-2 py-2 text-secondary border border-gray-200 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-gray-50 focus:bg-white text-sm"
+      />
+    </div>
+    <div className="flex items-center gap-3">
+      <button
+        onClick={handleExport}
+        className="flex items-center gap-2 px-4 py-2 bg-primary text-secondary font-semibold rounded-lg shadow hover:bg-primary/90 transition-all duration-150 text-sm whitespace-nowrap"
+      >
+        <FiDownload className="text-base" /> Export
+      </button>
+      <button
+        onClick={handleSampleDownload}
+        className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white font-semibold rounded-lg shadow hover:bg-green-600 transition-all duration-150 text-sm whitespace-nowrap"
+      >
+        <FiDownload className="text-base" /> Sample Excel
+      </button>
+      <label className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow hover:bg-blue-600 transition-all duration-150 text-sm whitespace-nowrap cursor-pointer">
+        <FiUploadCloud className="text-base" /> Upload Excel
+        <input
+          type="file"
+          accept=".xlsx, .xls"
+          className="hidden"
+          onChange={(e) => setFile(e.target.files[0])}
+        />
+      </label>
+      <button
+        className="px-4 py-2 bg-primary hover:bg-primary/90 text-secondary font-semibold rounded-lg flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg text-sm whitespace-nowrap"
+        onClick={() => setShowBulkPanel(true)}
+      >
+        <FiPlus className="text-base" /> Add Raw Material
+      </button>
+    </div>
+  </div>
+</div>
 
-          {hasPermission("RawMaterial", "write") && (
-            <button
-              onClick={() => setShowBulkPanel(true)}
-              className="w-full lg:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-primary hover:bg-primary/90 text-secondary font-semibold rounded-lg flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm sm:text-base"
-            >
-              <FiPlus className="text-base sm:text-lg" /> 
-              <span className="whitespace-nowrap">Add Raw Material</span>
-            </button>
-          )}
-        </div>
-
-        <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
-          <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
-            {showExportOptions && (
-              <div className="flex flex-wrap gap-2 sm:gap-3 items-center bg-gray-50 rounded-lg p-2 sm:p-3 border border-gray-200 w-full lg:w-auto">
-                <select
-                  value={exportScope}
-                  onChange={(e) => setExportScope(e.target.value)}
-                  className="border border-gray-300 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm text-secondary cursor-pointer bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all flex-1 sm:flex-none"
-                >
-                  <option value="current">This Page</option>
-                  <option value="filtered">Filtered Data</option>
-                  <option value="all">All Data</option>
-                </select>
-
-                <select
-                  value={exportFormat}
-                  onChange={(e) => setExportFormat(e.target.value)}
-                  className="border border-gray-300 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm text-secondary cursor-pointer bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all flex-1 sm:flex-none"
-                >
-                  <option value="excel">Excel</option>
-                  <option value="pdf">PDF</option>
-                </select>
-
-                <button
-                  disabled={downloading}
-                  onClick={handleExport}
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-primary hover:bg-primary/90 text-secondary font-semibold rounded-lg transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
-                >
-                  {downloading ? (
-                    <PulseLoader size={5} color="#292926" />
-                  ) : (
-                    <>
-                      <FiDownload className="text-sm sm:text-base" /> 
-                      <span className="whitespace-nowrap">Download</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-
-            <button
-              onClick={toggleExportOptions}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-100 hover:bg-gray-200 text-secondary font-semibold rounded-lg flex items-center gap-1.5 sm:gap-2 transition-all duration-200 text-xs sm:text-sm"
-            >
-              <FiDownload className="text-sm sm:text-base" /> 
-              <span className="whitespace-nowrap">{showExportOptions ? "Hide" : "Export"}</span>
-            </button>
-
-            <button
-              disabled={sampleDownloading}
-              onClick={handleSampleDownload}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-100 hover:bg-gray-200 text-secondary font-semibold rounded-lg flex items-center gap-1.5 sm:gap-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
-            >
-              {sampleDownloading ? (
-                <PulseLoader size={5} color="#292926" />
-              ) : (
-                <>
-                  <FiDownload className="text-sm sm:text-base" /> 
-                  <span className="whitespace-nowrap hidden sm:inline">Sample Excel</span>
-                  <span className="whitespace-nowrap sm:hidden">Sample</span>
-                </>
-              )}
-            </button>
-
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 flex-1 sm:flex-none min-w-0">
-              <label className="flex items-center gap-1.5 sm:gap-2 cursor-pointer text-secondary font-semibold min-w-0 flex-1">
-                <FiUploadCloud className="text-base sm:text-lg flex-shrink-0" />
-                <span className="text-xs sm:text-sm truncate min-w-0">
-                  {file ? file.name : "Upload Excel"}
-                </span>
-                <input
-                  type="file"
-                  accept=".xlsx, .xls"
-                  className="hidden"
-                  onChange={(e) => setFile(e.target.files[0])}
-                />
-              </label>
-              {file && (
-                <button
-                  onClick={() => setFile(null)}
-                  className="text-gray-500 hover:text-red-500 transition-colors flex-shrink-0"
-                  title="Remove file"
-                >
-                  <FiX size={16} className="sm:hidden" />
-                  <FiX size={18} className="hidden sm:block" />
-                </button>
-              )}
-            </div>
-
-            {file && (
-              <button
-                disabled={uploading}
-                onClick={handleFileUpload}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-primary hover:bg-primary/90 text-secondary font-semibold rounded-lg transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap"
-              >
-                {uploading ? (
-                  <PulseLoader size={5} color="#292926" />
-                ) : (
-                  "Submit"
-                )}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
@@ -702,31 +598,23 @@ const RmMaster = ({ isOpen }) => {
                   )}
                   {[
                     "#",
-                    "Created At",
-                    "Updated At",
                     "SKU Code",
                     "Item Name",
                     "Description",
                     "Item Category",
                     "Item Color",
-                    "HSN/SAC",
-                    "Type",
                     "Qual. Insp.",
                     "Location",
-                    "Base Qty",
-                    "Pkg Qty",
                     "MOQ",
                     "Panno",
                     "SqInch Rate",
-                    "GST",
                     "Rate",
-                    "Pur. Uom",
-                    "Stock Qty",
                     "Stock Uom",
                     "Total Rate",
                     "Attachment",
                     "Status",
                     "Created By",
+                    "Detail",
                     "Action",
                   ].map((th) => (
                     <th
@@ -741,10 +629,10 @@ const RmMaster = ({ isOpen }) => {
               <tbody className="divide-y divide-gray-200 bg-white">
                 {loading ? (
                   <tr>
-                    <td colSpan={restore ? 28 : 27} className="p-8">
+                    <td colSpan={restore ? 21 : 20} className="p-8">
                       <TableSkeleton
                         rows={pagination.limit}
-                        columns={restore ? Array(28).fill({}) : Array(27).fill({})}
+                        columns={restore ? Array(21).fill({}) : Array(20).fill({})}
                       />
                     </td>
                   </tr>
@@ -770,26 +658,6 @@ const RmMaster = ({ isOpen }) => {
                             Number(pagination.limit) +
                             i +
                             1}
-                        </td>
-                        <td className="px-2 py-2 text-gray-600 border-r border-gray-200 whitespace-nowrap">
-                          {new Date(rm.createdAt).toLocaleString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                          })}
-                        </td>
-                        <td className="px-2 py-2 text-gray-600 border-r border-gray-200 whitespace-nowrap">
-                          {new Date(rm.updatedAt).toLocaleString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                          })}
                         </td>
                         <td className="px-2 py-2 border-r border-gray-200">
                           <span className="font-semibold text-secondary bg-gray-100 px-1.5 py-0.5 rounded text-[11px]">
@@ -817,16 +685,6 @@ const RmMaster = ({ isOpen }) => {
                           )}
                         </td>
                         <td className="px-2 py-2 border-r border-gray-200">
-                          <span className="text-secondary font-medium">
-                            {rm.hsnOrSac}
-                          </span>
-                        </td>
-                        <td className="px-2 py-2 border-r border-gray-200">
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800">
-                            {rm.type}
-                          </span>
-                        </td>
-                        <td className="px-2 py-2 border-r border-gray-200">
                           <div className="flex items-center justify-center">
                             <Toggle
                               checked={rm.qualityInspectionNeeded}
@@ -845,12 +703,6 @@ const RmMaster = ({ isOpen }) => {
                           )}
                         </td>
                         <td className="px-2 py-2 text-gray-600 font-medium border-r border-gray-200">
-                          {rm.baseQty}
-                        </td>
-                        <td className="px-2 py-2 text-gray-600 font-medium border-r border-gray-200">
-                          {rm.pkgQty}
-                        </td>
-                        <td className="px-2 py-2 text-gray-600 font-medium border-r border-gray-200">
                           {rm.moq}
                         </td>
                         <td className="px-2 py-2 text-gray-600 border-r border-gray-200">
@@ -862,51 +714,9 @@ const RmMaster = ({ isOpen }) => {
                           </span>
                         </td>
                         <td className="px-2 py-2 border-r border-gray-200">
-                          {rm.gst ? (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800">
-                              {rm.gst}%
-                            </span>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-2 border-r border-gray-200">
                           <span className="font-semibold text-secondary whitespace-nowrap">
                             ₹{rm.rate || "0"}
                           </span>
-                        </td>
-                        <td className="px-2 py-2 text-gray-600 border-r border-gray-200">
-                          {rm.purchaseUOM || (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-2 border-r border-gray-200">
-                          {isAdmin ? (
-                            <div className="font-semibold text-secondary">
-                              {rm.stockQty?.toFixed(2)}
-                            </div>
-                          ) : (
-                            ""
-                          )}
-                          {getVisibleWarehouseStock(
-                            rm,
-                            isAdmin,
-                            userWarehouse
-                          ).map((w) => (
-                            <div
-                              key={w._id}
-                              className="font-medium text-secondary"
-                            >
-                              {isAdmin
-                                ? `${w.warehouse}: ${w.qty?.toFixed(2)}`
-                                : `${w.qty?.toFixed(2)}`}
-                            </div>
-                          ))}
-                          {!isAdmin &&
-                            getVisibleWarehouseStock(rm, isAdmin, userWarehouse)
-                              .length === 0 && (
-                              <span className="text-gray-400">0</span>
-                            )}
                         </td>
                         <td className="px-2 py-2 text-gray-600 border-r border-gray-200">
                           {rm.stockUOM || (
@@ -938,28 +748,27 @@ const RmMaster = ({ isOpen }) => {
                           )}
                         </td>
                         <td className="px-2 py-2 border-r border-gray-200">
-                          <div className="flex items-center justify-center gap-1">
+                          <div className="flex items-center justify-center">
                             <Toggle
                               checked={rm.status === "Active"}
                               onChange={() =>
                                 handleToggleStatus(rm.id, rm.status)
                               }
                             />
-                            <span
-                              className={`text-[10px] font-medium ${
-                                rm.status === "Active"
-                                  ? "text-green-600"
-                                  : "text-gray-500"
-                              }`}
-                            >
-                              {rm.status}
-                            </span>
                           </div>
                         </td>
                         <td className="px-2 py-2 text-gray-600 border-r border-gray-200">
                           {rm.createdByName || (
                             <span className="text-gray-400">-</span>
                           )}
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-200">
+                          <button
+                            onClick={() => setDetailData(rm)}
+                            className="px-2 py-1 bg-primary/10 hover:bg-primary/20 text-primary font-medium rounded flex items-center gap-1 transition-colors text-[10px]"
+                          >
+                            <FiEye className="text-xs" /> View
+                          </button>
                         </td>
                         <td className="px-2 py-2">
                           <div className="flex items-center gap-1.5 justify-center">
@@ -1031,7 +840,7 @@ const RmMaster = ({ isOpen }) => {
                     {rawMaterials.length === 0 && (
                       <tr>
                         <td
-                          colSpan={restore ? 28 : 27}
+                          colSpan={restore ? 21 : 20}
                           className="px-4 py-8 text-center"
                         >
                           <div className="flex flex-col items-center justify-center">
@@ -1086,6 +895,106 @@ const RmMaster = ({ isOpen }) => {
           onUpdated={fetchRawMaterials}
           uoms={uoms}
         />
+      )}
+
+      {/* Detail Modal */}
+      {detailData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-gradient-to-r from-primary to-primary/90 text-secondary px-6 py-4 flex justify-between items-center rounded-t-xl">
+              <h2 className="text-lg font-bold">Raw Material Details</h2>
+              <button
+                onClick={() => setDetailData(null)}
+                className="text-secondary hover:text-white transition-colors"
+              >
+                <FiX size={24} />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="mb-4 pb-4 border-b border-gray-200">
+                <h3 className="font-bold text-secondary text-base">{detailData.itemName}</h3>
+                <p className="text-sm text-gray-500">{detailData.skuCode}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 mb-1">Created At</p>
+                  <p className="text-sm font-medium text-secondary">
+                    {new Date(detailData.createdAt).toLocaleString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}
+                  </p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 mb-1">Updated At</p>
+                  <p className="text-sm font-medium text-secondary">
+                    {new Date(detailData.updatedAt).toLocaleString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}
+                  </p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 mb-1">HSN/SAC Code</p>
+                  <p className="text-sm font-medium text-secondary">{detailData.hsnOrSac || "-"}</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 mb-1">Base Qty</p>
+                  <p className="text-sm font-medium text-secondary">{detailData.baseQty || "-"}</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 mb-1">Pkg Qty</p>
+                  <p className="text-sm font-medium text-secondary">{detailData.pkgQty || "-"}</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 mb-1">GST</p>
+                  <p className="text-sm font-medium text-secondary">
+                    {detailData.gst ? `${detailData.gst}%` : "-"}
+                  </p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 mb-1">Purchase UOM</p>
+                  <p className="text-sm font-medium text-secondary">{detailData.purchaseUOM || "-"}</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 mb-1">Stock Qty</p>
+                  <p className="text-sm font-medium text-secondary">
+                    {detailData.stockQty?.toFixed(2) || "0"} {detailData.stockUOM || ""}
+                  </p>
+                </div>
+              </div>
+              {detailData.warehouseStock && detailData.warehouseStock.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-xs text-gray-500 mb-2">Warehouse Stock</p>
+                  <div className="space-y-2">
+                    {detailData.warehouseStock.map((w) => (
+                      <div key={w._id} className="flex justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <span className="text-sm text-gray-600">{w.warehouse}</span>
+                        <span className="text-sm font-medium text-secondary">{w.qty?.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={() => setDetailData(null)}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-secondary font-medium rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

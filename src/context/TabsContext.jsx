@@ -155,7 +155,6 @@ export function TabsProvider({ children }) {
     } catch {}
   }, [tabs, activePath]);
 
-  // --- Actions ---
   const openTab = useCallback(
     (path, title) => {
       setTabs((prev) => {
@@ -192,6 +191,10 @@ export function TabsProvider({ children }) {
           if (next) {
             setActivePath(next.path);
             navigate(next.path);
+          } else {
+
+            setActivePath(null);
+            navigate("/dashboard");
           }
         }
         return newTabs;
