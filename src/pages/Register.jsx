@@ -11,6 +11,8 @@ const Register = () => {
   const [userTypes, setUserTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -20,6 +22,79 @@ const Register = () => {
     userType: "",
     userGroup: "UserGrp",
   });
+
+  const fieldLabels = {
+    fullName: 'Full Name',
+    username: 'Username',
+    email: 'Email',
+    password: 'Password',
+    mobile: 'Mobile',
+    userType: 'User Type'
+  };
+
+  const validateField = (name, value) => {
+    if (!value || !value.toString().trim()) {
+      return `${fieldLabels[name]} is required`;
+    }
+    if (name === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      return 'Please enter a valid email address';
+    }
+    if (name === 'mobile' && !/^\d{10}$/.test(value)) {
+      return 'Please enter a valid 10-digit mobile number';
+    }
+    if (name === 'password' && value.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    if (name === 'userType' && value === 'Select User Type') {
+      return 'Please select a user type';
+    }
+    return "";
+  };
+
+  const handleBlur = (field) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    const error = validateField(field, formData[field]);
+    setErrors(prev => ({ ...prev, [field]: error }));
+  };
+
+  const handleChange = (field, value) => {
+    setFormData({ ...formData, [field]: value });
+    if (touched[field]) {
+      setErrors(prev => ({ ...prev, [field]: validateField(field, value) }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    const fieldsToValidate = ['fullName', 'username', 'email', 'password', 'mobile', 'userType'];
+    
+    fieldsToValidate.forEach(field => {
+      const error = validateField(field, formData[field]);
+      if (error) newErrors[field] = error;
+    });
+    
+    setErrors(newErrors);
+    setTouched(fieldsToValidate.reduce((acc, field) => ({ ...acc, [field]: true }), {}));
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const ErrorMessage = ({ field }) => (
+    errors[field] && touched[field] && (
+      <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+        </svg>
+        {errors[field]}
+      </p>
+    )
+  );
+
+  const getInputClass = (field) => `w-full p-2 text-md text-[#272723] font-bold border rounded focus:border-3 focus:outline-none transition duration-200 ${
+    errors[field] && touched[field]
+      ? 'border-red-500 focus:border-red-500'
+      : 'border-[#d8b76a] focus:border-[#b38a37]'
+  }`;
+
   const FetchUserTypes = async () => {
     try {
       const res = await axios.get("/roles/all-roles");
@@ -38,7 +113,12 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // <-- Add loading state if needed
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    setLoading(true);
     try {
       const res = await axios.post("/auth/register", formData);
 
@@ -65,87 +145,99 @@ const Register = () => {
       <h2 className="text-3xl md:text-4xl font-bold text-center text-[#d8b76a] mb-6">
         Register
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          value={formData.fullName}
-          onChange={(e) =>
-            setFormData({ ...formData, fullName: e.target.value })
-          }
-          placeholder="Full Name"
-          className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-3 focus:border-[#b38a37] focus:outline-none transition duration-200"
-          required
-        />
-
-        <input
-          type="text"
-          value={formData.username}
-          onChange={(e) =>
-            setFormData({ ...formData, username: e.target.value })
-          }
-          placeholder="Username"
-          className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-3 focus:border-[#b38a37] focus:outline-none transition duration-200"
-          required
-        />
-
-        <input
-          type="email"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          placeholder="Email"
-          className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-3 focus:border-[#b38a37] focus:outline-none transition duration-200"
-          required
-        />
-        <div className="relative w-full">
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <div>
           <input
-            type={showPassword ? "text" : "password"}
-            value={formData.password}
-            onChange={(e) =>
-              setFormData({ ...formData, password: e.target.value })
-            }
-            placeholder="Password"
-            className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-3 focus:border-[#b38a37] focus:outline-none transition duration-200"
-            required
+            type="text"
+            value={formData.fullName}
+            onChange={(e) => handleChange('fullName', e.target.value)}
+            onBlur={() => handleBlur('fullName')}
+            placeholder="Full Name"
+            className={getInputClass('fullName')}
           />
-          <button
-            type="button"
-            className="absolute right-2 top-2.5 text-[#272723]"
-            onClick={() => setShowPassword((prev) => !prev)}
-            tabIndex={-1}
-          >
-            {showPassword ? (
-              <FiEyeOff className="text-[#d8b76a]" size={20} />
-            ) : (
-              <FiEye className="text-[#d8b76a]" size={20} />
-            )}
-          </button>
+          <ErrorMessage field="fullName" />
         </div>
 
-        <input
-          type="number"
-          value={formData.mobile}
-          onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-          placeholder="Mobile"
-          className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-3 focus:border-[#b38a37] focus:outline-none transition duration-200"
-          required
-        />
+        <div>
+          <input
+            type="text"
+            value={formData.username}
+            onChange={(e) => handleChange('username', e.target.value)}
+            onBlur={() => handleBlur('username')}
+            placeholder="Username"
+            className={getInputClass('username')}
+          />
+          <ErrorMessage field="username" />
+        </div>
 
-        <select
-          value={formData.userType}
-          onChange={(e) =>
-            setFormData({ ...formData, userType: e.target.value })
-          }
-          className="w-full p-2 text-md text-[#272723] font-bold border border-[#d8b76a] rounded focus:border-3 focus:border-[#b38a37] focus:outline-none transition duration-200 cursor-pointer"
-        >
-          <option>Select User Type</option>
-          {userTypes
-            .filter((role) => role.name !== "Admin")
-            .map((role) => (
-              <option key={role.name} value={role.name}>
-                {role.name}
-              </option>
-            ))}
-        </select>
+        <div>
+          <input
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleChange('email', e.target.value)}
+            onBlur={() => handleBlur('email')}
+            placeholder="Email"
+            className={getInputClass('email')}
+          />
+          <ErrorMessage field="email" />
+        </div>
+
+        <div>
+          <div className="relative w-full">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={formData.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              onBlur={() => handleBlur('password')}
+              placeholder="Password"
+              className={getInputClass('password')}
+            />
+            <button
+              type="button"
+              className="absolute right-2 top-2.5 text-[#272723]"
+              onClick={() => setShowPassword((prev) => !prev)}
+              tabIndex={-1}
+            >
+              {showPassword ? (
+                <FiEyeOff className="text-[#d8b76a]" size={20} />
+              ) : (
+                <FiEye className="text-[#d8b76a]" size={20} />
+              )}
+            </button>
+          </div>
+          <ErrorMessage field="password" />
+        </div>
+
+        <div>
+          <input
+            type="number"
+            value={formData.mobile}
+            onChange={(e) => handleChange('mobile', e.target.value)}
+            onBlur={() => handleBlur('mobile')}
+            placeholder="Mobile"
+            className={getInputClass('mobile')}
+          />
+          <ErrorMessage field="mobile" />
+        </div>
+
+        <div>
+          <select
+            value={formData.userType}
+            onChange={(e) => handleChange('userType', e.target.value)}
+            onBlur={() => handleBlur('userType')}
+            className={`${getInputClass('userType')} cursor-pointer`}
+          >
+            <option>Select User Type</option>
+            {userTypes
+              .filter((role) => role.name !== "Admin")
+              .map((role) => (
+                <option key={role.name} value={role.name}>
+                  {role.name}
+                </option>
+              ))}
+          </select>
+          <ErrorMessage field="userType" />
+        </div>
 
         {/* <input
           type="text"
