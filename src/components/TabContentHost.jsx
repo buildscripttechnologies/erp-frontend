@@ -25,7 +25,7 @@ export default memo(function TabContentHost() {
   const showTabsBar = !isOnlyDashboard;
 
   return (
-    <div className={`p-4 pb-8 ${showTabsBar ? "pt-16" : "pt-8"}`}>
+    <div className={`p-4 pb-8 ${showTabsBar ? "pt-4 lg:pt-16 border-t lg:border-t-0 border-gray-200" : "pt-8"}`}>
       {items.map((t) => (
         <TabPane key={t.path} path={t.path} active={t.path === activePath} />
       ))}

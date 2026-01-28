@@ -224,7 +224,7 @@ export default function TabsBar({ isOpen = false, sidebarCollapsed = true }) {
 
   return (
     <div
-      className={`fixed w-full ${isOpen ? "top-0" : "top-15"} flex h-auto ${
+      className={`fixed w-full ${isOpen ? "top-0" : "top-15"} hidden lg:flex h-auto ${
         isOpen ? (sidebarCollapsed ? `pl-23` : `pl-63`) : `pl-4`
       } transition-all duration-300 ease-in-out border-b-2 bg-[#fdfcf8] border-primary items-center justify-start z-30 px-3 py-3 gap-2`}
     >

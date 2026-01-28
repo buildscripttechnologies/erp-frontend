@@ -9,7 +9,10 @@ import {
   FiTrash2,
   FiX,
   FiEye,
+  FiFilter,
+  FiCopy,
 } from "react-icons/fi";
+import { HiSortAscending, HiSortDescending } from "react-icons/hi";
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import { Tooltip } from "react-tooltip";
@@ -51,6 +54,7 @@ const RmMaster = ({ isOpen }) => {
   const [restoreId, setRestoreId] = useState();
   const [deleteId, setDeleteId] = useState();
   const [detailData, setDetailData] = useState(null);
+  const [sortOrder, setSortOrder] = useState("desc");
 
   const hasMountedRef = useRef(false);
 
@@ -94,7 +98,7 @@ const RmMaster = ({ isOpen }) => {
     totalResults: 0,
     totalPages: 1,
     currentPage: 1,
-    limit: 20,
+    limit: 10,
   });
 
   const fetchRawMaterials = async (page = 1) => {
@@ -537,7 +541,6 @@ const RmMaster = ({ isOpen }) => {
 
 <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden mt-2 mb-4">
   <div className="flex flex-col lg:flex-row lg:items-center gap-3 p-3 sm:p-4">
-    {/* Search Input */}
     <div className="w-full lg:flex-1 lg:min-w-0">
       <input
         type="text"
@@ -547,7 +550,6 @@ const RmMaster = ({ isOpen }) => {
         className="w-full pl-4 pr-2 py-2 text-secondary border border-gray-200 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 bg-gray-50 focus:bg-white text-sm"
       />
     </div>
-    {/* Action Buttons */}
     <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:flex-shrink-0">
       <button
         onClick={handleExport}
@@ -581,8 +583,178 @@ const RmMaster = ({ isOpen }) => {
 </div>
 
 
-      {/* Table */}
-      <div className="bg-white rounded-lg sm:rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+      <div className="lg:hidden">
+        <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3 mb-4 shadow-sm">
+          <button
+            onClick={() => {}}
+            className="flex items-center gap-2 text-secondary hover:text-primary font-medium text-sm transition-colors"
+          >
+            <FiFilter className="text-base" />
+            <span>Filter or search</span>
+          </button>
+          <div className="w-px h-5 bg-gray-300"></div>
+          <button
+            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+            className="flex items-center gap-2 text-secondary hover:text-primary font-medium text-sm transition-colors"
+          >
+            {sortOrder === "asc" ? (
+              <HiSortAscending className="text-base" />
+            ) : (
+              <HiSortDescending className="text-base" />
+            )}
+            <span>Sort Order</span>
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          {loading ? (
+            <div className="flex justify-center py-10">
+              <BeatLoader color="#d8b76a" size={10} />
+            </div>
+          ) : rawMaterials.length === 0 ? (
+            <div className="bg-white rounded-lg border border-gray-200 p-8 text-center shadow-sm">
+              <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <FiSearch className="text-xl text-primary" />
+              </div>
+              <p className="text-secondary font-semibold text-sm">No raw materials found</p>
+              <p className="text-gray-500 text-xs mt-1">
+                {search ? "Try adjusting your search criteria" : "Get started by adding a new raw material"}
+              </p>
+            </div>
+          ) : (
+            rawMaterials.map((rm, i) => (
+              <div
+                key={rm.id}
+                className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden"
+              >
+
+                <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-primary/5 to-transparent border-b border-gray-100">
+                  <div className="flex items-center gap-2">
+                    {restore && (
+                      <input
+                        type="checkbox"
+                        checked={selectedRMs.includes(rm.id)}
+                        onChange={() => handleSelectRM(rm.id)}
+                        className="w-4 h-4 accent-primary cursor-pointer"
+                      />
+                    )}
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-primary font-semibold uppercase">SKU</span>
+                      <span className="font-bold text-secondary text-sm">{rm.skuCode}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    <button
+                      onClick={() => setDetailData(rm)}
+                      className="p-2 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-md transition-colors"
+                    >
+                      <FiEye className="text-lg" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(rm.skuCode);
+                        toast.success("SKU copied!");
+                      }}
+                      className="p-2 text-gray-500 hover:text-secondary hover:bg-gray-100 rounded-md transition-colors"
+                    >
+                      <FiCopy className="text-lg" />
+                    </button>
+                    {hasPermission("RawMaterial", "delete") && !restore && (
+                      <button
+                        onClick={() => handleDelete(rm.id)}
+                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                      >
+                        <FiTrash2 className="text-lg" />
+                      </button>
+                    )}
+                    {hasPermission("RawMaterial", "update") && !restore && (
+                      <button
+                        onClick={() => setEditData(rm)}
+                        className="p-2 text-gray-500 hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
+                      >
+                        <FiEdit className="text-lg" />
+                      </button>
+                    )}
+                    {restore && (
+                      <>
+                        <button
+                          onClick={() => handleRestore(rm.id)}
+                          className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                        >
+                          <TbRestore className="text-lg" />
+                        </button>
+                        <button
+                          onClick={() => handlePermanentDelete(rm.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                        >
+                          <FiTrash2 className="text-lg" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  <div className="mb-4">
+                    <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide mb-1">Product Name</p>
+                    <p className="text-base font-bold text-secondary leading-tight">{rm.itemName}</p>
+                  </div>
+
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Category</p>
+                      {rm.itemCategory ? (
+                        <span className="inline-block px-2.5 py-1 text-xs font-bold bg-primary text-secondary rounded">
+                          {rm.itemCategory}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-sm">—</span>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Color</p>
+                      <p className="text-sm font-semibold text-secondary">{rm.itemColor || "—"}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Rate</p>
+                      <p className="text-base font-bold text-secondary">₹{rm.rate || "0"}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Total Rate</p>
+                      <p className="text-base font-bold text-green-600">₹{rm.totalRate?.toFixed(2) || "0.00"}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Stock UOM</p>
+                      <p className="text-sm font-semibold text-secondary">{rm.stockUOM || "—"}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Status</p>
+                      <Toggle
+                        checked={rm.status === "Active"}
+                        onChange={() => handleToggleStatus(rm.id, rm.status)}
+                      />
+                    </div>
+                  </div>
+
+
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                    <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Created By</p>
+                    <span className="text-sm font-semibold text-secondary bg-gray-100 px-3 py-1 rounded">{rm.createdByName || "—"}</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      <div className="hidden lg:block bg-white rounded-lg sm:rounded-xl shadow-lg border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto w-full rm-table-scrollbar">
           <div className="min-w-full">
             <table className="w-full text-[11px] sm:text-[12px] min-w-max">
@@ -903,7 +1075,6 @@ const RmMaster = ({ isOpen }) => {
         />
       )}
 
-      {/* Detail Modal */}
       {detailData && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
