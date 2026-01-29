@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   FiPlus,
   FiSearch,
@@ -11,6 +11,9 @@ import {
   FiEye,
   FiFilter,
   FiCopy,
+  FiChevronLeft,
+  FiChevronRight,
+  FiImage,
 } from "react-icons/fi";
 import { HiSortAscending, HiSortDescending } from "react-icons/hi";
 import axios from "../../utils/axios";
@@ -28,7 +31,6 @@ import { BeatLoader, ClipLoader, PulseLoader } from "react-spinners";
 import AttachmentsModal2 from "../AttachmentsModal2.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { debounce } from "lodash";
-import { useRef } from "react";
 import { TbRestore } from "react-icons/tb";
 
 const RmMaster = ({ isOpen }) => {
@@ -57,6 +59,40 @@ const RmMaster = ({ isOpen }) => {
   const [sortOrder, setSortOrder] = useState("desc");
 
   const hasMountedRef = useRef(false);
+  const tableScrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  // Handle table scroll with buttons
+  const handleTableScroll = (direction) => {
+    if (!tableScrollRef.current) return;
+    const scrollAmount = 400;
+    const container = tableScrollRef.current;
+    
+    if (direction === 'left') {
+      container.scrollLeft -= scrollAmount;
+    } else {
+      container.scrollLeft += scrollAmount;
+    }
+  };
+
+  const updateScrollButtons = () => {
+    if (!tableScrollRef.current) return;
+    const container = tableScrollRef.current;
+    setCanScrollLeft(container.scrollLeft > 0);
+    setCanScrollRight(
+      container.scrollLeft < container.scrollWidth - container.clientWidth - 1
+    );
+  };
+
+  useEffect(() => {
+    const container = tableScrollRef.current;
+    if (container) {
+      container.addEventListener('scroll', updateScrollButtons);
+      updateScrollButtons();
+      return () => container.removeEventListener('scroll', updateScrollButtons);
+    }
+  }, [rawMaterials]);
 
   ScrollLock(editData != null || showBulkPanel || openAttachments != null);
   useEffect(() => {
@@ -460,7 +496,7 @@ const RmMaster = ({ isOpen }) => {
 
 
   return (
-    <div className="p-2 sm:p-4 lg:p-6 max-w-[100vw] mx-auto overflow-x-hidden">
+    <div className="p-2 sm:p-4 lg:p-6 max-w-[100vw] mx-auto">
 
       <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg sm:rounded-xl border border-primary/20 p-2 sm:p-3 lg:p-4 mb-2 sm:mb-3 lg:mb-4">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2 lg:gap-4">
@@ -606,13 +642,13 @@ const RmMaster = ({ isOpen }) => {
           </button>
         </div>
 
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {loading ? (
-            <div className="flex justify-center py-10">
+            <div className="flex justify-center py-10 col-span-full">
               <BeatLoader color="#d8b76a" size={10} />
             </div>
           ) : rawMaterials.length === 0 ? (
-            <div className="bg-white rounded-lg border border-gray-200 p-8 text-center shadow-sm">
+            <div className="bg-white rounded-lg border border-gray-200 p-8 text-center shadow-sm col-span-full">
               <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
                 <FiSearch className="text-xl text-primary" />
               </div>
@@ -754,11 +790,35 @@ const RmMaster = ({ isOpen }) => {
         </div>
       </div>
 
-      <div className="hidden lg:block bg-white rounded-lg sm:rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto w-full rm-table-scrollbar">
-          <div className="min-w-full">
-            <table className="w-full text-[11px] sm:text-[12px] min-w-max">
-              <thead className="bg-gradient-to-r from-primary via-primary to-primary/95 text-secondary sticky top-0 z-20 shadow-sm">
+      <div className="hidden lg:block bg-white rounded-xl shadow-xl border border-gray-200/60 overflow-hidden">
+        <div className="flex items-center justify-end gap-2 px-3 py-1 bg-gray-50/50 border-b border-gray-100">
+          <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mr-auto">
+            {canScrollRight ? '← Scroll →' : ''}
+          </span>
+          <div className="flex items-center">
+            <button
+              onClick={() => handleTableScroll('left')}
+              disabled={!canScrollLeft}
+              className={`p-1 rounded transition-all duration-200 ${canScrollLeft ? 'text-primary hover:bg-primary/10' : 'text-gray-300 cursor-not-allowed'}`}
+            >
+              <FiChevronLeft className="text-sm" />
+            </button>
+            <button
+              onClick={() => handleTableScroll('right')}
+              disabled={!canScrollRight}
+              className={`p-1 rounded transition-all duration-200 ${canScrollRight ? 'text-primary hover:bg-primary/10' : 'text-gray-300 cursor-not-allowed'}`}
+            >
+              <FiChevronRight className="text-sm" />
+            </button>
+          </div>
+        </div>
+        
+        <div 
+          ref={tableScrollRef}
+          className="w-full overflow-x-auto rm-table-scrollbar"
+        >
+          <table className="w-full text-[12px]" style={{ minWidth: '1800px' }}>
+              <thead className="bg-primary text-secondary sticky top-0 z-20">
                 <tr>
                   {restore && (
                     <th className="py-2 px-1.5 sm:px-2 sticky left-0 z-30 bg-primary border-r border-primary/20">
@@ -771,31 +831,32 @@ const RmMaster = ({ isOpen }) => {
                     </th>
                   )}
                   {[
-                    "#",
-                    "SKU Code",
-                    "Item Name",
-                    "Description",
-                    "Item Category",
-                    "Item Color",
-                    "Qual. Insp.",
-                    "Location",
-                    "MOQ",
-                    "Panno",
-                    "SqInch Rate",
-                    "Rate",
-                    "Stock Uom",
-                    "Total Rate",
-                    "Attachment",
-                    "Status",
-                    "Created By",
-                    "Detail",
-                    "Action",
+                    { label: "ID", width: "50px", center: true },
+                    { label: "Attachment", width: null, center: true },
+                    { label: "SKU Code", width: "140px" },
+                    { label: "Item Name", width: null },
+                    { label: "Description", width: null },
+                    { label: "Item Category", width: null },
+                    { label: "Item Color", width: null },
+                    { label: "Qual. Insp.", width: null, center: true },
+                    { label: "Location", width: null },
+                    { label: "MOQ", width: null, center: true },
+                    { label: "Panno", width: null, center: true },
+                    { label: "SqInch Rate", width: null },
+                    { label: "Rate", width: null },
+                    { label: "Stock Uom", width: null, center: true },
+                    { label: "Total Rate", width: null },
+                    { label: "Status", width: null, center: true },
+                    { label: "Created By", width: null },
+                    { label: "Detail", width: null, center: true },
+                    { label: "Action", width: null, center: true },
                   ].map((th) => (
                     <th
-                      key={th}
-                      className="py-2 px-2 text-left font-semibold text-[12px] whitespace-nowrap border-r border-primary/20 last:border-r-0 uppercase tracking-wide"
+                      key={th.label}
+                      className={`py-2 px-2 font-semibold text-[12px] whitespace-nowrap border-r border-primary/20 last:border-r-0 uppercase tracking-wide ${th.center ? 'text-center' : 'text-left'}`}
+                      style={th.width ? { minWidth: th.width } : {}}
                     >
-                      {th}
+                      {th.label}
                     </th>
                   ))}
                 </tr>
@@ -827,13 +888,44 @@ const RmMaster = ({ isOpen }) => {
                             />
                           </td>
                         )}
-                        <td className="px-2 py-1.5 text-gray-500 font-medium border-r border-gray-100 text-center">
+                        <td className="px-2 py-1.5 text-gray-500 font-medium border-r border-gray-100 text-center" style={{ minWidth: '50px' }}>
                           {Number(pagination.currentPage - 1) *
                             Number(pagination.limit) +
                             i +
                             1}
                         </td>
-                        <td className="px-2 py-1.5 border-r border-gray-100">
+                        <td className="px-2 py-1.5 text-center border-r border-gray-100">
+                          {Array.isArray(rm.attachments) &&
+                          rm.attachments.length > 0 ? (
+                            <button
+                              onClick={() => setOpenAttachments(rm.attachments)}
+                              className="relative group"
+                            >
+                              <img 
+                                src={rm.attachments[0]?.fileUrl || rm.attachments[0]} 
+                                alt="Attachment"
+                                className="w-10 h-10 object-cover rounded border border-gray-200 hover:border-primary transition-all duration-200 hover:shadow-md"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'flex';
+                                }}
+                              />
+                              <div className="w-10 h-10 bg-primary/10 rounded border border-gray-200 items-center justify-center hidden">
+                                <FiEye className="text-primary text-sm" />
+                              </div>
+                              {rm.attachments.length > 1 && (
+                                <span className="absolute -top-1 -right-1 bg-primary text-secondary text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                                  {rm.attachments.length}
+                                </span>
+                              )}
+                            </button>
+                          ) : (
+                            <div className="w-10 h-10 bg-gray-100 rounded border border-gray-200 flex items-center justify-center mx-auto">
+                              <FiImage className="text-gray-400 text-sm" />
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-2 py-1.5 border-r border-gray-100" style={{ minWidth: '140px' }}>
                           <span className="font-semibold text-secondary bg-primary/10 px-2 py-1 rounded text-[11px]">
                             {rm.skuCode}
                           </span>
@@ -905,25 +997,6 @@ const RmMaster = ({ isOpen }) => {
                           <span className="font-bold text-green-600 whitespace-nowrap bg-green-50 px-2 py-1 rounded">
                             ₹{rm.totalRate?.toFixed(2) || "0"}
                           </span>
-                        </td>
-                        <td className="px-2 py-1.5 text-center border-r border-gray-100">
-                          {Array.isArray(rm.attachments) &&
-                          rm.attachments.length > 0 ? (
-                            <button
-                              onClick={() => setOpenAttachments(rm.attachments)}
-                              className="text-primary hover:text-primary/80 font-medium hover:underline transition-colors text-[11px]"
-                            >
-                              View ({rm.attachments.length})
-                            </button>
-                          ) : (
-                            <span className="text-gray-300">—</span>
-                          )}
-                          {openAttachments && (
-                            <AttachmentsModal2
-                              attachments={openAttachments}
-                              onClose={() => setOpenAttachments(null)}
-                            />
-                          )}
                         </td>
                         <td className="px-2 py-1.5 border-r border-gray-100">
                           <div className="flex items-center justify-center">
@@ -1041,8 +1114,8 @@ const RmMaster = ({ isOpen }) => {
                 )}
               </tbody>
             </table>
-          </div>
         </div>
+        
         {openAttachments && (
           <AttachmentsModal2
             attachments={openAttachments}

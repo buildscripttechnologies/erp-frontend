@@ -1,226 +1,194 @@
 @import "tailwindcss";
-
 @theme {
-  --color-primary: #d8b76a;   /* Indigo */
-  --color-secondary: #292926; /* Pink */
+    --color-primary: #d8b76a;
+    --color-secondary: #292926;
 }
 
-/* Custom Scrollbar Styling - Theme Matching */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+    width: 10px;
+    height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f5f5f5;
-  border-radius: 10px;
+    background: #f5f5f5;
+    border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #d8b76a 0%, #c5a25a 100%);
-  border-radius: 10px;
-  border: 2px solid #f5f5f5;
-  transition: all 0.3s ease;
+    background: linear-gradient(180deg, #d8b76a 0%, #c5a25a 100%);
+    border-radius: 10px;
+    border: 2px solid #f5f5f5;
+    transition: all 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #e6c580 0%, #d8b76a 100%);
-  box-shadow: 0 0 6px rgba(216, 183, 106, 0.4);
+    background: linear-gradient(180deg, #e6c580 0%, #d8b76a 100%);
+    box-shadow: 0 0 6px rgba(216, 183, 106, 0.4);
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background: linear-gradient(180deg, #c5a25a 0%, #b89550 100%);
+    background: linear-gradient(180deg, #c5a25a 0%, #b89550 100%);
 }
 
-/* Firefox scrollbar */
 * {
-  scrollbar-color: #d8b76a #f5f5f5;
-  scrollbar-width: thin;
+    scrollbar-color: #d8b76a #f5f5f5;
+    scrollbar-width: thin;
 }
 
 .scrollbar-hide {
-  -ms-overflow-style: none;
-  /* IE and Edge */
-  scrollbar-width: none;
-  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 @layer utilities {
-  /* Hide scrollbar for Chrome, Safari, and Opera */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Hide scrollbar for IE, Edge, and Firefox */
-  .no-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-  }
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 }
 
 .react-toggle {
-  transform: scale(0.5);
-  /* Adjust size here */
-  transform-origin: left;
+    transform: scale(0.5);
+    transform-origin: left;
 }
 
-
 .react-select__control {
-  border-color: "var(--color-primary)";
-  border-radius: 0.375rem;
-  /* rounded */
+    border-color: "var(--color-primary)";
+    border-radius: 0.375rem;
 }
 
 .react-select__option--is-focused {
-  background-color: "var(--color-primary)";
-  color: "var(--color-secondary)";
+    background-color: "var(--color-primary)";
+    color: "var(--color-secondary)";
 }
 
 .react-select__single-value {
-  color: "var(--color-secondary)";
+    color: "var(--color-secondary)";
 }
 
-
 .custom-select {
-  border: 1px solid "var(--color-primary)";
-  border-radius: 0.375rem;
-  /* Tailwind's rounded */
-  padding: 0.5rem;
-  background-color: white;
-  color: "var(--color-primary)";
-  cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
+    border: 1px solid "var(--color-primary)";
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    background-color: white;
+    color: "var(--color-primary)";
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .custom-select:focus {
-  outline: none;
-  border-color: "var(--color-primary)";
-  box-shadow: 0 0 0 2px "var(--color-primary)";
-  /* soft focus ring */
+    outline: none;
+    border-color: "var(--color-primary)";
+    box-shadow: 0 0 0 2px "var(--color-primary)";
 }
 
 .custom-select:hover {
-  border-color: "var(--color-primary)";
+    border-color: "var(--color-primary)";
 }
-
 
 .override-colors * {
-  color: black !important;
-  background-color: white !important;
+    color: black !important;
+    background-color: white !important;
 }
-
 
 @media print {
-  .no-print {
-    display: none !important;
-  }
+    .no-print {
+        display: none !important;
+    }
 }
 
-/* styles.css */
 .input {
-  @apply px-3 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary transition w-full;
+    @apply px-3 py-2 border border-primary rounded focus: outline-none focus: ring-2 focus: ring-primary transition w-full;
 }
 
-/* Custom Scrollbar for RM Master Table */
 .rm-table-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #d8b76a #f5ead4;
+    scrollbar-width: thin;
+    scrollbar-color: #d8b76a #e8e0d0;
 }
 
 .rm-table-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+    width: 10px;
+    height: 10px;
 }
 
 .rm-table-scrollbar::-webkit-scrollbar-track {
-  background: #f5ead4 !important;
-  border-radius: 10px;
-}
-
-.rm-table-scrollbar::-webkit-scrollbar-track:hover {
-  background: #f0e0c0 !important;
+    background: linear-gradient(to bottom, #f5f0e8 0%, #e8e0d0 100%);
+    border-radius: 10px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .rm-table-scrollbar::-webkit-scrollbar-thumb {
-  background: #d8b76a !important;
-  border-radius: 10px;
-  border: 2px solid #f5ead4 !important;
-  transition: background 0.2s ease, border-color 0.2s ease;
-  cursor: pointer;
-}
-
-.rm-table-scrollbar:hover::-webkit-scrollbar-thumb {
-  background: #c9a85a !important;
-  border-color: #f0e0c0 !important;
+    background: linear-gradient(135deg, #e5c87a 0%, #d8b76a 50%, #c9a85a 100%);
+    border-radius: 10px;
+    border: 2px solid #f5f0e8;
+    box-shadow: 0 2px 4px rgba(216, 183, 106, 0.3);
+    transition: all 0.2s ease;
 }
 
 .rm-table-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #c9a85a !important;
-  border-color: #f0e0c0 !important;
+    background: linear-gradient(135deg, #d8b76a 0%, #c9a85a 50%, #b8954f 100%);
+    box-shadow: 0 3px 6px rgba(216, 183, 106, 0.4);
 }
 
 .rm-table-scrollbar::-webkit-scrollbar-thumb:active {
-  background: #b89a4a !important;
-  border-color: #e8d4a8 !important;
-}
-
-.rm-table-scrollbar::-webkit-scrollbar-thumb:focus {
-  background: #c9a85a !important;
-  border-color: #f0e0c0 !important;
+    background: #b8954f;
+    box-shadow: 0 1px 2px rgba(216, 183, 106, 0.3);
 }
 
 .rm-table-scrollbar::-webkit-scrollbar-corner {
-  background: #f5ead4 !important;
+    background: #f5f0e8;
 }
 
-/* Custom Scrollbar for Modals */
 .rm-modal-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #d8b76a #f5ead4;
+    scrollbar-width: thin;
+    scrollbar-color: #d8b76a #f5ead4;
 }
 
 .rm-modal-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+    width: 8px;
+    height: 8px;
 }
 
 .rm-modal-scrollbar::-webkit-scrollbar-track {
-  background: #f5ead4 !important;
-  border-radius: 10px;
+    background: #f5ead4 !important;
+    border-radius: 10px;
 }
 
 .rm-modal-scrollbar::-webkit-scrollbar-track:hover {
-  background: #f0e0c0 !important;
+    background: #f0e0c0 !important;
 }
 
 .rm-modal-scrollbar::-webkit-scrollbar-thumb {
-  background: #d8b76a !important;
-  border-radius: 10px;
-  border: 2px solid #f5ead4 !important;
-  transition: background 0.2s ease, border-color 0.2s ease;
-  cursor: pointer;
+    background: #d8b76a !important;
+    border-radius: 10px;
+    border: 2px solid #f5ead4 !important;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
 }
 
 .rm-modal-scrollbar:hover::-webkit-scrollbar-thumb {
-  background: #c9a85a !important;
-  border-color: #f0e0c0 !important;
+    background: #c9a85a !important;
+    border-color: #f0e0c0 !important;
 }
 
 .rm-modal-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #c9a85a !important;
-  border-color: #f0e0c0 !important;
+    background: #c9a85a !important;
+    border-color: #f0e0c0 !important;
 }
 
 .rm-modal-scrollbar::-webkit-scrollbar-thumb:active {
-  background: #b89a4a !important;
-  border-color: #e8d4a8 !important;
+    background: #b89a4a !important;
+    border-color: #e8d4a8 !important;
 }
 
 .rm-modal-scrollbar::-webkit-scrollbar-thumb:focus {
-  background: #c9a85a !important;
-  border-color: #f0e0c0 !important;
+    background: #c9a85a !important;
+    border-color: #f0e0c0 !important;
 }
 
 .rm-modal-scrollbar::-webkit-scrollbar-corner {
-  background: #f5ead4 !important;
+    background: #f5ead4 !important;
 }
