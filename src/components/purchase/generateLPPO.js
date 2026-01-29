@@ -205,10 +205,10 @@ export const generateLPPO = async (po, letterpadUrl, companyDetails) => {
     (doc.lastAutoTable && doc.lastAutoTable.finalY) || CONTENT_TOP + 35;
 
   // Estimate how much vertical space GST + Totals will take
-  const neededHeight = 70; // rough estimate (GST table + totals + spacing)
+  const neededHeight = 45; // rough estimate (GST table + totals + spacing)
 
   // ✅ Check if there is enough space left on this page
-  if (finalY + neededHeight > pageHeight - 40) {
+  if (finalY + neededHeight > pageHeight - 25) {
     doc.addPage();
     addLetterPad(false); // same design as inner pages
     finalY = CONTENT_TOP; // reset position for new page
@@ -327,10 +327,10 @@ export const generateLPPO = async (po, letterpadUrl, companyDetails) => {
 
   // ---------- 3.5) SIGNATURE BLOCK (only on second-last page) ----------
   let signatureHeight = 35; // estimated block height
-  let signatureStartY = Math.max(doc.lastAutoTable.finalY, leftTableY) + 30;
+  let signatureStartY = Math.max(doc.lastAutoTable.finalY, leftTableY);
 
   // check if it fits before page bottom
-  if (signatureStartY + signatureHeight > pageHeight - 20) {
+  if (signatureStartY + signatureHeight > pageHeight - 25) {
     // not enough space → add a new page (second-last)
     doc.addPage();
     addLetterPad(false);

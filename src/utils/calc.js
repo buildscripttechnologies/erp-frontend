@@ -15,7 +15,7 @@ export const calculateRate = (comp, qtyOverride = null, categoryData) => {
     const sqInchRate = Number(comp.sqInchRate) || 0;
 
     return height && width && qty && sqInchRate
-      ? Number((height * width * qty * sqInchRate).toFixed(4))
+      ? Number((height * width * qty * sqInchRate).toFixed(2))
       : null;
   }
 
@@ -26,7 +26,7 @@ export const calculateRate = (comp, qtyOverride = null, categoryData) => {
 
     if (baseQty && baseRate && qty) {
       const perPieceRate = baseRate / baseQty;
-      return Number((perPieceRate * qty).toFixed(4));
+      return Number((perPieceRate * qty).toFixed(2));
     }
     return null;
   }
@@ -40,7 +40,7 @@ export const calculateRate = (comp, qtyOverride = null, categoryData) => {
     if (!grams || !baseQtyGrams || !comp.itemRate) return null;
 
     // Rate = proportion of grams relative to baseQty in grams × itemRate
-    return Number(((grams / baseQtyGrams) * comp.itemRate).toFixed(4));
+    return Number(((grams / baseQtyGrams) * comp.itemRate).toFixed(2));
   }
 
   if (zipper.includes(category)) {
@@ -63,11 +63,11 @@ export const calculateRate = (comp, qtyOverride = null, categoryData) => {
     if (!inches || !baseQtyInches || !comp.itemRate) return null;
 
     const perInchRate = comp.itemRate / baseQtyInches;
-    const inchesRate = Number((perInchRate * inches).toFixed(4));
+    const inchesRate = Number((perInchRate * inches).toFixed(2));
 
     console.log("pwe rate", perInchRate, " inches rate", inchesRate);
 
-    return Number((inchesRate * qty).toFixed(4));
+    return Number((inchesRate * qty).toFixed(2));
   }
 
   // fallback

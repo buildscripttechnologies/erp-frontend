@@ -208,14 +208,14 @@ export const generateSample = async (SampleData, letterpadUrl) => {
       let qtyDisplay = "N/A";
 
       if (item.categoryType === "G x Q") {
-        weightDisplay = `${item.weight.toFixed(2)} kg`;
+        weightDisplay = `${item.weight.toFixed(3)} kg`;
       }
 
       if (
         item.categoryType === "W x Q" ||
         item.categoryType === "H x W x Q"
       ) {
-        qtyDisplay = `${Number(item.qty).toFixed(2)} m`;
+        qtyDisplay = `${Number(item.qty).toFixed(3)} m`;
       }
 
       if (item.categoryType === "Q") {

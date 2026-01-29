@@ -77,9 +77,8 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
 
   const materialOptions = [
     ...rms.map((rm) => ({
-      label: `${rm.skuCode}: ${rm.itemName}${
-        rm.description ? " - " + rm.description : ""
-      }`,
+      label: `${rm.skuCode}: ${rm.itemName}${rm.description ? " - " + rm.description : ""
+        }`,
       value: rm.id,
       type: "RawMaterial",
       sqInchRate: rm.sqInchRate || null,
@@ -89,9 +88,8 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
       itemName: rm.itemName,
     })),
     ...sfgs.map((sfg) => ({
-      label: `${sfg.skuCode}: ${sfg.itemName}${
-        sfg.description ? " - " + sfg.description : ""
-      }`,
+      label: `${sfg.skuCode}: ${sfg.itemName}${sfg.description ? " - " + sfg.description : ""
+        }`,
       value: sfg.id,
       type: "SFG",
       sqInchRate: sfg.sqInchRate || 1,
@@ -112,9 +110,8 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
     //   type: "SAMPLE",
     // })),
     ...fgs.map((fg) => ({
-      label: `${fg.skuCode}: ${fg.itemName}${
-        fg.description ? " - " + fg.description : ""
-      }`,
+      label: `${fg.skuCode}: ${fg.itemName}${fg.description ? " - " + fg.description : ""
+        }`,
       value: fg.id,
       type: "FG",
       fg: fg,
@@ -168,16 +165,19 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
     const totalB2BRate = totalR + (totalR * (overheadPercent + B2B)) / 100;
     const totalD2CRate = totalR + (totalR * (overheadPercent + D2C)) / 100;
 
+    const round0 = (n) => Math.round(Number(n));
+
     setForm((prev) => ({
       ...prev,
       ...updatedForm,
-      unitRate: unitRate.toFixed(2),
-      unitB2BRate: unitB2BRate.toFixed(2),
-      unitD2CRate: unitD2CRate.toFixed(2),
-      totalRate: totalRate.toFixed(2),
-      totalB2BRate: totalB2BRate.toFixed(2),
-      totalD2CRate: totalD2CRate.toFixed(2),
+      unitRate: round0(unitRate),
+      unitB2BRate: round0(unitB2BRate),
+      unitD2CRate: round0(unitD2CRate),
+      totalRate: round0(totalRate),
+      totalB2BRate: round0(totalB2BRate),
+      totalD2CRate: round0(totalD2CRate),
     }));
+
   };
 
   const handleFormChange = (e) => {
@@ -473,9 +473,8 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                     isPrint: item.isPrint,
                     panno: item.panno || 0,
                     // depth: item.depth || "",
-                    label: `${item.skuCode}: ${item.itemName}${
-                      item.description ? ` - ${item.description}` : ""
-                    }`,
+                    label: `${item.skuCode}: ${item.itemName}${item.description ? ` - ${item.description}` : ""
+                      }`,
                   }));
 
                   setProductDetails(enrichedDetails);
@@ -748,11 +747,10 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                   className="border border-primary rounded p-3 flex flex-col gap-2"
                 >
                   <div
-                    className={`grid grid-cols-1 sm:grid-cols-2 ${
-                      comp.category == "plastic" || comp.category == "non woven"
+                    className={`grid grid-cols-1 sm:grid-cols-2 ${comp.category == "plastic" || comp.category == "non woven"
                         ? "md:grid-cols-8"
                         : "md:grid-cols-7"
-                    } md:grid-cols-8 gap-3`}
+                      } md:grid-cols-8 gap-3`}
                   >
                     <div className="flex flex-col md:col-span-2">
                       <label className="text-[12px] font-semibold mb-[2px] text-black">
@@ -843,12 +841,12 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                             {field === "partName"
                               ? "Part Name"
                               : field === "qty"
-                              ? "Qty"
-                              : field === "grams"
-                              ? "Weight (gm)"
-                              : field === "rate"
-                              ? "Rate"
-                              : `${field} (Inch)`}
+                                ? "Qty"
+                                : field === "grams"
+                                  ? "Weight (gm)"
+                                  : field === "rate"
+                                    ? "Rate"
+                                    : `${field} (Inch)`}
                           </label>
                           <input
                             type={
@@ -858,10 +856,10 @@ const UpdateSampleModal = ({ onClose, onSuccess, sampleData }) => {
                               field === "partName"
                                 ? "Item Part Name"
                                 : field === "grams"
-                                ? "Weight in grams"
-                                : field === "qty"
-                                ? "qty"
-                                : `${field}`
+                                  ? "Weight in grams"
+                                  : field === "qty"
+                                    ? "qty"
+                                    : `${field}`
                             }
                             className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                             value={comp[field] || ""}
