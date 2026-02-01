@@ -55,6 +55,7 @@ const RmMaster = ({ isOpen }) => {
   const [selectedRMs, setSelectedRMs] = useState([]);
   const [restoreId, setRestoreId] = useState();
   const [deleteId, setDeleteId] = useState();
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: null, type: 'soft', sku: '', name: '' });
   const [detailData, setDetailData] = useState(null);
   const [sortOrder, setSortOrder] = useState("desc");
 
@@ -243,9 +244,13 @@ const RmMaster = ({ isOpen }) => {
     }
   }, [pagination.currentPage, showBulkPanel, pagination.limit, restore]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this raw material?"))
-      return;
+  const handleDelete = async (id, sku = '', name = '') => {
+    setDeleteModal({ open: true, id, type: 'soft', sku, name });
+  };
+
+  const confirmDelete = async () => {
+    const id = deleteModal.id;
+    setDeleteModal({ open: false, id: null, type: 'soft', sku: '', name: '' });
     try {
       setDeleteId(id);
       const res = await axios.delete(`/rms/delete-rm/${id}`);
@@ -261,13 +266,13 @@ const RmMaster = ({ isOpen }) => {
       setDeleteId("");
     }
   };
-  const handlePermanentDelete = async (id = "") => {
-    if (
-      !window.confirm(
-        "Are you sure you want to Permanently Delete this raw materials?"
-      )
-    )
-      return;
+  const handlePermanentDelete = async (id = "", sku = '', name = '') => {
+    setDeleteModal({ open: true, id, type: 'permanent', sku, name });
+  };
+
+  const confirmPermanentDelete = async () => {
+    const id = deleteModal.id;
+    setDeleteModal({ open: false, id: null, type: 'soft' });
     try {
       setDeleteId(id);
       let payload;
@@ -699,7 +704,7 @@ const RmMaster = ({ isOpen }) => {
                     </button>
                     {hasPermission("RawMaterial", "delete") && !restore && (
                       <button
-                        onClick={() => handleDelete(rm.id)}
+                        onClick={() => handleDelete(rm.id, rm.skuCode, rm.itemName)}
                         className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                       >
                         <FiTrash2 className="text-lg" />
@@ -1111,7 +1116,7 @@ const RmMaster = ({ isOpen }) => {
                                 <PulseLoader size={4} color="#d8b76a" />
                               ) : (
                                 <button
-                                  onClick={() => handleDelete(rm.id)}
+                                  onClick={() => handleDelete(rm.id, rm.skuCode, rm.itemName)}
                                   className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors border border-red-200"
                                 >
                                   <FiTrash2 className="text-sm" />
@@ -1121,7 +1126,7 @@ const RmMaster = ({ isOpen }) => {
                               <PulseLoader size={4} color="#d8b76a" />
                             ) : (
                               <button
-                                onClick={() => handlePermanentDelete(rm.id)}
+                                onClick={() => handlePermanentDelete(rm.id, rm.skuCode, rm.itemName)}
                                 className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors border border-red-200"
                               >
                                 <FiTrash2 className="text-base" />
@@ -1404,6 +1409,71 @@ const RmMaster = ({ isOpen }) => {
                     <span>Download</span>
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.open && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+            {/* Modal Header */}
+            <div className={`px-6 py-4 ${deleteModal.type === 'permanent' ? 'bg-red-500' : 'bg-red-400'}`}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                  <FiTrash2 className="text-white text-xl" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">
+                    {deleteModal.type === 'permanent' ? 'Permanent Delete' : 'Delete Raw Material'}
+                  </h3>
+                  <p className="text-white/70 text-xs">This action cannot be undone</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="px-6 py-5">
+              {(deleteModal.sku || deleteModal.name) && (
+                <div className="mb-4 p-3 bg-gray-100 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-500">SKU:</span>
+                    <span className="font-semibold text-gray-800">{deleteModal.sku || '-'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm mt-1">
+                    <span className="text-gray-500">Name:</span>
+                    <span className="font-semibold text-gray-800">{deleteModal.name || '-'}</span>
+                  </div>
+                </div>
+              )}
+              <p className="text-gray-600 text-sm">
+                {deleteModal.type === 'permanent' 
+                  ? 'Are you sure you want to permanently delete this raw material? This will remove all associated data and cannot be recovered.'
+                  : 'Are you sure you want to delete this raw material? You can restore it later from the trash.'
+                }
+              </p>
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-gray-50 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setDeleteModal({ open: false, id: null, type: 'soft', sku: '', name: '' })}
+                className="px-5 py-2.5 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteModal.type === 'permanent' ? confirmPermanentDelete() : confirmDelete()}
+                className={`px-5 py-2.5 text-white font-semibold rounded-lg shadow-md transition-all duration-200 flex items-center gap-2 ${
+                  deleteModal.type === 'permanent' 
+                    ? 'bg-red-500 hover:bg-red-600' 
+                    : 'bg-red-400 hover:bg-red-500'
+                }`}
+              >
+                <FiTrash2 className="text-base" />
+                {deleteModal.type === 'permanent' ? 'Delete Permanently' : 'Delete'}
               </button>
             </div>
           </div>
