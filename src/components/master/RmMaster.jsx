@@ -93,7 +93,7 @@ const RmMaster = ({ isOpen }) => {
     }
   }, [rawMaterials]);
 
-  ScrollLock(editData != null || showBulkPanel || openAttachments != null);
+  ScrollLock(editData != null || showBulkPanel || openAttachments != null || showExportOptions);
   useEffect(() => {
     const fetchUOMs = async () => {
       try {
@@ -590,7 +590,7 @@ const RmMaster = ({ isOpen }) => {
     </div>
     <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:flex-shrink-0">
       <button
-        onClick={handleExport}
+        onClick={() => setShowExportOptions(true)}
         className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-primary text-secondary font-semibold rounded-lg shadow hover:bg-primary/90 transition-all duration-150 text-xs sm:text-sm whitespace-nowrap"
       >
         <FiDownload className="text-sm sm:text-base" /> Export
@@ -1304,6 +1304,126 @@ const RmMaster = ({ isOpen }) => {
                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-secondary font-medium rounded-lg transition-colors"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showExportOptions && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <FiDownload className="text-primary text-lg" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-secondary">Export Data</h2>
+                    <p className="text-xs text-gray-500">Choose export options</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowExportOptions(false)}
+                  className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                >
+                  <FiX className="text-gray-500 text-lg" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-secondary mb-3">
+                  Select Data Range
+                </label>
+                <div className="space-y-2">
+                  {[
+                    { value: "current", label: "This Page", desc: `Export ${rawMaterials.length} items from current page` },
+                    { value: "filtered", label: "Filtered Data", desc: "Export data based on current search/filter" },
+                    { value: "all", label: "All Data", desc: `Export all ${pagination.totalResults} items` },
+                  ].map((option) => (
+                    <label
+                      key={option.value}
+                      className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                        exportScope === option.value
+                          ? "border-primary bg-primary/5"
+                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="exportScope"
+                        value={option.value}
+                        checked={exportScope === option.value}
+                        onChange={(e) => setExportScope(e.target.value)}
+                        className="mt-1 accent-primary"
+                      />
+                      <div>
+                        <p className="font-medium text-secondary">{option.label}</p>
+                        <p className="text-xs text-gray-500">{option.desc}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-secondary mb-3">
+                  Export Format
+                </label>
+                <div className="flex gap-3">
+                  {[
+                    { value: "excel", label: "Excel", icon: "📊", color: "green" },
+                    { value: "pdf", label: "PDF", icon: "📄", color: "red" },
+                  ].map((format) => (
+                    <button
+                      key={format.value}
+                      onClick={() => setExportFormat(format.value)}
+                      className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border-2 font-medium transition-all duration-200 ${
+                        exportFormat === format.value
+                          ? format.value === "excel"
+                            ? "border-green-500 bg-green-50 text-green-700"
+                            : "border-red-500 bg-red-50 text-red-700"
+                          : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      <span className="text-xl">{format.icon}</span>
+                      <span>{format.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setShowExportOptions(false)}
+                className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleExport();
+                  setShowExportOptions(false);
+                }}
+                disabled={downloading}
+                className="px-6 py-2 bg-primary hover:bg-primary/90 text-secondary font-semibold rounded-lg shadow-md transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {downloading ? (
+                  <>
+                    <ClipLoader size={16} color="#292926" />
+                    <span>Downloading...</span>
+                  </>
+                ) : (
+                  <>
+                    <FiDownload className="text-base" />
+                    <span>Download</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
