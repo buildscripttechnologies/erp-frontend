@@ -1091,8 +1091,6 @@ const RmMaster = ({ isOpen }) => {
                               <button
                                 onClick={() => setEditData(rm)}
                                 className="p-2 text-primary hover:bg-primary/10 rounded-md transition-colors border border-primary/20"
-                                data-tooltip-id="statusTip"
-                                data-tooltip-content="Edit"
                               >
                                 <FiEdit className="text-sm" />
                               </button>
@@ -1102,8 +1100,6 @@ const RmMaster = ({ isOpen }) => {
                               <button
                                 onClick={() => handleRestore(rm.id)}
                                 className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors border border-green-200"
-                                data-tooltip-id="statusTip"
-                                data-tooltip-content="Restore"
                               >
                                 <TbRestore className="text-sm" />
                               </button>
@@ -1117,8 +1113,6 @@ const RmMaster = ({ isOpen }) => {
                                 <button
                                   onClick={() => handleDelete(rm.id)}
                                   className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors border border-red-200"
-                                  data-tooltip-id="statusTip"
-                                  data-tooltip-content="Delete"
                                 >
                                   <FiTrash2 className="text-sm" />
                                 </button>
@@ -1129,24 +1123,10 @@ const RmMaster = ({ isOpen }) => {
                               <button
                                 onClick={() => handlePermanentDelete(rm.id)}
                                 className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors border border-red-200"
-                                data-tooltip-id="statusTip"
-                                data-tooltip-content="Permanent Delete"
                               >
                                 <FiTrash2 className="text-base" />
                               </button>
                             )}
-                            <Tooltip
-                              id="statusTip"
-                              place="top"
-                              style={{
-                                backgroundColor: "#292926",
-                                color: "#d8b76a",
-                                fontSize: "11px",
-                                fontWeight: "bold",
-                                borderRadius: "4px",
-                                padding: "4px 8px",
-                              }}
-                            />
                           </div>
                         </td>
                       </tr>
