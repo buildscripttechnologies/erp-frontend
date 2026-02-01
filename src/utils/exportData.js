@@ -212,7 +212,7 @@ export const exportFGToPDF = async(fg) => {
         // 🔥 FIX 1: Set the ROW height, not the CELL height
         didParseCell: (data) => {
             // Check for the 'Product Image' column (index 8) AND if it has the image data
-            if (data.column.index === 8 && data.cell.raw ? .base64) {
+            if (data.column.index === 8 && data.cell.raw?.base64) {
                 const { width, height } = data.cell.raw;
 
                 // Calculate the scale factor to fit within max dimension
@@ -235,7 +235,7 @@ export const exportFGToPDF = async(fg) => {
 
         // 🔥 FIX 2: Use final calculated dimensions for consistent centering
         didDrawCell: (data) => {
-            if (data.column.index === 8 && data.cell.raw ? .base64) {
+            if (data.column.index === 8 && data.cell.raw?.base64) {
                 const { base64, width, height, format } = data.cell.raw;
 
                 // Recalculate the scale and final dimensions (must be the same as didParseCell)
