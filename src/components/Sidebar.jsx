@@ -424,7 +424,7 @@ export function Sidebar({ isOpen, setIsOpen, onCollapseChange, isMobile }) {
       <div className={sidebarCollapsed && !isHovering ? "w-full" : ""}>
         <div
           className={`flex items-center gap-3 px-2 py-2.5 hover:bg-primary/5 rounded-lg cursor-pointer text-sm transition-all duration-200 ${
-            sidebarCollapsed && !isHovering ? "flex-col justify-center items-center w-full" : ""
+            sidebarCollapsed && !isHovering && !isMobile ? "flex-col justify-center items-center w-full" : ""
           }`}
           onClick={() => {
             if (subMenu) {
@@ -440,9 +440,9 @@ export function Sidebar({ isOpen, setIsOpen, onCollapseChange, isMobile }) {
           title={sidebarCollapsed && !isHovering ? label : ""}
         >
 
-          {!(isMobile && isOpen) && Icon && <Icon className="text-primary flex-shrink-0 text-base" />}
+          {Icon && <Icon className="text-primary flex-shrink-0 text-xl" />}
           {(isHovering || !sidebarCollapsed || (isMobile && isOpen)) && (
-            <span className="flex items-center gap-1.5 flex-1 text-gray-700">
+            <span className="flex items-center gap-1.5 flex-1 text-gray-700 text-left">
               {label}
               {subMenu && (openMenus[label] ? <FaAngleUp size={12} /> : <FaAngleDown size={12} />)}
             </span>
@@ -493,10 +493,10 @@ export function Sidebar({ isOpen, setIsOpen, onCollapseChange, isMobile }) {
       onMouseLeave={handleMouseLeave}
     >
 
-      <div className="relative flex h-16 bg-gradient-to-r from-primary to-primary/80 items-center px-4 flex-shrink-0 border-b border-primary/30">
+      <div className="relative flex h-16 bg-gradient-to-r from-primary to-primary/80 items-center justify-center px-4 flex-shrink-0 border-b border-primary/30">
 
         {!isMobile && sidebarCollapsed && !isHovering && (
-          <img src="/images/fav4.png" alt="smartflow360 icon" className="w-full h-6 object-contain" />
+          <img src="/images/fav4.png" alt="smartflow360 icon" className="h-6 object-contain" />
         )}
 
         {(isMobile || isHovering || !sidebarCollapsed) && (
@@ -533,7 +533,7 @@ export function Sidebar({ isOpen, setIsOpen, onCollapseChange, isMobile }) {
       </nav>
 
       <div className="flex flex-col flex-shrink-0 w-full border-t border-gray-200 bg-white">
-        <div className={`py-4 px-3 flex items-center justify-center`}>
+        <div className={`py-4 px-3 flex items-center ${sidebarCollapsed && !isHovering ? 'justify-center' : 'justify-start'}`}>
           <div className={`flex items-center gap-3`}>
             <FaUserCircle className="text-3xl text-primary flex-shrink-0" />
             {(isHovering || !sidebarCollapsed) && (
@@ -548,7 +548,7 @@ export function Sidebar({ isOpen, setIsOpen, onCollapseChange, isMobile }) {
         </div>
         <button
           onClick={logout}
-          className={`flex items-center justify-center border-t border-gray-200 text-lg gap-3 text-primary hover:bg-red-50 py-4 px-3 cursor-pointer transition-all w-full font-medium`}
+          className={`flex items-center ${sidebarCollapsed && !isHovering ? 'justify-center' : 'justify-start'} border-t border-gray-200 text-lg gap-3 text-primary hover:bg-red-50 py-4 px-3 cursor-pointer transition-all w-full font-medium`}
           title={sidebarCollapsed && !isHovering ? "Logout" : ""}
         >
           <FiLogOut size={18} /> {(isHovering || !sidebarCollapsed) && "Logout"}

@@ -63,7 +63,6 @@ const RmMaster = ({ isOpen }) => {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  // Handle table scroll with buttons
   const handleTableScroll = (direction) => {
     if (!tableScrollRef.current) return;
     const scrollAmount = 400;
@@ -496,20 +495,23 @@ const RmMaster = ({ isOpen }) => {
 
 
   return (
-    <div className="p-2 sm:p-4 lg:p-6 max-w-[100vw] mx-auto">
+    <div className="p-2 sm:p-4 lg:p-6 max-w-[100vw] mx-auto h-full flex flex-col">
 
-      <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg sm:rounded-xl border border-primary/20 p-2 sm:p-3 lg:p-4 mb-2 sm:mb-3 lg:mb-4">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2 lg:gap-4">
+      <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg sm:rounded-xl border border-primary/20 px-2 sm:px-3 py-1.5 sm:py-2 mb-2 sm:mb-3 lg:mb-4 flex-shrink-0">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2 lg:gap-3">
           <div className="flex-1 w-full">
-            <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-              <div className="w-1 h-5 sm:h-6 md:h-8 bg-primary rounded-full"></div>
-              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 leading-tight">
+            <div className="flex items-center gap-2 sm:gap-2">
+              <div className="w-1 h-5 sm:h-6 bg-primary rounded-full"></div>
+              <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-gray-800 leading-tight">
                 Raw Materials Master
               </h1>
+              <span className="text-primary text-[10px] sm:text-xs font-semibold">
+                ({pagination.totalResults})
+              </span>
             </div>
             {restore && (
-              <div className="mt-3 sm:mt-4 ml-3 sm:ml-4 flex flex-wrap items-center gap-2 sm:gap-3">
-                <div className="flex items-center gap-1.5 sm:gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
+              <div className="mt-2 sm:mt-3 ml-3 sm:ml-4 flex flex-wrap items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-1.5 sm:gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2 sm:px-3 py-1 sm:py-1.5">
                   <TbRestore className="text-amber-600 text-sm sm:text-base" />
                   <span className="text-xs sm:text-sm font-medium text-amber-800">
                     Restore Mode Active
@@ -575,7 +577,7 @@ const RmMaster = ({ isOpen }) => {
         </div>
       </div>
 
-<div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden mt-2 mb-4">
+<div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden mt-2 mb-4 flex-shrink-0">
   <div className="flex flex-col lg:flex-row lg:items-center gap-3 p-3 sm:p-4">
     <div className="w-full lg:flex-1 lg:min-w-0">
       <input
@@ -730,58 +732,122 @@ const RmMaster = ({ isOpen }) => {
                   </div>
                 </div>
 
-                <div className="p-4">
-                  <div className="mb-4">
-                    <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide mb-1">Product Name</p>
-                    <p className="text-base font-bold text-secondary leading-tight">{rm.itemName}</p>
-                  </div>
+                <div className="p-3">
+                  <div className="flex gap-3 mb-3">
 
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Category</p>
-                      {rm.itemCategory ? (
-                        <span className="inline-block px-2.5 py-1 text-xs font-bold bg-primary text-secondary rounded">
-                          {rm.itemCategory}
-                        </span>
+                    <div className="flex-shrink-0">
+                      {Array.isArray(rm.attachments) && rm.attachments.length > 0 ? (
+                        <button
+                          onClick={() => setOpenAttachments(rm.attachments)}
+                          className="relative group"
+                        >
+                          <img 
+                            src={rm.attachments[0]?.fileUrl || rm.attachments[0]} 
+                            alt="Attachment"
+                            className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200 hover:border-primary transition-all duration-200 hover:shadow-md"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                          <div className="w-16 h-16 bg-primary/10 rounded-lg border-2 border-gray-200 items-center justify-center hidden">
+                            <FiEye className="text-primary text-lg" />
+                          </div>
+                          {rm.attachments.length > 1 && (
+                            <span className="absolute -top-1 -right-1 bg-primary text-secondary text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow">
+                              {rm.attachments.length}
+                            </span>
+                          )}
+                        </button>
                       ) : (
-                        <span className="text-gray-400 text-sm">—</span>
+                        <div className="w-16 h-16 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+                          <FiImage className="text-gray-400 text-xl" />
+                        </div>
                       )}
                     </div>
 
-                    <div className="space-y-1">
-                      <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Color</p>
-                      <p className="text-sm font-semibold text-secondary">{rm.itemColor || "—"}</p>
-                    </div>
 
-                    <div className="space-y-1">
-                      <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Rate</p>
-                      <p className="text-base font-bold text-secondary">₹{rm.rate || "0"}</p>
-                    </div>
-
-                    <div className="space-y-1">
-                      <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Total Rate</p>
-                      <p className="text-base font-bold text-green-600">₹{rm.totalRate?.toFixed(2) || "0.00"}</p>
-                    </div>
-
-                    <div className="space-y-1">
-                      <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Stock UOM</p>
-                      <p className="text-sm font-semibold text-secondary">{rm.stockUOM || "—"}</p>
-                    </div>
-
-                    <div className="space-y-1">
-                      <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Status</p>
-                      <Toggle
-                        checked={rm.status === "Active"}
-                        onChange={() => handleToggleStatus(rm.id, rm.status)}
-                      />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">Product Name</p>
+                      <p className="text-sm font-bold text-secondary leading-tight">{rm.itemName}</p>
+                      {rm.description && (
+                        <div className="mt-1.5">
+                          <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">Description</p>
+                          <p className="text-xs font-medium text-green-600">{rm.description}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-3 gap-x-2 gap-y-2 text-xs">
+                    <div>
+                      <p className="text-[9px] text-gray-400 uppercase">Category</p>
+                      {rm.itemCategory ? (
+                        <span className="inline-block px-1.5 py-0.5 text-[10px] font-bold bg-primary text-secondary rounded">
+                          {rm.itemCategory}
+                        </span>
+                      ) : <span className="text-gray-400">—</span>}
+                    </div>
 
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                    <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">Created By</p>
-                    <span className="text-sm font-semibold text-secondary bg-gray-100 px-3 py-1 rounded">{rm.createdByName || "—"}</span>
+                    <div>
+                      <p className="text-[9px] text-gray-400 uppercase">Color</p>
+                      <p className="font-semibold text-secondary">{rm.itemColor || "—"}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-[9px] text-gray-400 uppercase">Location</p>
+                      <p className="font-semibold text-secondary truncate">{rm.location || "—"}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-[9px] text-gray-400 uppercase">MOQ</p>
+                      <p className="font-semibold text-secondary">{rm.moq || "—"}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-[9px] text-gray-400 uppercase">Panno</p>
+                      <p className="font-semibold text-secondary">{rm.panno || "0"}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-[9px] text-gray-400 uppercase">Stock UOM</p>
+                      <p className="font-semibold text-secondary">{rm.stockUOM || "—"}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-[9px] text-gray-400 uppercase">SqInch Rate</p>
+                      <p className="font-bold text-secondary">₹{(Number(rm.sqInchRate) || 0).toFixed(4)}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-[9px] text-gray-400 uppercase">Rate</p>
+                      <p className="font-bold text-secondary">₹{rm.rate || "0"}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-[9px] text-gray-400 uppercase">Total Rate</p>
+                      <p className="font-bold text-green-600">₹{rm.totalRate?.toFixed(2) || "0.00"}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-100">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[9px] text-gray-400 uppercase">Qual. Insp.</span>
+                        <Toggle
+                          checked={rm.qualityInspectionNeeded}
+                          onChange={() => handleToggleQualityInspection(rm.id, rm.qualityInspectionNeeded)}
+                        />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[9px] text-gray-400 uppercase">Status</span>
+                        <Toggle
+                          checked={rm.status === "Active"}
+                          onChange={() => handleToggleStatus(rm.id, rm.status)}
+                        />
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-semibold text-secondary bg-gray-100 px-2 py-0.5 rounded">{rm.createdByName || "—"}</span>
                   </div>
                 </div>
               </div>
@@ -790,7 +856,7 @@ const RmMaster = ({ isOpen }) => {
         </div>
       </div>
 
-      <div className="hidden lg:block bg-white rounded-xl shadow-xl border border-gray-200/60 overflow-hidden">
+      <div className="hidden lg:block bg-white rounded-xl shadow-xl border border-gray-200/60 overflow-hidden" style={{ height: 'calc(100vh - 340px)' }}>
         <div className="flex items-center justify-end gap-2 px-3 py-1 bg-gray-50/50 border-b border-gray-100">
           <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mr-auto">
             {canScrollRight ? '← Scroll →' : ''}
@@ -815,7 +881,8 @@ const RmMaster = ({ isOpen }) => {
         
         <div 
           ref={tableScrollRef}
-          className="w-full overflow-x-auto rm-table-scrollbar"
+          className="w-full rm-table-scrollbar overflow-auto"
+          style={{ height: 'calc(100% - 32px)' }}
         >
           <table className="w-full text-[12px]" style={{ minWidth: '1800px' }}>
               <thead className="bg-primary text-secondary sticky top-0 z-20">
@@ -863,14 +930,10 @@ const RmMaster = ({ isOpen }) => {
               </thead>
               <tbody className="bg-white">
                 {loading ? (
-                  <tr>
-                    <td colSpan={restore ? 21 : 20} className="p-8">
-                      <TableSkeleton
-                        rows={pagination.limit}
-                        columns={restore ? Array(21).fill({}) : Array(20).fill({})}
-                      />
-                    </td>
-                  </tr>
+                  <TableSkeleton
+                    rows={pagination.limit}
+                    columns={restore ? Array(21).fill({}) : Array(20).fill({})}
+                  />
                 ) : (
                   <>
                     {rawMaterials.map((rm, i) => (
@@ -1115,16 +1178,16 @@ const RmMaster = ({ isOpen }) => {
               </tbody>
             </table>
         </div>
-        
-        {openAttachments && (
-          <AttachmentsModal2
-            attachments={openAttachments}
-            onClose={() => setOpenAttachments(null)}
-          />
-        )}
       </div>
 
-      <div className="mt-6">
+      {openAttachments && (
+        <AttachmentsModal2
+          attachments={openAttachments}
+          onClose={() => setOpenAttachments(null)}
+        />
+      )}
+
+      <div className="mt-4 flex-shrink-0">
         <PaginationControls
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}
