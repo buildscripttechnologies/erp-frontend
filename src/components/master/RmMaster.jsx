@@ -18,7 +18,6 @@ import {
 import { HiSortAscending, HiSortDescending } from "react-icons/hi";
 import axios from "../../utils/axios";
 import toast from "react-hot-toast";
-import { Tooltip } from "react-tooltip";
 import TableSkeleton from "../TableSkeleton";
 import EditRawMaterialModal from "./EditRawMaterialModal";
 import BulkRmPanel from "./BulkRmPanel";
@@ -502,28 +501,35 @@ const RmMaster = ({ isOpen }) => {
   return (
     <div className="p-2 sm:p-4 lg:p-6 max-w-[100vw] mx-auto h-full flex flex-col">
 
-      <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg sm:rounded-xl border border-primary/20 px-2 sm:px-3 py-1.5 sm:py-2 mb-2 sm:mb-3 lg:mb-4 flex-shrink-0">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2 lg:gap-3">
+      <div className="bg-white rounded-xl px-4 sm:px-5 py-2.5 sm:py-3 mb-1.5 sm:mb-2 flex-shrink-0 shadow-sm border border-gray-100">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 lg:gap-4">
           <div className="flex-1 w-full">
-            <div className="flex items-center gap-2 sm:gap-2">
-              <div className="w-1 h-5 sm:h-6 bg-primary rounded-full"></div>
-              <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-gray-800 leading-tight">
-                Raw Materials Master
-              </h1>
-              <span className="text-primary text-[10px] sm:text-xs font-semibold">
-                ({pagination.totalResults})
-              </span>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-secondary rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-secondary leading-tight">
+                  Raw Materials Master
+                </h1>
+                <div className="h-5 w-px bg-gray-300"></div>
+                <span className="text-primary font-bold text-base sm:text-lg">
+                  {pagination.totalResults}
+                </span>
+              </div>
             </div>
             {restore && (
-              <div className="mt-2 sm:mt-3 ml-3 sm:ml-4 flex flex-wrap items-center gap-2 sm:gap-3">
-                <div className="flex items-center gap-1.5 sm:gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2 sm:px-3 py-1 sm:py-1.5">
-                  <TbRestore className="text-amber-600 text-sm sm:text-base" />
-                  <span className="text-xs sm:text-sm font-medium text-amber-800">
-                    Restore Mode Active
+              <div className="mt-2.5 ml-12 flex flex-wrap items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1">
+                  <TbRestore className="text-amber-600 text-sm" />
+                  <span className="text-xs font-medium text-amber-700">
+                    Restore Mode
                   </span>
                 </div>
                 {selectedRMs.length > 0 && (
-                  <span className="text-xs sm:text-sm text-gray-600">
+                  <span className="text-xs text-gray-500">
                     {selectedRMs.length} selected
                   </span>
                 )}
@@ -531,28 +537,28 @@ const RmMaster = ({ isOpen }) => {
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2 sm:gap-3 w-full lg:w-auto">
+          <div className="flex flex-wrap gap-2 w-full lg:w-auto">
             <button
               onClick={() => {
                 setRestore((prev) => !prev);
                 setPagination((prev) => ({ ...prev, currentPage: 1 }));
                 setSelectedRMs([]);
               }}
-              className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 shadow-sm flex items-center gap-1.5 sm:gap-2 ${
+              className={`px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-1.5 ${
                 restore
                   ? "bg-red-500 hover:bg-red-600 text-white"
-                  : "bg-gray-100 hover:bg-gray-200 text-secondary"
+                  : "border border-gray-200 hover:border-primary hover:text-primary text-gray-600"
               }`}
             >
               {restore ? (
                 <>
-                  <FiX className="text-sm sm:text-base" /> 
-                  <span className="whitespace-nowrap">Cancel</span>
+                  <FiX className="text-sm" /> 
+                  <span>Cancel</span>
                 </>
               ) : (
                 <>
-                  <TbRestore className="text-sm sm:text-base" /> 
-                  <span className="whitespace-nowrap">Restore</span>
+                  <TbRestore className="text-sm" /> 
+                  <span>Restore</span>
                 </>
               )}
             </button>
@@ -561,18 +567,18 @@ const RmMaster = ({ isOpen }) => {
                 <button
                   onClick={() => handleRestore()}
                   disabled={selectedRMs.length === 0}
-                  className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-semibold text-xs sm:text-sm bg-green-500 hover:bg-green-600 text-white transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2"
+                  className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg font-medium text-sm bg-emerald-500 hover:bg-emerald-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                 >
-                  <TbRestore className="text-sm sm:text-base" /> 
-                  <span className="whitespace-nowrap hidden sm:inline">Restore Selected</span>
-                  <span className="whitespace-nowrap sm:hidden">Restore</span>
+                  <TbRestore className="text-sm" /> 
+                  <span className="hidden sm:inline">Restore Selected</span>
+                  <span className="sm:hidden">Restore</span>
                 </button>
                 <button
                   onClick={() => handlePermanentDelete()}
                   disabled={selectedRMs.length === 0}
-                  className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-semibold text-xs sm:text-sm bg-red-500 hover:bg-red-600 text-white transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2"
+                  className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg font-medium text-sm bg-red-500 hover:bg-red-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                 >
-                  <FiTrash2 className="text-sm sm:text-base" /> 
+                  <FiTrash2 className="text-sm" /> 
                   <span className="whitespace-nowrap hidden sm:inline">Delete Permanently</span>
                   <span className="whitespace-nowrap sm:hidden">Delete</span>
                 </button>
@@ -1197,96 +1203,173 @@ const RmMaster = ({ isOpen }) => {
       )}
 
       {detailData && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-primary to-primary/90 text-secondary px-6 py-4 flex justify-between items-center rounded-t-xl">
-              <h2 className="text-lg font-bold">Raw Material Details</h2>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="bg-primary px-6 py-4 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center">
+                  <FiEye className="text-white text-xl" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Raw Material Details</h2>
+                  <p className="text-white/60 text-xs">View complete information</p>
+                </div>
+              </div>
               <button
                 onClick={() => setDetailData(null)}
-                className="text-secondary hover:text-white transition-colors"
+                className="w-9 h-9 flex items-center justify-center hover:bg-white/15 rounded-xl text-white/70 hover:text-white transition-all"
               >
-                <FiX size={24} />
+                <FiX className="text-xl" />
               </button>
             </div>
-            <div className="p-6">
-              <div className="mb-4 pb-4 border-b border-gray-200">
-                <h3 className="font-bold text-secondary text-base">{detailData.itemName}</h3>
-                <p className="text-sm text-gray-500">{detailData.skuCode}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 mb-1">Created At</p>
-                  <p className="text-sm font-medium text-secondary">
-                    {new Date(detailData.createdAt).toLocaleString("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    })}
-                  </p>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-5 bg-gray-50">
+              {/* Item Header Card */}
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm mb-4">
+                <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50 rounded-t-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center font-bold text-lg">
+                      {detailData.itemName?.charAt(0)?.toUpperCase() || "R"}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-gray-800 text-lg">{detailData.itemName}</h3>
+                      <div className="flex items-center gap-3 text-sm text-gray-500 mt-0.5">
+                        <span className="flex items-center gap-1">
+                          <span className="text-xs text-gray-400">SKU:</span>
+                          <span className="font-medium text-primary">{detailData.skuCode}</span>
+                        </span>
+                        {detailData.itemCategory && (
+                          <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                            {detailData.itemCategory}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 mb-1">Updated At</p>
-                  <p className="text-sm font-medium text-secondary">
-                    {new Date(detailData.updatedAt).toLocaleString("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    })}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 mb-1">HSN/SAC Code</p>
-                  <p className="text-sm font-medium text-secondary">{detailData.hsnOrSac || "-"}</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 mb-1">Base Qty</p>
-                  <p className="text-sm font-medium text-secondary">{detailData.baseQty || "-"}</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 mb-1">Pkg Qty</p>
-                  <p className="text-sm font-medium text-secondary">{detailData.pkgQty || "-"}</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 mb-1">GST</p>
-                  <p className="text-sm font-medium text-secondary">
-                    {detailData.gst ? `${detailData.gst}%` : "-"}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 mb-1">Purchase UOM</p>
-                  <p className="text-sm font-medium text-secondary">{detailData.purchaseUOM || "-"}</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 mb-1">Stock Qty</p>
-                  <p className="text-sm font-medium text-secondary">
-                    {detailData.stockQty?.toFixed(2) || "0"} {detailData.stockUOM || ""}
-                  </p>
+
+                {/* Timestamps */}
+                <div className="grid grid-cols-2 divide-x divide-gray-100">
+                  <div className="px-5 py-3">
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Created</p>
+                    <p className="text-sm font-medium text-gray-700">
+                      {new Date(detailData.createdAt).toLocaleString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
+                    </p>
+                  </div>
+                  <div className="px-5 py-3">
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Last Updated</p>
+                    <p className="text-sm font-medium text-gray-700">
+                      {new Date(detailData.updatedAt).toLocaleString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
+                    </p>
+                  </div>
                 </div>
               </div>
+
+              {/* Details Grid */}
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50 rounded-t-xl">
+                  <h4 className="text-sm font-semibold text-gray-700">Material Information</h4>
+                </div>
+                <div className="p-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">HSN/SAC</p>
+                      <p className="text-sm font-semibold text-gray-800">{detailData.hsnOrSac || "-"}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">GST</p>
+                      <p className="text-sm font-semibold text-gray-800">
+                        {detailData.gst ? `${detailData.gst}%` : "-"}
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Color</p>
+                      <p className="text-sm font-semibold text-gray-800">{detailData.itemColor || "-"}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Location</p>
+                      <p className="text-sm font-semibold text-gray-800">{detailData.location || "-"}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Base Qty</p>
+                      <p className="text-sm font-semibold text-gray-800">{detailData.baseQty || "-"}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Package Qty</p>
+                      <p className="text-sm font-semibold text-gray-800">{detailData.pkgQty || "-"}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">MOQ</p>
+                      <p className="text-sm font-semibold text-gray-800">{detailData.moq || "-"}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Purchase UOM</p>
+                      <p className="text-sm font-semibold text-gray-800">{detailData.purchaseUOM || "-"}</p>
+                    </div>
+                  </div>
+
+                  {/* Stock Info - Highlighted */}
+                  <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
+                      <p className="text-[10px] text-emerald-600 uppercase tracking-wide mb-1">Stock Qty</p>
+                      <p className="text-lg font-bold text-emerald-700">
+                        {detailData.stockQty?.toFixed(2) || "0"}
+                        <span className="text-xs font-medium ml-1">{detailData.stockUOM || ""}</span>
+                      </p>
+                    </div>
+                    <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                      <p className="text-[10px] text-blue-600 uppercase tracking-wide mb-1">Rate</p>
+                      <p className="text-lg font-bold text-blue-700">₹{detailData.rate || "0"}</p>
+                    </div>
+                    <div className="bg-primary/10 rounded-lg p-3 border border-primary/30">
+                      <p className="text-[10px] text-primary uppercase tracking-wide mb-1">Total Value</p>
+                      <p className="text-lg font-bold text-primary">
+                        ₹{(Number(detailData.stockQty || 0) * Number(detailData.rate || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Warehouse Stock */}
               {detailData.warehouseStock && detailData.warehouseStock.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <p className="text-xs text-gray-500 mb-2">Warehouse Stock</p>
-                  <div className="space-y-2">
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm mt-4">
+                  <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50 rounded-t-xl">
+                    <h4 className="text-sm font-semibold text-gray-700">Warehouse Stock</h4>
+                  </div>
+                  <div className="p-4 space-y-2">
                     {detailData.warehouseStock.map((w) => (
-                      <div key={w._id} className="flex justify-between bg-gray-50 rounded-lg px-3 py-2">
-                        <span className="text-sm text-gray-600">{w.warehouse}</span>
-                        <span className="text-sm font-medium text-secondary">{w.qty?.toFixed(2)}</span>
+                      <div key={w._id} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
+                        <span className="text-sm font-medium text-gray-700">{w.warehouse}</span>
+                        <span className="text-sm font-bold text-primary">{w.qty?.toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
             </div>
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+
+            {/* Footer */}
+            <div className="px-6 py-4 bg-white border-t border-gray-100 flex justify-end shrink-0">
               <button
                 onClick={() => setDetailData(null)}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-secondary font-medium rounded-lg transition-colors"
+                className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold text-sm transition-all"
               >
                 Close
               </button>

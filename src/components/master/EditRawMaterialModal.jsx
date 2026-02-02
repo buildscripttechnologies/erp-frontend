@@ -3,9 +3,8 @@ import axios from "../../utils/axios";
 import toast from "react-hot-toast";
 import Select from "react-select";
 import { BeatLoader } from "react-spinners";
-import { FiX, FiSave } from "react-icons/fi";
+import { FiX, FiSave, FiEdit, FiTrash2, FiEye } from "react-icons/fi";
 import { useCategoryArrays } from "../../data/dropdownData";
-import { useCategories } from "../../context/CategoryContext";
 const EditRawMaterialModal = ({
   rawMaterial = [],
   onClose,
@@ -14,36 +13,30 @@ const EditRawMaterialModal = ({
 }) => {
   const [formData, setFormData] = useState(rawMaterial);
   const [loading, setLoading] = useState(false);
-  // const [uoms, setUoms] = useState([]);
   const [locations, setLocations] = useState([]);
   const [deletedAttachments, setDeletedAttachments] = useState([]);
   const [newAttachments, setNewAttachments] = useState([]);
   const [categories, setCategories] = useState();
-  const { fabric, slider, plastic, zipper } = useCategoryArrays();
-
-  const { gstTable } = useCategories();
+  const [previewModal, setPreviewModal] = useState({ open: false, images: [], currentIndex: 0 });
+  const { fabric } = useCategoryArrays();
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // setLoading(true);
         const res = await axios.get("/settings/categories");
         setCategories(res.data.categories || []);
       } catch (err) {
         console.error(err);
         toast.error("Failed to fetch categories");
-      } finally {
-        // setLoading(false);
       }
     };
-
     fetchCategories();
   }, []);
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const res = await axios.get("/locations/get-all"); // your UOM endpoint
+        const res = await axios.get("/locations/get-all");
         setLocations(res.data.data || []);
       } catch (err) {
         toast.error("Failed to load Locations");
@@ -58,21 +51,6 @@ const EditRawMaterialModal = ({
       [field]: value,
     };
 
-    // const baseRate = updatedForm.baseRate || 0;
-    // const gst = updatedForm.gst || 0;
-
-    // if (baseRate && gst) {
-    //   updatedForm.rate = Number(baseRate) + (gst * baseRate) / 100;
-    // }
-
-    // const hsnOrSac = updatedForm.hsnOrSac;
-
-    // if (hsnOrSac) {
-    //   const gst = gstTable.find((g) => g.hsn === hsnOrSac);
-    //   updatedForm.gst = gst ? gst.gst : ""; // Updated to use updatedForm instead of updated[index]
-    // }
-
-    // Update totalRate if rate or stockQty changes
     if (field === "rate" || field === "stockQty") {
       const stockQty = Number(
         field === "stockQty" ? value : updatedForm.stockQty
@@ -150,468 +128,469 @@ const EditRawMaterialModal = ({
   }));
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white w-full max-w-[95vw] sm:max-w-[92vw] sm:max-w-2xl md:max-w-5xl rounded-xl sm:rounded-2xl shadow-2xl border-2 border-primary/30 overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh]">
-        {/* Distinct Header Design */}
-        <div className="bg-white px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5 flex items-center justify-between border-b-2 border-primary/20 relative">
-          <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary to-primary/70 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        {/* Header - matching Add modal */}
+        <div className="bg-primary px-6 py-4 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center">
+              <FiEdit className="text-white text-xl" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-secondary">
-                Edit Raw Material
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 hidden sm:block">Update material information</p>
+              <h2 className="text-xl font-bold text-white">Edit Raw Material</h2>
+              <p className="text-white/60 text-xs">Update material information</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 sm:p-2 hover:bg-red-50 rounded-lg transition-colors text-gray-500 hover:text-red-600"
-            title="Close"
+            className="w-9 h-9 flex items-center justify-center hover:bg-white/15 rounded-xl text-white/70 hover:text-white transition-all"
           >
-            <FiX className="text-lg sm:text-xl" />
+            <FiX className="text-xl" />
           </button>
         </div>
 
-        <div className="overflow-y-auto rm-modal-scrollbar flex-1 px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 bg-gradient-to-b from-gray-50/50 to-white">
-        <form
-          onSubmit={handleUpdate}
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 text-xs sm:text-sm text-[#292926]"
-        >
-          {/* Item Name */}
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">Sku Code</label>
-            <input
-              disabled
-              type="text"
-              value={formData.skuCode}
-              onChange={(e) => handleChange("skuCode", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:cursor-not-allowed transition-all"
-              required
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-              Item Name
-            </label>
-            <input
-              type="text"
-              value={formData.itemName}
-              onChange={(e) => handleChange("itemName", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50"
-              required
-            />
-          </div>
-          {/* Description */}
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-              Description
-            </label>
-            <input
-              type="text"
-              placeholder="Description"
-              value={formData.description}
-              onChange={(e) => handleChange("description", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-              Item Category
-            </label>
-            <select
-              value={formData.itemCategory}
-              onChange={(e) => handleChange("itemCategory", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50 cursor-pointer"
-            >
-              <option value="">Select Category</option>
-              {categories?.map((cat, i) => (
-                <option key={i} value={cat.name}>
-                  {cat.name} ({cat.type})
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-              Item Color
-            </label>
-            <input
-              type="text"
-              placeholder="Item Color"
-              value={formData.itemColor}
-              onChange={(e) => handleChange("itemColor", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-              HSN / SAC
-            </label>
-            <input
-              type="text"
-              placeholder="HSN / SAC"
-              value={formData.hsnOrSac}
-              onChange={(e) => handleChange("hsnOrSac", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">GST (%)</label>
-            <input
-              type="text"
-              placeholder="GST (%)"
-              value={formData.gst}
-              onChange={(e) => handleChange("gst", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50"
-            />
-          </div>
-          {/* HSN/SAC */}
-          {/* <div className="flex flex-col">
-            <label className="text-xs font-semibold text-black">
-              HSN / SAC
-            </label>
-
-            <select
-              value={formData.hsnOrSac}
-              onChange={(e) => handleChange("hsnOrSac", e.target.value)}
-              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            >
-              <option value="">Select HSN</option>
-              {gstTable?.map((cat, i) => (
-                <option key={i} value={cat.hsn}>
-                  {cat.hsn}
-                </option>
-              ))}
-            </select>
-          </div> */}
-
-          {/* GST */}
-          {/* <div className="flex flex-col">
-            <label className="text-xs font-semibold text-black">GST (%)</label>
-
-            <select
-              value={formData.gst}
-              onChange={(e) => handleChange("gst", e.target.value)}
-              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            >
-              <option value="">Select GST</option>
-              {gstTable?.map((cat, i) => (
-                <option key={i} value={cat.gst}>
-                  {cat.gst}
-                </option>
-              ))}
-            </select>
-          </div> */}
-          {/* Type */}
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">Type</label>
-            <input
-              type="text"
-              value={formData.type}
-              onChange={(e) => handleChange("type", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50"
-            />
-          </div>
-          {/* Quality Inspection */}
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-              Quality Inspection
-            </label>
-            <select
-              value={
-                formData.qualityInspectionNeeded ? "Required" : "Not Required"
-              }
-              onChange={(e) =>
-                handleChange(
-                  "qualityInspectionNeeded",
-                  e.target.value === "Required"
-                )
-              }
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50 cursor-pointer"
-            >
-              <option>Required</option>
-              <option>Not Required</option>
-            </select>
-          </div>
-          {/* Location */}
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">Location</label>
-            <Select
-              options={locationOptions}
-              value={
-                locationOptions.find(
-                  (opt) => opt.value === formData.location
-                ) || null
-              }
-              onChange={(selectedOption) =>
-                handleChange("location", selectedOption?.value || "")
-              }
-              placeholder="Select"
-              isSearchable
-              styles={{
-                control: (base, state) => ({
-                  ...base,
-                  backgroundColor: "white",
-                  borderColor: "#d8b76a",
-                  borderWidth: "2px",
-                  borderRadius: "0.5rem",
-                  boxShadow: state.isFocused ? "0 0 0 2px rgba(216, 183, 106, 0.2)" : "none",
-                  "&:hover": {
-                    borderColor: "#d8b76a",
-                  },
-                  fontSize: "0.875rem",
-                  padding: "2px",
-                  minHeight: "38px",
-                }),
-                menu: (base) => ({
-                  ...base,
-                  zIndex: 100,
-                  borderRadius: "0.5rem",
-                  fontSize: "0.875rem",
-                }),
-              }}
-              className="text-xs sm:text-sm"
-            />
-          </div>
-          {/* Base Qty */}
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-              Base Quantity
-            </label>
-            <input
-              type="number"
-              placeholder="Base Quantity"
-              value={formData.baseQty}
-              onChange={(e) => handleChange("baseQty", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50"
-            />
-          </div>
-          {/* Pkg Qty */}
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-              Package Quantity
-            </label>
-            <input
-              type="number"
-              placeholder="Package Quantity"
-              value={formData.pkgQty}
-              onChange={(e) => handleChange("pkgQty", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50"
-            />
-          </div>
-          {/* MOQ */}
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-              Minimum Order Quantity
-            </label>
-            <input
-              type="number"
-              placeholder="Minimum Order Quantity"
-              value={formData.moq}
-              onChange={(e) => handleChange("moq", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50"
-            />
-          </div>
-          {/* Rate */}
-          {/* <div className="flex flex-col">
-            <label className="text-xs font-semibold text-black">
-              Base Rate
-            </label>
-            <input
-              type="number"
-              placeholder="Base Rate"
-              value={formData.baseRate}
-              onChange={(e) => handleChange("baseRate", e.target.value)}
-              className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div> */}
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">Rate</label>
-            <input
-              type="number"
-              placeholder="Rate"
-              value={formData.rate}
-              onChange={(e) => handleChange("rate", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50"
-            />
-          </div>
-          {/* Purchase UOM */}
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-              Purchase UOM
-            </label>
-            <select
-              value={formData.purchaseUOM}
-              onChange={(e) => handleChange("purchaseUOM", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50 cursor-pointer"
-            >
-              <option value="">Select</option>
-              {uoms.map((u) => (
-                <option key={u._id} value={u.unitName}>
-                  {u.unitName}
-                </option>
-              ))}
-            </select>
-          </div>
-          {/* Stock Qty */}
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-              Stock Quantity
-            </label>
-            <input
-              // disabled
-              type="number"
-              placeholder="Stock Quantity"
-              value={formData.stockQty ?? 0} // fallback to 0
-              onChange={(e) => {
-                const val = e.target.value;
-                handleChange("stockQty", val === "" ? 0 : Number(val));
-              }}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50 disabled:cursor-not-allowed disabled:bg-gray-50"
-            />
-          </div>
-          {/* Stock UOM */}
-          <div className="flex flex-col">
-            <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-              Stock UOM
-            </label>
-            <select
-              value={formData.stockUOM}
-              onChange={(e) => handleChange("stockUOM", e.target.value)}
-              className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50 cursor-pointer"
-            >
-              <option value="">Select</option>
-              {uoms.map((u) => (
-                <option key={u._id} value={u.unitName}>
-                  {u.unitName}
-                </option>
-              ))}
-            </select>
-          </div>
-          {fabric.includes(formData.itemCategory.toLowerCase()) && (
-            <>
-              {/* Panno */}
-              <div className="flex flex-col">
-                <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-                  Panno
-                </label>
-                <input
-                  type="number"
-                  placeholder="Panno"
-                  value={formData.panno}
-                  onChange={(e) => handleChange("panno", e.target.value)}
-                  className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50 disabled:cursor-not-allowed disabled:bg-gray-50"
-                />
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto bg-gray-50 p-5 rm-modal-scrollbar">
+          <form onSubmit={handleUpdate}>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              {/* Item Header Bar */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gray-50/50 rounded-t-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-sm">
+                    <FiEdit className="text-sm" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800 text-sm">{formData.itemName || 'Untitled Item'}</p>
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      {formData.skuCode && <span>SKU: {formData.skuCode}</span>}
+                      {formData.itemCategory && <span className="text-primary">• {formData.itemCategory}</span>}
+                    </div>
+                  </div>
+                </div>
               </div>
-              {/* per SqInch Rate */}
-              <div className="flex flex-col">
-                <label className="text-[10px] sm:text-xs font-semibold text-secondary mb-1 sm:mb-1.5">
-                  SqInch Rate
-                </label>
-                <input
-                  type="number"
-                  placeholder="SqInch Rate"
-                  value={formData.sqInchRate}
-                  onChange={(e) => handleChange("sqInchRate", e.target.value)}
-                  className="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm border-2 border-primary/30 rounded-md sm:rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:border-primary/50 disabled:cursor-not-allowed disabled:bg-gray-50"
-                />
+
+              {/* Form Grid */}
+              <div className="p-5">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-4">
+                  {/* Basic Info Section */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">SKU Code</label>
+                    <input
+                      disabled
+                      value={formData.skuCode}
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Item Name <span className="text-red-500">*</span></label>
+                    <input
+                      value={formData.itemName}
+                      onChange={(e) => handleChange("itemName", e.target.value)}
+                      placeholder="Enter item name"
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      required
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Description</label>
+                    <input
+                      value={formData.description}
+                      onChange={(e) => handleChange("description", e.target.value)}
+                      placeholder="Item description"
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Category</label>
+                    <select
+                      value={formData.itemCategory}
+                      onChange={(e) => handleChange("itemCategory", e.target.value)}
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer transition-all appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.23%207.21a.75.75%200%20011.06.02L10%2011.168l3.71-3.938a.75.75%200%20111.08%201.04l-4.25%204.5a.75.75%200%2001-1.08%200l-4.25-4.5a.75.75%200%2001.02-1.06z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat pr-10"
+                    >
+                      <option value="">Select Category</option>
+                      {categories?.map((cat, i) => (
+                        <option key={i} value={cat.name}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Color</label>
+                    <input
+                      value={formData.itemColor}
+                      onChange={(e) => handleChange("itemColor", e.target.value)}
+                      placeholder="e.g. Red"
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">HSN/SAC</label>
+                    <input
+                      value={formData.hsnOrSac}
+                      onChange={(e) => handleChange("hsnOrSac", e.target.value)}
+                      placeholder="HSN Code"
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">GST %</label>
+                    <input
+                      value={formData.gst}
+                      onChange={(e) => handleChange("gst", e.target.value)}
+                      placeholder="18"
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Type</label>
+                    <input
+                      value={formData.type}
+                      onChange={(e) => handleChange("type", e.target.value)}
+                      placeholder="RM"
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Quality Inspection</label>
+                    <select
+                      value={formData.qualityInspectionNeeded ? "Required" : "Not Required"}
+                      onChange={(e) => handleChange("qualityInspectionNeeded", e.target.value === "Required")}
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer transition-all appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.23%207.21a.75.75%200%20011.06.02L10%2011.168l3.71-3.938a.75.75%200%20111.08%201.04l-4.25%204.5a.75.75%200%2001-1.08%200l-4.25-4.5a.75.75%200%2001.02-1.06z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat pr-10"
+                    >
+                      <option>Required</option>
+                      <option>Not Required</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Location</label>
+                    <Select
+                      options={locationOptions}
+                      value={locationOptions.find((opt) => opt.value === formData.location) || null}
+                      onChange={(selectedOption) => handleChange("location", selectedOption?.value || "")}
+                      placeholder="Select Location"
+                      isSearchable
+                      styles={{
+                        control: (base, state) => ({
+                          ...base,
+                          backgroundColor: '#fff',
+                          borderColor: state.isFocused ? '#d8b76a' : '#e5e7eb',
+                          borderRadius: '0.5rem',
+                          boxShadow: state.isFocused ? '0 0 0 2px rgba(216, 183, 106, 0.2)' : 'none',
+                          height: '38px',
+                          minHeight: '38px',
+                          fontSize: '0.875rem',
+                          '&:hover': { borderColor: '#d8b76a' },
+                        }),
+                        valueContainer: (base) => ({ ...base, padding: '0 12px', height: '36px' }),
+                        input: (base) => ({ ...base, margin: 0, padding: 0 }),
+                        indicatorSeparator: () => ({ display: 'none' }),
+                        dropdownIndicator: (base) => ({ ...base, padding: '8px', color: '#6b7280' }),
+                        menu: (base) => ({ ...base, zIndex: 9999, borderRadius: '0.5rem' }),
+                        option: (base, state) => ({
+                          ...base,
+                          backgroundColor: state.isSelected ? '#d8b76a' : state.isFocused ? '#fef3c7' : '#fff',
+                          color: state.isSelected ? '#fff' : '#374151',
+                          cursor: 'pointer',
+                        }),
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Base Qty</label>
+                    <input
+                      type="number"
+                      value={formData.baseQty}
+                      onChange={(e) => handleChange("baseQty", e.target.value)}
+                      placeholder="0"
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Pkg Qty</label>
+                    <input
+                      type="number"
+                      value={formData.pkgQty}
+                      onChange={(e) => handleChange("pkgQty", e.target.value)}
+                      placeholder="0"
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">MOQ</label>
+                    <input
+                      type="number"
+                      value={formData.moq}
+                      onChange={(e) => handleChange("moq", e.target.value)}
+                      placeholder="0"
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Rate (₹)</label>
+                    <input
+                      type="number"
+                      value={formData.rate}
+                      onChange={(e) => handleChange("rate", e.target.value)}
+                      placeholder="0.00"
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Purchase UOM</label>
+                    <select
+                      value={formData.purchaseUOM}
+                      onChange={(e) => handleChange("purchaseUOM", e.target.value)}
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer transition-all appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.23%207.21a.75.75%200%20011.06.02L10%2011.168l3.71-3.938a.75.75%200%20111.08%201.04l-4.25%204.5a.75.75%200%2001-1.08%200l-4.25-4.5a.75.75%200%2001.02-1.06z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat pr-10"
+                    >
+                      <option value="">Select UOM</option>
+                      {uoms.map((u) => (
+                        <option key={u._id} value={u.unitName}>{u.unitName}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Stock Qty</label>
+                    <input
+                      type="number"
+                      value={formData.stockQty ?? 0}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        handleChange("stockQty", val === "" ? 0 : Number(val));
+                      }}
+                      placeholder="0"
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Stock UOM</label>
+                    <select
+                      value={formData.stockUOM}
+                      onChange={(e) => handleChange("stockUOM", e.target.value)}
+                      className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer transition-all appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.23%207.21a.75.75%200%20011.06.02L10%2011.168l3.71-3.938a.75.75%200%20111.08%201.04l-4.25%204.5a.75.75%200%2001-1.08%200l-4.25-4.5a.75.75%200%2001.02-1.06z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat pr-10"
+                    >
+                      <option value="">Select UOM</option>
+                      {uoms.map((u) => (
+                        <option key={u._id} value={u.unitName}>{u.unitName}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Fabric Fields */}
+                  {fabric.includes(formData.itemCategory?.toLowerCase()) && (
+                    <>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1.5">Panno</label>
+                        <input
+                          type="number"
+                          value={formData.panno}
+                          onChange={(e) => handleChange("panno", e.target.value)}
+                          placeholder="0"
+                          className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1.5">SqInch Rate</label>
+                        <input
+                          type="number"
+                          value={formData.sqInchRate}
+                          onChange={(e) => handleChange("sqInchRate", e.target.value)}
+                          placeholder="0"
+                          className="w-full h-[38px] px-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Total Rate */}
+                  <div>
+                    <label className="block text-xs font-medium text-primary mb-1.5">Total Rate</label>
+                    <div className="h-[38px] px-3 flex items-center text-sm font-semibold text-primary bg-primary/10 border border-primary/30 rounded-lg">
+                      ₹ {(Number(formData.stockQty) * Number(formData.rate) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </div>
+                  </div>
+
+                  {/* Attachments */}
+                  <div className="md:col-span-3">
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Attachments</label>
+                    
+                    {/* Existing Attachments */}
+                    {formData.attachments?.length > 0 && (
+                      <div className="mb-3 space-y-2">
+                        {formData.attachments?.map((att, index) =>
+                          !deletedAttachments.includes(att._id) ? (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between h-[38px] px-3 border border-gray-200 rounded-lg bg-white group"
+                            >
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const validAttachments = formData.attachments.filter(
+                                    (a) => !deletedAttachments.includes(a._id)
+                                  );
+                                  const imageUrls = validAttachments.map((a) => a.fileUrl);
+                                  const currentIdx = validAttachments.findIndex((a) => a._id === att._id);
+                                  setPreviewModal({ open: true, images: imageUrls, currentIndex: currentIdx >= 0 ? currentIdx : 0 });
+                                }}
+                                className="text-sm text-primary hover:underline truncate flex-1 flex items-center gap-2 text-left"
+                              >
+                                <FiEye className="text-gray-400" />
+                                {att.fileName}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDeletedAttachments((prev) => [...prev, att._id])}
+                                className="ml-3 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                              >
+                                <FiTrash2 className="text-sm" />
+                              </button>
+                            </div>
+                          ) : null
+                        )}
+                      </div>
+                    )}
+
+                    {/* Upload New */}
+                    <div className="flex items-center h-[38px] border border-gray-200 rounded-lg bg-white">
+                      <label className="flex items-center h-full px-3 cursor-pointer hover:bg-gray-50 transition-all flex-1">
+                        <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded">Choose files</span>
+                        <span className="ml-3 text-sm text-gray-400">
+                          {newAttachments?.length > 0 ? `${newAttachments.length} file(s) selected` : 'Add new files'}
+                        </span>
+                        <input
+                          type="file"
+                          multiple
+                          onChange={(e) => setNewAttachments(Array.from(e.target.files))}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                    {newAttachments.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {newAttachments.map((file, i) => (
+                          <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                            {file.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </>
-          )}
-          <div className="col-span-full mt-3 sm:mt-4 p-3 sm:p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg sm:rounded-xl flex items-center gap-2 sm:gap-3">
-            <label className="text-sm sm:text-base font-bold text-red-700">
-              Total Rate:
-            </label>
-            <span className="text-red-700 font-bold text-base sm:text-lg">
-              ₹{" "}
-              {(Number(formData.stockQty) * Number(formData.rate) || 0).toFixed(
-                2
-              )}
-            </span>
-          </div>
-          <div className="col-span-full mt-2">
-            <label className="block mb-2 sm:mb-3 text-xs sm:text-sm font-semibold text-secondary">
-              {formData.attachments.length != 0
-                ? "Existing Attachments"
-                : "No Existing Attachments"}
-            </label>
-            <ul className="space-y-2 text-xs sm:text-sm text-[#292926]">
-              {formData.attachments?.map((att, index) =>
-                !deletedAttachments.includes(att._id) ? (
-                  <li
-                    key={index}
-                    className="flex items-center justify-between bg-gradient-to-r from-primary/10 to-primary/5 px-2 sm:px-3 md:px-4 py-2 sm:py-3 rounded-md sm:rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-all"
-                  >
-                    <a
-                      href={att.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:underline text-primary font-medium truncate flex-1 text-xs sm:text-sm"
-                    >
-                      {att.fileName}
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setDeletedAttachments((prev) => [...prev, att._id])
-                      }
-                      className="ml-2 sm:ml-3 px-2 sm:px-3 py-1 text-red-600 hover:bg-red-50 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-colors"
-                    >
-                      Delete
-                    </button>
-                  </li>
-                ) : null
-              )}
-            </ul>
-          </div>
-          <div className="col-span-full mt-2">
-            <label className="block mb-2 sm:mb-3 text-xs sm:text-sm font-semibold text-secondary">
-              Add New Attachments
-            </label>
-            <input
-              type="file"
-              multiple
-              onChange={(e) => setNewAttachments(Array.from(e.target.files))}
-              className="block w-full text-xs sm:text-sm text-gray-600 cursor-pointer bg-white border-2 border-primary/30 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-primary file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2.5 file:px-2 sm:file:px-4 file:rounded-md sm:file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-primary/10 file:text-secondary hover:file:bg-primary/20 file:cursor-pointer transition-colors"
-            />
-          </div>
-          {/* Actions */}
-          <div className="col-span-full mt-4 sm:mt-6 pt-4 sm:pt-6 border-t-2 border-primary/20">
-            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-gray-100 hover:bg-gray-200 text-secondary rounded-lg sm:rounded-xl cursor-pointer font-semibold text-sm sm:text-base transition-all duration-200 shadow-sm hover:shadow-md"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-secondary font-bold rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 text-sm sm:text-base"
-              >
-                {loading ? (
-                  <>
-                    <span>Updating</span>
-                    <BeatLoader size={5} color="#292926" />
-                  </>
-                ) : (
-                  <>
-                    <FiSave className="text-base sm:text-lg" />
-                    <span className="hidden sm:inline">Update Material</span>
-                    <span className="sm:hidden">Update</span>
-                  </>
-                )}
-              </button>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
+
+        {/* Footer - matching Add modal */}
+        <div className="px-6 py-4 bg-white border-t border-gray-100 flex justify-end items-center shrink-0 gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold text-sm transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleUpdate}
+            disabled={loading}
+            className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold text-sm shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <>Updating... <BeatLoader size={5} color="#fff" /></>
+            ) : (
+              <><FiSave /> Update Material</>
+            )}
+          </button>
         </div>
       </div>
+
+      {/* Image Preview Modal */}
+      {previewModal.open && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full mx-4 overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <h3 className="font-semibold text-gray-800">
+                Image Preview ({previewModal.currentIndex + 1} / {previewModal.images.length})
+              </h3>
+              <button
+                onClick={() => setPreviewModal({ open: false, images: [], currentIndex: 0 })}
+                className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-all"
+              >
+                <FiX className="text-lg" />
+              </button>
+            </div>
+            
+            {/* Image Display */}
+            <div className="p-5 bg-gray-50">
+              <div className="relative flex items-center justify-center min-h-[300px] max-h-[60vh]">
+                <img
+                  src={previewModal.images[previewModal.currentIndex]}
+                  alt={`Preview ${previewModal.currentIndex + 1}`}
+                  className="max-w-full max-h-[60vh] object-contain rounded-lg shadow-md"
+                />
+              </div>
+            </div>
+
+            {/* Navigation */}
+            {previewModal.images.length > 1 && (
+              <div className="flex items-center justify-center gap-3 px-5 py-4 border-t border-gray-100">
+                <button
+                  onClick={() => setPreviewModal(prev => ({
+                    ...prev,
+                    currentIndex: prev.currentIndex === 0 ? prev.images.length - 1 : prev.currentIndex - 1
+                  }))}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium text-sm transition-all"
+                >
+                  ← Previous
+                </button>
+                <div className="flex gap-1.5">
+                  {previewModal.images.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setPreviewModal(prev => ({ ...prev, currentIndex: idx }))}
+                      className={`w-2.5 h-2.5 rounded-full transition-all ${
+                        idx === previewModal.currentIndex ? 'bg-primary scale-110' : 'bg-gray-300 hover:bg-gray-400'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={() => setPreviewModal(prev => ({
+                    ...prev,
+                    currentIndex: prev.currentIndex === prev.images.length - 1 ? 0 : prev.currentIndex + 1
+                  }))}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium text-sm transition-all"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+
+            {/* Thumbnails */}
+            {previewModal.images.length > 1 && (
+              <div className="px-5 pb-5">
+                <div className="flex gap-2 overflow-x-auto py-2">
+                  {previewModal.images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setPreviewModal(prev => ({ ...prev, currentIndex: idx }))}
+                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                        idx === previewModal.currentIndex ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <img src={img} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
