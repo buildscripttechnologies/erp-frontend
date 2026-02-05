@@ -5,6 +5,7 @@ import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./pages/ResetPassword";
 import ChangePassword from "./pages/ChangePassword";
 import Dash from "./components/Dash";
+import Maintenance from "./pages/Maintenance";
 import MasterUsers from "./components/master/MasterUsers";
 import RmMaster from "./components/master/RmMaster";
 import "react-toggle/style.css";
@@ -42,6 +43,9 @@ const App = () => {
     return diffInDays >= 5; // Show again after 5 days
   };
 
+  const MAINTENANCE_MODE = true; // 🔥 set false after payment
+
+
   useEffect(() => {
     const handler = (e) => {
       e.preventDefault();
@@ -71,6 +75,9 @@ const App = () => {
     setShowInstallPrompt(false);
   };
   if (!authChecked) return <div>Loading...</div>;
+  if (MAINTENANCE_MODE) {
+  return <Maintenance />;
+}
   return (
     <>
       {showInstallPrompt && (
