@@ -19,15 +19,14 @@ import { FaBarcode } from "react-icons/fa";
 import { useRef } from "react";
 import UpdateStockModal from "./UpdateStockModal";
 import { makeLabelPdf } from "./makeStickerPdf";
-import { PulseLoader } from "react-spinners";
+import { ClipLoader, PulseLoader } from "react-spinners";
 
 const MaterialInward = () => {
   const { hasPermission } = useAuth();
   const [stocks, setstocks] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
-  const [editstock, setEditstock] = useState(null);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editStockData, setEditStockData] = useState(null);
+  const [editstock, setEditStock] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [generatingId, setGeneratingId] = useState(null);
@@ -40,7 +39,7 @@ const MaterialInward = () => {
   });
 
   const [filters, setFilters] = useState({
-    type: "",
+    movementType: "",
     uom: "",
     fromDate: "",
     toDate: "",
@@ -48,7 +47,7 @@ const MaterialInward = () => {
 
   const handleResetFilters = () => {
     setFilters({
-      type: "",
+      movementType: "",
       uom: "",
       fromDate: "",
       toDate: "",
@@ -75,11 +74,11 @@ const MaterialInward = () => {
 
   ScrollLock(
     formOpen ||
-      editStockData != null ||
-      barcodeModalOpen ||
-      selectedStock != null ||
-      showModal ||
-      editModalOpen
+    editstock != null ||
+    barcodeModalOpen ||
+    selectedStock != null ||
+    showModal ||
+    showEditModal
   );
 
   useEffect(() => {
@@ -104,11 +103,11 @@ const MaterialInward = () => {
         limit,
         search,
         status: "all",
-        type: filters.type,
+        movementType: filters.movementType,
         uom: filters.uom,
         fromDate: filters.fromDate,
         toDate: filters.toDate,
-      });
+      });  
 
       const res = await axios.get(`/stocks/get-all?${queryParams.toString()}`);
       if (res.data.status == 403) {
@@ -116,7 +115,8 @@ const MaterialInward = () => {
         return;
       }
       if (res.data.status == 200) {
-        setstocks(res.data.data || []);
+        console.log("stocks fetched:", res.data.data);
+        setstocks(res.data.data || []);       
         setPagination({
           currentPage: res.data.currentPage,
           totalPages: res.data.totalPages,
@@ -130,6 +130,7 @@ const MaterialInward = () => {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchstocks();
@@ -207,6 +208,11 @@ const MaterialInward = () => {
     }
   };
 
+  const handleEdit = (stock) => {
+    setEditStock(stock);
+    setShowEditModal(true);
+  };
+
   const stockTableHeaders = [
     { label: "#", className: "" },
     { label: "Created At	", className: "hidden md:table-cell" },
@@ -220,38 +226,42 @@ const MaterialInward = () => {
     { label: "Actions", className: "" },
   ];
 
-  const handlePrint = async (stock) => {
-    if (!stock || !stock.barcodes?.length) {
-      alert("No barcode data available");
-      return;
-    }
+const handlePrint = async (stock) => {
+  if (stock.movementType !== "GRN") {
+    alert("Barcodes can only be printed from GRN entries");
+    return;
+  }
 
-    try {
-      setGeneratingId(stock._id); // start loader only for this row
-      await makeLabelPdf(stock);
-    } catch (error) {
-      console.error("Error printing labels:", error);
-    } finally {
-      setGeneratingId(null); // stop loader
-    }
-  };
+  if (!stock.barcodes?.length) {
+    alert("No barcode data available");
+    return;
+  }
+
+  try {
+    setGeneratingId(stock._id);   // 🔥 correct id
+    await makeLabelPdf(stock);
+  } finally {
+    setGeneratingId(null);
+  }
+};
+
+
 
   return (
     <div className="relative p-2 mt-4 md:px-4 max-w-[99vw] mx-auto overflow-x-hidden">
-      <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Material Inward{" "}
-        <span className="text-gray-500">({pagination.totalResults})</span>
+      <h2 className="text-xl sm:text-2xl font-bold mb-4 text-primary">
+        Material Stock Ledger <span className="text-primary">({stocks.length})</span>
       </h2>
 
       <div className="flex flex-wrap gap-4 items-stretch sm:items-center justify-between mb-6">
         <div className="relative w-full sm:w-80">
-          <FiSearch className="absolute left-2 top-2 text-[#d8b76a]" />
+          <FiSearch className="absolute left-2 top-2 text-primary" />
           <input
             type="text"
             placeholder="Search Material"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-1 border border-[#d8b76a] rounded focus:border-2 focus:border-[#d8b76a] focus:outline-none transition duration-200"
+            className="w-full pl-10 pr-4 py-1 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition duration-200"
           />{" "}
           {search && (
             <FiX
@@ -263,20 +273,27 @@ const MaterialInward = () => {
         </div>
         <div className="flex flex-wrap gap-4 items-center ">
           <select
-            value={filters.type}
-            onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+            value={filters.movementType}
+            onChange={(e) =>
+              setFilters({ ...filters, movementType: e.target.value })
+            }
+            className="border border-primary rounded px-2 py-1.5 text-sm"
           >
-            <option value="">All Types</option>
-            <option value="RM">RM</option>
-            <option value="SFG">SFG</option>
-            <option value="FG">FG</option>
+            <option value="">All Movements</option>
+            <option value="GRN">GRN</option>
+            <option value="ISSUE">ISSUE</option>
+            <option value="SALE">SALE</option>
+            <option value="TRANSFER">TRANSFER</option>
+            <option value="DAMAGE">DAMAGE</option>
+            <option value="ADJUSTMENT">ADJUSTMENT</option>
+            <option value="REVERSAL">REVERSAL</option>
           </select>
+
 
           <select
             value={filters.uom}
             onChange={(e) => setFilters({ ...filters, uom: e.target.value })}
-            className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+            className="border border-primary rounded px-2 py-1.5 text-sm"
           >
             <option value="">All UOM</option>
             {uoms.map((u) => (
@@ -294,7 +311,7 @@ const MaterialInward = () => {
               onChange={(e) =>
                 setFilters({ ...filters, fromDate: e.target.value })
               }
-              className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+              className="border border-primary rounded px-2 py-1.5 text-sm"
             />
           </div>
 
@@ -306,7 +323,7 @@ const MaterialInward = () => {
               onChange={(e) =>
                 setFilters({ ...filters, toDate: e.target.value })
               }
-              className="border border-[#d8b76a] rounded px-2 py-1.5 text-sm"
+              className="border border-primary rounded px-2 py-1.5 text-sm"
             />
           </div>
 
@@ -318,7 +335,7 @@ const MaterialInward = () => {
               filters.uom == ""
             }
             onClick={() => fetchstocks(1)}
-            className="bg-[#d8b76a] hover:bg-[#b38a37] disabled:hover:bg-[#d8b76a]/50 disabled:bg-[#d8b76a]/50 disabled:cursor-not-allowed text-[#292926] font-semibold px-4 py-1.5 rounded transition duration-200 cursor-pointer"
+            className="bg-primary hover:bg-[#b38a37] disabled:hover:bg-primary/50 disabled:bg-primary/50 disabled:cursor-not-allowed text-[#292926] font-semibold px-4 py-1.5 rounded transition duration-200 cursor-pointer"
           >
             Apply Filters
           </button> */}
@@ -330,7 +347,7 @@ const MaterialInward = () => {
               filters.uom == ""
             }
             onClick={handleResetFilters}
-            className="bg-[#d8b76a] hover:bg-[#b38a37] disabled:hover:bg-[#d8b76a]/50 disabled:bg-[#d8b76a]/50 disabled:cursor-not-allowed text-[#292926] font-semibold px-4 py-1.5 rounded transition duration-200 cursor-pointer"
+            className="bg-primary hover:bg-primary/80  disabled:bg-primary/50 disabled:cursor-not-allowed text-secondary font-semibold px-4 py-1.5 rounded transition duration-200 cursor-pointer"
           >
             Reset Filters
           </button>
@@ -339,7 +356,7 @@ const MaterialInward = () => {
         {hasPermission("Material Inward", "write") && (
           <button
             onClick={() => setFormOpen(!formOpen)}
-            className="w-full sm:w-auto justify-center cursor-pointer bg-[#d8b76a] hover:bg-[#b38a37] text-[#292926] font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
+            className="w-full sm:w-auto justify-center cursor-pointer bg-primary hover:bg-primary/80 text-secondary font-semibold px-4 py-1.5 rounded flex items-center gap-2 transition duration-200"
           >
             <FiPlus />
             {formOpen ? "Close Form" : "Inward"}
@@ -356,48 +373,45 @@ const MaterialInward = () => {
         />
       )}
 
-      <div className="overflow-x-auto rounded border border-[#d8b76a] shadow-sm">
-        <table className="min-w-full text-[11px] ">
-          <thead className="bg-[#d8b76a]  text-[#292926] text-left whitespace-nowrap">
+      <div className="overflow-x-auto rounded border border-primary shadow-sm">
+        <table className="min-w-full text-[11px]">
+          <thead className="bg-primary text-secondary text-left whitespace-nowrap">
             <tr>
-              <th className="px-2 py-1.5 ">#</th>
-              <th className="px-2 py-1.5  ">Created At</th>
-              <th className="px-2 py-1.5 ">Updated At</th>
-              <th className="px-2 py-1.5 ">Type</th>
-              <th className="px-2 py-1.5 ">Sku Code</th>
-              <th className="px-2 py-1.5 ">Item Name</th>
-              <th className="px-2 py-1.5 ">Description</th>
-              <th className="px-2 py-1.5 ">Stock UOM</th>
-              <th className="px-2 py-1.5 ">Stock Qty</th>
-              <th className="px-2 py-1.5 ">Available Qty</th>
-              <th className="px-2 py-1.5 ">Used Qty</th>
-              <th className="px-2 py-1.5 ">Damaged Qty</th>
-              <th className="px-2 py-1.5 ">Quality Approved</th>
-              <th className="px-2 py-1.5 ">Inward By</th>
+              <th className="px-2 py-1.5">#</th>
+              <th className="px-2 py-1.5">Date</th>
+              <th className="px-2 py-1.5">SKU</th>
+              <th className="px-2 py-1.5">Item Name</th>
+              <th className="px-2 py-1.5">Movement</th>
+              <th className="px-2 py-1.5">Qty</th>
+              <th className="px-2 py-1.5">UOM</th>
+              <th className="px-2 py-1.5">Warehouse</th>
+              <th className="px-2 py-1.5">Reference</th>
+              <th className="px-2 py-1.5">Remarks</th>
               <th className="px-2 py-1.5">Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {loading ? (
-              <TableSkeleton
-                rows={pagination.limit}
-                columns={Array(15).fill({})}
-              />
+              <TableSkeleton rows={pagination.limit} columns={Array(10).fill({})} />
             ) : (
               <>
                 {stocks.map((stock, index) => (
                   <tr
                     key={stock._id}
-                    className="border-t text-[11px] border-[#d8b76a] hover:bg-gray-50 whitespace-nowrap"
+                    className="border-t border-primary hover:bg-gray-50 whitespace-nowrap"
                   >
-                    <td className="px-2 border-r border-[#d8b76a]">
+                    {/* SR NO */}
+                    <td className="px-2 py-1 border-r border-primary">
                       {Number(pagination.currentPage - 1) *
                         Number(pagination.limit) +
                         index +
                         1}
                     </td>
-                    <td className="px-2   border-r border-[#d8b76a]">
-                      {new Date(stock.createdAt).toLocaleString("en-IN", {
+
+                    {/* DATE */}
+                    <td className="px-2 py-1 border-r border-primary">
+                      {new Date(stock.date).toLocaleString("en-IN", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
@@ -406,112 +420,91 @@ const MaterialInward = () => {
                         hour12: true,
                       })}
                     </td>
-                    <td className="px-2   border-r border-[#d8b76a]">
-                      {new Date(stock.updatedAt).toLocaleString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
-                    </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {stock.type || "-"}
-                    </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
+
+                    {/* SKU */}
+                    <td className="px-2 py-1 border-r border-primary">
                       {stock.skuCode}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
+
+                    {/* ITEM */}
+                    <td className="px-2 py-1 border-r border-primary">
                       {stock.itemName}
                     </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {stock.description || "-"}
-                    </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {stock.stockUOM?.unitName || "-"}
-                    </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {stock.stockQty}
-                    </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {/* {stock.availableQty || 0} */}0
-                    </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {/* {stock.usedQty || 0} */}0
-                    </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {stock.damagedQty || 0}
-                    </td>
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {stock.qualityApproved ? (
-                        <span className="text-green-600">Approved</span>
-                      ) : (
-                        <span className="text-red-600">Not Approved</span>
-                      )}
-                    </td>
 
-                    <td className="px-2  border-r border-[#d8b76a]">
-                      {stock.createdBy?.fullName || "-"}
-                    </td>
-
-                    <td className="px-2 py-1 flex gap-3 text-sm text-[#d8b76a]">
-                      <button
-                        disabled={generatingId === stock._id}
-                        onClick={() => handlePrint(stock)}
-                        className="text-[#d8b76a] hover:underline text-[11px] cursor-pointer"
+                    {/* MOVEMENT */}
+                    <td className="px-2 py-1 border-r border-primary">
+                      <span
+                        className={`px-2 py-0.5 rounded text-white font-bold ${stock.qty > 0 ? "bg-green-600" : "bg-red-600"
+                          }`}
                       >
-                        {generatingId === stock._id ? (
-                          <PulseLoader size={4} color="#d8b76a" />
-                        ) : (
-                          <FaBarcode
-                            data-tooltip-id="statusTip"
-                            data-tooltip-content="View Barcodes"
-                          />
-                        )}
-                      </button>
+                        {stock.movementType}
+                      </span>
+                    </td>
 
-                      {hasPermission("Material Inward", "update") ? (
-                        <FiEdit
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Edit"
-                          className="hover:text-blue-500 cursor-pointer"
-                          // onClick={() => {
-                          //   setEditStockData(stock);
-                          //   setEditModalOpen(true);
-                          // }}
-                        />
-                      ) : (
-                        "-"
-                      )}
+                    {/* QTY */}
+                    <td className="px-2 py-1 border-r border-primary font-bold">
+                      {stock.qty > 0 ? "+" : ""}
+                      {stock.qty}
+                    </td>
 
-                      {hasPermission("Material Inward", "delete") ? (
+                    {/* UOM */}
+                    <td className="px-2  py-1 border-r border-primary">
+                      {stock.stockUOM}
+                    </td>
+
+                    {/* WAREHOUSE */}
+                    <td className="px-2  py-1 border-r border-primary">
+                      {stock.warehouse}
+                    </td>
+
+                    {/* REFERENCE */}
+                    {/* <td className="px-2 border-r border-primary text-blue-600">
+                      {stock.referenceId || "-"}
+                    </td> */}
+
+                    {/* MOVEMENT */}
+                    <td className="px-2 py-1 border-r border-primary">
+                      <span
+                        className={`px-2 py-0.5 rounded text-white font-bold ${stock.qty > 0 ? "bg-green-600" : "bg-red-600"
+                          }`}
+                      >
+                        {stock.referenceId}
+                      </span>
+                    </td>
+
+                    {/* REMARKS */}
+                    <td className="px-2 py-1 border-r border-primary">
+                      {stock.remarks || "-"}
+                    </td>
+
+                    {/* ACTIONS */}
+                    <td className="px-2 py-1 flex gap-3 text-sm text-primary">
+                      {/* <button
+                        onClick={() => handleView(stock)}
+                        className="hover:underline text-[11px]"
+                      >
+                        View
+                      </button> */}
+
+                      <button disabled={generatingId === stock._id} onClick={() => handlePrint(stock)} className="text-[#287278] hover:underline text-[11px] cursor-pointer" > {generatingId === stock._id ? (<PulseLoader size={4} color="#287278" />) : (<FaBarcode data-tooltip-id="statusTip" data-tooltip-content="View Barcodes" />)} </button>
+
+
+                      {/* {hasPermission("Stock Register", "delete") ? (
                         <FiTrash2
-                          data-tooltip-id="statusTip"
-                          data-tooltip-content="Delete"
-                          className="cursor-pointer text-[#d8b76a] hover:text-red-600"
-                          onClick={() => handleDelete(stock._id)}
+                          className="cursor-pointer hover:text-red-600"
+                          onClick={() => handleDelete(stock.referenceId)}
                         />
                       ) : (
                         "-"
-                      )}
-                      <Tooltip
-                        id="statusTip"
-                        place="top"
-                        style={{
-                          backgroundColor: "#292926",
-                          color: "#d8b76a",
-                          fontSize: "12px",
-                          fontWeight: "bold",
-                        }}
-                      />
+                      )} */}
                     </td>
                   </tr>
                 ))}
+
                 {stocks.length === 0 && (
                   <tr>
-                    <td colSpan="14" className="text-center py-4 text-gray-500">
-                      No stocks found.
+                    <td colSpan="11" className="text-center py-4 text-gray-500">
+                      No stock movements found.
                     </td>
                   </tr>
                 )}
@@ -521,20 +514,21 @@ const MaterialInward = () => {
         </table>
       </div>
 
+
       {barcodeModalOpen && selectedStock && (
         <LabelPrint
           stock={selectedStock}
           onClose={() => setBarcodeModalOpen(false)}
         />
       )}
-      {/* {editModalOpen && (
+      {/* Update Stock Modal */}
+      {showEditModal && (
         <UpdateStockModal
-          isOpen={editModalOpen}
-          onClose={() => setEditModalOpen(false)}
-          stockData={editStockData}
-          onUpdated={fetchstocks}
+          stockData={editstock}
+          onClose={() => setShowEditModal(false)}
+          onUpdated={fetchstocks} // refetch after update
         />
-      )} */}
+      )}
 
       <PaginationControls
         currentPage={pagination.currentPage}

@@ -453,14 +453,17 @@ const RmMaster = ({ isOpen }) => {
   // const isAdmin = user?.userType.toLowerCase() == "admin";
   const isAdmin = false;
 
-  const getVisibleWarehouseStock = (rm, isAdmin, userWarehouse) => {
-    if (isAdmin) return rm.stockByWarehouse || [];
+  // const getVisibleWarehouseStock = (rm, isAdmin, userWarehouse) => {
+  //   if (isAdmin) return rm.stockByWarehouse || [];
 
-    // For normal user, show only his warehouse
-    return (
-      rm.stockByWarehouse?.filter((w) => w.warehouse === userWarehouse) || []
-    );
-  };
+  //   // For normal user, show only his warehouse
+  //   return (
+  //     rm.stockByWarehouse?.filter((w) => w.warehouse === userWarehouse) || []
+  //   );
+  // };
+
+  const getVisibleWarehouseStock = (rm) => rm.stockQty || 0;
+
 
   return (
     <div className={` p-3 max-w-[99vw] mx-auto overflow-x-hidden mt-4 `}>
@@ -824,7 +827,7 @@ const RmMaster = ({ isOpen }) => {
                         )}
 
                         {/* Filtered warehouse stock */}
-                        {getVisibleWarehouseStock(
+                        {/* {getVisibleWarehouseStock(
                           rm,
                           isAdmin,
                           userWarehouse
@@ -834,7 +837,12 @@ const RmMaster = ({ isOpen }) => {
                               ? `${w.warehouse}: ${w.qty?.toFixed(2)} `
                               : `${w.qty?.toFixed(2)}`}
                           </div>
-                        ))}
+                        ))} */}
+
+                                                {/* Filtered warehouse stock */}
+                      <div className="text-[11px]">
+  {(rm.stockQty || 0).toFixed(2)}
+</div>
 
                         {/* If no stock for this user's warehouse */}
                         {!isAdmin &&

@@ -339,7 +339,7 @@ const MaterialIssue = () => {
                         )}
                       </button> */}
 
-                        {hasPermission("Material Issue", "update") ? (
+                        {/* {hasPermission("Material Issue", "update") ? (
                           <FiEdit
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Edit"
@@ -351,7 +351,7 @@ const MaterialIssue = () => {
                           />
                         ) : (
                           "-"
-                        )}
+                        )} */}
 
                         {hasPermission("Material Issue", "delete") ? (
                           <FiTrash2

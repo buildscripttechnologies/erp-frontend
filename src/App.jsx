@@ -43,7 +43,7 @@ const App = () => {
     return diffInDays >= 5; // Show again after 5 days
   };
 
-  const MAINTENANCE_MODE = true; // 🔥 set false after payment
+  const MAINTENANCE_MODE = false; // 🔥 set false after payment
 
 
   useEffect(() => {
