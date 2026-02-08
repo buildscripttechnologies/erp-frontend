@@ -602,7 +602,7 @@ const RmMaster = ({ isOpen }) => {
     <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:flex-shrink-0">
       <button
         onClick={() => setShowExportOptions(true)}
-        className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-primary text-secondary font-semibold rounded-lg shadow hover:bg-primary/90 transition-all duration-150 text-xs sm:text-sm whitespace-nowrap"
+        className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-primary dark:bg-primary/30 text-secondary dark:text-primary dark:border dark:border-primary font-semibold rounded-lg shadow hover:bg-primary/90 dark:hover:bg-primary/40 transition-all duration-150 text-xs sm:text-sm whitespace-nowrap"
       >
         <FiDownload className="text-sm sm:text-base" /> Export
       </button>
@@ -622,7 +622,7 @@ const RmMaster = ({ isOpen }) => {
         />
       </label>
       <button
-        className="px-3 sm:px-4 py-2 bg-primary hover:bg-primary/90 text-secondary font-semibold rounded-lg flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-200 shadow-md hover:shadow-lg text-xs sm:text-sm whitespace-nowrap"
+        className="px-3 sm:px-4 py-2 bg-primary dark:bg-primary/30 dark:border dark:border-primary text-secondary dark:text-primary hover:bg-primary/90 dark:hover:bg-primary/40 font-semibold rounded-lg flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-200 shadow-md hover:shadow-lg text-xs sm:text-sm whitespace-nowrap"
         onClick={() => setShowBulkPanel(true)}
       >
         <FiPlus className="text-sm sm:text-base" /> Add Raw Material
@@ -1208,17 +1208,17 @@ const RmMaster = ({ isOpen }) => {
             {/* Header */}
             <div className="bg-primary px-6 py-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center">
-                  <FiEye className="text-white text-xl" />
+                <div className="w-10 h-10 bg-black/10 rounded-xl flex items-center justify-center">
+                  <FiEye className="text-black text-xl" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">Raw Material Details</h2>
-                  <p className="text-white/60 text-xs">View complete information</p>
+                  <h2 className="text-xl font-bold text-black">Raw Material Details</h2>
+                  <p className="text-black/70 text-xs">View complete information</p>
                 </div>
               </div>
               <button
                 onClick={() => setDetailData(null)}
-                className="w-9 h-9 flex items-center justify-center hover:bg-white/15 rounded-xl text-white/70 hover:text-white transition-all"
+                className="w-9 h-9 flex items-center justify-center hover:bg-black/10 rounded-xl text-black/80 hover:text-black transition-all"
               >
                 <FiX className="text-xl" />
               </button>
@@ -1326,16 +1326,16 @@ const RmMaster = ({ isOpen }) => {
 
                   {/* Stock Info - Highlighted */}
                   <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
-                      <p className="text-[10px] text-emerald-600 uppercase tracking-wide mb-1">Stock Qty</p>
-                      <p className="text-lg font-bold text-emerald-700">
+                    <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-lg p-3 border border-emerald-200 dark:border-emerald-700/50">
+                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-1">Stock Qty</p>
+                      <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
                         {detailData.stockQty?.toFixed(2) || "0"}
                         <span className="text-xs font-medium ml-1">{detailData.stockUOM || ""}</span>
                       </p>
                     </div>
-                    <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                      <p className="text-[10px] text-blue-600 uppercase tracking-wide mb-1">Rate</p>
-                      <p className="text-lg font-bold text-blue-700">₹{detailData.rate || "0"}</p>
+                    <div className="bg-primary/10 rounded-lg p-3 border border-primary/30">
+                      <p className="text-[10px] text-primary uppercase tracking-wide mb-1">Rate</p>
+                      <p className="text-lg font-bold text-primary">₹{detailData.rate || "0"}</p>
                     </div>
                     <div className="bg-primary/10 rounded-lg p-3 border border-primary/30">
                       <p className="text-[10px] text-primary uppercase tracking-wide mb-1">Total Value</p>
@@ -1382,22 +1382,22 @@ const RmMaster = ({ isOpen }) => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
             {/* Header */}
-            <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-6 py-4 border-b border-gray-200">
+            <div className="bg-primary px-6 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <FiDownload className="text-primary text-lg" />
+                  <div className="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center">
+                    <FiDownload className="text-black text-lg" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-secondary">Export Data</h2>
-                    <p className="text-xs text-gray-500">Choose export options</p>
+                    <h2 className="text-lg font-bold text-black">Export Data</h2>
+                    <p className="text-xs text-black/70">Choose export options</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowExportOptions(false)}
-                  className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                  className="p-2 hover:bg-black/10 rounded-full transition-colors"
                 >
-                  <FiX className="text-gray-500 text-lg" />
+                  <FiX className="text-black/80 text-lg" />
                 </button>
               </div>
             </div>
@@ -1418,7 +1418,7 @@ const RmMaster = ({ isOpen }) => {
                       className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
                         exportScope === option.value
                           ? "border-primary bg-primary/5"
-                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                          : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                       }`}
                     >
                       <input
@@ -1453,9 +1453,9 @@ const RmMaster = ({ isOpen }) => {
                       className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border-2 font-medium transition-all duration-200 ${
                         exportFormat === format.value
                           ? format.value === "excel"
-                            ? "border-green-500 bg-green-50 text-green-700"
-                            : "border-red-500 bg-red-50 text-red-700"
-                          : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                            ? "border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                            : "border-red-500 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                          : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                       }`}
                     >
                       <span className="text-xl">{format.icon}</span>
@@ -1469,7 +1469,7 @@ const RmMaster = ({ isOpen }) => {
             <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3">
               <button
                 onClick={() => setShowExportOptions(false)}
-                className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors"
+                className="px-4 py-2 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
               >
                 Cancel
               </button>
@@ -1479,7 +1479,7 @@ const RmMaster = ({ isOpen }) => {
                   setShowExportOptions(false);
                 }}
                 disabled={downloading}
-                className="px-6 py-2 bg-primary hover:bg-primary/90 text-secondary font-semibold rounded-lg shadow-md transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-primary hover:bg-primary/90 text-black font-semibold rounded-lg shadow-md transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {downloading ? (
                   <>
@@ -1543,7 +1543,7 @@ const RmMaster = ({ isOpen }) => {
             <div className="px-6 py-4 bg-gray-50 flex items-center justify-end gap-3">
               <button
                 onClick={() => setDeleteModal({ open: false, id: null, type: 'soft', sku: '', name: '' })}
-                className="px-5 py-2.5 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors"
+                className="px-5 py-2.5 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
               >
                 Cancel
               </button>

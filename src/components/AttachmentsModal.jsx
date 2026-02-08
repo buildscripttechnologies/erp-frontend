@@ -60,12 +60,12 @@ const AttachmentsModal = ({ attachments = [], onClose }) => {
       <div className="bg-white w-full max-w-xl rounded-lg shadow-sm p-6 overflow-y-auto max-h-[90vh] relative border border-[#d8b76a]">
         {/* Modal Header */}
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-[#292926]">
+          <h3 className="text-xl font-semibold text-[#292926] dark:text-white">
             Attachment Preview
           </h3>
           <button
             onClick={onClose}
-            className="text-[#292926] hover:text-red-500 text-xl font-bold cursor-pointer"
+            className="text-[#292926] dark:text-white hover:text-red-500 text-xl font-bold cursor-pointer"
           >
             &times;
           </button>

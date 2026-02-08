@@ -200,17 +200,17 @@ const BulkRmPanel = ({ onClose }) => {
         {/* Clean Header */}
         <div className="bg-primary px-6 py-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center">
-              <FiPlus className="text-white text-xl" />
+            <div className="w-10 h-10 bg-black/10 rounded-xl flex items-center justify-center">
+              <FiPlus className="text-black text-xl" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Add Raw Materials</h2>
-              <p className="text-white/60 text-xs">{rows.length} item{rows.length !== 1 ? 's' : ''} added</p>
+              <h2 className="text-xl font-bold text-black">Add Raw Materials</h2>
+              <p className="text-black/70 text-xs">{rows.length} item{rows.length !== 1 ? 's' : ''} added</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center hover:bg-white/15 rounded-xl text-white/70 hover:text-white transition-all"
+            className="w-9 h-9 flex items-center justify-center hover:bg-black/10 rounded-xl text-black/80 hover:text-black transition-all"
           >
             <FiX className="text-xl" />
           </button>
@@ -353,11 +353,12 @@ const BulkRmPanel = ({ onClose }) => {
                           onChange={(selectedOption) => handleChange(index, "location", selectedOption?.value || "")}
                           placeholder="Select Location"
                           isSearchable
+                          classNamePrefix="react-select"
                           styles={{
                             control: (base, state) => ({
                               ...base,
-                              backgroundColor: '#fff',
-                              borderColor: state.isFocused ? '#d8b76a' : '#e5e7eb',
+                              backgroundColor: 'var(--select-bg, #fff)',
+                              borderColor: state.isFocused ? '#d8b76a' : 'var(--select-border, #e5e7eb)',
                               borderRadius: '0.5rem',
                               boxShadow: state.isFocused ? '0 0 0 2px rgba(216, 183, 106, 0.2)' : 'none',
                               height: '38px',
@@ -366,14 +367,16 @@ const BulkRmPanel = ({ onClose }) => {
                               '&:hover': { borderColor: '#d8b76a' },
                             }),
                             valueContainer: (base) => ({ ...base, padding: '0 12px', height: '36px' }),
-                            input: (base) => ({ ...base, margin: 0, padding: 0 }),
+                            input: (base) => ({ ...base, margin: 0, padding: 0, color: 'var(--select-text, #374151)' }),
+                            singleValue: (base) => ({ ...base, color: 'var(--select-text, #374151)' }),
+                            placeholder: (base) => ({ ...base, color: 'var(--select-placeholder, #9ca3af)' }),
                             indicatorSeparator: () => ({ display: 'none' }),
-                            dropdownIndicator: (base) => ({ ...base, padding: '8px', color: '#6b7280' }),
-                            menu: (base) => ({ ...base, zIndex: 9999, borderRadius: '0.5rem' }),
+                            dropdownIndicator: (base) => ({ ...base, padding: '8px', color: 'var(--select-indicator, #6b7280)' }),
+                            menu: (base) => ({ ...base, zIndex: 9999, borderRadius: '0.5rem', backgroundColor: 'var(--select-bg, #fff)' }),
                             option: (base, state) => ({
                               ...base,
-                              backgroundColor: state.isSelected ? '#d8b76a' : state.isFocused ? '#fef3c7' : '#fff',
-                              color: state.isSelected ? '#fff' : '#374151',
+                              backgroundColor: state.isSelected ? '#d8b76a' : state.isFocused ? 'var(--select-option-hover, #fef3c7)' : 'var(--select-bg, #fff)',
+                              color: state.isSelected ? '#fff' : 'var(--select-text, #374151)',
                               cursor: 'pointer',
                             }),
                           }}
@@ -540,7 +543,7 @@ const BulkRmPanel = ({ onClose }) => {
         <div className="px-6 py-4 bg-white border-t border-gray-100 flex justify-between items-center shrink-0">
           <button
             onClick={addRow}
-            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 shadow-sm hover:shadow-md transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary dark:bg-primary/30 text-secondary dark:text-primary dark:border dark:border-primary rounded-xl font-semibold text-sm hover:bg-primary/90 dark:hover:bg-primary/40 shadow-sm hover:shadow-md transition-all"
           >
             <FiPlus />
             Add Item

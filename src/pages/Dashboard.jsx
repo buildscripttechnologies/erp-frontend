@@ -50,7 +50,7 @@ export default function Dashboard({ children }) {
 
       <TabsProvider>
         <TabsBar isOpen={isOpen} sidebarCollapsed={sidebarCollapsed} />
-        <div className={`flex min-h-screen w-full bg-[#fdfcf8] ${isMobile ? "pt-20" : "pt-0"}`}>
+        <div className={`flex min-h-screen w-full bg-[#fdfcf8] dark:bg-gray-900 transition-colors duration-300 ${isMobile ? "pt-20" : "pt-0"}`}>
  
           {((!isMobile && isOpen) || (isMobile && isOpen)) && (
             <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} onCollapseChange={setSidebarCollapsed} isMobile={isMobile} />

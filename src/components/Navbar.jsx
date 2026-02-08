@@ -6,11 +6,11 @@ export function Navbar({ isOpen, setIsOpen, title = "SmartFlow360", sidebarColla
 
   return (
     <div
-      className={`fixed w-full top-0 flex h-15 pl-4 p-4 transition-all duration-300 ease-in-out justify-between items-center bg-[#fdfcf8] z-30`}
+      className={`fixed w-full top-0 flex h-15 pl-4 p-4 transition-all duration-300 ease-in-out justify-between items-center bg-[#fdfcf8] dark:bg-gray-900 z-30`}
     >
 
       <button
-        className="text-2xl text-[#292927] cursor-pointer"
+        className="text-2xl text-[#292927] dark:text-gray-200 cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
         <FiMenu />

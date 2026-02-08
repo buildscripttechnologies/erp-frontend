@@ -111,8 +111,8 @@ function SortableTab({
       style={style}
       className={`group flex items-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all duration-200 ${
         isActive
-          ? "bg-gradient-to-r from-primary/15 to-primary/10 border border-primary/40 text-gray-900 shadow-sm"
-          : "bg-gray-100 text-gray-600 hover:bg-gray-150 border border-gray-200 hover:border-gray-300"
+          ? "bg-gradient-to-r from-primary/15 to-primary/10 border border-primary/40 text-gray-900 dark:text-gray-100 shadow-sm"
+          : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-150 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
       } cursor-pointer select-none whitespace-nowrap`}
       onClick={onClick}
       onContextMenu={onContextMenu}
@@ -226,7 +226,7 @@ export default function TabsBar({ isOpen = false, sidebarCollapsed = true }) {
     <div
       className={`fixed w-full ${isOpen ? "top-0" : "top-15"} hidden lg:flex h-auto ${
         isOpen ? (sidebarCollapsed ? `pl-23` : `pl-63`) : `pl-4`
-      } transition-all duration-300 ease-in-out border-b-2 bg-[#fdfcf8] border-primary items-center justify-start z-30 px-3 py-3 gap-2`}
+      } transition-all duration-300 ease-in-out border-b-2 bg-[#fdfcf8] dark:bg-gray-900 border-primary items-center justify-start z-30 px-3 py-3 gap-2`}
     >
 
       {!isOnlyDashboard && canScrollLeft && (

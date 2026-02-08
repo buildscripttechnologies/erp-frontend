@@ -11,10 +11,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SmartFlow360</title>
     <link href="/src/index.css" rel="stylesheet" />
+    <script>
+      (function() {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
   </head>
-  <body class="overflow-x-hidden">
+  <body class="overflow-x-hidden bg-white dark:bg-gray-900 transition-colors duration-300">
     <div id="root" class="w-full overflow-x-hidden"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
