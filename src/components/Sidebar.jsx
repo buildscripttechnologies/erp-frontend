@@ -92,13 +92,13 @@ export function Sidebar({ isOpen }) {
       module: "Dashboard",
       action: "read",
     },
-    // {
-    //   icon: LuMagnet,
-    //   label: "Leads",
-    //   path: "/leads",
-    //   module: "Leads",
-    //   action: "read",
-    // },
+    {
+      icon: LuMagnet,
+      label: "Leads",
+      path: "/leads",
+      module: "Leads",
+      action: "read",
+    },
     {
       icon: FiClipboard,
       label: "Stock Register",
@@ -106,13 +106,13 @@ export function Sidebar({ isOpen }) {
       module: "Stock",
       action: "read",
     },
-    // {
-    //   icon: RiBillLine,
-    //   label: "Quotation Master",
-    //   path: "/quotation-master",
-    //   module: "Quotation Master",
-    //   action: "read",
-    // },
+    {
+      icon: RiBillLine,
+      label: "Quotation Master",
+      path: "/quotation-master",
+      module: "Quotation Master",
+      action: "read",
+    },
 
     {
       icon: PiMoneyWavy,
@@ -172,20 +172,20 @@ export function Sidebar({ isOpen }) {
           path: "/material-issue",
           action: "read",
         },
-        // {
-        //   icon: BiImport,
-        //   label: "Material Receive",
-        //   module: "Material Receive",
-        //   path: "/material-receive",
-        //   action: "read",
-        // },
-        // {
-        //   icon: GiMaterialsScience,
-        //   label: "Material Consumption",
-        //   module: "Material Consumption",
-        //   path: "/material-consumption",
-        //   action: "read",
-        // },
+        {
+          icon: BiImport,
+          label: "Material Receive",
+          module: "Material Receive",
+          path: "/material-receive",
+          action: "read",
+        },
+        {
+          icon: GiMaterialsScience,
+          label: "Material Consumption",
+          module: "Material Consumption",
+          path: "/material-consumption",
+          action: "read",
+        },
       ],
     },
     {
@@ -240,13 +240,13 @@ export function Sidebar({ isOpen }) {
             },
           ],
         },
-        // {
-        //   label: "Outside Company",
-        //   icon: LuMapPinXInside,
-        //   path: "/outside-company",
-        //   module: "Outside Company",
-        //   action: "read",
-        // },
+        {
+          label: "Outside Company",
+          icon: LuMapPinXInside,
+          path: "/outside-company",
+          module: "Outside Company",
+          action: "read",
+        },
       ],
     },
     // {
@@ -294,13 +294,13 @@ export function Sidebar({ isOpen }) {
           module: "User",
           action: "read",
         },
-        // {
-        //   label: "UOM Master",
-        //   icon: FaBalanceScale,
-        //   path: "/uom-master",
-        //   module: "UOM",
-        //   action: "read",
-        // },
+        {
+          label: "UOM Master",
+          icon: FaBalanceScale,
+          path: "/uom-master",
+          module: "UOM",
+          action: "read",
+        },
         {
           label: "Role Master",
           icon: MdAssignmentInd,
@@ -315,20 +315,20 @@ export function Sidebar({ isOpen }) {
           module: "RawMaterial",
           action: "read",
         },
-        // {
-        //   label: "Location Master",
-        //   icon: FaMapMarkerAlt,
-        //   path: "/location-master",
-        //   module: "Location",
-        //   action: "read",
-        // },
-        // {
-        //   label: "SFG Master",
-        //   icon: FaLayerGroup,
-        //   path: "/sfg-master",
-        //   module: "SFG",
-        //   action: "read",
-        // },
+        {
+          label: "Location Master",
+          icon: FaMapMarkerAlt,
+          path: "/location-master",
+          module: "Location",
+          action: "read",
+        },
+        {
+          label: "SFG Master",
+          icon: FaLayerGroup,
+          path: "/sfg-master",
+          module: "SFG",
+          action: "read",
+        },
         {
           label: "FG Master",
           icon: FaCube,
@@ -336,13 +336,13 @@ export function Sidebar({ isOpen }) {
           module: "FG",
           action: "read",
         },
-        // {
-        //   label: "Sample Master",
-        //   icon: PiEyedropperSampleFill,
-        //   path: "/sample-master",
-        //   module: "Sample",
-        //   action: "read",
-        // },
+        {
+          label: "Sample Master",
+          icon: PiEyedropperSampleFill,
+          path: "/sample-master",
+          module: "Sample",
+          action: "read",
+        },
         {
           label: "BOM Master",
           icon: RiBillFill,
@@ -366,13 +366,13 @@ export function Sidebar({ isOpen }) {
         },
       ],
     },
-    // {
-    //   icon: MdOutlineSettings,
-    //   label: "Settings",
-    //   module: "Settings",
-    //   path: "/settings",
-    //   action: "read",
-    // },
+    {
+      icon: MdOutlineSettings,
+      label: "Settings",
+      module: "Settings",
+      path: "/settings",
+      action: "read",
+    },
   ];
 
   const MenuItem = ({
