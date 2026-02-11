@@ -58,7 +58,7 @@ const Dash = () => {
       <div className="w-[98%] mx-auto mt-2 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 py-4 pb-5 rounded-xl border border-primary/30 shadow-md">
         <div className="flex items-center justify-center gap-3">
           <div className="w-1.5 h-10 bg-primary rounded-full"></div>
-          <h1 className="text-3xl font-bold text-gray-800 tracking-wide">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white tracking-wide">
             Dashboard
           </h1>
           <div className="w-1.5 h-10 bg-primary rounded-full"></div>
@@ -66,12 +66,12 @@ const Dash = () => {
         <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto mt-3 rounded-full"></div>
       </div>
 
-      <div className="w-[98%] mx-auto mt-4 bg-white rounded-xl shadow-lg border border-gray-100 p-4 md:p-6">
+      <div className="w-[98%] mx-auto mt-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 md:p-6">
 
         <div className="bg-gradient-to-r from-primary/10 to-transparent py-3 px-4 rounded-lg mb-4">
           <div className="flex items-center gap-3">
             <div className="w-1 h-6 bg-primary rounded-full"></div>
-            <h2 className="text-lg md:text-xl font-semibold text-gray-800">Orders</h2>
+            <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">Orders</h2>
           </div>
         </div>
 
@@ -95,7 +95,7 @@ const Dash = () => {
             <OrderCard name="RC PO" numbers="0" value="₹0" />
           </div>
 
-          <div className="w-full lg:w-1/2 bg-gray-50 rounded-xl p-4 border border-gray-100">
+          <div className="w-full lg:w-1/2 bg-gray-50 dark:bg-gray-800 dark:border dark:border-gray-700 rounded-xl p-4 border border-gray-100">
             <OrderPieChart
               data={[
                 {
@@ -120,7 +120,7 @@ const Dash = () => {
         <div className="bg-gradient-to-r from-primary/10 to-transparent py-3 px-4 rounded-lg mb-4">
           <div className="flex items-center gap-3">
             <div className="w-1 h-6 bg-primary rounded-full"></div>
-            <h2 className="text-lg md:text-xl font-semibold text-gray-800">Master</h2>
+            <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">Master</h2>
           </div>
         </div>
 
@@ -136,7 +136,7 @@ const Dash = () => {
       <div className="w-[98%] mx-auto mt-6 bg-gradient-to-r from-primary/10 to-transparent py-3 px-4 rounded-lg">
         <div className="flex items-center gap-3">
           <div className="w-1 h-6 bg-primary rounded-full"></div>
-          <h2 className="text-lg md:text-xl font-semibold text-gray-800">Tables</h2>
+          <h2 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-white">Tables</h2>
         </div>
       </div>
 
