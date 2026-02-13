@@ -107,7 +107,7 @@ const MaterialInward = () => {
         uom: filters.uom,
         fromDate: filters.fromDate,
         toDate: filters.toDate,
-      });  
+      });
 
       const res = await axios.get(`/stocks/get-all?${queryParams.toString()}`);
       if (res.data.status == 403) {
@@ -116,7 +116,7 @@ const MaterialInward = () => {
       }
       if (res.data.status == 200) {
         console.log("stocks fetched:", res.data.data);
-        setstocks(res.data.data || []);       
+        setstocks(res.data.data || []);
         setPagination({
           currentPage: res.data.currentPage,
           totalPages: res.data.totalPages,
@@ -226,24 +226,24 @@ const MaterialInward = () => {
     { label: "Actions", className: "" },
   ];
 
-const handlePrint = async (stock) => {
-  if (stock.movementType !== "GRN") {
-    alert("Barcodes can only be printed from GRN entries");
-    return;
-  }
+  const handlePrint = async (stock) => {
+    if (stock.movementType !== "GRN") {
+      alert("Barcodes can only be printed from GRN entries");
+      return;
+    }
 
-  if (!stock.barcodes?.length) {
-    alert("No barcode data available");
-    return;
-  }
+    if (!stock.barcodes?.length) {
+      alert("No barcode data available");
+      return;
+    }
 
-  try {
-    setGeneratingId(stock._id);   // 🔥 correct id
-    await makeLabelPdf(stock);
-  } finally {
-    setGeneratingId(null);
-  }
-};
+    try {
+      setGeneratingId(stock._id);   // 🔥 correct id
+      await makeLabelPdf(stock);
+    } finally {
+      setGeneratingId(null);
+    }
+  };
 
 
 
@@ -387,6 +387,7 @@ const handlePrint = async (stock) => {
               <th className="px-2 py-1.5">Warehouse</th>
               <th className="px-2 py-1.5">Reference</th>
               <th className="px-2 py-1.5">Remarks</th>
+              <th className="px-2 py-1.5">GRN Number</th>
               <th className="px-2 py-1.5">Actions</th>
             </tr>
           </thead>
@@ -475,6 +476,16 @@ const handlePrint = async (stock) => {
                     {/* REMARKS */}
                     <td className="px-2 py-1 border-r border-primary">
                       {stock.remarks || "-"}
+                    </td>
+
+                    {/* GRN Number */}
+                    <td className="px-2 py-1 border-r border-primary">
+                      <span
+                        className={`px-2 py-0.5 rounded text-white font-bold ${stock.qty > 0 ? "bg-green-600" : "bg-red-600"
+                          }`}
+                      >
+                        {stock.grnNumber}
+                      </span>
                     </td>
 
                     {/* ACTIONS */}

@@ -29,16 +29,27 @@ export const generateConsumptionTable = (productDetails = [], categoryData) => {
       mergedRawMaterials[sku].qty += totalInches / 39.37; // meters
     } else if (fabric.includes(category)) {
       if (width && height && qty && panno) {
-        const perRowA = Math.floor(panno / width);
-        const rowsA = perRowA > 0 ? Math.ceil(qty / perRowA) : Infinity;
-        const totalInchesA = rowsA * height;
+        // const perRowA = Math.floor(panno / width);
+        // const rowsA = perRowA > 0 ? Math.ceil(qty / perRowA) : Infinity;
+        // const totalInchesA = rowsA * height;
 
-        const perRowB = Math.floor(panno / height);
-        const rowsB = perRowB > 0 ? Math.ceil(qty / perRowB) : Infinity;
-        const totalInchesB = rowsB * width;
+        // const perRowB = Math.floor(panno / height);
+        // const rowsB = perRowB > 0 ? Math.ceil(qty / perRowB) : Infinity;
+        // const totalInchesB = rowsB * width;
 
-        const bestInches = Math.min(totalInchesA, totalInchesB);
-        mergedRawMaterials[sku].qty += bestInches / 39.37;
+        // const bestInches = Math.min(totalInchesA, totalInchesB);
+        // mergedRawMaterials[sku].qty += bestInches / 39.37;
+
+
+        // const multiplier = Number(item.multiplier || 1);
+
+        const areaSqInch = height * width * qty;
+
+        // const fabricWidth = Number(item.fabricWidth || 58);
+
+        const consumptionMeter = areaSqInch / panno / 39.37;
+
+        mergedRawMaterials[sku].qty += consumptionMeter;
       }
     } else if (plastic.includes(category)) {
       mergedRawMaterials[sku].weight += grams / 1000;
@@ -58,8 +69,8 @@ export const generateConsumptionTable = (productDetails = [], categoryData) => {
     if (!excludedCategories.includes(item.category.toLowerCase())) {
       // console.log("before", item.qty, item.weight);
 
-      item.weight = item.weight * 1.03; // add 3%
-      item.qty = item.qty * 1.03; // add 3%
+      item.weight = item.weight; // add 3%
+      item.qty = item.qty; // add 3%
       // console.log("after", item.qty, item.weight);
     }
   });
