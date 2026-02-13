@@ -394,7 +394,7 @@ const MaterialInward = () => {
 
           <tbody>
             {loading ? (
-              <TableSkeleton rows={pagination.limit} columns={Array(10).fill({})} />
+              <TableSkeleton rows={pagination.limit} columns={Array(12).fill({})} />
             ) : (
               <>
                 {stocks.map((stock, index) => (
