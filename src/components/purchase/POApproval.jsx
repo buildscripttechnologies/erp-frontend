@@ -19,6 +19,8 @@ import POADetails from "./POADetails";
 import PurchaseOrderBill from "./POBill";
 import { generateLPPO } from "./generateLPPO";
 import PreviewPO from "./PreviewPO";
+import CancelPO from "./CancelPO";
+
 import { PulseLoader } from "react-spinners";
 import { useAuth } from "../../context/AuthContext";
 
@@ -29,6 +31,7 @@ const POApprovel = ({ isOpen }) => {
   // const [openAttachments, setOpenAttachments] = useState(null);
   const [poBill, setPObill] = useState(null);
   const [previewPO, setPreviewPO] = useState(null);
+  const [cancelPO, setCancelPO] = useState(null);
   const [showAddPO, setShowAddPO] = useState(false);
   const [editingPO, setEditingPO] = useState(null);
   const [expandedPOId, setExpandedPOId] = useState(null);
@@ -60,9 +63,9 @@ const POApprovel = ({ isOpen }) => {
   const hasMountedRef = useRef(false);
   ScrollLock(
     showAddPO == true ||
-      editingPO != null ||
-      poBill != null ||
-      previewPO != null
+    editingPO != null ||
+    poBill != null ||
+    previewPO != null
   );
 
   useEffect(() => {
@@ -338,24 +341,27 @@ const POApprovel = ({ isOpen }) => {
                           className={`px-[8px] border-r font-bold border-r-primary capitalize `}
                         >
                           <span
-                            className={`${
-                              po.status == "pending"
+                            className={`${po.status === "pending"
                                 ? "bg-yellow-200"
-                                : po.status == "rejected"
-                                ? "bg-red-200"
-                                : "bg-green-200"
-                            }  py-0.5 px-1 rounded`}
+                                : po.status === "rejected"
+                                  ? "bg-red-200"
+                                  : po.status === "cancelled"
+                                    ? "bg-gray-300"
+                                    : po.status === "partially-approved"
+                                      ? "bg-blue-200"
+                                      : "bg-green-200"
+                              } py-0.5 px-1 rounded`}
+
                           >
                             {po.status}
                           </span>
                         </td>
                         <td className="px-[8px]  border-r border-r-primary">
                           <span
-                            className={`${
-                              po.emailSent == true
-                                ? "bg-green-200 font-bold"
-                                : ""
-                            }  py-0.5 px-1 rounded`}
+                            className={`${po.emailSent == true
+                              ? "bg-green-200 font-bold"
+                              : ""
+                              }  py-0.5 px-1 rounded`}
                           >
                             {po.emailSent ? "Email Sent" : "-"}
                           </span>
@@ -423,15 +429,29 @@ const POApprovel = ({ isOpen }) => {
                               )}
                             </td>
                             <td className="max-w-[70px] pb-2 font-bold">
-                              {hasPermission("PO Approval", "update") && (
+                              {hasPermission("PO Approval", "update") && po.status === "pending" && (
                                 <button
                                   onClick={() => setPreviewPO(po)}
-                                  className="px-4 py-1 mr-2  bg-primary hover:bg-primary/80 text-secondary  rounded cursor-pointer"
+                                  className="px-4 py-1 mr-2 bg-primary hover:bg-primary/80 text-secondary rounded cursor-pointer"
                                 >
                                   Review PO
                                 </button>
                               )}
                             </td>
+
+                            <td className="max-w-[70px] pb-2 font-bold">
+                              {hasPermission("PO Approval", "update") &&
+                                (po.status === "approved" || po.status === "partially-approved") &&
+                                po.emailSent && (
+                                  <button
+                                    onClick={() => setCancelPO(po)}
+                                    className="px-4 py-1 mr-2 bg-red-500 hover:bg-red-600 text-white rounded cursor-pointer"
+                                  >
+                                    Cancel PO
+                                  </button>
+                                )}
+                            </td>
+
                           </tr>
                         </>
                       )}
@@ -479,6 +499,14 @@ const POApprovel = ({ isOpen }) => {
           }}
         />
       )}
+      {cancelPO && (
+        <CancelPO
+          po={cancelPO}
+          onClose={() => setCancelPO(null)}
+          onCancelled={fetchPOs}
+        />
+      )}
+
 
       <PaginationControls
         currentPage={pagination.currentPage}

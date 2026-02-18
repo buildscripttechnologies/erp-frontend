@@ -487,24 +487,27 @@ const PurchaseOrder = ({ isOpen }) => {
                           className={`px-[8px] font-bold border-r border-r-primary capitalize `}
                         >
                           <span
-                            className={`${
-                              po.status == "pending"
-                                ? "bg-yellow-200"
-                                : po.status == "rejected"
+                            className={`${po.status === "pending"
+                              ? "bg-yellow-200"
+                              : po.status === "rejected"
                                 ? "bg-red-200"
-                                : "bg-green-200"
-                            }  py-0.5 px-1 rounded`}
+                                : po.status === "cancelled"
+                                  ? "bg-gray-300"
+                                  : po.status === "partially-approved"
+                                    ? "bg-blue-200"
+                                    : "bg-green-200"
+                              } py-0.5 px-1 rounded`}
+
                           >
                             {po.status}
                           </span>
                         </td>
                         <td className="px-[8px]  border-r border-r-primary">
                           <span
-                            className={`${
-                              po.emailSent == true
-                                ? "bg-green-200 font-bold"
-                                : ""
-                            }  py-0.5 px-1 rounded`}
+                            className={`${po.emailSent == true
+                              ? "bg-green-200 font-bold"
+                              : ""
+                              }  py-0.5 px-1 rounded`}
                           >
                             {po.emailSent ? "Email Sent" : "-"}
                           </span>
@@ -513,45 +516,51 @@ const PurchaseOrder = ({ isOpen }) => {
                           {po.createdBy?.fullName || "-"}
                         </td>
                         <td className="px-[8px] pt-1 text-sm flex gap-2 border-r border-r-primary/30">
-                          {po.status != "rejected" &&
-                            po.status != "pending" &&
-                            !restore && (
-                              <>
-                                {expandedPOId === po._id && downloading ? (
-                                  <BeatLoader size={4} color="#d8b76a" />
-                                ) : (
-                                  <FaFileDownload
-                                    onClick={() => handleDownload(po)}
-                                    data-tooltip-id="statusTip"
-                                    data-tooltip-content="Download"
-                                    className="cursor-pointer text-primary hover:text-green-600"
-                                  />
-                                )}
-                              </>
-                            )}
 
+                          {/* DOWNLOAD → only approved and partially-approved */}
+                          {["approved", "partially-approved"].includes(po.status) &&
+                            !restore && (
+                              expandedPOId === po._id && downloading ? (
+                                <BeatLoader size={4} color="#d8b76a" />
+                              ) : (
+                                <FaFileDownload
+                                  onClick={() => handleDownload(po)}
+                                  data-tooltip-id="statusTip"
+                                  data-tooltip-content="Download"
+                                  className="cursor-pointer text-primary hover:text-green-600"
+                                />
+                              )
+                            )
+                          }
+
+                          {/* EDIT → only pending */}
                           {hasPermission("Purchase Order", "update") &&
-                          restore == false ? (
+                            po.status === "pending" &&
+                            restore === false ? (
                             <FiEdit
                               data-tooltip-id="statusTip"
                               data-tooltip-content="Edit"
                               className="cursor-pointer text-primary hover:text-blue-600"
                               onClick={() => setEditingPO(po)}
                             />
-                          ) : restoreId == po._id ? (
+                          ) : restoreId === po._id ? (
                             <PulseLoader size={4} color="#d8b76a" />
                           ) : (
-                            <TbRestore
-                              data-tooltip-id="statusTip"
-                              data-tooltip-content="Restore"
-                              onClick={() => handleRestore(po._id)}
-                              className="hover:text-green-500 text-primary cursor-pointer"
-                            />
+                            restore && (
+                              <TbRestore
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Restore"
+                                onClick={() => handleRestore(po._id)}
+                                className="hover:text-green-500 text-primary cursor-pointer"
+                              />
+                            )
                           )}
 
+                          {/* DELETE → only pending */}
                           {hasPermission("Purchase Order", "delete") &&
-                          restore == false ? (
-                            deleteId == po._id ? (
+                            po.status === "pending" &&
+                            restore === false ? (
+                            deleteId === po._id ? (
                               <PulseLoader size={4} color="#d8b76a" />
                             ) : (
                               <FiTrash2
@@ -561,15 +570,17 @@ const PurchaseOrder = ({ isOpen }) => {
                                 onClick={() => handleDelete(po._id)}
                               />
                             )
-                          ) : deleteId == po._id ? (
+                          ) : deleteId === po._id ? (
                             <PulseLoader size={4} color="#d8b76a" />
                           ) : (
-                            <FiTrash2
-                              data-tooltip-id="statusTip"
-                              data-tooltip-content="Permanent Delete"
-                              onClick={() => handlePermanentDelete(po._id)}
-                              className="hover:text-red-500 text-primary cursor-pointer"
-                            />
+                            restore && (
+                              <FiTrash2
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Permanent Delete"
+                                onClick={() => handlePermanentDelete(po._id)}
+                                className="hover:text-red-500 text-primary cursor-pointer"
+                              />
+                            )
                           )}
 
                           <Tooltip
@@ -582,7 +593,9 @@ const PurchaseOrder = ({ isOpen }) => {
                               fontWeight: "bold",
                             }}
                           />
+
                         </td>
+
                       </tr>
                       {expandedPOId === po._id && (
                         <>
@@ -632,11 +645,11 @@ const PurchaseOrder = ({ isOpen }) => {
         totalResults={pagination.totalResults}
         onEntriesChange={(limit) => {
           setPagination((prev) => ({ ...prev, limit, currentPage: 1 }));
-          
+
         }}
         onPageChange={(page) => {
           setPagination((prev) => ({ ...prev, currentPage: page }));
-           
+
         }}
       />
     </div>

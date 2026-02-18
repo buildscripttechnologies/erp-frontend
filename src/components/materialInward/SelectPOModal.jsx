@@ -18,7 +18,11 @@ export const SelectPOModal = ({ onClose, onSelect }) => {
           res.data.data ||
           res.data.purchaseOrders ||
           []
-        ).filter((po) => po.items?.some((item) => item.inwardStatus != true));
+        ).filter((po) =>
+          po.items?.some(
+            (item) =>
+              (item.pendingQty ?? (item.orderQty - (item.inwardQty || 0))) > 0
+          ));
         setPos(filteredPOs);
       } catch (err) {
         toast.error("Failed to fetch POs");
@@ -29,7 +33,10 @@ export const SelectPOModal = ({ onClose, onSelect }) => {
     fetchPOs();
   }, []);
 
-  let filteredItems = selectedPO?.items.filter((i) => i.inwardStatus != true);
+  let filteredItems = selectedPO?.items.filter(
+    (i) =>
+      (i.pendingQty ?? (i.orderQty - (i.inwardQty || 0))) > 0
+  );
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
@@ -74,7 +81,9 @@ export const SelectPOModal = ({ onClose, onSelect }) => {
                 <Select
                   options={filteredItems.map((it) => ({
                     value: it._id,
-                    label: `${it.item.skuCode} - ${it.item.itemName} (Qty: ${it.orderQty})`,
+                    label: `${it.item.skuCode} - ${it.item.itemName}
+(Order: ${it.orderQty}, Inwarded: ${it.inwardQty || 0}, Remaining: ${it.pendingQty ?? (it.orderQty - (it.inwardQty || 0))
+                      })`,
                   }))}
                   onChange={(itemOption) => {
                     const item = selectedPO.items.find(

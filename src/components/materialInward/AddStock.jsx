@@ -11,6 +11,9 @@ import { SelectPOModal } from "./SelectPOModal";
 const AddStockModal = ({ onClose, onAdded }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [stockQty, setStockQty] = useState("");
+  const [maxQty, setMaxQty] = useState(null);
+  const [orderedQty, setOrderedQty] = useState(null);
+  const [inwardedQty, setInwardedQty] = useState(null);
   const [baseQty, setBaseQty] = useState("");
   const [damagedQty, setDamagedQty] = useState("");
   const [loading, setLoading] = useState(false);
@@ -271,23 +274,76 @@ const AddStockModal = ({ onClose, onAdded }) => {
             </div>
           )}
 
+          {orderedQty !== null && (
+            <div className="w-full bg-gray-50 border border-primary rounded p-3 mb-3">
+              <div className="flex gap-6 text-sm">
+
+                <div>
+                  <span className="text-gray-500">Ordered:</span>
+                  <span className="ml-1 font-semibold text-primary">
+                    {orderedQty}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-gray-500">Already Inwarded:</span>
+                  <span className="ml-1 font-semibold text-green-600">
+                    {inwardedQty}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-gray-500">Remaining:</span>
+                  <span className="ml-1 font-semibold text-orange-600">
+                    {maxQty}
+                  </span>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+
           <div className="flex flex-wrap gap-2 sm:gap-6 w-full">
             <div className="w-[30%]">
               <label className="block text-xs font-semibold text-[#292926] mb-1">
                 Stock Qty
+                {maxQty !== null && (
+                  <span className="text-gray-500 ml-2">
+                    (Max: {maxQty})
+                  </span>
+                )}
               </label>
+
               <input
                 step="any"
                 type="number"
                 placeholder="Stock Quantity"
+                max={maxQty}
+                min={0}
                 value={manualEntries.length > 0 ? totalStockQty : stockQty}
-                onChange={(e) => setStockQty(e.target.value)}
+                onChange={(e) => {
+
+                  const value = Number(e.target.value);
+
+                  console.log("Entered qty:", value);
+                  console.log("Max allowed qty:", maxQty);
+
+                  // ✅ Block exceeding qty
+                  if (maxQty !== null && value > maxQty) {
+                    toast.error(`Cannot inward more than pending qty (${maxQty})`);
+                    return;
+                  }
+
+                  setStockQty(value);
+                }}
                 className="w-full p-2 border border-primary rounded focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition duration-200"
                 required
-                min={0}
                 disabled={manualEntries.length > 0}
               />
+
             </div>
+
 
             <div className="w-[30%]">
               <label className="block text-xs font-semibold text-[#292926] mb-1">
@@ -419,27 +475,50 @@ const AddStockModal = ({ onClose, onAdded }) => {
           <SelectPOModal
             onClose={() => setShowPOModal(false)}
             onSelect={(po, item) => {
-              console.log("item selected", item);
-              let rmItem = {
+
+              const calculatedPending =
+                item.pendingQty !== undefined && item.pendingQty !== null
+                  ? item.pendingQty
+                  : item.orderQty - (item.inwardQty || 0);
+
+              console.log("Selected pendingQty:", calculatedPending);
+              const inwarded = item.inwardQty || 0;
+              const ordered = item.orderQty;
+
+              setStockQty(calculatedPending);
+              setMaxQty(calculatedPending);
+
+              setOrderedQty(ordered);
+              setInwardedQty(inwarded);
+              setShowPOModal(false);
+
+              setSelectedPO(po);
+
+              setSelectedItem({
+                value: item.item._id,
+                label: `${item.item?.skuCode} - ${item.item?.itemName}`,
+                type: "RM",
+                r: item.item,
+              });
+
+              setItemDetails({
                 ...item.item,
                 id: item.item._id,
                 stockUOM: item.item.stockUOM?.unitName,
                 purchaseUOM: item.item?.purchaseUOM?.unitName,
-              };
-
-              setShowPOModal(false);
-              setSelectedPO(po);
-              setSelectedItem({
-                value: item.item._id,
-                label: `${item.item?.skuCode} - ${item.item?.itemName}`,
-                type: "RM", // or based on type if available
-                r: item.item,
               });
-              setItemDetails(rmItem);
-              // setBaseQty(item.orderQty); // autofill from PO
-              setStockQty(item.orderQty);
+
+              // ✅ Autofill pending qty
+              setStockQty(calculatedPending);
+
+              // ✅ Set max inward allowed
+              setMaxQty(calculatedPending);
+
               setQualityApproved(item.item?.qualityInspectionNeeded);
+
             }}
+
+
           />
         )}
       </div>

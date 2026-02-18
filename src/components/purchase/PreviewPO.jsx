@@ -96,6 +96,7 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
       setAddress(po.address || "");
       setPoItems(
         po.items.map((i) => ({
+          _id: i._id,
           item: {
             value: i.item._id,
             label: `${i.item.skuCode} - ${i.item.itemName} - ${i.item.description}`,
@@ -269,6 +270,7 @@ const PreviewPO = ({ po, onUpdated, onClose, onApproved, onRejected }) => {
 
     return {
       items: normalizedItems.map((p) => ({
+        _id: p._id,
         item: p.item.value,
         orderQty: p.orderQty,
         rate: p.rate,
