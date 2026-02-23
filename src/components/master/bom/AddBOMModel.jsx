@@ -92,11 +92,44 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
     fetchDropdownData();
   }, []);
 
+  useEffect(() => {
+    if (!form.orderQty || productDetails.length === 0) return;
+
+    const orderQty = Number(form.orderQty) || 1;
+
+    const updatedDetails = productDetails.map((comp) => {
+      const category = (comp.category || "").toLowerCase();
+
+      if (plastic.includes(category)) {
+        const grams = (Number(comp.tempGrams) || 0) * orderQty;
+        const qty = (Number(comp.tempQty) || 1) * orderQty;
+
+        return {
+          ...comp,
+          grams,
+          qty,
+          rate: calculateRate({ ...comp, grams }, orderQty, categoryData),
+        };
+      } else {
+        const finalQty = (Number(comp.tempQty) || 0) * orderQty;
+
+        return {
+          ...comp,
+          qty: finalQty,
+          rate: calculateRate(comp, finalQty, categoryData),
+        };
+      }
+    });
+
+    setProductDetails(updatedDetails);
+    recalculateTotals(form, updatedDetails);
+
+  }, [form.orderQty]);
+
   const materialOptions = [
     ...rms.map((rm) => ({
-      label: `${rm.skuCode}: ${rm.itemName}${
-        rm.description ? " - " + rm.description : ""
-      }`,
+      label: `${rm.skuCode}: ${rm.itemName}${rm.description ? " - " + rm.description : ""
+        }`,
       value: rm.id,
       type: "RawMaterial",
       sqInchRate: rm.sqInchRate || null,
@@ -108,9 +141,8 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
       skuCode: rm.skuCode,
     })),
     ...sfgs.map((sfg) => ({
-      label: `${sfg.skuCode}: ${sfg.itemName}${
-        sfg.description ? " - " + sfg.description : ""
-      }`,
+      label: `${sfg.skuCode}: ${sfg.itemName}${sfg.description ? " - " + sfg.description : ""
+        }`,
       value: sfg.id,
       type: "SFG",
       sqInchRate: sfg.sqInchRate || 1,
@@ -124,9 +156,8 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
 
   const productOptions = [
     ...fgs.map((fg) => ({
-      label: `${fg.skuCode}: ${fg.itemName}${
-        fg.description ? " - " + fg.description : ""
-      }`,
+      label: `${fg.skuCode}: ${fg.itemName}${fg.description ? " - " + fg.description : ""
+        }`,
       value: fg.id,
       type: "FG",
       fg: fg,
@@ -406,12 +437,12 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
       product: matchedProduct || null,
       customer: matchedCustomer
         ? {
-            label: matchedCustomer.customerName,
-            value: matchedCustomer.customerName,
-          }
+          label: matchedCustomer.customerName,
+          value: matchedCustomer.customerName,
+        }
         : coData.partyName
-        ? { label: coData.partyName, value: coData.partyName }
-        : null,
+          ? { label: coData.partyName, value: coData.partyName }
+          : null,
       defaults: {
         orderQty: coData.orderQty || 1,
         date: coData.date || new Date().toISOString().split("T")[0],
@@ -461,9 +492,8 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
           skuCode: item.skuCode || "",
           isPasting: item.isPasting,
           isPrint: item.isPrint,
-          label: `${item.skuCode}: ${item.itemName}${
-            item.description ? ` - ${item.description}` : ""
-          }`,
+          label: `${item.skuCode}: ${item.itemName}${item.description ? ` - ${item.description}` : ""
+            }`,
         }));
 
         setProductDetails(enrichedDetails);
@@ -480,8 +510,8 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
             : "",
           deliveryDate: prefill.defaults.deliveryDate
             ? new Date(prefill.defaults.deliveryDate)
-                .toISOString()
-                .split("T")[0]
+              .toISOString()
+              .split("T")[0]
             : "",
           height: selectedProduct.height || 0,
           width: selectedProduct.width || 0,
@@ -590,14 +620,15 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                     // });
                   }
 
-                  setForm({
+                  setForm(prev => ({
+                    ...prev,
                     productName:
                       selectedProduct.itemName ||
                       selectedProduct.product.name ||
                       "",
                     sampleNo:
                       selectedProduct.sampleNo || selectedProduct.skuCode,
-                    partyName: selectedProduct.partyName || "",
+                    partyName: selectedProduct.partyName || prev.partyName,
                     orderQty: selectedProduct.orderQty || 1,
                     height: selectedProduct.height || 0,
                     width: selectedProduct.width || 0,
@@ -619,7 +650,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                     unitRate: selectedProduct.unitRate || 0,
                     unitB2BRate: selectedProduct.unitB2BRate || 0,
                     unitD2CRate: selectedProduct.unitD2CRate || 0,
-                  });
+                  }));
 
                   // console.log("selectedProduct", selectedProduct);
 
@@ -654,9 +685,8 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                     skuCode: item.skuCode || "",
                     isPasting: item.isPasting,
                     isPrint: item.isPrint,
-                    label: `${item.skuCode}: ${item.itemName}${
-                      item.description ? ` - ${item.description}` : ""
-                    }`,
+                    label: `${item.skuCode}: ${item.itemName}${item.description ? ` - ${item.description}` : ""
+                      }`,
                   }));
 
                   // console.log("enriched", enrichedDetails);
@@ -818,11 +848,10 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                   className="border border-primary rounded p-3 flex flex-col gap-2"
                 >
                   <div
-                    className={`grid grid-cols-1 sm:grid-cols-2 ${
-                      comp.category == "plastic" || comp.category == "non woven"
+                    className={`grid grid-cols-1 sm:grid-cols-2 ${comp.category == "plastic" || comp.category == "non woven"
                         ? "md:grid-cols-8"
                         : "md:grid-cols-7"
-                    } md:grid-cols-8 gap-3`}
+                      } md:grid-cols-8 gap-3`}
                   >
                     {/* Component Field - span 2 columns on medium+ screens */}
                     <div className="flex flex-col md:col-span-2">
@@ -922,12 +951,12 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                             {field === "partName"
                               ? "Part Name"
                               : field === "qty"
-                              ? "Qty"
-                              : field === "grams"
-                              ? "Weight (gm)"
-                              : field === "rate"
-                              ? "Rate"
-                              : `${field} (Inch)`}
+                                ? "Qty"
+                                : field === "grams"
+                                  ? "Weight (gm)"
+                                  : field === "rate"
+                                    ? "Rate"
+                                    : `${field} (Inch)`}
                           </label>
                           <input
                             type={
@@ -937,10 +966,10 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                               field === "partName"
                                 ? "Item Part Name"
                                 : field === "grams"
-                                ? "Weight in grams"
-                                : field === "qty"
-                                ? "qty"
-                                : `${field}`
+                                  ? "Weight in grams"
+                                  : field === "qty"
+                                    ? "qty"
+                                    : `${field}`
                             }
                             className="p-1.5 border border-primary rounded focus:border-2 focus:border-primary focus:outline-none transition"
                             value={comp[field] || ""}
