@@ -47,7 +47,7 @@ export const generateConsumptionTable = (productDetails = [], categoryData) => {
 
         // const fabricWidth = Number(item.fabricWidth || 58);
 
-        const consumptionMeter = areaSqInch / panno / 39.37;
+        const consumptionMeter = areaSqInch / panno / 39;
 
         mergedRawMaterials[sku].qty += consumptionMeter;
       }
