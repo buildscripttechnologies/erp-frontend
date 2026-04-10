@@ -13,12 +13,15 @@ import { BeatLoader } from "react-spinners";
 import { useCategoryArrays } from "../../data/dropdownData";
 
 const AddCO = ({ onClose, onSuccess }) => {
-   const { fabric, slider, plastic, zipper } = useCategoryArrays();
+  const { fabric, slider, plastic, zipper } = useCategoryArrays();
   const [form, setForm] = useState({
     partyName: "",
     productName: "",
     sampleNo: "",
     orderQty: 1,
+    gst: 0, 
+    manualRate: "",
+    useManualRate: false,
     date: new Date().toISOString().split("T")[0],
     deliveryDate: "",
   });
@@ -32,7 +35,6 @@ const AddCO = ({ onClose, onSuccess }) => {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [components, setComponents] = useState([]);
-
   const [files, setFiles] = useState([]);
   const [printingFiles, setPrintingFiles] = useState([]);
 
@@ -69,17 +71,15 @@ const AddCO = ({ onClose, onSuccess }) => {
 
   const productOptions = [
     ...samples.map((s) => ({
-      label: `${s.sampleNo}: ${s.product.name}${
-        s.description ? " - " + s.description : ""
-      }`,
+      label: `${s.sampleNo}: ${s.product.name}${s.description ? " - " + s.description : ""
+        }`,
       value: s._id,
       type: "SAMPLE",
       sample: s,
     })),
     ...fgs.map((fg) => ({
-      label: `${fg.skuCode}: ${fg.itemName}${
-        fg.description ? " - " + fg.description : ""
-      }`,
+      label: `${fg.skuCode}: ${fg.itemName}${fg.description ? " - " + fg.description : ""
+        }`,
       value: fg.id,
       type: "FG",
       fg: fg,
@@ -109,33 +109,46 @@ const AddCO = ({ onClose, onSuccess }) => {
       D2C,
     } = updatedForm;
 
+    const safeQty = Number(orderQty) || 1;
+
     const overheadPercent =
-      rejection +
-      QC +
-      machineMaintainance +
-      materialHandling +
-      packaging +
-      shipping +
-      companyOverHead +
-      indirectExpense;
+      (rejection || 0) +
+      (QC || 0) +
+      (machineMaintainance || 0) +
+      (materialHandling || 0) +
+      (packaging || 0) +
+      (shipping || 0) +
+      (companyOverHead || 0) +
+      (indirectExpense || 0);
 
-    console.log("overHead", overheadPercent);
+    let baseComponentRate = 0;
 
-    const baseComponentRate = updatedDetails.reduce(
-      (sum, comp) => sum + (Number(comp.rate) || 0),
-      0
-    );
-    const unitR = baseComponentRate / orderQty + stitching + printing + others;
+    if (updatedForm.useManualRate && updatedForm.manualRate != null) {
+      baseComponentRate = Number(updatedForm.manualRate) * safeQty;
+    } else {
+      baseComponentRate = updatedDetails.reduce(
+        (sum, comp) => sum + (Number(comp.rate) || 0),
+        0
+      );
+    }
 
-    const totalR =
-      (baseComponentRate / orderQty + stitching + printing + others) * orderQty;
+    const extraCost =
+      (Number(stitching) || 0) +
+      (Number(printing) || 0) +
+      (Number(others) || 0);
+
+    const unitR = baseComponentRate / safeQty + extraCost;
+    const totalR = unitR * safeQty;
 
     const unitRate = unitR + (unitR * overheadPercent) / 100;
-    const unitB2BRate = unitR + (unitR * (overheadPercent + B2B)) / 100;
-    const unitD2CRate = unitR + (unitR * (overheadPercent + D2C)) / 100;
+    const unitB2BRate = unitR + (unitR * ((overheadPercent || 0) + (B2B || 0))) / 100;
+    const unitD2CRate = unitR + (unitR * ((overheadPercent || 0) + (D2C || 0))) / 100;
+
     const totalRate = totalR + (totalR * overheadPercent) / 100;
-    const totalB2BRate = totalR + (totalR * (overheadPercent + B2B)) / 100;
-    const totalD2CRate = totalR + (totalR * (overheadPercent + D2C)) / 100;
+    const totalB2BRate =
+      totalR + (totalR * ((overheadPercent || 0) + (B2B || 0))) / 100;
+    const totalD2CRate =
+      totalR + (totalR * ((overheadPercent || 0) + (D2C || 0))) / 100;
 
     setForm((prev) => ({
       ...prev,
@@ -151,6 +164,7 @@ const AddCO = ({ onClose, onSuccess }) => {
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
+
     const numericFields = [
       "height",
       "width",
@@ -172,11 +186,20 @@ const AddCO = ({ onClose, onSuccess }) => {
       "B2B",
       "D2C",
     ];
+
     const newValue = numericFields.includes(name)
-      ? Number(value) || null
+      ? Number(value) || 0
       : value;
 
-    setForm((prev) => ({ ...prev, [name]: newValue }));
+    const updatedForm = {
+      ...form,
+      [name]: newValue,
+    };
+
+    setForm(updatedForm);
+
+    // 🔥 CRITICAL LINE
+    recalculateTotals(updatedForm, productDetails);
   };
 
   const addSample = () => {
@@ -187,19 +210,43 @@ const AddCO = ({ onClose, onSuccess }) => {
     console.log("form", form.partyName, form.productName, form.orderQty);
 
     setLoading(true);
+
     if (!form.partyName || !form.productName || !form.orderQty) {
       setLoading(false);
       return toast.error("Please fill all required fields");
     }
-    const hasEmpty = productDetails.some(
-      (c) =>
-        !c.itemId || c.qty <= 0 || c.height <= 0 || c.width <= 0 || !c.partName
-    );
+
+    // ✅ FINAL RATE
+    const finalRate = form.useManualRate
+      ? Number(form.manualRate || 0)
+      : Number(form.unitRate || 0);
+
+    const orderQty = Number(form.orderQty || 0);
+    const gst = Number(form.gst || 0);
+
+    // ✅ AMOUNT CALCULATION
+    const baseAmount = finalRate * orderQty;
+    const gstAmount = (baseAmount * gst) / 100;
+    const totalAmount = baseAmount + gstAmount;
+
+    const payload = {
+      ...form,
+
+      // 🔥 RATE FIELDS
+      autoRate: Number(form.unitRate || 0),
+      manualRate: Number(form.manualRate || 0),
+      finalRate: finalRate,
+      useManualRate: form.useManualRate,
+
+      // 🔥 AMOUNT FIELDS
+      amount: totalAmount,
+      gst: gst,
+    };
 
     try {
       const formData = new FormData();
-      formData.append("data", JSON.stringify({ ...form }));
-
+      formData.append("data", JSON.stringify(payload));
+console.log("FINAL PAYLOAD", payload);
       const res = await axios.post("/cos/add", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -265,31 +312,9 @@ const AddCO = ({ onClose, onSuccess }) => {
 
                 onChange={(e) => {
                   let selectedProduct = null;
-                  console.log("e", e);
 
-                  if (e.type === "FG") {
-                    selectedProduct = e.fg;
-                    // setForm({ ...form, productName: selectedProduct.itemName });
-                  } else if (e.type === "SAMPLE") {
-                    selectedProduct = e.sample;
-                    // setForm({
-                    //   ...form,
-                    //   productName: selectedProduct.product.name,
-                    // });
-                  }
-
-                  setForm({
-                    productName:
-                      selectedProduct.itemName ||
-                      selectedProduct.product.name ||
-                      "",
-                    sampleNo:
-                      selectedProduct.sampleNo || selectedProduct.skuCode,
-                    partyName: selectedProduct.partyName || "",
-                    orderQty: selectedProduct.orderQty || 1,
-                  });
-
-                  console.log("selectedProduct", selectedProduct);
+                  if (e.type === "FG") selectedProduct = e.fg;
+                  else if (e.type === "SAMPLE") selectedProduct = e.sample;
 
                   if (!selectedProduct) return;
 
@@ -298,7 +323,29 @@ const AddCO = ({ onClose, onSuccess }) => {
                     ...(selectedProduct.sfg || []),
                     ...(selectedProduct.productDetails || []),
                   ];
-                  // setSelectedFg(selectedProduct);
+
+                  setProductDetails(allDetails);
+
+                  const updatedForm = {
+                    ...form,
+                    productName:
+                      selectedProduct.itemName ||
+                      selectedProduct.product?.name ||
+                      "",
+                    sampleNo:
+                      selectedProduct.sampleNo || selectedProduct.skuCode,
+                    partyName: selectedProduct.partyName || "",
+                    orderQty: selectedProduct.orderQty || 1,
+
+                    // OPTIONAL: prefill
+                    manualRate: selectedProduct.unitD2CRate || 0,
+                    useManualRate: false,
+                  };
+
+                  setForm(updatedForm);
+
+                  // 🔥 CRITICAL
+                  recalculateTotals(updatedForm, allDetails);
                 }}
               />
             </div>
@@ -335,21 +382,78 @@ const AddCO = ({ onClose, onSuccess }) => {
               />
             </div>
 
-            <div className="flex flex-col">
-              <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
-                Order Qty
-              </label>
-              <input
-                type="number"
-                placeholder="Order Qty"
-                name="orderQty"
-                className="p-2 border border-primary  rounded focus:border-2 focus:border-primary focus:outline-none transition"
-                value={form.orderQty}
-                // onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
-                onChange={(e) => handleFormChange(e)}
-              />
-            </div>
 
+
+            <div className="flex flex-col sm:flex-row justify-between gap-2">
+              <div className="flex flex-col w-full">
+                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                  Order Qty
+                </label>
+                <input
+                  type="number"
+                  placeholder="Order Qty"
+                  name="orderQty"
+                  className="p-2 border border-primary  rounded focus:border-2 focus:border-primary focus:outline-none transition"
+                  value={form.orderQty}
+                  // onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
+                  onChange={(e) => handleFormChange(e)}
+                />
+              </div>
+              <div className="flex flex-col w-full">
+
+                {/* Label Row */}
+                <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">
+                  Manual Rate
+                </label>
+
+                {/* Checkbox + Input aligned */}
+                <div className="flex items-center gap-3">
+
+                  <input
+                    type="checkbox"
+                    id="manualRate"
+                    checked={form.useManualRate}
+                    onChange={(e) => {
+                      const updatedForm = {
+                        ...form,
+                        useManualRate: e.target.checked,
+                      };
+
+                      setForm(updatedForm);
+                      recalculateTotals(updatedForm, productDetails);
+                    }}
+                    className="cursor-pointer text-primary border-gray-300 rounded focus:ring-primary"
+                  />
+
+                  <input
+                    type="number"
+                    placeholder="Enter Rate"
+                    name="rate"
+                    disabled={!form.useManualRate}
+                    value={form.manualRate}
+                    onChange={(e) => {
+                      const value = Number(e.target.value) || 0;
+
+                      const updatedForm = {
+                        ...form,
+                        manualRate: value,
+                        useManualRate: true,
+                      };
+
+                      setForm(updatedForm);
+
+                      recalculateTotals(updatedForm, productDetails);
+                    }}
+                    className={`flex-1 p-2 border rounded transition ${form.useManualRate
+                      ? "border-primary focus:border-2 focus:border-primary focus:outline-none transition"
+                      : "bg-gray-100 cursor-not-allowed border-gray-300"
+                      }`}
+                  />
+
+                </div>
+
+              </div>
+            </div>
             <div className="flex flex-col sm:flex-row justify-between gap-2">
               <div className="flex flex-col w-full">
                 <label className="text-[12px] font-semibold mb-[2px] text-black capitalize">

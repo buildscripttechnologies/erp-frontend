@@ -214,6 +214,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
     const totalRate = totalR + (totalR * overheadPercent) / 100;
     const totalB2BRate = totalR + (totalR * (overheadPercent + B2B)) / 100;
     const totalD2CRate = totalR + (totalR * (overheadPercent + D2C)) / 100;
+    const totalManualRate = (Number(updatedForm.manualRate) || 0) * orderQty;
 
     setForm((prev) => ({
       ...prev,
@@ -224,6 +225,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
       totalRate: totalRate.toFixed(2),
       totalB2BRate: totalB2BRate.toFixed(2),
       totalD2CRate: totalD2CRate.toFixed(2),
+      totalManualRate: totalManualRate.toFixed(2),
     }));
   };
 
@@ -384,7 +386,7 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
       const formData = new FormData();
       formData.append(
         "data",
-        JSON.stringify({ ...form, productDetails, consumptionTable })
+        JSON.stringify({ ...form, productDetails, consumptionTable, manualRate: coData?.manualRate, totalManualRate: coData?.amount })
       );
       files.forEach((f) => formData.append("files", f));
       printingFiles.forEach((f) => formData.append("printingFiles", f));
@@ -395,9 +397,11 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
       if (res.data.status === 403) return toast.error(res.data.message);
 
       // ✅ Mark CO as approved here
-      if (coData?._id) {
+      if (coData?._id && res?.data?.data?._id) {
         await axios.patch(`/cos/update/${coData._id}`, {
-          status: "Approved",
+          status: "Approved", // 🔥 better status
+          bomId: res.data.data._id, // 🔥 link BOM
+          bomNo: res.data.data.bomNo, // 🔥 optional but useful
         });
       }
 
@@ -849,8 +853,8 @@ const AddBomModal = ({ onClose, onSuccess, coData }) => {
                 >
                   <div
                     className={`grid grid-cols-1 sm:grid-cols-2 ${comp.category == "plastic" || comp.category == "non woven"
-                        ? "md:grid-cols-8"
-                        : "md:grid-cols-7"
+                      ? "md:grid-cols-8"
+                      : "md:grid-cols-7"
                       } md:grid-cols-8 gap-3`}
                   >
                     {/* Component Field - span 2 columns on medium+ screens */}

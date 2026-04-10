@@ -195,7 +195,7 @@ const COP = ({ isOpen }) => {
                   <th className="px-[8px] ">Party Name</th>
                   <th className="px-[8px] ">Product Name</th>
                   <th className="px-[8px] ">Order Qty</th>
-                  {/* <th className="px-[8px] ">Product Size</th> */}
+                  <th className="px-[8px] ">Rate</th>
                   <th className="px-[8px] ">Date</th>
                   <th className="px-[8px] ">Delivery Date</th>
                   <th className="px-[8px] ">Status</th>
@@ -263,6 +263,9 @@ const COP = ({ isOpen }) => {
                           </td>
                           <td className="px-[8px] border-r border-primary  ">
                             {b.orderQty || "-"}
+                          </td>
+                          <td className="px-[8px] border-r border-primary  ">
+                            {b.manualRate || "-"}
                           </td>
                           {/* <td className="px-[8px] border-r border-primary ">
                             {`${b.height ?? 0} x ${b.width ?? 0} x ${

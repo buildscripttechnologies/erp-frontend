@@ -76,12 +76,14 @@ const CustomerOrder = ({ isOpen }) => {
     setLoading(true);
     try {
       const res = await axios.get(
+        // `/cos/with-bom?page=${page}&search=${search}&limit=${limit}`
         `/boms/get-all?page=${page}&search=${search}&limit=${limit}`
       );
       if (res.data.status == 403) {
         toast.error(res.data.message);
         return;
       }
+      console.log("Fetched BOMs:", res.data.data);
       setBOMs(res.data.data || []);
       setPagination({
         currentPage: res.data.currentPage,
@@ -272,14 +274,14 @@ const CustomerOrder = ({ isOpen }) => {
                             }`}
                           </td>
                           <td className="px-[8px] border-r border-primary  ">
-                            {b.unitD2CRate || "-"}
+                            {b.manualRate || "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary  ">
                             {b.gst || "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary  ">
-                            {b.totalAmountWithGst != null
-                              ? b.totalAmountWithGst.toFixed(2)
+                            {b.totalManualRateWithGst != null
+                              ? b.totalManualRateWithGst.toFixed(2)
                               : "-"}
                           </td>
                           <td className="px-[8px] border-r border-primary ">
