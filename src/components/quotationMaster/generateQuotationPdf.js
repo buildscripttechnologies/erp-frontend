@@ -147,7 +147,7 @@ export const generateQuotationPdf = async (
 
   // Loop through each quotation
   (co?.quotations || []).forEach((q, idx) => {
-    const taxable = q?.totalD2CRate || 0;
+    const taxable = q?.totalB2BRate || 0;
     const gstRate = q?.gst || 0;
     const gstAmt = (taxable * gstRate) / 100;
     const grand = taxable + gstAmt;
@@ -163,7 +163,7 @@ export const generateQuotationPdf = async (
       q.hsnOrSac || "-",
       q.orderQty || 0,
       q.gst || "-",
-      q.unitD2CRate?.toFixed?.(2) || "0.00",
+      q.unitB2BRate?.toFixed?.(2) || "0.00",
       taxable.toFixed(2),
     ]);
   });
@@ -517,7 +517,7 @@ function getGstSummary(quotations = [], customerState, companyState = "GJ") {
   quotations.forEach((q) => {
     // Extract rate safely
     const gstRate = Number(q?.productDetails?.[0]?.gst || q?.gst || 0);
-    const taxable = Number(q?.totalD2CRate || q?.taxable || 0);
+    const taxable = Number(q?.totalB2BRate || q?.taxable || 0);
     const gstAmount = (taxable * gstRate) / 100;
 
     if (!summary[gstRate]) {

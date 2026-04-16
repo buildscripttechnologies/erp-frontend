@@ -87,96 +87,22 @@ const AddQuotation = ({ onClose, onSuccess, coData }) => {
 
   const productOptions = [
     ...fgs.map((fg) => ({
-      label: `${fg.skuCode}: ${fg.itemName}${
-        fg.description ? " - " + fg.description : ""
-      }`,
+      label: `${fg.skuCode}: ${fg.itemName}${fg.description ? " - " + fg.description : ""
+        }`,
       value: fg.id,
       type: "FG",
       fg: fg,
     })),
   ];
 
-  const recalculateTotals = (index, updatedForm, updatedDetails) => {
-    setForm((prev) => {
-      const formsCopy = [...prev];
-      const currentForm = updatedForm || formsCopy[index];
-      const details = updatedDetails || currentForm.productDetails || [];
-
-      const {
-        orderQty,
-        rejection,
-        QC,
-        machineMaintainance,
-        materialHandling,
-        packaging,
-        shipping,
-        companyOverHead,
-        indirectExpense,
-        stitching,
-        printing,
-        others,
-        B2B,
-        D2C,
-      } = currentForm;
-
-      const oq = Number(orderQty) || 1;
-      const overheadPercent =
-        Number(rejection || 0) +
-        Number(QC || 0) +
-        Number(machineMaintainance || 0) +
-        Number(materialHandling || 0) +
-        Number(packaging || 0) +
-        Number(shipping || 0) +
-        Number(companyOverHead || 0) +
-        Number(indirectExpense || 0);
-
-      const baseComponentRate = details.reduce(
-        (sum, comp) => sum + (Number(comp.rate) || 0),
-        0
-      );
-
-      const unitR =
-        baseComponentRate / oq +
-        (Number(stitching) || 0) +
-        (Number(printing) || 0) +
-        (Number(others) || 0);
-      const totalR = unitR * oq;
-
-      const unitRate = unitR + (unitR * overheadPercent) / 100;
-      const unitB2BRate =
-        unitR + (unitR * (overheadPercent + Number(B2B || 0))) / 100;
-      const unitD2CRate =
-        unitR + (unitR * (overheadPercent + Number(D2C || 0))) / 100;
-      const totalRate = totalR + (totalR * overheadPercent) / 100;
-      const totalB2BRate =
-        totalR + (totalR * (overheadPercent + Number(B2B || 0))) / 100;
-      const totalD2CRate =
-        totalR + (totalR * (overheadPercent + Number(D2C || 0))) / 100;
-
-      formsCopy[index] = {
-        ...formsCopy[index],
-        ...currentForm,
-        productDetails: details,
-        unitRate: unitRate.toFixed(2),
-        unitB2BRate: unitB2BRate.toFixed(2),
-        unitD2CRate: unitD2CRate.toFixed(2),
-        totalRate: totalRate.toFixed(2),
-        totalB2BRate: totalB2BRate.toFixed(2),
-        totalD2CRate: totalD2CRate.toFixed(2),
-      };
-      return formsCopy;
-    });
-  };
-
   const handleFormChange = (index, e) => {
     const { name, value } = e.target;
+
     const numericFields = [
       "height",
       "width",
       "depth",
       "orderQty",
-      "qty",
-      "sqInchRate",
       "rejection",
       "QC",
       "machineMaintainance",
@@ -191,41 +117,35 @@ const AddQuotation = ({ onClose, onSuccess, coData }) => {
       "B2B",
       "D2C",
     ];
+
     const newValue = numericFields.includes(name) ? Number(value) || 0 : value;
 
     setForm((prev) => {
       const formsCopy = [...prev];
       let currentForm = { ...formsCopy[index] };
-      let updatedDetails = [...(currentForm.productDetails || [])];
 
+      // ✅ ONLY update total when qty changes
       if (name === "orderQty") {
-        const oq = Number(newValue) || 1;
-        updatedDetails = updatedDetails.map((comp) => {
-          const category = (comp.category || "").toLowerCase();
+        const oq = Number(newValue) || 0;
 
-          const updated = { ...comp };
+        const updatedDetails = (currentForm.productDetails || []).map((comp) => ({
+          ...comp,
+          qty: (Number(comp.tempQty) || 0) * oq,
+          grams: (Number(comp.tempGrams) || 0) * oq,
+          rate: (Number(comp.tempRate) || 0) * oq
+        }));
 
-          updated.qty = (Number(comp.tempQty) || 0) * oq;
-          updated.grams = (Number(comp.tempGrams) || 0) * oq;
-          updated.width = Number(comp.tempWidth) || comp.width || 0;
-          updated.rate = calculateRate(updated, oq, categoryData);
+        currentForm.productDetails = updatedDetails;
 
-          return updated;
-        });
+        currentForm.totalRate = (currentForm.unitRate || 0) * oq;
+        currentForm.totalB2BRate = (currentForm.unitB2BRate || 0) * oq;
+        currentForm.totalD2CRate = (currentForm.unitD2CRate || 0) * oq;
       }
 
-      currentForm = {
-        ...currentForm,
-        [name]: newValue,
-        productDetails: updatedDetails,
-      };
+      currentForm[name] = newValue;
 
       formsCopy[index] = currentForm;
 
-      setTimeout(
-        () => recalculateTotals(index, currentForm, updatedDetails),
-        0
-      );
       return formsCopy;
     });
   };
@@ -289,9 +209,10 @@ const AddQuotation = ({ onClose, onSuccess, coData }) => {
 
       const quotations = form.map((q) => {
         const consumptionTable = generateConsumptionTable(
-          q.productDetails,
+          q.productDetails, // already scaled qty ✅
           categoryData
         );
+
         return { ...q, consumptionTable };
       });
 
@@ -391,80 +312,70 @@ const AddQuotation = ({ onClose, onSuccess, coData }) => {
                         : null
                     }
                     onChange={(e) => {
-                      const selectedProduct = e.fg || e.sample || null;
-                      if (!selectedProduct) return;
+                      const fg = e.fg;
+                      if (!fg) return;
 
                       setForm((prev) => {
                         const updated = [...prev];
-                        const orderQty = Number(updated[index]?.orderQty) || 1;
-
-                        // Merge all product details from FG/Sample/SFG
-                        const allDetails = [
-                          ...(selectedProduct.rm || []),
-                          ...(selectedProduct.sfg || []),
-                          ...(selectedProduct.productDetails || []),
-                        ];
-
-                        console.log("all details", allDetails);
-
-                        const enrichedDetails = allDetails.map((item) => {
-                          const enrichedItem = {
-                            itemId: item.itemId || item.id || "",
-                            type: item.type,
-                            tempQty: item.qty || 0,
-                            tempGrams: item.grams || 0,
-                            qty: item.qty || 0,
-                            category: item.category || "",
-                            grams: item.grams || 0,
-                            height: item.height || "",
-                            width: item.width || "",
-                            panno: item.panno || 0,
-                            rate: item.rate || "",
-                            sqInchRate: item.sqInchRate || "",
-                            partName: item.partName || "",
-                            baseQty: item.baseQty || 0,
-                            itemRate: item.itemRate || 0,
-                            itemName: item.itemName || "",
-                            skuCode: item.skuCode || "",
-                            isPasting: item.isPasting,
-                            isPrint: item.isPrint,
-                            label: `${item.skuCode}: ${item.itemName}${
-                              item.description ? ` - ${item.description}` : ""
-                            }`,
-                          };
-
-                          return enrichedItem;
-                        });
-
                         updated[index] = {
                           ...updated[index],
-                          productName:
-                            selectedProduct.itemName ||
-                            selectedProduct.product?.name ||
-                            "",
-                          description: selectedProduct.description,
-                          sampleNo:
-                            selectedProduct.sampleNo ||
-                            selectedProduct.skuCode ||
-                            "",
-                          hsnOrSac: selectedProduct.hsnOrSac,
-                          gst: selectedProduct.gst,
-                          height: Number(selectedProduct.height) || 0,
-                          width: Number(selectedProduct.width) || 0,
-                          depth: Number(selectedProduct.depth) || 0,
-                          productDetails: enrichedDetails,
+
+                          // ✅ BASIC INFO
+                          productName: fg.itemName,
+                          description: fg.description,
+                          sampleNo: fg.skuCode,
+                          hsnOrSac: fg.hsnOrSac,
+                          gst: fg.gst,
+
+                          height: fg.height,
+                          width: fg.width,
+                          depth: fg.depth,
+
+                          // ✅ COSTING (COPY AS-IS)
+                          stitching: fg.stitching,
+                          printing: fg.printing,
+                          others: fg.others,
+
+                          unitRate: fg.unitRate,
+                          unitB2BRate: fg.unitB2BRate,
+                          unitD2CRate: fg.unitD2CRate,
+
+                          B2B: fg.B2B,
+                          D2C: fg.D2C,
+
+                          rejection: fg.rejection,
+                          QC: fg.QC,
+                          machineMaintainance: fg.machineMaintainance,
+                          materialHandling: fg.materialHandling,
+                          packaging: fg.packaging,
+                          shipping: fg.shipping,
+                          companyOverHead: fg.companyOverHead,
+                          indirectExpense: fg.indirectExpense,
+                          // ✅ RM DETAILS (BASE ONLY — NO MULTIPLY)
+                          productDetails: (fg.rm || []).map((item) => ({
+                            itemId: item.rmid || item._id || item.id,
+                            skuCode: item.skuCode || item.itemCode || "",
+                            itemName: item.itemName || item.partName || "",
+                            type: "RawMaterial",
+                            panno: item.panno,
+                            partName: item.partName,
+                            height: item.height,
+                            width: item.width,
+                            category: item.category,
+                            tempQty: item.qty,
+                            qty: item.qty,
+                            grams: item.grams,
+                            rate: item.rate,
+                            tempGrams: item.grams,
+                            tempRate: item.rate,
+                            sqInchRate: item.sqInchRate,
+                            baseQty: item.baseQty,
+                            itemRate: item.itemRate,
+                            isPrint: item.isPrint,
+                            isPasting: item.isPasting,
+                          })),
                         };
 
-                        // trigger recalculation
-                        setTimeout(
-                          () =>
-                            recalculateTotals(
-                              index,
-                              updated[index],
-                              enrichedDetails
-                            ),
-                          0
-                        );
                         return updated;
                       });
                     }}
