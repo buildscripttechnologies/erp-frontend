@@ -839,6 +839,23 @@ const Add = ({ onClose, onAdded }) => {
 
   // ---- Your existing total amount
 
+  const normalizeStockQty = (value) => Math.max(0, Number(value) || 0);
+
+  const fetchStockBySkuCodes = async (skuCodes = []) => {
+    const uniqueSkuCodes = [...new Set(skuCodes.filter(Boolean))];
+    if (!uniqueSkuCodes.length) return {};
+
+    try {
+      const stockRes = await axios.post("/stocks/stock-by-sku", {
+        skuCodes: uniqueSkuCodes,
+      });
+      return stockRes.data?.data || {};
+    } catch {
+      toast.error("Failed to fetch current stock");
+      return {};
+    }
+  };
+
   useEffect(() => {
     axios
       .get("/settings/vendor")
@@ -968,7 +985,10 @@ const Add = ({ onClose, onAdded }) => {
           };
         }),
 
-        consumptionTable, // already has isChecked, stockQty, type
+        consumptionTable: consumptionTable.map((row) => {
+          const { currentStockQty, stockByWarehouse, ...cleanRow } = row;
+          return cleanRow;
+        }), // backend refreshes stockQty after issue
         status: mainStatus,
       };
 
@@ -1001,8 +1021,22 @@ const Add = ({ onClose, onAdded }) => {
 
   const parseValue = (val) => {
     if (!val || val === "N/A") return 0;
+    if (typeof val === "number") return val;
     const num = parseFloat(val.replace(/[^0-9.]/g, ""));
     return isNaN(num) ? 0 : parseFloat(num.toFixed(2));
+  };
+
+  const getRowIssueQty = (row) => {
+    const weightVal = parseValue(row.weight);
+    const qtyVal = parseValue(row.qty);
+    return weightVal || qtyVal;
+  };
+
+  const getDisplayStockQty = (row) => {
+    const currentStockQty = Number(row.currentStockQty ?? row.stockQty ?? 0);
+    return row.isChecked
+      ? Math.max(0, currentStockQty - getRowIssueQty(row))
+      : currentStockQty;
   };
 
   return (
@@ -1025,44 +1059,44 @@ const Add = ({ onClose, onAdded }) => {
                 menuPortalTarget={document.body}
                 options={bomOptions}
                 value={selectedItem}
-              onChange={async (item) => {
-  setSelectedItem(item);
-  const actualItem = item.b;
+                onChange={async (item) => {
+                  setSelectedItem(item);
+                  const actualItem = item.b;
 
-  // 1️⃣ Product details
-  const enhancedItems = (actualItem.productDetails || []).map(c => ({
-    ...c,
-    currentStatus: "Pending",
-  }));
-  setItemDetails(enhancedItems);
+                  const enhancedItems = (actualItem.productDetails || []).map(
+                    (c) => ({
+                      ...c,
+                      currentStatus: "Pending",
+                    })
+                  );
+                  setItemDetails(enhancedItems);
+                  setCheckedSkus([]);
 
-  // 2️⃣ Fetch real stock
-  const skuCodes = actualItem.consumptionTable.map(c => c.skuCode);
+                  const stockMap = await fetchStockBySkuCodes(
+                    (actualItem.consumptionTable || []).map((c) => c.skuCode)
+                  );
 
-  const stockRes = await axios.post("/stocks/stock-by-sku", { skuCodes });
+                  const enhanced = (actualItem.consumptionTable || []).map(
+                    (c) => {
+                      const match = (actualItem.productDetails || []).find(
+                        (d) => d.skuCode === c.skuCode
+                      );
+                      const stockQty = normalizeStockQty(
+                        stockMap[c.skuCode] ?? match?.stockQty ?? 0
+                      );
 
-  const stockMap = stockRes.data || {};   // IMPORTANT
+                      return {
+                        ...c,
+                        type: match?.type || null,
+                        stockQty,
+                        currentStockQty: stockQty,
+                        isChecked: false,
+                      };
+                    }
+                  );
 
-  // 3️⃣ Build consumption table with real stock
-  const enhanced = (actualItem.consumptionTable || []).map(c => {
-    const match = actualItem.productDetails.find(
-      d => d.skuCode === c.skuCode
-    );
-
-    return {
-      ...c,
-      type: match?.type || null,
-
-      // 🔥 REAL LEDGER STOCK
-      stockQty: stockRes.data.data[c.skuCode] || 0, // ✅ FIX
-
-      isChecked: false,
-    };
-  });
-
-  setConsumptionTable(enhanced);
-}}
-
+                  setConsumptionTable(enhanced);
+                }}
                 placeholder="Item Name or SKU"
                 isSearchable
                 styles={{
@@ -1105,14 +1139,12 @@ const Add = ({ onClose, onAdded }) => {
                           if (e.target.checked) {
                             // Try to select all (only if stock is enough)
                             const updated = consumptionTable.map((row) => {
-                              let deduction = 0;
-                              if (row.weight && row.weight !== "N/A") {
-                                deduction = parseValue(row.weight);
-                              } else if (row.qty && row.qty !== "N/A") {
-                                deduction = parseValue(row.qty);
-                              }
+                              const deduction = getRowIssueQty(row);
 
-                              if (row.stockQty < deduction) {
+                              if (
+                                Number(row.currentStockQty ?? row.stockQty ?? 0) <
+                                deduction
+                              ) {
                                 toast.error(
                                   `Insufficient StockQty for ${row.skuCode}!`
                                 );
@@ -1122,9 +1154,6 @@ const Add = ({ onClose, onAdded }) => {
                               return {
                                 ...row,
                                 isChecked: true,
-                                stockQty: parseFloat(
-                                  (row.stockQty - deduction).toFixed(2)
-                                ),
                               };
                             });
 
@@ -1137,19 +1166,9 @@ const Add = ({ onClose, onAdded }) => {
                           } else {
                             // Uncheck all → restore stock
                             const updated = consumptionTable.map((row) => {
-                              let deduction = 0;
-                              if (row.weight && row.weight !== "N/A") {
-                                deduction = parseValue(row.weight);
-                              } else if (row.qty && row.qty !== "N/A") {
-                                deduction = parseValue(row.qty);
-                              }
-
                               return {
                                 ...row,
                                 isChecked: false,
-                                stockQty: parseFloat(
-                                  (row.stockQty + deduction).toFixed(2)
-                                ),
                               };
                             });
 
@@ -1193,38 +1212,26 @@ const Add = ({ onClose, onAdded }) => {
                               const updated = [...consumptionTable];
                               const currentRow = updated[idx];
 
-                              // Deduction from weight or qty
-                              let deduction = 0;
-                              if (
-                                currentRow.weight &&
-                                currentRow.weight !== "N/A"
-                              ) {
-                                deduction = parseValue(currentRow.weight);
-                              } else if (
-                                currentRow.qty &&
-                                currentRow.qty !== "N/A"
-                              ) {
-                                deduction = parseValue(currentRow.qty);
-                              }
+                              const deduction = getRowIssueQty(currentRow);
 
                               if (e.target.checked) {
-                                if (currentRow.stockQty < deduction) {
+                                if (
+                                  Number(
+                                    currentRow.currentStockQty ??
+                                      currentRow.stockQty ??
+                                      0
+                                  ) < deduction
+                                ) {
                                   toast.error("Insufficient StockQty!");
                                   return;
                                 }
                                 currentRow.isChecked = true;
-                                currentRow.stockQty = parseFloat(
-                                  (currentRow.stockQty - deduction).toFixed(2)
-                                );
                                 setCheckedSkus((prev) => [
                                   ...prev,
                                   currentRow.skuCode,
                                 ]);
                               } else {
                                 currentRow.isChecked = false;
-                                currentRow.stockQty = parseFloat(
-                                  (currentRow.stockQty + deduction).toFixed(2)
-                                );
                                 setCheckedSkus((prev) =>
                                   prev.filter(
                                     (sku) => sku !== currentRow.skuCode
@@ -1272,11 +1279,6 @@ const Add = ({ onClose, onAdded }) => {
                                     const numericVal = parseFloat(val) || 0;
 
                                     const updated = [...consumptionTable];
-                                    const prevVal =
-                                      parseFloat(
-                                        item.weight?.replace(/[^0-9.]/g, "")
-                                      ) || 0;
-                                    const diff = numericVal - prevVal;
 
                                     updated[idx].weight = `${numericVal} kg`;
                                     setConsumptionTable(updated);
@@ -1304,12 +1306,6 @@ const Add = ({ onClose, onAdded }) => {
                                   if (/^\d*\.?\d*$/.test(val)) {
                                     const numericVal = parseFloat(val) || 0;
                                     const updated = [...consumptionTable];
-
-                                    const prevVal =
-                                      parseFloat(
-                                        item.qty?.replace(/[^0-9.]/g, "")
-                                      ) || 0;
-                                    const diff = numericVal - prevVal;
 
                                     const unit =
                                       item.category &&
@@ -1342,22 +1338,12 @@ const Add = ({ onClose, onAdded }) => {
 
                         <td className="px-2 py-1 border-r border-primary">
                           {(() => {
-                            const qtyVal =
-                              item.qty && item.qty !== "N/A"
-                                ? parseFloat(
-                                    item.qty.replace(/[^0-9.]/g, "")
-                                  ) || 0
-                                : 0;
-                            const weightVal =
-                              item.weight && item.weight !== "N/A"
-                                ? parseFloat(
-                                    item.weight.replace(/[^0-9.]/g, "")
-                                  ) || 0
-                                : 0;
-
+                            const issueQty = getRowIssueQty(item);
+                            const currentStockQty = getDisplayStockQty(item);
                             const isLowStock =
-                              (qtyVal && item.stockQty < qtyVal) ||
-                              (weightVal && item.stockQty < weightVal);
+                              issueQty &&
+                              Number(item.currentStockQty ?? item.stockQty ?? 0) <
+                                issueQty;
 
                             return (
                               <div className="flex items-center gap-2 whitespace-nowrap">
@@ -1366,7 +1352,7 @@ const Add = ({ onClose, onAdded }) => {
                                     isLowStock ? "bg-red-200" : "bg-green-100"
                                   }`}
                                 >
-                                  {item.stockQty.toFixed(2)}
+                                  {currentStockQty.toFixed(2)}
                                 </span>
                                 {isLowStock ? (
                                   <button

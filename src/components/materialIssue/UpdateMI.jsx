@@ -41,6 +41,24 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
   // multiple items state
   const [poItems, setPoItems] = useState([]);
   const [vendors, setVendors] = useState([]);
+
+  const normalizeStockQty = (value) => Math.max(0, Number(value) || 0);
+
+  const fetchStockBySkuCodes = async (skuCodes = []) => {
+    const uniqueSkuCodes = [...new Set(skuCodes.filter(Boolean))];
+    if (!uniqueSkuCodes.length) return {};
+
+    try {
+      const stockRes = await axios.post("/stocks/stock-by-sku", {
+        skuCodes: uniqueSkuCodes,
+      });
+      return stockRes.data?.data || {};
+    } catch {
+      toast.error("Failed to fetch current stock");
+      return {};
+    }
+  };
+
   useEffect(() => {
     axios
       .get("/settings/vendor")
@@ -66,32 +84,55 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
   }, []);
 
   useEffect(() => {
-    if (MIData?.consumptionTable?.length) {
-      const preChecked = MIData.consumptionTable
-        .filter((c) => c.isChecked)
-        .map((c) => c.skuCode);
+    let isMounted = true;
 
-      setCheckedSkus(preChecked);
-      const cleaned = MIData.consumptionTable.map((c) => {
-        // Assume extra is whatever was added before
-        const baseQty =
-          c.qty != "N/A" && c.extra
-            ? Number(c.qty - c.extra).toFixed(2)
-            : c.qty;
-        const baseWeight =
-          c.weight != "N/A" && c.extra
-            ? Number(c.weight - c.extra).toFixed(2)
-            : c.weight;
+    const prepareConsumptionTable = async () => {
+      if (MIData?.consumptionTable?.length) {
+        const preChecked = MIData.consumptionTable
+          .filter((c) => c.isChecked)
+          .map((c) => c.skuCode);
 
-        return {
-          ...c,
-          qty: baseQty, // ✅ remove extra from qty
-          weight: baseWeight, // ✅ remove extra from weight
-          extra: c.extra || 0, // ✅ reset extra so it won’t accumulate
-        };
-      });
-      setConsumptionTable(cleaned);
-    }
+        const stockMap = await fetchStockBySkuCodes(
+          MIData.consumptionTable.map((c) => c.skuCode)
+        );
+
+        if (!isMounted) return;
+
+        setCheckedSkus(preChecked);
+        const cleaned = MIData.consumptionTable.map((c) => {
+          // Assume extra is whatever was added before
+          const baseQty =
+            c.qty != "N/A" && c.extra
+              ? (parseValue(c.qty) - Number(c.extra || 0)).toFixed(2)
+              : c.qty;
+          const baseWeight =
+            c.weight != "N/A" && c.extra
+              ? (parseValue(c.weight) - Number(c.extra || 0)).toFixed(2)
+              : c.weight;
+
+          return {
+            ...c,
+            qty: baseQty, // ✅ remove extra from qty
+            weight: baseWeight, // ✅ remove extra from weight
+            extra: c.extra || 0, // ✅ reset extra so it won’t accumulate
+            stockQty: normalizeStockQty(stockMap[c.skuCode] ?? c.stockQty ?? 0),
+            currentStockQty: normalizeStockQty(
+              stockMap[c.skuCode] ?? c.stockQty ?? 0
+            ),
+            originalQty: baseQty,
+            originalWeight: baseWeight,
+            wasChecked: !!c.isChecked,
+          };
+        });
+        setConsumptionTable(cleaned);
+      }
+    };
+
+    prepareConsumptionTable();
+
+    return () => {
+      isMounted = false;
+    };
   }, [MIData]);
 
   //   console.log("selected item", selectedItem);
@@ -109,7 +150,15 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
 
       // Merge extra into qty/weight
       const updatedConsumption = consumptionTable.map((row) => {
-        let newRow = { ...row };
+        const {
+          currentStockQty,
+          originalQty,
+          originalWeight,
+          wasChecked,
+          stockByWarehouse,
+          ...cleanRow
+        } = row;
+        let newRow = { ...cleanRow };
         if (newRow.extra && newRow.extra > 0) {
           if (newRow.qty && newRow.qty !== "N/A") {
             newRow.qty = parseFloat(newRow.qty) + newRow.extra;
@@ -119,6 +168,14 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
         }
         return newRow;
       });
+      const issuedCount = updatedConsumption.filter((row) => row.isChecked)
+        .length;
+      const issueStatus =
+        issuedCount === 0
+          ? "Pending"
+          : issuedCount === updatedConsumption.length
+          ? "Completed"
+          : "In Progress";
 
       const payload = {
         bom: selectedItem.b._id,
@@ -135,6 +192,8 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
               item.jobWorkType === "Inside Company"
                 ? "Yet to Start"
                 : "In Progress";
+          } else if (!isSelected) {
+            newStatus = "Pending";
           }
 
           // Determine new stages
@@ -188,13 +247,14 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
           return {
             ...item,
             currentStatus: newStatus,
+            cuttingType: isSelected ? item.cuttingType : "",
+            jobWorkType: isSelected ? item.jobWorkType : "",
+            vendor: isSelected ? item.vendor : "",
             stages: newStages,
           };
         }),
         consumptionTable: updatedConsumption, // assuming you have it prepared
-        status: itemDetails.every((it) => it.currentStatus !== "Pending")
-          ? "Issued"
-          : "Pending",
+        status: issueStatus,
       };
 
       console.log("payload", payload);
@@ -234,6 +294,33 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
     return 0;
   };
 
+  const getRowIssueQty = (row) => {
+    const weightVal = parseValue(row.weight);
+    const qtyVal = parseValue(row.qty);
+    return weightVal || qtyVal;
+  };
+
+  const getOriginalIssueQty = (row) => {
+    const weightVal = parseValue(row.originalWeight);
+    const qtyVal = parseValue(row.originalQty);
+    return weightVal || qtyVal;
+  };
+
+  const getAvailableForIssue = (row) => {
+    return (
+      Number(row.currentStockQty ?? row.stockQty ?? 0) +
+      (row.wasChecked ? getOriginalIssueQty(row) : 0)
+    );
+  };
+
+  const getDisplayStockQty = (row) => {
+    const currentStockQty = Number(row.currentStockQty ?? row.stockQty ?? 0);
+    const originalIssueQty = row.wasChecked ? getOriginalIssueQty(row) : 0;
+    const newIssueQty = row.isChecked ? getRowIssueQty(row) : 0;
+
+    return Math.max(0, currentStockQty + originalIssueQty - newIssueQty);
+  };
+
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
       <div
@@ -253,20 +340,41 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
               <Select
                 options={bomOptions}
                 value={selectedItem}
-                onChange={(item) => {
+                onChange={async (item) => {
                   setSelectedItem(item);
                   const actualItem = item.b;
-                  setItemDetails(actualItem.productDetails);
+                  const enhancedItems = (actualItem.productDetails || []).map(
+                    (c) => ({
+                      ...c,
+                      currentStatus: "Pending",
+                    })
+                  );
+
+                  setItemDetails(enhancedItems);
+                  setCheckedSkus([]);
+
+                  const stockMap = await fetchStockBySkuCodes(
+                    (actualItem.consumptionTable || []).map((c) => c.skuCode)
+                  );
+
                   // build enhanced consumption table
                   const enhanced = (actualItem.consumptionTable || []).map(
                     (c) => {
-                      const match = actualItem.productDetails.find(
+                      const match = (actualItem.productDetails || []).find(
                         (d) => d.skuCode === c.skuCode
                       );
                       return {
                         ...c,
                         type: match?.type || null,
-                        stockQty: match?.stockQty || 0,
+                        stockQty: normalizeStockQty(
+                          stockMap[c.skuCode] ?? match?.stockQty ?? 0
+                        ),
+                        currentStockQty: normalizeStockQty(
+                          stockMap[c.skuCode] ?? match?.stockQty ?? 0
+                        ),
+                        originalQty: c.qty,
+                        originalWeight: c.weight,
+                        wasChecked: false,
                         isChecked: false,
                       };
                     }
@@ -309,14 +417,9 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                           if (e.target.checked) {
                             // Try to select all (only if stock is enough)
                             const updated = consumptionTable.map((row) => {
-                              let deduction = 0;
-                              if (row.weight && row.weight !== "N/A") {
-                                deduction = parseValue(row.weight);
-                              } else if (row.qty && row.qty !== "N/A") {
-                                deduction = parseValue(row.qty);
-                              }
+                              const deduction = getRowIssueQty(row);
 
-                              if (row.stockQty < deduction) {
+                              if (getAvailableForIssue(row) < deduction) {
                                 toast.error(
                                   `Insufficient StockQty for ${row.skuCode}!`
                                 );
@@ -326,9 +429,6 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                               return {
                                 ...row,
                                 isChecked: true,
-                                stockQty: parseFloat(
-                                  (row.stockQty - deduction).toFixed(2)
-                                ),
                               };
                             });
 
@@ -341,19 +441,9 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                           } else {
                             // Uncheck all → restore stock
                             const updated = consumptionTable.map((row) => {
-                              let deduction = 0;
-                              if (row.weight && row.weight !== "N/A") {
-                                deduction = parseValue(row.weight);
-                              } else if (row.qty && row.qty !== "N/A") {
-                                deduction = parseValue(row.qty);
-                              }
-
                               return {
                                 ...row,
                                 isChecked: false,
-                                stockQty: parseFloat(
-                                  (row.stockQty + deduction).toFixed(2)
-                                ),
                               };
                             });
 
@@ -399,38 +489,20 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                               const updated = [...consumptionTable];
                               const currentRow = updated[idx];
 
-                              // Deduction from weight or qty
-                              let deduction = 0;
-                              if (
-                                currentRow.weight &&
-                                currentRow.weight !== "N/A"
-                              ) {
-                                deduction = parseValue(currentRow.weight);
-                              } else if (
-                                currentRow.qty &&
-                                currentRow.qty !== "N/A"
-                              ) {
-                                deduction = parseValue(currentRow.qty);
-                              }
+                              const deduction = getRowIssueQty(currentRow);
 
                               if (e.target.checked) {
-                                if (currentRow.stockQty < deduction) {
+                                if (getAvailableForIssue(currentRow) < deduction) {
                                   toast.error("Insufficient StockQty!");
                                   return;
                                 }
                                 currentRow.isChecked = true;
-                                currentRow.stockQty = parseFloat(
-                                  (currentRow.stockQty - deduction).toFixed(2)
-                                );
                                 setCheckedSkus((prev) => [
                                   ...prev,
                                   currentRow.skuCode,
                                 ]);
                               } else {
                                 currentRow.isChecked = false;
-                                currentRow.stockQty = parseFloat(
-                                  (currentRow.stockQty + deduction).toFixed(2)
-                                );
                                 setCheckedSkus((prev) =>
                                   prev.filter(
                                     (sku) => sku !== currentRow.skuCode
@@ -471,17 +543,6 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                                     const numericVal = parseFloat(val) || 0;
 
                                     const updated = [...consumptionTable];
-                                    const prevVal =
-                                      parseFloat(
-                                        item.weight?.replace(/[^0-9.]/g, "")
-                                      ) || 0;
-                                    const diff = numericVal - prevVal;
-
-                                    // adjust stockQty live
-                                    updated[idx].stockQty = parseFloat(
-                                      (updated[idx].stockQty - diff).toFixed(3)
-                                    );
-
                                     updated[idx].weight = `${numericVal} kg`;
                                     setConsumptionTable(updated);
                                   }
@@ -506,16 +567,6 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                                   if (/^\d*\.?\d*$/.test(val)) {
                                     const numericVal = parseFloat(val) || 0;
                                     const updated = [...consumptionTable];
-
-                                    const prevVal =
-                                      parseFloat(
-                                        item.qty?.replace(/[^0-9.]/g, "")
-                                      ) || 0;
-                                    const diff = numericVal - prevVal;
-
-                                    updated[idx].stockQty = parseFloat(
-                                      (updated[idx].stockQty - diff).toFixed(3)
-                                    );
 
                                     const unit =
                                       item.category &&
@@ -548,16 +599,15 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                         <td className="px-2 py-1 border-r border-primary">
                           <span
                             className={`px-2 py-0.5 rounded text-xs font-semibold ${(() => {
-                              const qtyVal = parseValue(item.qty);
-                              const weightVal = parseValue(item.weight);
+                              const issueQty = getRowIssueQty(item);
 
-                              return (qtyVal && item.stockQty < qtyVal) ||
-                                (weightVal && item.stockQty < weightVal)
+                              return issueQty &&
+                                getAvailableForIssue(item) < issueQty
                                 ? "bg-red-200 "
                                 : "bg-green-100 ";
                             })()}`}
                           >
-                            {item.stockQty.toFixed(2)}
+                            {getDisplayStockQty(item).toFixed(2)}
                           </span>
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
@@ -570,12 +620,6 @@ const UpdateMI = ({ MIData, onClose, onUpdated }) => {
                               const updated = [...consumptionTable];
                               const row = updated[idx];
                               const newExtra = parseFloat(e.target.value) || 0;
-
-                              // Restore stockQty before applying new value
-                              const prevExtra = row.extra || 0;
-                              row.stockQty = parseFloat(
-                                (row.stockQty + prevExtra - newExtra).toFixed(3)
-                              );
 
                               // Always calculate numeric qty/weight only (remove any units)
                               const numericQty = parseValue(row.originalQty);

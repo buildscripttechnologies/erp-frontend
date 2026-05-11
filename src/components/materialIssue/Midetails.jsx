@@ -22,11 +22,14 @@ const MIdetails = ({ MI, filter = "" }) => {
   //   filteredDetails = filteredDetails.filter((item) => item.isPrint == true);
   // }
 
-  const getStageByFilter = (item) => {
-    let stage = item.stages[item.stages.length - 1];
-    // console.log("s", stage);
+  const getMaterialIssueStatus = (item) => {
+    const materialIssueStage = item.stages?.find(
+      (stage) => stage.stage === "Material Issue"
+    );
 
-    return stage;
+    return materialIssueStage?.status === "Completed"
+      ? "Completed"
+      : "Pending";
   };
 
   return (
@@ -58,15 +61,7 @@ const MIdetails = ({ MI, filter = "" }) => {
         <tbody>
           {filteredDetails?.length > 0 ? (
             filteredDetails.map((item, idx) => {
-              const stage = getStageByFilter(item);
-              // console.log("stage", stage);
-
-              let statusLabel;
-              if (stage.stage == "Material Issue") {
-                statusLabel = "Pending";
-              } else {
-                statusLabel = "Completed";
-              }
+              const statusLabel = getMaterialIssueStatus(item);
 
               return (
                 <tr key={idx} className="border-b border-primary">
@@ -112,12 +107,18 @@ const MIdetails = ({ MI, filter = "" }) => {
                     </span>
                   </td>
                   <td className="px-2 py-1 border-r border-primary capitalize">
-                    {filter == "print" ? "print " : item.cuttingType || "-"}
+                    {statusLabel === "Completed"
+                      ? filter == "print"
+                        ? "print "
+                        : item.cuttingType || "-"
+                      : "-"}
                   </td>
                   <td className="px-2 py-1 border-r border-primary">
-                    {filter == "print"
-                      ? "Outside Company"
-                      : item.jobWorkType || "-"}
+                    {statusLabel === "Completed"
+                      ? filter == "print"
+                        ? "Outside Company"
+                        : item.jobWorkType || "-"
+                      : "-"}
                   </td>
                 </tr>
               );

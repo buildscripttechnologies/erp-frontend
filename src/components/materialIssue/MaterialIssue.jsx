@@ -162,24 +162,20 @@ const MaterialIssue = () => {
   function getTableStatus(items, table) {
     if (!Array.isArray(items) || items.length === 0) return "Pending";
 
-    // Normalize stage name (case insensitive)
-    const stageName = table;
-
-    // Check every item's stage
-    const allCompleted = items.every((item) => {
-      if (!Array.isArray(item.stages)) return false;
-
-      // Find the stage for this item
-      const stage = item.stages.find((s) => s.stage && s.stage === stageName);
-
-      // Consider completed only if stage exists AND its status = "Completed"
-
-      // console.log("stage", stage.stage);
-
-      return stage?.stage == "Cutting";
+    const materialIssueStatuses = items.map((item) => {
+      const stage = item.stages?.find((s) => s.stage === "Material Issue");
+      return stage?.status || "Pending";
     });
 
-    return allCompleted ? "Completed" : "Pending";
+    if (materialIssueStatuses.every((status) => status === "Completed")) {
+      return "Completed";
+    }
+
+    if (materialIssueStatuses.some((status) => status === "Completed")) {
+      return "In Progress";
+    }
+
+    return "Pending";
   }
 
   return (
@@ -339,7 +335,7 @@ const MaterialIssue = () => {
                         )}
                       </button> */}
 
-                        {/* {hasPermission("Material Issue", "update") ? (
+                        {hasPermission("Material Issue", "update") ? (
                           <FiEdit
                             data-tooltip-id="statusTip"
                             data-tooltip-content="Edit"
@@ -351,7 +347,7 @@ const MaterialIssue = () => {
                           />
                         ) : (
                           "-"
-                        )} */}
+                        )}
 
                         {hasPermission("Material Issue", "delete") ? (
                           <FiTrash2

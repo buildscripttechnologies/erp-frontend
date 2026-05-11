@@ -16,6 +16,21 @@ const Receive = ({ onClose, onAdded }) => {
   const [consumptionTable, setConsumptionTable] = useState(null);
   // const [checkedSkus, setCheckedSkus] = useState([]);
 
+  const fetchStockBySkuCodes = async (skuCodes = []) => {
+    const uniqueSkuCodes = [...new Set(skuCodes.filter(Boolean))];
+    if (!uniqueSkuCodes.length) return {};
+
+    try {
+      const stockRes = await axios.post("/stocks/stock-by-sku", {
+        skuCodes: uniqueSkuCodes,
+      });
+      return stockRes.data?.data || {};
+    } catch {
+      toast.error("Failed to fetch current stock");
+      return {};
+    }
+  };
+
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
@@ -39,11 +54,32 @@ const Receive = ({ onClose, onAdded }) => {
     setLoading(true);
 
     try {
+      const receivedRows = (consumptionTable || [])
+        .map((row) => {
+          const {
+            currentStockQty,
+            originalQty,
+            originalWeight,
+            originalIssueQty,
+            alreadyReceivedQty,
+            remainingQty,
+            stockByWarehouse,
+            ...cleanRow
+          } = row;
+          return cleanRow;
+        })
+        .filter((row) => Number(row.receiveQty) > 0);
+
+      if (!receivedRows.length) {
+        toast.error("Enter receive quantity for at least one material");
+        return;
+      }
+
       const payload = {
         prodNo: selectedItem.m.prodNo,
         bom: selectedItem.m.bom._id,
         bomNo: selectedItem.m.bomNo,
-        consumptionTable, // already has isChecked, stockQty, type
+        consumptionTable: receivedRows,
       };
       console.log("payload", payload);
 
@@ -70,8 +106,15 @@ const Receive = ({ onClose, onAdded }) => {
 
   const parseValue = (val) => {
     if (!val || val === "N/A") return 0;
+    if (typeof val === "number") return val;
     const num = parseFloat(val.replace(/[^0-9.]/g, ""));
     return isNaN(num) ? 0 : parseFloat(num.toFixed(2));
+  };
+
+  const getIssueQty = (row) => {
+    const qtyVal = parseValue(row.qty);
+    const weightVal = parseValue(row.weight);
+    return qtyVal || weightVal;
   };
 
   const fmt = (val) => {
@@ -103,19 +146,36 @@ const Receive = ({ onClose, onAdded }) => {
                 menuPortalTarget={document.body}
                 options={miOptions}
                 value={selectedItem}
-                onChange={(item) => {
+                onChange={async (item) => {
                   setSelectedItem(item);
                   const actualItem = item.m;
-                  // setItemDetails(actualItem.productDetails);
-                  // // build enhanced consumption table
+                  const stockMap = await fetchStockBySkuCodes(
+                    (actualItem.consumptionTable || []).map((c) => c.skuCode)
+                  );
 
                   const enhanced = (actualItem.consumptionTable || []).map(
                     (c) => {
+                      const originalIssueQty = getIssueQty(c);
+                      const alreadyReceivedQty = Number(c.receiveQty) || 0;
+                      const remainingQty = Math.max(
+                        originalIssueQty - alreadyReceivedQty,
+                        0
+                      );
+                      const stockQty = Number(
+                        stockMap[c.skuCode] ?? c.stockQty ?? 0
+                      );
+
                       return {
                         ...c,
-                        isReceived: false,
+                        receiveQty: "",
+                        isReceived: remainingQty <= 0,
                         originalQty: c.qty,
                         originalWeight: c.weight,
+                        originalIssueQty,
+                        alreadyReceivedQty,
+                        remainingQty,
+                        stockQty,
+                        currentStockQty: stockQty,
                       };
                     }
                   );
@@ -224,31 +284,8 @@ const Receive = ({ onClose, onAdded }) => {
 
                               // ✅ Case: cleared input
                               if (raw === "") {
-                                const prevReceive =
-                                  parseFloat(currentRow.prevReceive) || 0;
-
                                 currentRow.receiveQty = "";
                                 currentRow.isReceived = false;
-
-                                // reset stock by removing previous receive
-                                currentRow.stockQty = parseFloat(
-                                  (
-                                    (parseFloat(currentRow.stockQty) || 0) -
-                                    prevReceive
-                                  ).toFixed(3)
-                                );
-                                currentRow.prevReceive = 0;
-
-                                // reset issue qty/weight
-                                if (currentRow.originalQty > 0) {
-                                  currentRow.qty =
-                                    currentRow.originalQty.toFixed(3);
-                                  currentRow.weight = "N/A";
-                                } else if (currentRow.originalWeight > 0) {
-                                  currentRow.weight =
-                                    currentRow.originalWeight.toFixed(3);
-                                  currentRow.qty = "N/A";
-                                }
 
                                 updated[idx] = currentRow;
                                 setConsumptionTable(updated);
@@ -257,48 +294,22 @@ const Receive = ({ onClose, onAdded }) => {
 
                               // ✅ Case: valid number
                               const value = parseFloat(raw);
-                              const issueQty =
-                                parseFloat(
-                                  item.qty !== "N/A" ? item.qty : item.weight
-                                ) || 0;
+                              const remainingQty =
+                                Number(currentRow.remainingQty) ||
+                                getIssueQty(currentRow);
 
                               // keep raw string
                               currentRow.receiveQty = raw;
 
                               if (!isNaN(value)) {
-                                if (value > issueQty) {
+                                if (value > remainingQty) {
                                   toast.error(
-                                    "Receive Qty cannot be greater than Issue Qty/Weight"
+                                    "Receive Qty cannot be greater than remaining Issue Qty/Weight"
                                   );
                                   return;
                                 }
 
-                                currentRow.isReceived = value > 0;
-
-                                // restore stock before applying new received qty
-                                const prevReceive =
-                                  parseFloat(currentRow.prevReceive) || 0;
-                                currentRow.stockQty = parseFloat(
-                                  (
-                                    (parseFloat(currentRow.stockQty) || 0) -
-                                    prevReceive +
-                                    value
-                                  ).toFixed(3)
-                                );
-                                currentRow.prevReceive = value;
-
-                                // live decrease from issue qty/weight
-                                if (currentRow.originalQty > 0) {
-                                  currentRow.qty = (
-                                    currentRow.originalQty - value
-                                  ).toFixed(3);
-                                  currentRow.weight = "N/A";
-                                } else if (currentRow.originalWeight > 0) {
-                                  currentRow.weight = (
-                                    currentRow.originalWeight - value
-                                  ).toFixed(3);
-                                  currentRow.qty = "N/A";
-                                }
+                                currentRow.isReceived = value >= remainingQty;
                               }
 
                               updated[idx] = currentRow;
@@ -311,26 +322,20 @@ const Receive = ({ onClose, onAdded }) => {
                         <td className="px-2 py-1 border-r border-primary">
                           <span
                             className={`px-2 py-0.5 rounded text-xs font-semibold ${(() => {
-                              const qtyVal =
-                                item.qty && item.qty !== "N/A"
-                                  ? parseFloat(
-                                      item.qty.replace(/[^0-9.]/g, "")
-                                    ) || 0
-                                  : 0;
-                              const weightVal =
-                                item.weight && item.weight !== "N/A"
-                                  ? parseFloat(
-                                      item.weight.replace(/[^0-9.]/g, "")
-                                    ) || 0
-                                  : 0;
+                              const remainingQty =
+                                Number(item.remainingQty) || getIssueQty(item);
+                              const currentStockQty = Number(
+                                item.currentStockQty ?? item.stockQty ?? 0
+                              );
 
-                              return (qtyVal && item.stockQty < qtyVal) ||
-                                (weightVal && item.stockQty < weightVal)
+                              return remainingQty && currentStockQty < 0
                                 ? "bg-red-200 "
                                 : "bg-green-100 ";
                             })()}`}
                           >
-                            {Number(item.stockQty).toFixed(2)}
+                            {Number(
+                              item.currentStockQty ?? item.stockQty ?? 0
+                            ).toFixed(2)}
                           </span>
                         </td>
                       </tr>
