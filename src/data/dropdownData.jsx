@@ -6,6 +6,8 @@ export const cuttingType = [
   "Press Cutting",
   "Laser Cutting",
   "Table Cutting",
+  "Zipper/Niwar Cutting",
+  "Accessories",
 ];
 export const jobWorkType = ["Inside Company", "Outside Company"];
 export const vendors = ["vendor 1", "vendor 2", "vendor 3"];
