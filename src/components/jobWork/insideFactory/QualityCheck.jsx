@@ -17,6 +17,7 @@ import { FaBarcode } from "react-icons/fa";
 import { useRef } from "react";
 import MIdetails from "../../materialIssue/Midetails";
 import JobDetails from "../JobDetails";
+import { hydrateProductionTasks } from "./hydrateProductionTasks";
 
 // import UpdateMI from "./UpdateMI";
 // import Add from "./Add";
@@ -120,7 +121,7 @@ const QualityCheck = () => {
         return;
       }
       if (res.data.status == 200) {
-        setMis(res.data.data || []);
+        setMis(await hydrateProductionTasks(res.data.data || []));
         setPagination({
           currentPage: res.data.currentPage,
           totalPages: res.data.totalPages,

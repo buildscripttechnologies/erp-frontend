@@ -45,6 +45,7 @@ export const availableModules = [
   "FG",
   "Sample",
   "BOM",
+  "Machine",
   "Vendor",
   "Customer",
   "Settings",

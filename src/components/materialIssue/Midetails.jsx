@@ -1,6 +1,9 @@
 import React from "react";
+import axios from "../../utils/axios";
+import toast from "react-hot-toast";
 
-const MIdetails = ({ MI, filter = "" }) => {
+const MIdetails = ({ MI, filter = "", fetchMis }) => {
+  const [retryingTaskId, setRetryingTaskId] = React.useState("");
   const formatDate = (date) =>
     new Date(date).toLocaleString("en-IN", {
       dateStyle: "medium",
@@ -8,6 +11,7 @@ const MIdetails = ({ MI, filter = "" }) => {
     });
 
   let filteredDetails = MI.itemDetails || [];
+  const productionTasks = MI.productionTasks || [];
 
   console.log("filtered details", filteredDetails);
 
@@ -30,6 +34,32 @@ const MIdetails = ({ MI, filter = "" }) => {
     return materialIssueStage?.status === "Completed"
       ? "Completed"
       : "Pending";
+  };
+
+  const getCuttingTask = (item) =>
+    productionTasks.find(
+      (task) =>
+        String(task.itemDetailId) === String(item._id) &&
+        task.stage === "Cutting"
+    );
+
+  const retryAssignment = async (taskId) => {
+    setRetryingTaskId(taskId);
+    try {
+      const res = await axios.post(`/production/${taskId}/retry-assign`);
+      if (res.data.status === 200) {
+        toast.success(res.data.message || "Assignment retried");
+        if (fetchMis) fetchMis();
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Assignment retry failed"
+      );
+    } finally {
+      setRetryingTaskId("");
+    }
   };
 
   return (
@@ -56,12 +86,22 @@ const MIdetails = ({ MI, filter = "" }) => {
               {filter == "print" ? "Print" : "Cutting Type"}
             </th>
             <th className="px-2 py-1 border-r border-primary">Jobwork Type</th>
+            <th className="px-2 py-1 border-r border-primary">
+              Selected Operator
+            </th>
+            <th className="px-2 py-1 border-r border-primary">
+              Assigned Operator
+            </th>
+            <th className="px-2 py-1 border-r border-primary">Machine</th>
+            <th className="px-2 py-1 border-r border-primary">Assignment</th>
+            <th className="px-2 py-1 border-r border-primary">Action</th>
           </tr>
         </thead>
         <tbody>
           {filteredDetails?.length > 0 ? (
             filteredDetails.map((item, idx) => {
               const statusLabel = getMaterialIssueStatus(item);
+              const task = getCuttingTask(item);
 
               return (
                 <tr key={idx} className="border-b border-primary">
@@ -119,6 +159,48 @@ const MIdetails = ({ MI, filter = "" }) => {
                         ? "Outside Company"
                         : item.jobWorkType || "-"
                       : "-"}
+                  </td>
+                  <td className="px-2 py-1 border-r border-primary">
+                    {statusLabel === "Completed"
+                      ? item.assignee?.fullName ||
+                        task?.assignedUser?.fullName ||
+                        "Auto Assign"
+                      : "-"}
+                  </td>
+                  <td className="px-2 py-1 border-r border-primary">
+                    {task?.assignedUser?.fullName || "-"}
+                  </td>
+                  <td className="px-2 py-1 border-r border-primary">
+                    {task?.assignedMachine?.code || "-"}
+                    {task?.assignedMachine?.name
+                      ? ` - ${task.assignedMachine.name}`
+                      : ""}
+                  </td>
+                  <td className="px-2 py-1 border-r border-primary">
+                    <div className="font-semibold">
+                      {task?.assignmentMode || "-"}
+                    </div>
+                    <div className="text-[10px] text-gray-500">
+                      {task?.status || "-"}
+                    </div>
+                  </td>
+                  <td className="px-2 py-1 border-r border-primary">
+                    {task &&
+                    task.status !== "Completed" &&
+                    (!task.assignedUser || !task.assignedMachine) ? (
+                      <button
+                        type="button"
+                        disabled={retryingTaskId === task._id}
+                        onClick={() => retryAssignment(task._id)}
+                        className="px-2 py-1 rounded bg-primary text-secondary font-semibold disabled:opacity-60"
+                      >
+                        {retryingTaskId === task._id
+                          ? "Trying..."
+                          : "Try Assign"}
+                      </button>
+                    ) : (
+                      "-"
+                    )}
                   </td>
                 </tr>
               );

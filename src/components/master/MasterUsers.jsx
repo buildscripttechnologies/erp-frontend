@@ -32,6 +32,34 @@ import { useRef } from "react";
 import { BeatLoader, PulseLoader } from "react-spinners";
 import { TbRestore } from "react-icons/tb";
 
+const USER_SKILL_OPTIONS = [
+  "Cutting",
+  "Printing",
+  "Pasting",
+  "Stitching",
+  "Quality Check",
+  "Packing",
+  "Dispatch",
+  "Store",
+  "Purchase",
+  "Sales",
+];
+
+const initialUserFormData = {
+  fullName: "",
+  username: "",
+  email: "",
+  mobile: "",
+  password: "",
+  userType: "",
+  warehouse: "",
+  userGroup: "UserGrp",
+  skills: [],
+  skillInput: "",
+  efficiencyScore: 1,
+  currentLoad: 0,
+};
+
 export default function MasterUsers() {
   const { hasPermission } = useAuth();
 
@@ -84,16 +112,7 @@ export default function MasterUsers() {
     limit: 10,
   });
 
-  const [formData, setFormData] = useState({
-    fullName: "",
-    username: "",
-    email: "",
-    mobile: "",
-    password: "",
-    userType: "",
-    warehouse: "",
-    userGroup: "UserGrp",
-  });
+  const [formData, setFormData] = useState(initialUserFormData);
 
   useEffect(() => {
     if (!hasMountedRef.current) {
@@ -126,16 +145,7 @@ export default function MasterUsers() {
   }, [showForm]);
 
   const handleFormClose = () => {
-    setFormData({
-      fullName: "",
-      username: "",
-      email: "",
-      mobile: "",
-      password: "",
-      userType: "",
-      warehouse: "",
-      userGroup: "UserGrp",
-    });
+    setFormData(initialUserFormData);
     setEditMode(false);
 
     setShowForm(false);
@@ -268,11 +278,19 @@ export default function MasterUsers() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setShowForm(false);
+    const payload = {
+      ...formData,
+      skills: formData.skills || [],
+      efficiencyScore: Number(formData.efficiencyScore) || 0,
+      currentLoad: Number(formData.currentLoad) || 0,
+    };
+    delete payload.skillInput;
+
     try {
       if (editMode) {
         let res = await axios.patch(
           `/users/update-user/${editUserId}`,
-          formData
+          payload
         );
         if (res.data.status == 403) {
           toast.error(res.data.message);
@@ -280,22 +298,14 @@ export default function MasterUsers() {
         }
         toast.success("User updated successfully.");
       } else {
-        let res = await axios.post("/auth/register", formData);
+        let res = await axios.post("/auth/register", payload);
         if (res.data.status == 403) {
           toast.error(res.data.message);
           return;
         }
         toast.success("New User Added.");
       }
-      setFormData({
-        fullName: "",
-        username: "",
-        email: "",
-        mobile: "",
-        password: "",
-        userType: "",
-        userGroup: "UserGrp",
-      });
+      setFormData(initialUserFormData);
       setEditMode(false);
       setEditUserId(null);
       fetchUsers(); // reload data
@@ -312,10 +322,15 @@ export default function MasterUsers() {
       username: user.username,
       email: user.email,
       mobile: user.mobile,
+      password: "",
       // password: user.password, // leave blank for update
       userType: user.userType,
       warehouse: user.warehouse,
       userGroup: user.userGroup || "UserGrp",
+      skills: user.skills || [],
+      skillInput: "",
+      efficiencyScore: user.efficiencyScore ?? 1,
+      currentLoad: user.currentLoad ?? 0,
     });
     setEditMode(true);
     setEditUserId(user.id);
@@ -496,6 +511,30 @@ export default function MasterUsers() {
     }
   };
 
+  const addSkill = (skill) => {
+    const normalizedSkill = String(skill || "").trim();
+    if (!normalizedSkill) return;
+
+    setFormData((prev) => {
+      const exists = (prev.skills || []).some(
+        (item) => item.toLowerCase() === normalizedSkill.toLowerCase()
+      );
+
+      return {
+        ...prev,
+        skillInput: "",
+        skills: exists ? prev.skills : [...(prev.skills || []), normalizedSkill],
+      };
+    });
+  };
+
+  const removeSkill = (skill) => {
+    setFormData((prev) => ({
+      ...prev,
+      skills: (prev.skills || []).filter((item) => item !== skill),
+    }));
+  };
+
   return (
     <>
       {/* {access ? ( */}
@@ -503,7 +542,7 @@ export default function MasterUsers() {
         {/* Add User Modal */}
         {showForm && (
           <div className="fixed inset-0  backdrop-blur-md  flex items-center justify-center z-50 ">
-            <div className="bg-white border border-[#d8b76a] rounded-lg shadow-lg w-[90%] max-w-md p-6 relative">
+            <div className="bg-white border border-[#d8b76a] rounded-lg shadow-lg w-[94%] max-w-2xl p-6 relative max-h-[92vh] overflow-y-auto">
               <button
                 className="absolute top-2 right-3 text-2xl text-gray-500 hover:text-[#d8b76a] font-bold cursor-pointer"
                 onClick={() => handleFormClose()}
@@ -622,6 +661,125 @@ export default function MasterUsers() {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="efficiencyScore"
+                      className="block text-sm font-semibold text-[#292926]"
+                    >
+                      Efficiency Score
+                    </label>
+                    <input
+                      id="efficiencyScore"
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={formData.efficiencyScore}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          efficiencyScore: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="currentLoad"
+                      className="block text-sm font-semibold text-[#292926]"
+                    >
+                      Current Load
+                    </label>
+                    <input
+                      id="currentLoad"
+                      type="number"
+                      min="0"
+                      value={formData.currentLoad}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          currentLoad: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label
+                    htmlFor="skillInput"
+                    className="block text-sm font-semibold text-[#292926]"
+                  >
+                    User Skills
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      id="skillInput"
+                      type="text"
+                      value={formData.skillInput}
+                      onChange={(e) =>
+                        setFormData({ ...formData, skillInput: e.target.value })
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addSkill(formData.skillInput);
+                        }
+                      }}
+                      placeholder="Add custom skill"
+                      className="w-full px-4 py-2 font-semibold border border-[#d8b76a] rounded focus:border-[#b38a37] focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addSkill(formData.skillInput)}
+                      className="px-3 py-2 bg-[#d8b76a] text-[#292926] font-semibold rounded hover:bg-[#c3a14f]"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {USER_SKILL_OPTIONS.map((skill) => (
+                      <button
+                        key={skill}
+                        type="button"
+                        onClick={() => addSkill(skill)}
+                        className={`px-2 py-1 rounded border text-xs font-semibold ${
+                          formData.skills?.includes(skill)
+                            ? "bg-[#d8b76a] text-[#292926] border-[#d8b76a]"
+                            : "bg-white text-[#292926] border-[#d8b76a]"
+                        }`}
+                      >
+                        {skill}
+                      </button>
+                    ))}
+                  </div>
+
+                  {formData.skills?.length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {formData.skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="inline-flex items-center gap-1 bg-[#292926] text-[#d8b76a] rounded px-2 py-1 text-xs font-semibold"
+                        >
+                          {skill}
+                          <button
+                            type="button"
+                            onClick={() => removeSkill(skill)}
+                            className="text-[#d8b76a] hover:text-white"
+                            aria-label={`Remove ${skill}`}
+                          >
+                            <FiX size={12} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <button
                   type="submit"
@@ -796,6 +954,9 @@ export default function MasterUsers() {
                   <th className=" px-2 ">Email</th>
                   <th className=" px-2 ">IsVerified</th>
                   <th className=" px-2">Role</th>
+                  <th className=" px-2">Skills</th>
+                  <th className=" px-2">Efficiency</th>
+                  <th className=" px-2">Load</th>
                   <th className=" px-2 ">Username</th>
                   <th className=" px-2">Status</th>
                   <th className=" px-2">Actions</th>
@@ -805,7 +966,7 @@ export default function MasterUsers() {
                 {loading ? (
                   <TableSkeleton
                     rows={pagination.limit}
-                    columns={restore ? Array(10).fill({}) : Array(9).fill({})}
+                    columns={restore ? Array(13).fill({}) : Array(12).fill({})}
                   />
                 ) : users.length == 0 ? (
                   <tr>
@@ -859,6 +1020,28 @@ export default function MasterUsers() {
 
                         <td className=" px-2 border-r  border-[#d8b76a]">
                           {u.userType}
+                        </td>
+                        <td className="px-2 border-r border-[#d8b76a] max-w-56">
+                          <div className="flex flex-wrap gap-1 py-1">
+                            {(u.skills || []).length ? (
+                              u.skills.map((skill) => (
+                                <span
+                                  key={skill}
+                                  className="bg-[#d8b76a]/20 text-[#292926] rounded px-1.5 py-0.5 font-semibold"
+                                >
+                                  {skill}
+                                </span>
+                              ))
+                            ) : (
+                              "-"
+                            )}
+                          </div>
+                        </td>
+                        <td className=" px-2 border-r  border-[#d8b76a]">
+                          {u.efficiencyScore ?? 1}
+                        </td>
+                        <td className=" px-2 border-r  border-[#d8b76a]">
+                          {u.currentLoad ?? 0}
                         </td>
                         <td className=" px-2 border-r  border-[#d8b76a] ">
                           {u.username}

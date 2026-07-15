@@ -351,6 +351,13 @@ export function Sidebar({ isOpen }) {
           action: "read",
         },
         {
+          label: "Machine Master",
+          icon: FiTool,
+          path: "/machine-master",
+          module: "Machine",
+          action: "read",
+        },
+        {
           label: "Vendor Master",
           icon: FaIndustry,
           path: "/vendor-master",

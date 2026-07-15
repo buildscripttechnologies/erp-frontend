@@ -11,6 +11,7 @@ import RoleMaster from "../components/master/Role/RoleMaster";
 import CustomerMaster from "../components/master/customer/CustomerMaster";
 import BOMMaster from "../components/master/bom/BomMaster";
 import SampleMaster from "../components/master/sample/SampleMaster";
+import MachineMaster from "../components/master/machine/MachineMaster";
 import PurchaseOrder from "../components/purchase/PurchaseOrder";
 import POApproval from "../components/purchase/POApproval";
 import StockRegister from "../components/stockRegister/StockRegister";
@@ -68,6 +69,7 @@ const registry = new Map([
   ["/fg-master", FgMaster],
   ["/sample-master", SampleMaster],
   ["/bom-master", BOMMaster],
+  ["/machine-master", MachineMaster],
   ["/vendor-master", VendorMaster],
   ["/customer-master", CustomerMaster],
   ["/settings", Settings],

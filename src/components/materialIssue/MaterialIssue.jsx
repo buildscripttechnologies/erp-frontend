@@ -374,7 +374,7 @@ const MaterialIssue = () => {
                     {expandedMIId === mi._id && (
                       <tr className="">
                         <td colSpan="100%">
-                          <MIdetails MI={mi} />
+                          <MIdetails MI={mi} fetchMis={fetchMis} />
                         </td>
                       </tr>
                     )}

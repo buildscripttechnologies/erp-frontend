@@ -866,7 +866,7 @@ const Add = ({ onClose, onAdded }) => {
     try {
       const [bomRes, userRes] = await Promise.all([
         axios.get("/boms/get-all"),
-        axios.get("/users/all-users"),
+        axios.get("/users/all-users", { params: { page: 1, limit: 1000 } }),
       ]);
       setBoms(bomRes.data.data || []);
       setUsers(userRes.data.users || []);
@@ -1018,6 +1018,17 @@ const Add = ({ onClose, onAdded }) => {
   const filteredDetails = checkedSkus.flatMap((sku) =>
     itemDetails.filter((pd) => pd.skuCode === sku)
   );
+
+  const cuttingOperators = users
+    .filter((user) => user.status !== "Inactive")
+    .sort((a, b) => {
+      const aHasSkill = (a.skills || []).includes("Cutting");
+      const bHasSkill = (b.skills || []).includes("Cutting");
+      if (aHasSkill !== bHasSkill) return aHasSkill ? -1 : 1;
+      return (a.fullName || a.username || "").localeCompare(
+        b.fullName || b.username || ""
+      );
+    });
 
   const parseValue = (val) => {
     if (!val || val === "N/A") return 0;
@@ -1438,6 +1449,9 @@ const Add = ({ onClose, onAdded }) => {
                       Jobwork Type
                     </th>
                     <th className="px-2 py-1 border-r border-primary">
+                      Operator
+                    </th>
+                    <th className="px-2 py-1 border-r border-primary">
                       Vendor
                     </th>
                   </tr>
@@ -1524,6 +1538,12 @@ const Add = ({ onClose, onAdded }) => {
                               if (targetIndex !== -1) {
                                 updated[targetIndex].jobWorkType =
                                   e.target.value; // ✅ direct assign
+                                if (e.target.value === "Outside Company") {
+                                  updated[targetIndex].assignee = "";
+                                }
+                                if (e.target.value === "Inside Company") {
+                                  updated[targetIndex].vendor = "";
+                                }
                                 setItemDetails(updated);
                               }
                             }}
@@ -1534,6 +1554,38 @@ const Add = ({ onClose, onAdded }) => {
                                 {type}
                               </option>
                             ))}
+                          </select>
+                        </td>
+                        <td className="px-2 py-1 border-r border-primary">
+                          <select
+                            className="disabled:cursor-not-allowed min-w-36"
+                            disabled={item.jobWorkType !== "Inside Company"}
+                            value={item.assignee || ""}
+                            onChange={(e) => {
+                              let updated = [...itemDetails];
+                              const targetIndex = updated.findIndex(
+                                (pd) => pd._id === item._id
+                              );
+
+                              if (targetIndex !== -1) {
+                                updated[targetIndex].assignee = e.target.value;
+                                setItemDetails(updated);
+                              }
+                            }}
+                          >
+                            <option value="">Auto Assign</option>
+                            {cuttingOperators.map((user) => {
+                              const hasCuttingSkill = (user.skills || []).includes(
+                                "Cutting"
+                              );
+                              return (
+                                <option key={user.id} value={user.id}>
+                                  {user.fullName || user.username} | Load{" "}
+                                  {user.currentLoad || 0}
+                                  {hasCuttingSkill ? "" : " | No Cutting skill"}
+                                </option>
+                              );
+                            })}
                           </select>
                         </td>
                         <td className="px-2 py-1 border-r border-primary">
