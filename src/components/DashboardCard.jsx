@@ -7,5 +7,3 @@ export function DashboardCard({ title, value }) {
     </div>
   );
 }
-
-// Usage in Dashboard.jsx (Master metrics)
