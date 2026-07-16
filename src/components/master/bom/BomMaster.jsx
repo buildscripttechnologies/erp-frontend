@@ -22,6 +22,7 @@ import AttachmentsModal2 from "../../AttachmentsModal2";
 import { PulseLoader } from "react-spinners";
 import { TbRestore } from "react-icons/tb";
 import { Tooltip } from "react-tooltip";
+import BomPdfTableModal from "./BomPdfTableModal";
 
 const BomMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -41,6 +42,7 @@ const BomMaster = ({ isOpen }) => {
     limit: 10,
   });
   const [downloading, setDownloading] = useState();
+  const [pdfBom, setPdfBom] = useState(null);
 
   const [restore, setRestore] = useState(false);
   const [selected, setSelected] = useState([]);
@@ -114,7 +116,7 @@ const BomMaster = ({ isOpen }) => {
     }
   };
 
-  ScrollLock(showModal || editingBOM != null);
+  ScrollLock(showModal || editingBOM != null || pdfBom != null);
 
   useEffect(() => {
     if (restore) {
@@ -164,12 +166,17 @@ const BomMaster = ({ isOpen }) => {
     }
   };
 
-  const handlePreviewBom = async (bomData) => {
+  const handlePreviewBom = async (bomData, tableOptions) => {
     try {
-      setDownloading(true);
+      setPdfBom(null);
+      setDownloading(bomData._id);
       const res = await axios.get("/settings/letterpad");
       const letterpadUrl = res.data.path;
-      const blobUrl = await generateBomLP(bomData, letterpadUrl);
+      const blobUrl = await generateBomLP(
+        bomData,
+        letterpadUrl,
+        tableOptions
+      );
 
       // window.open(blobUrl, "_blank");
       const a = document.createElement("a");
@@ -180,7 +187,7 @@ const BomMaster = ({ isOpen }) => {
       console.error("Error generating BOM PDF preview:", err);
       toast.error("Failed to generate PDF preview.");
     } finally {
-      setDownloading(false);
+      setDownloading(null);
     }
   };
 
@@ -489,13 +496,13 @@ const BomMaster = ({ isOpen }) => {
                               ""
                             ) : (
                               <>
-                                {expandedBOMId === b._id && downloading ? (
+                                {downloading === b._id ? (
                                   <PulseLoader size={4} color="#d8b76a" />
                                 ) : (
                                   <FaFileDownload
                                     data-tooltip-id="statusTip"
                                     data-tooltip-content="Download"
-                                    onClick={() => handlePreviewBom(b)}
+                                    onClick={() => setPdfBom(b)}
                                     className="cursor-pointer text-primary hover:text-green-600"
                                   />
                                 )}
@@ -595,6 +602,15 @@ const BomMaster = ({ isOpen }) => {
           <AddBomModal
             onClose={() => setShowModal(false)}
             onSuccess={fetchBOMs}
+          />
+        )}
+
+        {pdfBom && (
+          <BomPdfTableModal
+            onClose={() => setPdfBom(null)}
+            onConfirm={(tableOptions) =>
+              handlePreviewBom(pdfBom, tableOptions)
+            }
           />
         )}
 

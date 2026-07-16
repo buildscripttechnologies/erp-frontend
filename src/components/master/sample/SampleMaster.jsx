@@ -23,6 +23,7 @@ import { generateSampleEstimate } from "../../../utils/generateSampleEstimate";
 import { Tooltip } from "react-tooltip";
 import PdfOptionsModal from "./PdfOptionsModal";
 import { TbRestore } from "react-icons/tb";
+import BomPdfTableModal from "../bom/BomPdfTableModal";
 
 const SampleMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -43,6 +44,7 @@ const SampleMaster = ({ isOpen }) => {
   const [downloading, setDownloading] = useState();
   const [downloading2, setDownloading2] = useState();
   const [optionModalOpen, setOptionModalOpen] = useState(false);
+  const [pdfSample, setPdfSample] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -127,7 +129,12 @@ const SampleMaster = ({ isOpen }) => {
     }
   };
 
-  ScrollLock(showModal || editingSample != null || openAttachments != null);
+  ScrollLock(
+    showModal ||
+      editingSample != null ||
+      openAttachments != null ||
+      pdfSample != null
+  );
 
   useEffect(() => {
     if (restore) {
@@ -172,12 +179,17 @@ const SampleMaster = ({ isOpen }) => {
     }
   };
 
-  const handlePreviewSample = async (SampleData) => {
-    setDownloading(true);
+  const handlePreviewSample = async (SampleData, tableOptions) => {
+    setPdfSample(null);
+    setDownloading(SampleData._id);
     try {
       const res = await axios.get("/settings/letterpad");
       const letterpadUrl = res.data.path;
-      const blobUrl = await generateSample(SampleData, letterpadUrl);
+      const blobUrl = await generateSample(
+        SampleData,
+        letterpadUrl,
+        tableOptions
+      );
 
       // window.open(blobUrl, "_blank");
       const a = document.createElement("a");
@@ -190,7 +202,7 @@ const SampleMaster = ({ isOpen }) => {
       console.error("Error generating Sample PDF preview:", err);
       toast.error("Failed to generate PDF preview.");
     } finally {
-      setDownloading(false);
+      setDownloading(null);
     }
   };
   const handlePreviewSampleEstimate = async (SampleData, options) => {
@@ -567,13 +579,13 @@ const SampleMaster = ({ isOpen }) => {
                               ""
                             ) : (
                               <>
-                                {expandedSampleId === b._id && downloading ? (
+                                {downloading === b._id ? (
                                   <PulseLoader size={4} color="#d8b76a" />
                                 ) : (
                                   <FaFileDownload
                                     data-tooltip-id="statusTip"
                                     data-tooltip-content="Download"
-                                    onClick={() => handlePreviewSample(b)}
+                                    onClick={() => setPdfSample(b)}
                                     className="cursor-pointer text-primary hover:text-green-600"
                                   />
                                 )}
@@ -672,6 +684,14 @@ const SampleMaster = ({ isOpen }) => {
             onSuccess={fetchSamples}
           />
         )}{" "}
+        {pdfSample && (
+          <BomPdfTableModal
+            onClose={() => setPdfSample(null)}
+            onConfirm={(tableOptions) =>
+              handlePreviewSample(pdfSample, tableOptions)
+            }
+          />
+        )}
         <PaginationControls
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}

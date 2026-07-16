@@ -5,7 +5,14 @@ import { calculateRate } from "./calc";
 import { capitalize } from "lodash";
 import { getCompressedImageFromPDF } from "./imageCompress";
 
-export const generateBomLP = async (bomData, letterpadUrl) => {
+export const generateBomLP = async (
+  bomData,
+  letterpadUrl,
+  {
+    includeProductDetails = true,
+    includeRawMaterialConsumption = true,
+  } = {}
+) => {
   const doc = new jsPDF("portrait", "mm", "a4");
   const margin = 6;
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -109,105 +116,115 @@ export const generateBomLP = async (bomData, letterpadUrl) => {
     },
   });
 
-  // --- Product Table ---
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize("12");
-  doc.setTextColor("#d8b76a");
-  doc.text("Product Details", margin, y + 30);
+  let nextTableY = doc.lastAutoTable.finalY + 10;
 
-  const tableBody = (bomData.productDetails || []).map((item, index) => [
-    index + 1,
-    item.skuCode || "N/A",
-    item.itemName || "N/A",
-    item.category || "N/A",
-    item.partName || "N/A",
-    item.height || "N/A",
-    item.width || "N/A",
-    item.qty || "N/A",
-    item.grams ? `${item.grams / 1000} kg` : "N/A",
-    // item.rate || "N/A",
-  ]);
+  if (includeProductDetails) {
+    // --- Product Table ---
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize("12");
+    doc.setTextColor("#d8b76a");
+    doc.text("Product Details", margin, nextTableY);
 
-  autoTable(doc, {
-    startY: y + 32,
-    head: [
-      [
-        "S. No.",
-        "SKU Code",
-        "Item Name",
-        "Category",
-        "Part Name",
-        "H (In)",
-        "W (In)",
-        "Qty",
-        "Weight",
-        // "Rate",
-      ],
-    ],
-    body: tableBody,
-    theme: "grid",
-    styles: {
-      fontSize: 8,
-      textColor: "#292926",
-      fillColor: false,
-      halign: "left",
-      lineColor: [0, 0, 0], // border color black
-      lineWidth: 0.1,
-    },
-    headStyles: {
-      fillColor: [216, 183, 106],
-      textColor: [41, 41, 38],
-      halign: "left",
-      fontStyle: "bold",
-      lineColor: [0, 0, 0], // border color black
-      lineWidth: 0.1,
-    },
-    margin: { left: margin, right: margin },
-  });
-
-  // --- Raw Material Conjunction Table ---
-  // --- Consumption Table ---
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.setTextColor("#d8b76a");
-  doc.text("Raw Material Consumption", margin, doc.lastAutoTable.finalY + 10);
-
-  // Capitalize each word
-
-  const consumptionBody = (bomData.consumptionTable || []).map(
-    (item, index) => [
+    const tableBody = (bomData.productDetails || []).map((item, index) => [
       index + 1,
       item.skuCode || "N/A",
       item.itemName || "N/A",
       item.category || "N/A",
-      item.weight || "N/A",
+      item.partName || "N/A",
+      item.height || "N/A",
+      item.width || "N/A",
       item.qty || "N/A",
-    ]
-  );
+      item.grams ? `${item.grams / 1000} kg` : "N/A",
+      // item.rate || "N/A",
+    ]);
 
-  autoTable(doc, {
-    startY: doc.lastAutoTable.finalY + 12,
-    head: [["S. No.", "SKU Code", "Item Name", "Category", "Weight", "Qty"]],
-    body: consumptionBody,
-    theme: "grid",
-    styles: {
-      fontSize: 8,
-      textColor: "#292926",
-      fillColor: false,
-      halign: "left",
-      lineColor: [0, 0, 0],
-      lineWidth: 0.1,
-    },
-    headStyles: {
-      fillColor: [216, 183, 106],
-      textColor: [41, 41, 38],
-      halign: "left",
-      fontStyle: "bold",
-      lineColor: [0, 0, 0],
-      lineWidth: 0.1,
-    },
-    margin: { left: margin, right: margin },
-  });
+    autoTable(doc, {
+      startY: nextTableY + 2,
+      head: [
+        [
+          "S. No.",
+          "SKU Code",
+          "Item Name",
+          "Category",
+          "Part Name",
+          "H (In)",
+          "W (In)",
+          "Qty",
+          "Weight",
+          // "Rate",
+        ],
+      ],
+      body: tableBody,
+      theme: "grid",
+      styles: {
+        fontSize: 8,
+        textColor: "#292926",
+        fillColor: false,
+        halign: "left",
+        lineColor: [0, 0, 0], // border color black
+        lineWidth: 0.1,
+      },
+      headStyles: {
+        fillColor: [216, 183, 106],
+        textColor: [41, 41, 38],
+        halign: "left",
+        fontStyle: "bold",
+        lineColor: [0, 0, 0], // border color black
+        lineWidth: 0.1,
+      },
+      margin: { left: margin, right: margin },
+    });
+
+    nextTableY = doc.lastAutoTable.finalY + 10;
+  }
+
+  // --- Raw Material Conjunction Table ---
+  // --- Consumption Table ---
+  if (includeRawMaterialConsumption) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor("#d8b76a");
+    doc.text("Raw Material Consumption", margin, nextTableY);
+
+    // Capitalize each word
+
+    const consumptionBody = (bomData.consumptionTable || []).map(
+      (item, index) => [
+        index + 1,
+        item.skuCode || "N/A",
+        item.itemName || "N/A",
+        item.category || "N/A",
+        item.weight || "N/A",
+        item.qty || "N/A",
+      ]
+    );
+
+    autoTable(doc, {
+      startY: nextTableY + 2,
+      head: [
+        ["S. No.", "SKU Code", "Item Name", "Category", "Weight", "Qty"],
+      ],
+      body: consumptionBody,
+      theme: "grid",
+      styles: {
+        fontSize: 8,
+        textColor: "#292926",
+        fillColor: false,
+        halign: "left",
+        lineColor: [0, 0, 0],
+        lineWidth: 0.1,
+      },
+      headStyles: {
+        fillColor: [216, 183, 106],
+        textColor: [41, 41, 38],
+        halign: "left",
+        fontStyle: "bold",
+        lineColor: [0, 0, 0],
+        lineWidth: 0.1,
+      },
+      margin: { left: margin, right: margin },
+    });
+  }
 
   // --- Signatures Section ---
   let signatureHeight = 35; // estimated block height

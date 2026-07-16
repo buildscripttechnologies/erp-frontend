@@ -5,7 +5,14 @@ import { calculateRate } from "./calc";
 import { capitalize } from "lodash";
 import { getCompressedImageFromPDF } from "./imageCompress";
 
-export const generateSample = async (SampleData, letterpadUrl) => {
+export const generateSample = async (
+  SampleData,
+  letterpadUrl,
+  {
+    includeProductDetails = true,
+    includeRawMaterialConsumption = true,
+  } = {}
+) => {
   const doc = new jsPDF("portrait", "mm", "a4");
   const margin = 6;
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -91,11 +98,14 @@ export const generateSample = async (SampleData, letterpadUrl) => {
     },
   });
 
-  // --- Product Table ---
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize("12");
-  doc.setTextColor("#d8b76a");
-  doc.text("Product Details", margin, y + 30);
+  let nextTableY = doc.lastAutoTable.finalY + 10;
+
+  if (includeProductDetails) {
+    // --- Product Table ---
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize("12");
+    doc.setTextColor("#d8b76a");
+    doc.text("Product Details", margin, nextTableY);
 
   const tableBody = (SampleData.productDetails || []).map((item, index) => [
     index + 1,
@@ -109,8 +119,8 @@ export const generateSample = async (SampleData, letterpadUrl) => {
     item.grams ? `${item.grams / 1000} kg` : "N/A",
   ]);
 
-  autoTable(doc, {
-    startY: y + 32,
+    autoTable(doc, {
+    startY: nextTableY + 2,
     head: [
       [
         "S. No.",
@@ -143,13 +153,17 @@ export const generateSample = async (SampleData, letterpadUrl) => {
       lineWidth: 0.1,
     },
     margin: { left: margin, right: margin },
-  });
+    });
+
+    nextTableY = doc.lastAutoTable.finalY + 10;
+  }
 
   // --- Raw Material Consumption ---
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize("12");
-  doc.setTextColor("#d8b76a");
-  doc.text("Raw Material Consumption", margin, doc.lastAutoTable.finalY + 10);
+  if (includeRawMaterialConsumption) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize("12");
+    doc.setTextColor("#d8b76a");
+    doc.text("Raw Material Consumption", margin, nextTableY);
 
   const mergedRawMaterials = {};
   (SampleData.productDetails || []).forEach((item) => {
@@ -233,8 +247,8 @@ export const generateSample = async (SampleData, letterpadUrl) => {
     }
   );
 
-  autoTable(doc, {
-    startY: doc.lastAutoTable.finalY + 12,
+    autoTable(doc, {
+    startY: nextTableY + 2,
     head: [["S. No.", "SKU Code", "Item Name", "Category", "Weight", "Qty"]],
     body: rawMatTableBody,
     theme: "grid",
@@ -255,7 +269,8 @@ export const generateSample = async (SampleData, letterpadUrl) => {
       lineWidth: 0.1,
     },
     margin: { left: margin, right: margin },
-  });
+    });
+  }
 
   // --- Everything below remains EXACTLY SAME (second page, images, etc) ---
   doc.addPage();
