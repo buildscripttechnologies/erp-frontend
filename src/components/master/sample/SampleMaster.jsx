@@ -24,6 +24,7 @@ import { Tooltip } from "react-tooltip";
 import PdfOptionsModal from "./PdfOptionsModal";
 import { TbRestore } from "react-icons/tb";
 import BomPdfTableModal from "../bom/BomPdfTableModal";
+import { generateMaterialSpecification } from "../../../utils/generateMaterialSpecification";
 
 const SampleMaster = ({ isOpen }) => {
   const { hasPermission } = useAuth();
@@ -203,6 +204,27 @@ const SampleMaster = ({ isOpen }) => {
       toast.error("Failed to generate PDF preview.");
     } finally {
       setDownloading(null);
+    }
+  };
+
+  const handleMaterialSpecification = async (sampleData) => {
+    setDownloading2(sampleData._id);
+    try {
+      const companyResponse = await axios.get("/settings/company-details");
+      const blobUrl = await generateMaterialSpecification(
+        sampleData,
+        companyResponse.data || {}
+      );
+      const anchor = document.createElement("a");
+      anchor.href = blobUrl;
+      anchor.download = `${sampleData.sampleNo || "Sample"}-Material-Specification.pdf`;
+      anchor.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Material specification PDF failed", error);
+      toast.error("Failed to generate Material Specification PDF");
+    } finally {
+      setDownloading2(null);
     }
   };
   const handlePreviewSampleEstimate = async (SampleData, options) => {
@@ -554,6 +576,16 @@ const SampleMaster = ({ isOpen }) => {
                             )}
                           </td>
                           <td className="px-[8px] pt-1.5 text-sm  flex gap-2 text-primary">
+                            {restore ? null : downloading2 === b._id ? (
+                              <PulseLoader size={4} color="#d8b76a" />
+                            ) : (
+                              <FaFilePdf
+                                data-tooltip-id="statusTip"
+                                data-tooltip-content="Download Material Specification"
+                                onClick={() => handleMaterialSpecification(b)}
+                                className="cursor-pointer text-primary hover:text-red-600"
+                              />
+                            )}
                             {/* {expandedSampleId === b._id && downloading2 ? (
                               <PulseLoader size={4} color="#d8b76a" />
                             ) : (

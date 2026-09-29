@@ -63,13 +63,14 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        const [rmRes, sfgRes, fgRes, customerRes, sampleRes] =
+        const [rmRes, sfgRes, fgRes, customerRes, sampleRes, numberRes] =
           await Promise.all([
             axios.get("/rms/rm"),
             axios.get("/sfgs/get-all"),
             axios.get("/fgs/get-all"),
             axios.get("/customers/get-all"),
             axios.get("/samples/get-all"),
+            axios.get("/samples/next-number"),
           ]);
         setRms(
           (rmRes.data.rawMaterials || []).map((i) => ({
@@ -81,6 +82,10 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
         setFgs(fgRes.data.data || []);
         setCustomers(customerRes.data.data || []);
         setSamples(sampleRes.data.data || []);
+        setForm((previous) => ({
+          ...previous,
+          sampleNo: numberRes.data.sampleNo || previous.sampleNo,
+        }));
         setComponents([...rms, ...sfgs, ...fgs]);
       } catch {
         toast.error("Failed to load dropdown data");
@@ -308,6 +313,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
         partName: "",
         height: 0,
         width: 0,
+        depth: 0,
         panno: 0,
         rate: 0,
         label: "",
@@ -436,7 +442,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                       selectedProduct.itemName ||
                       selectedProduct.product.name ||
                       "",
-                    sampleNo: selectedProduct.sampleNo,
+                    sampleNo: form.sampleNo,
                     partyName: selectedProduct.partyName || "",
                     orderQty: selectedProduct.orderQty || 1,
                     description: selectedProduct.description || "",
@@ -549,8 +555,8 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                 name="sampleNo"
                 className="p-2 border border-primary  rounded focus:border-2 focus:border-primary focus:outline-none transition"
                 value={form.sampleNo}
-                // onChange={(e) => setForm({ ...form, orderQty: e.target.value })}
-                onChange={(e) => handleFormChange(e)}
+                readOnly
+                title="Generated automatically when the sample is saved"
               />
             </div>
             <div className="flex flex-col">
@@ -752,6 +758,7 @@ const AddSampleModal = ({ onClose, onSuccess }) => {
                           "partName",
                           "height",
                           "width",
+                          "depth",
                           "qty",
                           "grams",
                           "rate",
