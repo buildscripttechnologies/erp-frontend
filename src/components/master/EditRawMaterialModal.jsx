@@ -5,7 +5,7 @@ import Select from "react-select";
 import { BeatLoader } from "react-spinners";
 import { useCategoryArrays } from "../../data/dropdownData";
 import { useCategories } from "../../context/CategoryContext";
-import { calculatePvcWeight, isPvcCategory, PVC_WEIGHT_FACTOR } from "../../utils/pvcWeight";
+import { calculateNonWovenWeight, calculatePvcWeight, isNonWovenCategory, isPvcCategory, NON_WOVEN_DIVISOR, NON_WOVEN_WIDTH_MM, PVC_WEIGHT_FACTOR } from "../../utils/pvcWeight";
 const EditRawMaterialModal = ({
   rawMaterial = [],
   onClose,
@@ -88,6 +88,9 @@ const EditRawMaterialModal = ({
     const category = (updatedForm.itemCategory || "").toLowerCase();
     updatedForm.pvcTotalWeightKg = isPvcCategory(category)
       ? calculatePvcWeight(updatedForm.pvcRollSizeInch, updatedForm.pvcRollWidthMm, updatedForm.pvcLengthMtr)
+      : 0;
+    updatedForm.nonWovenTotalWeightKg = isNonWovenCategory(category)
+      ? calculateNonWovenWeight(updatedForm.nonWovenGsm, updatedForm.nonWovenLengthMtr)
       : 0;
     const panno = parseFloat(updatedForm.panno) || 0;
 
@@ -508,6 +511,15 @@ const EditRawMaterialModal = ({
               <div className="flex flex-col"><label className="text-xs font-semibold text-black">Length (mtr)</label><input type="number" min="0" step="any" value={formData.pvcLengthMtr || ""} onChange={(e) => handleChange("pvcLengthMtr", e.target.value)} className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary" /></div>
               <div className="flex flex-col"><label className="text-xs font-semibold text-black">Code Fix</label><div className="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50">{PVC_WEIGHT_FACTOR}</div></div>
               <div className="flex flex-col"><label className="text-xs font-semibold text-black">Total Weight (kg)</label><div className="w-full px-4 py-2 border border-primary rounded bg-gray-50 font-semibold">{Number(formData.pvcTotalWeightKg || 0).toFixed(3)}</div></div>
+            </>
+          )}
+          {isNonWovenCategory(formData.itemCategory) && (
+            <>
+              <div className="flex flex-col"><label className="text-xs font-semibold text-black">GSM</label><input type="number" min="0" step="any" value={formData.nonWovenGsm || ""} onChange={(e) => handleChange("nonWovenGsm", e.target.value)} className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary" /></div>
+              <div className="flex flex-col"><label className="text-xs font-semibold text-black">Length (mtr)</label><input type="number" min="0" step="any" value={formData.nonWovenLengthMtr || ""} onChange={(e) => handleChange("nonWovenLengthMtr", e.target.value)} className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary" /></div>
+              <div className="flex flex-col"><label className="text-xs font-semibold text-black">Fixed Width (mm)</label><div className="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50">{NON_WOVEN_WIDTH_MM}</div></div>
+              <div className="flex flex-col"><label className="text-xs font-semibold text-black">Fixed Divisor</label><div className="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50">{NON_WOVEN_DIVISOR}</div></div>
+              <div className="flex flex-col"><label className="text-xs font-semibold text-black">Total Weight (kg)</label><div className="w-full px-4 py-2 border border-primary rounded bg-gray-50 font-semibold">{Number(formData.nonWovenTotalWeightKg || 0).toFixed(3)}</div></div>
             </>
           )}
           <div className="mt-1 flex items-center">

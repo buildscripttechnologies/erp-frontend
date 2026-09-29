@@ -8,7 +8,7 @@ import { BeatLoader } from "react-spinners";
 
 import Select from "react-select";
 import { useCategoryArrays } from "../../data/dropdownData";
-import { calculatePvcWeight, isPvcCategory, PVC_WEIGHT_FACTOR } from "../../utils/pvcWeight";
+import { calculateNonWovenWeight, calculatePvcWeight, isNonWovenCategory, isPvcCategory, NON_WOVEN_DIVISOR, NON_WOVEN_WIDTH_MM, PVC_WEIGHT_FACTOR } from "../../utils/pvcWeight";
 import { useCategories } from "../../context/CategoryContext";
 
 const BulkRmPanel = ({ onClose }) => {
@@ -90,6 +90,9 @@ const BulkRmPanel = ({ onClose }) => {
         pvcRollWidthMm: "",
         pvcLengthMtr: "",
         pvcTotalWeightKg: 0,
+        nonWovenGsm: "",
+        nonWovenLengthMtr: "",
+        nonWovenTotalWeightKg: 0,
         attachments: [],
       },
     ]);
@@ -127,6 +130,14 @@ const BulkRmPanel = ({ onClose }) => {
         );
       } else {
         updated[index].pvcTotalWeightKg = 0;
+      }
+      if (isNonWovenCategory(category)) {
+        updated[index].nonWovenTotalWeightKg = calculateNonWovenWeight(
+          updated[index].nonWovenGsm,
+          updated[index].nonWovenLengthMtr
+        );
+      } else {
+        updated[index].nonWovenTotalWeightKg = 0;
       }
       const panno = parseFloat(updated[index].panno) || 0;
 
@@ -634,6 +645,31 @@ const BulkRmPanel = ({ onClose }) => {
                     <div>
                       <label className="text-xs font-semibold text-[#292926]">Total Weight (kg)</label>
                       <div className="w-full px-4 py-2 border border-primary rounded bg-gray-50 font-semibold">{Number(rm.pvcTotalWeightKg || 0).toFixed(3)}</div>
+                    </div>
+                  </>
+                )}
+
+                {isNonWovenCategory(rm.itemCategory) && (
+                  <>
+                    <div>
+                      <label className="text-xs font-semibold text-[#292926]">GSM</label>
+                      <input type="number" min="0" step="any" placeholder="70" value={rm.nonWovenGsm} onChange={(e) => handleChange(index, "nonWovenGsm", e.target.value)} className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-[#292926]">Length (mtr)</label>
+                      <input type="number" min="0" step="any" placeholder="400" value={rm.nonWovenLengthMtr} onChange={(e) => handleChange(index, "nonWovenLengthMtr", e.target.value)} className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-[#292926]">Fixed Width (mm)</label>
+                      <div className="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50">{NON_WOVEN_WIDTH_MM}</div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-[#292926]">Fixed Divisor</label>
+                      <div className="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50">{NON_WOVEN_DIVISOR}</div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-[#292926]">Total Weight (kg)</label>
+                      <div className="w-full px-4 py-2 border border-primary rounded bg-gray-50 font-semibold">{Number(rm.nonWovenTotalWeightKg || 0).toFixed(3)}</div>
                     </div>
                   </>
                 )}
