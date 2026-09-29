@@ -186,6 +186,20 @@ export function Sidebar({ isOpen }) {
           path: "/material-consumption",
           action: "read",
         },
+        {
+          icon: BiExport,
+          label: "Sample Issue",
+          module: "Sample Issue",
+          path: "/sample-issue",
+          action: "read",
+        },
+        {
+          icon: BiImport,
+          label: "Sample Receive",
+          module: "Sample Receive",
+          path: "/sample-receive",
+          action: "read",
+        },
       ],
     },
     {

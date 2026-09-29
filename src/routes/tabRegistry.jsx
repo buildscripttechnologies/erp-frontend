@@ -11,6 +11,8 @@ import RoleMaster from "../components/master/Role/RoleMaster";
 import CustomerMaster from "../components/master/customer/CustomerMaster";
 import BOMMaster from "../components/master/bom/BomMaster";
 import SampleMaster from "../components/master/sample/SampleMaster";
+import SampleIssue from "../components/sampleIssue/SampleIssue";
+import SampleReceive from "../components/sampleReceive/SampleReceive";
 import PurchaseOrder from "../components/purchase/PurchaseOrder";
 import POApproval from "../components/purchase/POApproval";
 import StockRegister from "../components/stockRegister/StockRegister";
@@ -47,6 +49,8 @@ const registry = new Map([
   ["/material-inward", MaterialInward],
   ["/material-issue", MaterialIssue],
   ["/material-receive", MaterialReceive],
+  ["/sample-issue", SampleIssue],
+  ["/sample-receive", SampleReceive],
   ["/material-consumption", MaterialConsumption],
   ["/production-list", ProductionList],
   ["/inside-company/cutting", Cutting],

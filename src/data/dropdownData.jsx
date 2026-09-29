@@ -24,6 +24,8 @@ export const availableModules = [
   "Material Inward",
   "Material Issue",
   "Material Receive",
+  "Sample Issue",
+  "Sample Receive",
   "Material Consumption",
   "Production List",
   "Cutting",
