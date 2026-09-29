@@ -8,6 +8,7 @@ import { BeatLoader } from "react-spinners";
 
 import Select from "react-select";
 import { useCategoryArrays } from "../../data/dropdownData";
+import { calculatePvcWeight, isPvcCategory, PVC_WEIGHT_FACTOR } from "../../utils/pvcWeight";
 import { useCategories } from "../../context/CategoryContext";
 
 const BulkRmPanel = ({ onClose }) => {
@@ -85,6 +86,10 @@ const BulkRmPanel = ({ onClose }) => {
         stockQty: 0,
         stockUOM: "",
         gst: "",
+        pvcRollSizeInch: "",
+        pvcRollWidthMm: "",
+        pvcLengthMtr: "",
+        pvcTotalWeightKg: 0,
         attachments: [],
       },
     ]);
@@ -114,6 +119,15 @@ const BulkRmPanel = ({ onClose }) => {
       updated[index].totalRate = rate * stockQty;
 
       const category = (updated[index].itemCategory || "").toLowerCase();
+      if (isPvcCategory(category)) {
+        updated[index].pvcTotalWeightKg = calculatePvcWeight(
+          updated[index].pvcRollSizeInch,
+          updated[index].pvcRollWidthMm,
+          updated[index].pvcLengthMtr
+        );
+      } else {
+        updated[index].pvcTotalWeightKg = 0;
+      }
       const panno = parseFloat(updated[index].panno) || 0;
 
       // Determine fabricRate
@@ -595,6 +609,31 @@ const BulkRmPanel = ({ onClose }) => {
                         }
                         className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary"
                       />
+                    </div>
+                  </>
+                )}
+
+                {isPvcCategory(rm.itemCategory) && (
+                  <>
+                    <div>
+                      <label className="text-xs font-semibold text-[#292926]">Roll Size (inch)</label>
+                      <input type="number" min="0" step="any" placeholder="15" value={rm.pvcRollSizeInch} onChange={(e) => handleChange(index, "pvcRollSizeInch", e.target.value)} className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-[#292926]">Roll Width (mm)</label>
+                      <input type="number" min="0" step="any" placeholder="23" value={rm.pvcRollWidthMm} onChange={(e) => handleChange(index, "pvcRollWidthMm", e.target.value)} className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-[#292926]">Length (mtr)</label>
+                      <input type="number" min="0" step="any" placeholder="100" value={rm.pvcLengthMtr} onChange={(e) => handleChange(index, "pvcLengthMtr", e.target.value)} className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-[#292926]">Code Fix</label>
+                      <div className="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50">{PVC_WEIGHT_FACTOR}</div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-[#292926]">Total Weight (kg)</label>
+                      <div className="w-full px-4 py-2 border border-primary rounded bg-gray-50 font-semibold">{Number(rm.pvcTotalWeightKg || 0).toFixed(3)}</div>
                     </div>
                   </>
                 )}

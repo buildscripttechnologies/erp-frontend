@@ -82,53 +82,6 @@ const SampleDetailsSection = ({ SampleData }) => {
         </tbody>
       </table>
 
-      {/* Consumption Table */}
-      <h3 className="font-bold text-primary text-[14px] underline underline-offset-4 mb-2">
-        Raw Material Consumption
-      </h3>
-      <table className="w-full mb-4 text-[11px] border text-left">
-        <thead className="bg-primary/70">
-          <tr>
-            <th className="px-2 py-1 border-r border-primary">S. No.</th>
-            <th className="px-2 py-1 border-r border-primary">Sku Code</th>
-            <th className="px-2 py-1 border-r border-primary">Item Name</th>
-            <th className="px-2 py-1 border-r border-primary">Category</th>
-            <th className="px-2 py-1 border-r border-primary">Weight</th>
-            <th className="px-2 py-1 border-r border-primary">Qty</th>
-          </tr>
-        </thead>
-        <tbody>
-          {SampleData.consumptionTable?.length > 0 ? (
-            SampleData.consumptionTable.map((item, idx) => (
-              <tr key={idx} className="border-b border-primary">
-                <td className="px-2 py-1 border-r border-primary">{idx + 1}</td>
-                <td className="px-2 py-1 border-r border-primary ">
-                  {item.skuCode || "-"}
-                </td>
-                <td className="px-2 py-1 border-r border-primary ">
-                  {item.itemName || "-"}
-                </td>
-                <td className="px-2 py-1 border-r border-primary ">
-                  {item.category || "-"}
-                </td>
-                <td className="px-2 py-1 border-r border-primary">
-                  {item.weight == "N/A" ? "-" : item.weight || "-"}
-                </td>
-                <td className="px-2 py-1 border-r border-primary">
-                  {item.qty || "-"}
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td className="px-2 py-1 text-center" colSpan={8}>
-                No product details available.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-
       <table className="w-full  text-[11px] border border-primary  rounded">
         <tbody>
           <tr className="border-b border-primary">

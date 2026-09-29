@@ -5,6 +5,7 @@ import Select from "react-select";
 import { BeatLoader } from "react-spinners";
 import { useCategoryArrays } from "../../data/dropdownData";
 import { useCategories } from "../../context/CategoryContext";
+import { calculatePvcWeight, isPvcCategory, PVC_WEIGHT_FACTOR } from "../../utils/pvcWeight";
 const EditRawMaterialModal = ({
   rawMaterial = [],
   onClose,
@@ -85,6 +86,9 @@ const EditRawMaterialModal = ({
     updatedForm.totalRate = rate * stockQty;
 
     const category = (updatedForm.itemCategory || "").toLowerCase();
+    updatedForm.pvcTotalWeightKg = isPvcCategory(category)
+      ? calculatePvcWeight(updatedForm.pvcRollSizeInch, updatedForm.pvcRollWidthMm, updatedForm.pvcLengthMtr)
+      : 0;
     const panno = parseFloat(updatedForm.panno) || 0;
 
     // Determine fabricRate
@@ -495,6 +499,15 @@ const EditRawMaterialModal = ({
                   className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed"
                 />
               </div>
+            </>
+          )}
+          {isPvcCategory(formData.itemCategory) && (
+            <>
+              <div className="flex flex-col"><label className="text-xs font-semibold text-black">Roll Size (inch)</label><input type="number" min="0" step="any" value={formData.pvcRollSizeInch || ""} onChange={(e) => handleChange("pvcRollSizeInch", e.target.value)} className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary" /></div>
+              <div className="flex flex-col"><label className="text-xs font-semibold text-black">Roll Width (mm)</label><input type="number" min="0" step="any" value={formData.pvcRollWidthMm || ""} onChange={(e) => handleChange("pvcRollWidthMm", e.target.value)} className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary" /></div>
+              <div className="flex flex-col"><label className="text-xs font-semibold text-black">Length (mtr)</label><input type="number" min="0" step="any" value={formData.pvcLengthMtr || ""} onChange={(e) => handleChange("pvcLengthMtr", e.target.value)} className="w-full px-4 py-2 border border-primary rounded focus:outline-none focus:ring-2 focus:ring-primary" /></div>
+              <div className="flex flex-col"><label className="text-xs font-semibold text-black">Code Fix</label><div className="w-full px-4 py-2 border border-gray-300 rounded bg-gray-50">{PVC_WEIGHT_FACTOR}</div></div>
+              <div className="flex flex-col"><label className="text-xs font-semibold text-black">Total Weight (kg)</label><div className="w-full px-4 py-2 border border-primary rounded bg-gray-50 font-semibold">{Number(formData.pvcTotalWeightKg || 0).toFixed(3)}</div></div>
             </>
           )}
           <div className="mt-1 flex items-center">
